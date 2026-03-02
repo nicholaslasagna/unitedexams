@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SE Core – Exam 1 Practice</title>
-  <meta name="description" content="Interactive practice quiz for SE Core Software Engineering Exam 1 — Chapters 1-4 with randomized questions" />
+  <meta name="description" content="Interactive practice quiz for SE Core Software Engineering Exam 1 — Chapters 1-4 with randomized questions and reinforcement learning" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📝</text></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,223 +15,118 @@
   <script src="questions.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #050510;
-      --bg2: #0c0c24;
-      --surface: rgba(255,255,255,0.035);
-      --surface-hover: rgba(255,255,255,0.065);
-      --surface-active: rgba(255,255,255,0.09);
-      --accent: #818cf8;
-      --accent-dim: rgba(129,140,248,0.15);
-      --accent-glow: rgba(129,140,248,0.3);
-      --green: #34d399;
-      --green-dim: rgba(52,211,153,0.12);
-      --green-b: rgba(52,211,153,0.45);
-      --red: #fb7185;
-      --red-dim: rgba(251,113,133,0.12);
-      --red-b: rgba(251,113,133,0.45);
-      --amber: #fbbf24;
-      --amber-dim: rgba(251,191,36,0.12);
-      --text: #e2e4f0;
-      --text2: rgba(255,255,255,0.55);
-      --text3: rgba(255,255,255,0.3);
-      --border: rgba(255,255,255,0.07);
-      --border2: rgba(255,255,255,0.12);
-      --font: 'Outfit', -apple-system, sans-serif;
-      --mono: 'Fira Code', monospace;
-      --radius: 14px;
-      --radius-sm: 10px;
+      --bg: #050510; --bg2: #0c0c24;
+      --surface: rgba(255,255,255,0.035); --surface-hover: rgba(255,255,255,0.065); --surface-active: rgba(255,255,255,0.09);
+      --accent: #818cf8; --accent-dim: rgba(129,140,248,0.15); --accent-glow: rgba(129,140,248,0.3);
+      --green: #34d399; --green-dim: rgba(52,211,153,0.12); --green-b: rgba(52,211,153,0.45);
+      --red: #fb7185; --red-dim: rgba(251,113,133,0.12); --red-b: rgba(251,113,133,0.45);
+      --amber: #fbbf24; --amber-dim: rgba(251,191,36,0.12);
+      --orange: #fb923c; --orange-dim: rgba(251,146,60,0.12);
+      --text: #e2e4f0; --text2: rgba(255,255,255,0.55); --text3: rgba(255,255,255,0.3);
+      --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
+      --font: 'Outfit', -apple-system, sans-serif; --mono: 'Fira Code', monospace;
+      --radius: 14px; --radius-sm: 10px;
     }
-
     html { scroll-behavior: smooth; }
-
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-    }
-
+    body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
     #root { min-height: 100vh; }
-
-    /* Ambient background */
-    .ambient {
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background:
-        radial-gradient(ellipse 70% 50% at 15% 10%, rgba(129,140,248,0.07), transparent 65%),
-        radial-gradient(ellipse 50% 40% at 85% 90%, rgba(167,139,250,0.05), transparent 55%),
-        radial-gradient(ellipse 80% 80% at 50% 50%, rgba(6,6,20,1), transparent);
-    }
-
+    .ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(ellipse 70% 50% at 15% 10%, rgba(129,140,248,0.07), transparent 65%), radial-gradient(ellipse 50% 40% at 85% 90%, rgba(167,139,250,0.05), transparent 55%), radial-gradient(ellipse 80% 80% at 50% 50%, rgba(6,6,20,1), transparent); }
     .app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* ───── Start ───── */
+    /* Start */
     .start { flex:1; display:flex; align-items:center; justify-content:center; padding:24px; }
-
-    .start-card {
-      max-width: 560px; width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 56px 48px;
-      text-align: center;
-      backdrop-filter: blur(20px);
-      animation: rise 0.5s ease-out;
-    }
-    @keyframes rise { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
-
+    .start-card { max-width:560px; width:100%; background:var(--surface); border:1px solid var(--border); border-radius:24px; padding:56px 48px; text-align:center; backdrop-filter:blur(20px); animation:rise 0.5s ease-out; }
+    @keyframes rise { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
     .tag { font-size:11px; letter-spacing:5px; color:var(--accent); text-transform:uppercase; font-weight:700; margin-bottom:14px; }
     .start-card h1 { font-size:36px; font-weight:900; color:#fff; line-height:1.15; }
     .start-card .sub { color:var(--text2); font-size:15px; margin-top:6px; margin-bottom:36px; }
-
     .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:28px; }
     .g-box { background:rgba(255,255,255,0.025); border:1px solid var(--border); border-radius:var(--radius-sm); padding:18px 10px; }
     .g-val { font-family:var(--mono); color:var(--accent); font-size:26px; font-weight:700; }
     .g-lbl { color:var(--text3); font-size:10px; margin-top:5px; text-transform:uppercase; letter-spacing:1.5px; }
-
-    .info-box {
-      background: var(--accent-dim); border:1px solid rgba(129,140,248,0.18);
-      border-radius: var(--radius-sm); padding:16px 20px; margin-bottom:32px; text-align:left;
-    }
+    .info-box { background:var(--accent-dim); border:1px solid rgba(129,140,248,0.18); border-radius:var(--radius-sm); padding:16px 20px; margin-bottom:32px; text-align:left; }
     .info-box strong { color:var(--accent); font-size:13px; display:block; margin-bottom:4px; }
     .info-box p { color:var(--text2); font-size:13px; line-height:1.65; }
 
-    .btn {
-      font-family:var(--font); border:none; border-radius:var(--radius-sm);
-      padding:14px 48px; font-size:16px; font-weight:700; cursor:pointer;
-      transition: transform 0.12s, box-shadow 0.12s;
-    }
+    .btn { font-family:var(--font); border:none; border-radius:var(--radius-sm); padding:14px 48px; font-size:16px; font-weight:700; cursor:pointer; transition:transform 0.12s,box-shadow 0.12s; }
     .btn:hover { transform:translateY(-1px); }
     .btn:active { transform:translateY(0); }
     .btn-accent { background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; }
     .btn-accent:hover { box-shadow:0 8px 28px var(--accent-glow); }
     .btn-green { background:linear-gradient(135deg,#34d399,#10b981); color:#000; font-weight:800; }
-    .btn-ghost { background:var(--surface); color:var(--text); }
+    .btn-ghost { background:var(--surface); color:var(--text); border:1px solid var(--border2); }
+    .btn-orange { background:linear-gradient(135deg,#fb923c,#f97316); color:#000; font-weight:800; }
+    .btn-orange:hover { box-shadow:0 8px 28px rgba(251,146,60,0.3); }
 
-    /* ───── Header ───── */
-    .hdr {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:12px 20px; border-bottom:1px solid var(--border);
-      background:rgba(5,5,16,0.88); backdrop-filter:blur(14px);
-      position:sticky; top:0; z-index:20;
-    }
-    .hdr-l { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-    .hdr .cnt { font-family:var(--mono); color:var(--text2); font-size:13px; }
+    /* Header */
+    .hdr { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; border-bottom:1px solid var(--border); background:rgba(5,5,16,0.88); backdrop-filter:blur(14px); position:sticky; top:0; z-index:20; }
+    .hdr-l { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .cnt { font-family:var(--mono); color:var(--text2); font-size:13px; }
     .pill { font-size:10px; padding:3px 10px; border-radius:20px; font-weight:700; white-space:nowrap; }
     .pill-prof { background:var(--amber-dim); color:var(--amber); }
     .pill-ch { background:var(--accent-dim); color:var(--accent); }
     .pill-type { background:rgba(52,211,153,0.1); color:var(--green); }
+    .pill-reinforce { background:var(--orange-dim); color:var(--orange); }
     .timer { font-family:var(--mono); font-weight:700; font-size:20px; font-variant-numeric:tabular-nums; }
     .timer-ok { color:var(--accent); }
-    .timer-warn { color:var(--red); animation: blink 1s infinite; }
-    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+    .timer-warn { color:var(--red); animation:blink 1s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
-    /* ───── Question ───── */
+    /* Question */
     .q-wrap { flex:1; padding:36px 20px; max-width:740px; margin:0 auto; width:100%; }
     .q-text { font-size:20px; font-weight:700; line-height:1.55; color:#fff; margin-bottom:4px; }
     .q-hint { color:var(--accent); font-size:13px; font-weight:500; margin-bottom:18px; }
-
     .opts { display:flex; flex-direction:column; gap:10px; margin-top:14px; }
-    .opt {
-      display:flex; align-items:flex-start; gap:14px; width:100%;
-      background:var(--surface); border:1px solid var(--border2);
-      border-radius:var(--radius-sm); padding:15px 18px;
-      color:var(--text); font-size:15px; line-height:1.5; text-align:left;
-      cursor:pointer; transition:all 0.12s; font-family:var(--font);
-    }
+    .opt { display:flex; align-items:flex-start; gap:14px; width:100%; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:15px 18px; color:var(--text); font-size:15px; line-height:1.5; text-align:left; cursor:pointer; transition:all 0.12s; font-family:var(--font); }
     .opt:not(:disabled):hover { background:var(--surface-hover); border-color:rgba(255,255,255,0.18); }
     .opt:disabled { cursor:default; }
     .opt.sel { background:var(--accent-dim); border-color:rgba(129,140,248,0.5); }
     .opt.ok { background:var(--green-dim); border-color:var(--green-b); }
     .opt.bad { background:var(--red-dim); border-color:var(--red-b); }
     .opt.miss { background:rgba(52,211,153,0.04); border-color:rgba(52,211,153,0.2); }
-
-    .ind {
-      width:22px; height:22px; flex-shrink:0; margin-top:1px;
-      border:2px solid var(--text3); display:flex; align-items:center;
-      justify-content:center; transition:all 0.12s;
-    }
-    .ind-r { border-radius:50%; }
-    .ind-c { border-radius:5px; }
+    .ind { width:22px; height:22px; flex-shrink:0; margin-top:1px; border:2px solid var(--text3); display:flex; align-items:center; justify-content:center; transition:all 0.12s; }
+    .ind-r { border-radius:50%; } .ind-c { border-radius:5px; }
     .ind.on { background:var(--accent); border-color:var(--accent); }
     .chk { color:#fff; font-size:11px; font-weight:800; }
 
-    /* Fill-in-the-blank */
     .fill-wrap { margin-top:18px; }
-    .fill-input {
-      width:100%; padding:16px 18px; font-size:16px; font-family:var(--font);
-      background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-sm);
-      color:var(--text); outline:none; transition:border-color 0.2s;
-    }
+    .fill-input { width:100%; padding:16px 18px; font-size:16px; font-family:var(--font); background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-sm); color:var(--text); outline:none; transition:border-color 0.2s; }
     .fill-input:focus { border-color:rgba(129,140,248,0.5); }
     .fill-input:disabled { opacity:0.6; }
     .fill-input.fill-ok { border-color:var(--green-b); background:var(--green-dim); }
     .fill-input.fill-bad { border-color:var(--red-b); background:var(--red-dim); }
-    .fill-hint { margin-top:8px; font-size:13px; color:var(--text3); }
     .fill-answer { margin-top:10px; font-size:14px; padding:10px 14px; border-radius:8px; }
     .fill-answer.fill-ok-box { background:var(--green-dim); color:var(--green); }
     .fill-answer.fill-bad-box { background:var(--red-dim); color:var(--red); }
 
-    /* Free response */
-    .free-ta {
-      width:100%; min-height:200px; padding:18px; font-size:15px; line-height:1.7;
-      font-family:var(--font); background:var(--surface); border:1px solid var(--border2);
-      border-radius:var(--radius-sm); color:var(--text); resize:vertical; outline:none;
-      margin-top:16px; transition:border-color 0.2s;
-    }
+    .free-ta { width:100%; min-height:200px; padding:18px; font-size:15px; line-height:1.7; font-family:var(--font); background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-sm); color:var(--text); resize:vertical; outline:none; margin-top:16px; transition:border-color 0.2s; }
     .free-ta:focus { border-color:rgba(129,140,248,0.5); }
     .free-ta:disabled { opacity:0.6; }
 
-    /* Explanation */
     .exp-toggle { background:none; border:none; color:var(--accent); font-size:14px; cursor:pointer; font-family:var(--font); font-weight:600; padding:0; margin-top:20px; }
-    .exp-box {
-      margin-top:12px; background:var(--accent-dim); border:1px solid rgba(129,140,248,0.18);
-      border-radius:var(--radius-sm); padding:18px 22px; color:rgba(255,255,255,0.75);
-      font-size:14px; line-height:1.7; animation:rise 0.2s ease;
-    }
+    .exp-box { margin-top:12px; background:var(--accent-dim); border:1px solid rgba(129,140,248,0.18); border-radius:var(--radius-sm); padding:18px 22px; color:rgba(255,255,255,0.75); font-size:14px; line-height:1.7; animation:rise 0.2s ease; }
     .exp-box .exp-lbl { color:var(--accent); font-weight:700; font-size:12px; margin-bottom:8px; text-transform:uppercase; letter-spacing:1.5px; }
 
-    /* ───── Footer ───── */
-    .ftr {
-      padding:12px 20px; border-top:1px solid var(--border);
-      background:rgba(5,5,16,0.88); backdrop-filter:blur(14px);
-      display:flex; align-items:center; justify-content:space-between;
-      position:sticky; bottom:0; z-index:20;
-    }
-    .ftr-btn {
-      border:none; border-radius:8px; padding:10px 26px; font-size:14px;
-      font-weight:600; cursor:pointer; font-family:var(--font); transition:all 0.12s;
-    }
+    /* Footer */
+    .ftr { padding:12px 20px; border-top:1px solid var(--border); background:rgba(5,5,16,0.88); backdrop-filter:blur(14px); display:flex; align-items:center; justify-content:space-between; position:sticky; bottom:0; z-index:20; }
+    .ftr-btn { border:none; border-radius:8px; padding:10px 26px; font-size:14px; font-weight:600; cursor:pointer; font-family:var(--font); transition:all 0.12s; }
     .ftr-prev { background:rgba(255,255,255,0.06); color:var(--text); }
     .ftr-prev:disabled { color:var(--text3); cursor:default; }
     .ftr-next { background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; }
     .ftr-next:disabled { background:rgba(255,255,255,0.06); color:var(--text3); cursor:default; }
-
     .dots { display:flex; flex-wrap:wrap; gap:4px; justify-content:center; max-width:440px; }
-    .dot {
-      width:13px; height:13px; border-radius:3px; border:none; padding:0;
-      cursor:pointer; transition:all 0.1s;
-    }
-    .dot-e { background:rgba(255,255,255,0.1); }
-    .dot-a { background:var(--accent); }
-    .dot-cur { outline:2px solid var(--accent); outline-offset:2px; }
+    .dot { width:13px; height:13px; border-radius:3px; border:none; padding:0; cursor:pointer; transition:all 0.1s; }
+    .dot-e { background:rgba(255,255,255,0.1); } .dot-a { background:var(--accent); } .dot-cur { outline:2px solid var(--accent); outline-offset:2px; }
+    .dot-reinforce { background:var(--orange); }
 
-    /* ───── Results ───── */
+    /* Results */
     .results { padding:40px 20px; max-width:740px; margin:0 auto; width:100%; animation:rise 0.5s ease; }
-    .res-hero {
-      text-align:center; background:var(--surface); border:1px solid var(--border);
-      border-radius:24px; padding:52px 36px; margin-bottom:24px;
-    }
+    .res-hero { text-align:center; background:var(--surface); border:1px solid var(--border); border-radius:24px; padding:52px 36px; margin-bottom:24px; }
     .res-pct { font-family:var(--mono); font-size:80px; font-weight:900; line-height:1; }
-    .res-pct.hi { color:var(--green); }
-    .res-pct.mid { color:var(--amber); }
-    .res-pct.lo { color:var(--red); }
+    .res-pct.hi { color:var(--green); } .res-pct.mid { color:var(--amber); } .res-pct.lo { color:var(--red); }
     .res-det { color:var(--text2); font-size:15px; margin-top:10px; }
     .res-btns { display:flex; gap:12px; justify-content:center; margin-top:28px; flex-wrap:wrap; }
-
     .ch-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; }
     .ch-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
     .ch-lbl { color:var(--text3); font-size:11px; text-transform:uppercase; letter-spacing:1.5px; }
@@ -239,11 +134,23 @@
     .ch-bar { height:4px; background:rgba(255,255,255,0.06); border-radius:2px; margin-top:10px; overflow:hidden; }
     .ch-fill { height:100%; border-radius:2px; transition:width 0.8s ease; }
 
-    .shuffle-note {
-      text-align:center; color:var(--text3); font-size:13px; margin-top:16px; padding-bottom:32px;
-    }
+    /* Weak areas panel */
+    .weak-panel { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:32px; margin-bottom:24px; }
+    .weak-title { font-size:20px; font-weight:800; color:#fff; margin-bottom:6px; display:flex; align-items:center; gap:10px; }
+    .weak-sub { color:var(--text2); font-size:14px; margin-bottom:20px; line-height:1.6; }
+    .weak-topics { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; }
+    .weak-chip { background:var(--red-dim); border:1px solid var(--red-b); color:var(--red); font-size:12px; font-weight:600; padding:6px 14px; border-radius:20px; }
+    .weak-stat { display:flex; gap:16px; margin-bottom:20px; }
+    .weak-stat-item { background:rgba(255,255,255,0.025); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 18px; flex:1; text-align:center; }
+    .weak-stat-val { font-family:var(--mono); font-size:22px; font-weight:700; color:var(--orange); }
+    .weak-stat-lbl { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-top:3px; }
 
-    /* responsive */
+    /* Reinforce results */
+    .reinforce-hero { text-align:center; background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:44px 32px; margin-bottom:24px; }
+    .reinforce-hero .tag { color:var(--orange); }
+
+    .shuffle-note { text-align:center; color:var(--text3); font-size:13px; padding-bottom:32px; }
+
     @media(max-width:600px) {
       .start-card { padding:36px 22px; }
       .start-card h1 { font-size:28px; }
@@ -255,6 +162,7 @@
       .ch-grid { grid-template-columns:1fr; }
       .res-pct { font-size:60px; }
       .res-btns { flex-direction:column; align-items:center; }
+      .weak-stat { flex-direction:column; gap:10px; }
     }
   </style>
 </head>
@@ -265,86 +173,139 @@
   <script type="text/babel">
     const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
-    // ═══════════════════════════════════════
-    //  QUIZ ENGINE — Shuffle & Select
-    // ═══════════════════════════════════════
-
+    /* ═══ Utilities ═══ */
     function shuffle(arr) {
       const a = [...arr];
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
+      for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
       return a;
     }
 
+    function gradeFill(q, input) {
+      if (!input || !input.trim()) return false;
+      const val = input.trim().toLowerCase();
+      if (q.acceptableAnswers) return q.acceptableAnswers.some(acc => acc.length === 1 ? val.includes(acc[0].toLowerCase()) : acc.every(w => val.includes(w.toLowerCase())));
+      return q.answer.some(a => val.includes(a.toLowerCase()));
+    }
+
+    /* ═══ Exam Builder ═══ */
     function buildExam(bank) {
-      // Always include professor questions and free response
       const profQs = bank.filter(q => q.fromProfessor);
       const freeQs = bank.filter(q => q.type === "free");
       const pool = bank.filter(q => !q.fromProfessor && q.type !== "free");
-
-      // Target: 37 MC (8 prof + 29 from pool) + 2 free = 39 total
-      // Balance by chapter and type
       const byChapter = { 1: [], 2: [], 3: [], 4: [] };
       pool.forEach(q => { if (byChapter[q.chapter]) byChapter[q.chapter].push(q); });
-
-      // Shuffle each chapter pool
       Object.keys(byChapter).forEach(k => { byChapter[k] = shuffle(byChapter[k]); });
-
-      // Pick ~7-8 from each chapter to get 29 total
       const targets = { 1: 7, 2: 8, 3: 7, 4: 7 };
       let selected = [];
       Object.entries(targets).forEach(([ch, count]) => {
-        const available = byChapter[ch];
-        // Ensure a mix of types
-        const fills = available.filter(q => q.type === "fill");
-        const others = available.filter(q => q.type !== "fill");
-
-        // Include at least 1-2 fill-in-the-blank per chapter if available
-        const fillCount = Math.min(fills.length, Math.floor(count * 0.25) + 1);
-        const otherCount = count - fillCount;
-
-        selected.push(...fills.slice(0, fillCount));
-        selected.push(...others.slice(0, otherCount));
+        const avail = byChapter[ch];
+        const fills = avail.filter(q => q.type === "fill");
+        const others = avail.filter(q => q.type !== "fill");
+        const fc = Math.min(fills.length, Math.floor(count * 0.25) + 1);
+        selected.push(...fills.slice(0, fc), ...others.slice(0, count - fc));
       });
-
-      // Trim to exactly 29 if over
       selected = selected.slice(0, 29);
-
-      // Combine: prof first (shuffled among themselves), then pool (shuffled), then free
-      const mcQuestions = [...shuffle(profQs), ...shuffle(selected)];
-      return [...mcQuestions, ...freeQs];
+      return [...shuffle(profQs), ...shuffle(selected), ...freeQs];
     }
 
-    // ═══════════════════════════════════════
-    //  FILL-IN-THE-BLANK GRADING
-    // ═══════════════════════════════════════
+    /* ═══ Reinforcement Builder ═══ */
+    function buildReinforcement(wrongQuestions, mainBank, reinforceBank) {
+      // Collect all topics from wrong questions
+      const weakTopics = new Set();
+      const wrongIds = new Set(wrongQuestions.map(q => q.id));
+      wrongQuestions.forEach(q => { if (q.topics) q.topics.forEach(t => weakTopics.add(t)); });
 
-    function gradeFill(question, userInput) {
-      if (!userInput || !userInput.trim()) return false;
-      const input = userInput.trim().toLowerCase();
+      // 1. Re-include the original wrong questions (so they can retry them)
+      const retryQs = [...wrongQuestions];
 
-      // Check multi-blank (comma separated or space separated)
-      if (question.acceptableAnswers) {
-        return question.acceptableAnswers.some(acceptable => {
-          // Each acceptable is an array of required words
-          if (acceptable.length === 1) {
-            return input.includes(acceptable[0].toLowerCase());
-          }
-          // Multi-blank: check all words present
-          return acceptable.every(word => input.includes(word.toLowerCase()));
-        });
-      }
+      // 2. Find related questions from reinforcement bank
+      const relatedReinforce = reinforceBank.filter(q =>
+        !wrongIds.has(q.id) && q.topics && q.topics.some(t => weakTopics.has(t))
+      );
 
-      // Fallback: simple match
-      return question.answer.some(a => input.includes(a.toLowerCase()));
+      // 3. Find related questions from the main bank that weren't in the exam
+      const relatedMain = mainBank.filter(q =>
+        !wrongIds.has(q.id) && q.type !== "free" && q.topics && q.topics.some(t => weakTopics.has(t))
+      );
+
+      // Combine: wrong questions first, then reinforcement, then related main bank
+      const combined = [...shuffle(retryQs), ...shuffle(relatedReinforce), ...shuffle(relatedMain)];
+
+      // Deduplicate by ID
+      const seen = new Set();
+      const deduped = combined.filter(q => { if (seen.has(q.id)) return false; seen.add(q.id); return true; });
+
+      // Cap at reasonable size (max ~20 questions)
+      return { questions: deduped.slice(0, 20), topics: [...weakTopics] };
     }
 
-    // ═══════════════════════════════════════
-    //  MAIN APP
-    // ═══════════════════════════════════════
+    /* ═══ Shared Question Renderer ═══ */
+    function QuestionView({ q, answers, onSelect, showResults, isCorrect, showExp, onToggleExp }) {
+      const typeLabel = { single: "Multiple Choice", multi: "Select All", fill: "Fill in the Blank", free: "Free Response" };
 
+      return (
+        <div className="q-wrap">
+          <h2 className="q-text">{q.question}</h2>
+          {q.type === "multi" && <div className="q-hint">Select all that apply</div>}
+          {q.type === "fill" && !showResults && <div className="q-hint">Type your answer below</div>}
+
+          {q.type === "fill" && (
+            <div className="fill-wrap">
+              <input
+                type="text" className={`fill-input ${showResults ? (isCorrect ? "fill-ok" : "fill-bad") : ""}`}
+                value={answers[q.id] || ""} onChange={e => onSelect(q.id, e.target.value)}
+                placeholder="Type your answer..." disabled={showResults} autoComplete="off"
+              />
+              {showResults && (
+                <div className={`fill-answer ${isCorrect ? "fill-ok-box" : "fill-bad-box"}`}>
+                  {isCorrect ? "✓ Correct!" : `✗ Correct answer: ${q.answer.join(", ")}`}
+                </div>
+              )}
+            </div>
+          )}
+
+          {q.type === "free" && (
+            <div>
+              <textarea className="free-ta" value={answers[q.id] || ""} onChange={e => onSelect(q.id, e.target.value)} placeholder="Type your answer here..." disabled={showResults} />
+              {showResults && <div className="exp-box" style={{marginTop:16}}><div className="exp-lbl">Sample Answer</div>{q.explanation}</div>}
+            </div>
+          )}
+
+          {(q.type === "single" || q.type === "multi") && (
+            <div className="opts">
+              {q.options.map((opt, idx) => {
+                const selected = (answers[q.id] || []).includes(idx);
+                const isRight = q.answer.includes(idx);
+                let cls = "opt";
+                if (showResults && selected && isRight) cls += " ok";
+                else if (showResults && selected && !isRight) cls += " bad";
+                else if (showResults && !selected && isRight) cls += " miss";
+                else if (selected) cls += " sel";
+                return (
+                  <button key={idx} className={cls} onClick={() => onSelect(q.id, idx)} disabled={showResults}>
+                    <div className={`ind ${q.type === "multi" ? "ind-c" : "ind-r"} ${selected ? "on" : ""}`}>
+                      {selected && <span className="chk">✓</span>}
+                    </div>
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {showResults && q.type !== "free" && (
+            <div>
+              <button className="exp-toggle" onClick={() => onToggleExp(q.id)}>
+                {showExp[q.id] ? "▾ Hide" : "▸ Show"} Explanation
+              </button>
+              {showExp[q.id] && <div className="exp-box"><div className="exp-lbl">Explanation</div>{q.explanation}</div>}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    /* ═══ MAIN APP ═══ */
     const TOTAL_TIME = 60 * 60;
 
     function App() {
@@ -356,6 +317,15 @@
       const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
       const [timerOn, setTimerOn] = useState(false);
       const [submitted, setSubmitted] = useState(false);
+
+      // Reinforcement state
+      const [reinforceQs, setReinforceQs] = useState([]);
+      const [reinforceTopics, setReinforceTopics] = useState([]);
+      const [reinforceAnswers, setReinforceAnswers] = useState({});
+      const [reinforceShowExp, setReinforceShowExp] = useState({});
+      const [reinforceIdx, setReinforceIdx] = useState(0);
+      const [reinforceSubmitted, setReinforceSubmitted] = useState(false);
+
       const timerRef = useRef(null);
 
       useEffect(() => {
@@ -372,141 +342,242 @@
 
       const fmt = s => `${Math.floor(s/60)}:${(s%60).toString().padStart(2,"0")}`;
 
-      const startExam = () => {
-        const exam = buildExam(window.QUESTION_BANK);
-        setQuestions(exam);
-        setAnswers({});
-        setShowExp({});
-        setTimeLeft(TOTAL_TIME);
-        setSubmitted(false);
-        setCurrentQ(0);
-        setScreen("exam");
-        setTimerOn(true);
-      };
-
       const handleSelect = useCallback((qId, val) => {
         if (submitted) return;
         const q = questions.find(q => q.id === qId);
         if (!q) return;
-        if (q.type === "free" || q.type === "fill") {
-          setAnswers(p => ({ ...p, [qId]: val }));
-          return;
-        }
+        if (q.type === "free" || q.type === "fill") { setAnswers(p => ({ ...p, [qId]: val })); return; }
         if (q.type === "multi") {
-          setAnswers(p => {
-            const cur = p[qId] || [];
-            const upd = cur.includes(val) ? cur.filter(i => i !== val) : [...cur, val];
-            return { ...p, [qId]: upd };
-          });
-        } else {
-          setAnswers(p => ({ ...p, [qId]: [val] }));
-        }
+          setAnswers(p => { const c = p[qId] || []; return { ...p, [qId]: c.includes(val) ? c.filter(i => i !== val) : [...c, val] }; });
+        } else { setAnswers(p => ({ ...p, [qId]: [val] })); }
       }, [submitted, questions]);
 
-      const isCorrect = useCallback((qId) => {
-        const q = questions.find(q => q.id === qId);
-        if (!q) return null;
-        if (q.type === "free") return null;
-        if (q.type === "fill") return gradeFill(q, answers[qId]);
-        const ua = answers[qId] || [];
+      const handleReinforceSelect = useCallback((qId, val) => {
+        if (reinforceSubmitted) return;
+        const q = reinforceQs.find(q => q.id === qId);
+        if (!q) return;
+        if (q.type === "free" || q.type === "fill") { setReinforceAnswers(p => ({ ...p, [qId]: val })); return; }
+        if (q.type === "multi") {
+          setReinforceAnswers(p => { const c = p[qId] || []; return { ...p, [qId]: c.includes(val) ? c.filter(i => i !== val) : [...c, val] }; });
+        } else { setReinforceAnswers(p => ({ ...p, [qId]: [val] })); }
+      }, [reinforceSubmitted, reinforceQs]);
+
+      const checkCorrect = useCallback((q, ans) => {
+        if (!q || q.type === "free") return null;
+        if (q.type === "fill") return gradeFill(q, ans[q.id]);
+        const ua = ans[q.id] || [];
         if (ua.length !== q.answer.length) return false;
         return q.answer.every(a => ua.includes(a)) && ua.every(a => q.answer.includes(a));
-      }, [answers, questions]);
+      }, []);
+
+      const isCorrect = useCallback((qId) => checkCorrect(questions.find(q => q.id === qId), answers), [questions, answers, checkCorrect]);
+      const isReinforceCorrect = useCallback((qId) => checkCorrect(reinforceQs.find(q => q.id === qId), reinforceAnswers), [reinforceQs, reinforceAnswers, checkCorrect]);
 
       const score = useMemo(() => {
         let correct = 0, total = 0;
-        questions.forEach(q => {
-          if (q.type !== "free") { total++; if (isCorrect(q.id)) correct++; }
-        });
+        questions.forEach(q => { if (q.type !== "free") { total++; if (isCorrect(q.id)) correct++; } });
         return { correct, total };
       }, [questions, isCorrect]);
+
+      const reinforceScore = useMemo(() => {
+        let correct = 0, total = 0;
+        reinforceQs.forEach(q => { if (q.type !== "free") { total++; if (isReinforceCorrect(q.id)) correct++; } });
+        return { correct, total };
+      }, [reinforceQs, isReinforceCorrect]);
+
+      const wrongQuestions = useMemo(() => {
+        return questions.filter(q => q.type !== "free" && !isCorrect(q.id));
+      }, [questions, isCorrect]);
+
+      const startExam = () => {
+        const exam = buildExam(window.QUESTION_BANK);
+        setQuestions(exam); setAnswers({}); setShowExp({}); setTimeLeft(TOTAL_TIME); setSubmitted(false); setCurrentQ(0);
+        setReinforceQs([]); setReinforceAnswers({}); setReinforceShowExp({}); setReinforceIdx(0); setReinforceSubmitted(false);
+        setScreen("exam"); setTimerOn(true);
+      };
 
       const handleSubmit = () => {
         if (!confirm("Submit your exam? You won't be able to change answers.")) return;
         setSubmitted(true); setTimerOn(false); clearInterval(timerRef.current); setScreen("results");
       };
 
+      const startReinforce = () => {
+        const { questions: rQs, topics } = buildReinforcement(wrongQuestions, window.QUESTION_BANK, window.REINFORCEMENT_BANK || []);
+        setReinforceQs(rQs); setReinforceTopics(topics); setReinforceAnswers({}); setReinforceShowExp({}); setReinforceIdx(0); setReinforceSubmitted(false);
+        setScreen("reinforce");
+      };
+
+      const handleReinforceSubmit = () => {
+        if (!confirm("Submit your reinforcement quiz?")) return;
+        setReinforceSubmitted(true); setScreen("reinforce-results");
+      };
+
       const q = questions[currentQ];
+      const rq = reinforceQs[reinforceIdx];
       const pct = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
       const isReview = screen === "review";
 
-      // ── Start ──
-      if (screen === "start") {
-        return (
-          <div className="app">
-            <div className="start">
-              <div className="start-card">
-                <div className="tag">SE Core · Software Engineering</div>
-                <h1>Exam 1 Practice</h1>
-                <p className="sub">Chapters 1 – 4 · Randomized each attempt</p>
-                <div className="grid3">
-                  <div className="g-box"><div className="g-val">39</div><div className="g-lbl">Questions</div></div>
-                  <div className="g-box"><div className="g-val">60m</div><div className="g-lbl">Time Limit</div></div>
-                  <div className="g-box"><div className="g-val">4</div><div className="g-lbl">Question Types</div></div>
-                </div>
-                <div className="info-box">
-                  <strong>How it works</strong>
-                  <p>
-                    Your professor's 8 confirmed questions are always included. The remaining 29 MC questions are randomly
-                    drawn from a bank of 60+ questions — you'll get a different mix every time. Includes multiple choice,
-                    select-all-that-apply, fill-in-the-blank, and 2 free response questions.
-                  </p>
-                </div>
-                <button className="btn btn-accent" onClick={startExam}>Start Exam</button>
-              </div>
-            </div>
-          </div>
-        );
-      }
-
-      // ── Results ──
-      if (screen === "results") {
-        return (
-          <div className="app">
-            <div className="results">
-              <div className="res-hero">
-                <div className="tag" style={{marginBottom:16}}>Final Score</div>
-                <div className={`res-pct ${pct >= 70 ? "hi" : pct >= 50 ? "mid" : "lo"}`}>{pct}%</div>
-                <div className="res-det">{score.correct} / {score.total} scored questions correct</div>
-                <div className="res-btns">
-                  <button className="btn btn-accent" onClick={() => { setScreen("review"); setCurrentQ(0); }}>Review Answers</button>
-                  <button className="btn btn-ghost" onClick={startExam}>New Attempt</button>
-                </div>
-              </div>
-              <div className="ch-grid">
-                {[1,2,3,4].map(ch => {
-                  const chQs = questions.filter(q => q.chapter === ch && q.type !== "free");
-                  const chOk = chQs.filter(q => isCorrect(q.id)).length;
-                  const chPct = chQs.length > 0 ? (chOk/chQs.length)*100 : 0;
-                  return (
-                    <div key={ch} className="ch-box">
-                      <div className="ch-lbl">Chapter {ch}</div>
-                      <div className="ch-score">{chOk}/{chQs.length}</div>
-                      <div className="ch-bar"><div className="ch-fill" style={{width:`${chPct}%`, background: chPct >= 70 ? "var(--green)" : chPct >= 50 ? "var(--amber)" : "var(--red)"}} /></div>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="shuffle-note">Questions are randomized — retake for a different set!</div>
-            </div>
-          </div>
-        );
-      }
-
-      if (!q) return null;
-
-      const isAnswered = (idx) => {
-        const qq = questions[idx]; if (!qq) return false;
-        const a = answers[qq.id];
+      const isAnswered = (qs, ans, idx) => {
+        const qq = qs[idx]; if (!qq) return false;
+        const a = ans[qq.id];
         if (qq.type === "free" || qq.type === "fill") return a && a.length > 0;
         return a && a.length > 0;
       };
 
       const typeLabel = { single: "Multiple Choice", multi: "Select All", fill: "Fill in the Blank", free: "Free Response" };
 
+      // ── START ──
+      if (screen === "start") {
+        return (
+          <div className="app"><div className="start"><div className="start-card">
+            <div className="tag">SE Core · Software Engineering</div>
+            <h1>Exam 1 Practice</h1>
+            <p className="sub">Chapters 1 – 4 · Randomized each attempt</p>
+            <div className="grid3">
+              <div className="g-box"><div className="g-val">39</div><div className="g-lbl">Questions</div></div>
+              <div className="g-box"><div className="g-val">60m</div><div className="g-lbl">Time Limit</div></div>
+              <div className="g-box"><div className="g-val">4</div><div className="g-lbl">Types</div></div>
+            </div>
+            <div className="info-box">
+              <strong>How it works</strong>
+              <p>8 professor-confirmed questions always included. 29 more drawn randomly from 60+ questions. Includes MC, select-all, fill-in-the-blank, and free response. After the exam, you can practice your weak areas with targeted reinforcement questions.</p>
+            </div>
+            <button className="btn btn-accent" onClick={startExam}>Start Exam</button>
+          </div></div></div>
+        );
+      }
+
+      // ── RESULTS ──
+      if (screen === "results") {
+        return (
+          <div className="app"><div className="results">
+            <div className="res-hero">
+              <div className="tag" style={{marginBottom:16}}>Final Score</div>
+              <div className={`res-pct ${pct >= 70 ? "hi" : pct >= 50 ? "mid" : "lo"}`}>{pct}%</div>
+              <div className="res-det">{score.correct} / {score.total} scored questions correct</div>
+              <div className="res-btns">
+                <button className="btn btn-accent" onClick={() => { setScreen("review"); setCurrentQ(0); }}>Review Answers</button>
+                {wrongQuestions.length > 0 && (
+                  <button className="btn btn-orange" onClick={startReinforce}>
+                    🔄 Practice Weak Areas ({wrongQuestions.length} wrong)
+                  </button>
+                )}
+                <button className="btn btn-ghost" onClick={startExam}>New Attempt</button>
+              </div>
+            </div>
+
+            <div className="ch-grid">
+              {[1,2,3,4].map(ch => {
+                const chQs = questions.filter(q => q.chapter === ch && q.type !== "free");
+                const chOk = chQs.filter(q => isCorrect(q.id)).length;
+                const chP = chQs.length > 0 ? (chOk/chQs.length)*100 : 0;
+                return (<div key={ch} className="ch-box"><div className="ch-lbl">Chapter {ch}</div><div className="ch-score">{chOk}/{chQs.length}</div><div className="ch-bar"><div className="ch-fill" style={{width:`${chP}%`, background: chP >= 70 ? "var(--green)" : chP >= 50 ? "var(--amber)" : "var(--red)"}} /></div></div>);
+              })}
+            </div>
+
+            {wrongQuestions.length > 0 && (
+              <div className="weak-panel">
+                <div className="weak-title">🎯 Your Weak Areas</div>
+                <div className="weak-sub">
+                  You missed questions on these topics. Hit "Practice Weak Areas" to get a targeted mini-quiz with the questions you got wrong plus related questions to reinforce your understanding.
+                </div>
+                <div className="weak-topics">
+                  {[...new Set(wrongQuestions.flatMap(q => q.topics || []))].slice(0, 12).map(t => (
+                    <span key={t} className="weak-chip">{t.replace(/-/g, " ")}</span>
+                  ))}
+                </div>
+                <div className="weak-stat">
+                  <div className="weak-stat-item"><div className="weak-stat-val">{wrongQuestions.length}</div><div className="weak-stat-lbl">Questions Missed</div></div>
+                  <div className="weak-stat-item"><div className="weak-stat-val">{[...new Set(wrongQuestions.flatMap(q => q.topics || []))].length}</div><div className="weak-stat-lbl">Weak Topics</div></div>
+                  <div className="weak-stat-item"><div className="weak-stat-val">{[...new Set(wrongQuestions.map(q => q.chapter))].length}</div><div className="weak-stat-lbl">Chapters</div></div>
+                </div>
+                <button className="btn btn-orange" onClick={startReinforce} style={{width:"100%"}}>🔄 Practice Weak Areas</button>
+              </div>
+            )}
+
+            <div className="shuffle-note">Questions are randomized — retake for a different set!</div>
+          </div></div>
+        );
+      }
+
+      // ── REINFORCE RESULTS ──
+      if (screen === "reinforce-results") {
+        const rPct = reinforceScore.total > 0 ? Math.round((reinforceScore.correct / reinforceScore.total) * 100) : 0;
+        const stillWrong = reinforceQs.filter(q => q.type !== "free" && !isReinforceCorrect(q.id));
+        return (
+          <div className="app"><div className="results">
+            <div className="reinforce-hero">
+              <div className="tag" style={{marginBottom:16}}>Reinforcement Results</div>
+              <div className={`res-pct ${rPct >= 70 ? "hi" : rPct >= 50 ? "mid" : "lo"}`}>{rPct}%</div>
+              <div className="res-det">{reinforceScore.correct} / {reinforceScore.total} correct on weak-area questions</div>
+              <div style={{marginTop:12, color:"var(--text2)", fontSize:14}}>
+                {rPct >= 90 ? "🎉 Excellent! You've solidified these topics." :
+                 rPct >= 70 ? "💪 Good improvement! A few topics still need attention." :
+                 "📚 Keep studying these areas — try again or review the explanations."}
+              </div>
+              <div className="res-btns">
+                <button className="btn btn-accent" onClick={() => { setScreen("reinforce-review"); setReinforceIdx(0); }}>Review Answers</button>
+                {stillWrong.length > 0 && (
+                  <button className="btn btn-orange" onClick={() => {
+                    const { questions: rQs, topics } = buildReinforcement(stillWrong, window.QUESTION_BANK, window.REINFORCEMENT_BANK || []);
+                    setReinforceQs(rQs); setReinforceTopics(topics); setReinforceAnswers({}); setReinforceShowExp({}); setReinforceIdx(0); setReinforceSubmitted(false); setScreen("reinforce");
+                  }}>🔄 Practice Again ({stillWrong.length} still wrong)</button>
+                )}
+                <button className="btn btn-ghost" onClick={startExam}>New Full Exam</button>
+              </div>
+            </div>
+          </div></div>
+        );
+      }
+
+      // ── REINFORCE QUIZ / REINFORCE REVIEW ──
+      if (screen === "reinforce" || screen === "reinforce-review") {
+        if (!rq) return null;
+        const isRR = screen === "reinforce-review";
+        const showRes = isRR || reinforceSubmitted;
+        return (
+          <div className="app">
+            <div className="hdr">
+              <div className="hdr-l">
+                <span className="cnt">Q{reinforceIdx+1}/{reinforceQs.length}</span>
+                <span className="pill pill-reinforce">🔄 REINFORCE</span>
+                <span className="pill pill-ch">Ch. {rq.chapter}</span>
+                <span className="pill pill-type">{typeLabel[rq.type]}</span>
+              </div>
+              <span style={{color:"var(--orange)", fontSize:13, fontWeight:600}}>
+                {isRR ? "Review Mode" : "Weak Area Practice"}
+              </span>
+            </div>
+
+            <QuestionView
+              q={rq} answers={reinforceAnswers} onSelect={handleReinforceSelect}
+              showResults={showRes} isCorrect={showRes ? isReinforceCorrect(rq.id) : null}
+              showExp={reinforceShowExp} onToggleExp={(id) => setReinforceShowExp(p => ({...p, [id]: !p[id]}))}
+            />
+
+            <div className="ftr">
+              <button className="ftr-btn ftr-prev" onClick={() => setReinforceIdx(c => Math.max(0, c-1))} disabled={reinforceIdx === 0}>← Prev</button>
+              <div className="dots">
+                {reinforceQs.map((_, i) => (
+                  <button key={i} className={`dot ${isAnswered(reinforceQs, reinforceAnswers, i) ? "dot-reinforce" : "dot-e"} ${i === reinforceIdx ? "dot-cur" : ""}`} onClick={() => setReinforceIdx(i)} />
+                ))}
+              </div>
+              {reinforceIdx === reinforceQs.length - 1 && !isRR && !reinforceSubmitted ? (
+                <button className="btn btn-green" style={{padding:"10px 26px",fontSize:14}} onClick={handleReinforceSubmit}>Submit</button>
+              ) : (
+                <button className="ftr-btn ftr-next" onClick={() => setReinforceIdx(c => Math.min(reinforceQs.length-1, c+1))} disabled={reinforceIdx === reinforceQs.length-1}>Next →</button>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      // ── EXAM / REVIEW ──
+      if (!q) return null;
+      const showRes = isReview || submitted;
+
       return (
         <div className="app">
-          {/* Header */}
           <div className="hdr">
             <div className="hdr-l">
               <span className="cnt">Q{currentQ+1}/{questions.length}</span>
@@ -521,101 +592,21 @@
             )}
           </div>
 
-          {/* Question body */}
-          <div className="q-wrap" key={`${q.id}-${currentQ}`}>
-            <h2 className="q-text">{q.question}</h2>
-            {q.type === "multi" && <div className="q-hint">Select all that apply</div>}
-            {q.type === "fill" && !isReview && !submitted && <div className="q-hint">Type your answer below</div>}
+          <QuestionView
+            q={q} answers={answers} onSelect={handleSelect}
+            showResults={showRes} isCorrect={showRes ? isCorrect(q.id) : null}
+            showExp={showExp} onToggleExp={(id) => setShowExp(p => ({...p, [id]: !p[id]}))}
+          />
 
-            {/* ── Fill in the blank ── */}
-            {q.type === "fill" && (
-              <div className="fill-wrap">
-                <input
-                  type="text"
-                  className={`fill-input ${(isReview || submitted) ? (isCorrect(q.id) ? "fill-ok" : "fill-bad") : ""}`}
-                  value={answers[q.id] || ""}
-                  onChange={e => handleSelect(q.id, e.target.value)}
-                  placeholder="Type your answer..."
-                  disabled={isReview || submitted}
-                  autoComplete="off"
-                />
-                {(isReview || submitted) && (
-                  <div className={`fill-answer ${isCorrect(q.id) ? "fill-ok-box" : "fill-bad-box"}`}>
-                    {isCorrect(q.id) ? "✓ Correct!" : `✗ Correct answer: ${q.answer.join(", ")}`}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ── Free response ── */}
-            {q.type === "free" && (
-              <div>
-                <textarea
-                  className="free-ta"
-                  value={answers[q.id] || ""}
-                  onChange={e => handleSelect(q.id, e.target.value)}
-                  placeholder="Type your answer here..."
-                  disabled={isReview}
-                />
-                {isReview && (
-                  <div className="exp-box" style={{marginTop:16}}>
-                    <div className="exp-lbl">Sample Answer</div>
-                    {q.explanation}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ── MC / Multi ── */}
-            {(q.type === "single" || q.type === "multi") && (
-              <div className="opts">
-                {q.options.map((opt, idx) => {
-                  const selected = (answers[q.id] || []).includes(idx);
-                  const isRight = q.answer.includes(idx);
-                  let cls = "opt";
-                  if ((isReview || submitted) && selected && isRight) cls += " ok";
-                  else if ((isReview || submitted) && selected && !isRight) cls += " bad";
-                  else if ((isReview || submitted) && !selected && isRight) cls += " miss";
-                  else if (selected) cls += " sel";
-
-                  return (
-                    <button key={idx} className={cls} onClick={() => handleSelect(q.id, idx)} disabled={isReview || submitted}>
-                      <div className={`ind ${q.type === "multi" ? "ind-c" : "ind-r"} ${selected ? "on" : ""}`}>
-                        {selected && <span className="chk">✓</span>}
-                      </div>
-                      {opt}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Explanation */}
-            {(isReview || submitted) && q.type !== "free" && (
-              <div>
-                <button className="exp-toggle" onClick={() => setShowExp(p => ({...p, [q.id]: !p[q.id]}))}>
-                  {showExp[q.id] ? "▾ Hide" : "▸ Show"} Explanation
-                </button>
-                {showExp[q.id] && (
-                  <div className="exp-box">
-                    <div className="exp-lbl">Explanation</div>
-                    {q.explanation}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Footer */}
           <div className="ftr">
             <button className="ftr-btn ftr-prev" onClick={() => setCurrentQ(c => Math.max(0, c-1))} disabled={currentQ === 0}>← Prev</button>
             <div className="dots">
               {questions.map((_, i) => (
-                <button key={i} className={`dot ${isAnswered(i) ? "dot-a" : "dot-e"} ${i === currentQ ? "dot-cur" : ""}`} onClick={() => setCurrentQ(i)} />
+                <button key={i} className={`dot ${isAnswered(questions, answers, i) ? "dot-a" : "dot-e"} ${i === currentQ ? "dot-cur" : ""}`} onClick={() => setCurrentQ(i)} />
               ))}
             </div>
             {currentQ === questions.length - 1 && !isReview && !submitted ? (
-              <button className="btn btn-green" style={{padding:"10px 26px", fontSize:14}} onClick={handleSubmit}>Submit</button>
+              <button className="btn btn-green" style={{padding:"10px 26px",fontSize:14}} onClick={handleSubmit}>Submit</button>
             ) : (
               <button className="ftr-btn ftr-next" onClick={() => setCurrentQ(c => Math.min(questions.length-1, c+1))} disabled={currentQ === questions.length-1}>Next →</button>
             )}
