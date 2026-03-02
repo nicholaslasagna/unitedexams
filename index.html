@@ -3,1322 +3,585 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CS 3365 – Software Engineering Exam 1 Practice</title>
-  <meta name="description" content="Practice quiz for CS 3365 Software Engineering Exam 1 covering Chapters 1-4" />
+  <title>CS 3365 – Exam 1 Practice</title>
+  <meta name="description" content="Interactive practice quiz for CS 3365 Software Engineering Exam 1 — Chapters 1-4 with randomized questions" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📝</text></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+  <script src="questions.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg-deep: #07071a;
-      --bg-mid: #0e1030;
-      --bg-card: rgba(255,255,255,0.04);
-      --bg-card-hover: rgba(255,255,255,0.07);
-      --accent: #6c7bff;
-      --accent-glow: rgba(108,123,255,0.25);
-      --accent-soft: rgba(108,123,255,0.12);
-      --green: #4ade80;
-      --green-soft: rgba(74,222,128,0.12);
-      --green-border: rgba(74,222,128,0.4);
-      --red: #f87171;
-      --red-soft: rgba(248,113,113,0.12);
-      --red-border: rgba(248,113,113,0.4);
-      --yellow: #fbbf24;
-      --text: #e8eaff;
-      --text-dim: rgba(255,255,255,0.5);
-      --text-dimmer: rgba(255,255,255,0.3);
-      --border: rgba(255,255,255,0.08);
-      --border-light: rgba(255,255,255,0.12);
-      --font: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      --mono: 'JetBrains Mono', monospace;
+      --bg: #050510;
+      --bg2: #0c0c24;
+      --surface: rgba(255,255,255,0.035);
+      --surface-hover: rgba(255,255,255,0.065);
+      --surface-active: rgba(255,255,255,0.09);
+      --accent: #818cf8;
+      --accent-dim: rgba(129,140,248,0.15);
+      --accent-glow: rgba(129,140,248,0.3);
+      --green: #34d399;
+      --green-dim: rgba(52,211,153,0.12);
+      --green-b: rgba(52,211,153,0.45);
+      --red: #fb7185;
+      --red-dim: rgba(251,113,133,0.12);
+      --red-b: rgba(251,113,133,0.45);
+      --amber: #fbbf24;
+      --amber-dim: rgba(251,191,36,0.12);
+      --text: #e2e4f0;
+      --text2: rgba(255,255,255,0.55);
+      --text3: rgba(255,255,255,0.3);
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --font: 'Outfit', -apple-system, sans-serif;
+      --mono: 'Fira Code', monospace;
+      --radius: 14px;
+      --radius-sm: 10px;
     }
 
     html { scroll-behavior: smooth; }
 
     body {
       font-family: var(--font);
-      background: var(--bg-deep);
+      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
 
     #root { min-height: 100vh; }
 
-    /* Background gradient animation */
-    .bg-gradient {
-      position: fixed;
-      inset: 0;
+    /* Ambient background */
+    .ambient {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
       background:
-        radial-gradient(ellipse 80% 60% at 20% 20%, rgba(108,123,255,0.08) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(139,92,246,0.06) 0%, transparent 60%),
-        linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-mid) 50%, var(--bg-deep) 100%);
-      z-index: 0;
-      pointer-events: none;
+        radial-gradient(ellipse 70% 50% at 15% 10%, rgba(129,140,248,0.07), transparent 65%),
+        radial-gradient(ellipse 50% 40% at 85% 90%, rgba(167,139,250,0.05), transparent 55%),
+        radial-gradient(ellipse 80% 80% at 50% 50%, rgba(6,6,20,1), transparent);
     }
 
-    .app-container {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+    .app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* ── Start Screen ── */
-    .start-screen {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
+    /* ───── Start ───── */
+    .start { flex:1; display:flex; align-items:center; justify-content:center; padding:24px; }
 
     .start-card {
-      max-width: 580px;
-      width: 100%;
-      background: var(--bg-card);
+      max-width: 560px; width: 100%;
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 52px 44px;
+      border-radius: 24px;
+      padding: 56px 48px;
       text-align: center;
-      backdrop-filter: blur(24px);
-      animation: fadeUp 0.6s ease-out;
+      backdrop-filter: blur(20px);
+      animation: rise 0.5s ease-out;
     }
+    @keyframes rise { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    .tag { font-size:11px; letter-spacing:5px; color:var(--accent); text-transform:uppercase; font-weight:700; margin-bottom:14px; }
+    .start-card h1 { font-size:36px; font-weight:900; color:#fff; line-height:1.15; }
+    .start-card .sub { color:var(--text2); font-size:15px; margin-top:6px; margin-bottom:36px; }
+
+    .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:28px; }
+    .g-box { background:rgba(255,255,255,0.025); border:1px solid var(--border); border-radius:var(--radius-sm); padding:18px 10px; }
+    .g-val { font-family:var(--mono); color:var(--accent); font-size:26px; font-weight:700; }
+    .g-lbl { color:var(--text3); font-size:10px; margin-top:5px; text-transform:uppercase; letter-spacing:1.5px; }
+
+    .info-box {
+      background: var(--accent-dim); border:1px solid rgba(129,140,248,0.18);
+      border-radius: var(--radius-sm); padding:16px 20px; margin-bottom:32px; text-align:left;
     }
+    .info-box strong { color:var(--accent); font-size:13px; display:block; margin-bottom:4px; }
+    .info-box p { color:var(--text2); font-size:13px; line-height:1.65; }
 
-    .start-label {
-      font-size: 12px;
-      letter-spacing: 4px;
-      color: var(--accent);
-      text-transform: uppercase;
-      font-weight: 700;
-      margin-bottom: 10px;
+    .btn {
+      font-family:var(--font); border:none; border-radius:var(--radius-sm);
+      padding:14px 48px; font-size:16px; font-weight:700; cursor:pointer;
+      transition: transform 0.12s, box-shadow 0.12s;
     }
+    .btn:hover { transform:translateY(-1px); }
+    .btn:active { transform:translateY(0); }
+    .btn-accent { background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; }
+    .btn-accent:hover { box-shadow:0 8px 28px var(--accent-glow); }
+    .btn-green { background:linear-gradient(135deg,#34d399,#10b981); color:#000; font-weight:800; }
+    .btn-ghost { background:var(--surface); color:var(--text); }
 
-    .start-title {
-      font-size: 34px;
-      font-weight: 800;
-      color: #fff;
-      margin-bottom: 6px;
-      line-height: 1.2;
+    /* ───── Header ───── */
+    .hdr {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 20px; border-bottom:1px solid var(--border);
+      background:rgba(5,5,16,0.88); backdrop-filter:blur(14px);
+      position:sticky; top:0; z-index:20;
     }
+    .hdr-l { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .hdr .cnt { font-family:var(--mono); color:var(--text2); font-size:13px; }
+    .pill { font-size:10px; padding:3px 10px; border-radius:20px; font-weight:700; white-space:nowrap; }
+    .pill-prof { background:var(--amber-dim); color:var(--amber); }
+    .pill-ch { background:var(--accent-dim); color:var(--accent); }
+    .pill-type { background:rgba(52,211,153,0.1); color:var(--green); }
+    .timer { font-family:var(--mono); font-weight:700; font-size:20px; font-variant-numeric:tabular-nums; }
+    .timer-ok { color:var(--accent); }
+    .timer-warn { color:var(--red); animation: blink 1s infinite; }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
 
-    .start-subtitle {
-      color: var(--text-dim);
-      font-size: 15px;
-      margin-bottom: 36px;
+    /* ───── Question ───── */
+    .q-wrap { flex:1; padding:36px 20px; max-width:740px; margin:0 auto; width:100%; }
+    .q-text { font-size:20px; font-weight:700; line-height:1.55; color:#fff; margin-bottom:4px; }
+    .q-hint { color:var(--accent); font-size:13px; font-weight:500; margin-bottom:18px; }
+
+    .opts { display:flex; flex-direction:column; gap:10px; margin-top:14px; }
+    .opt {
+      display:flex; align-items:flex-start; gap:14px; width:100%;
+      background:var(--surface); border:1px solid var(--border2);
+      border-radius:var(--radius-sm); padding:15px 18px;
+      color:var(--text); font-size:15px; line-height:1.5; text-align:left;
+      cursor:pointer; transition:all 0.12s; font-family:var(--font);
     }
+    .opt:not(:disabled):hover { background:var(--surface-hover); border-color:rgba(255,255,255,0.18); }
+    .opt:disabled { cursor:default; }
+    .opt.sel { background:var(--accent-dim); border-color:rgba(129,140,248,0.5); }
+    .opt.ok { background:var(--green-dim); border-color:var(--green-b); }
+    .opt.bad { background:var(--red-dim); border-color:var(--red-b); }
+    .opt.miss { background:rgba(52,211,153,0.04); border-color:rgba(52,211,153,0.2); }
 
-    .stats-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 14px;
-      margin-bottom: 32px;
+    .ind {
+      width:22px; height:22px; flex-shrink:0; margin-top:1px;
+      border:2px solid var(--text3); display:flex; align-items:center;
+      justify-content:center; transition:all 0.12s;
     }
+    .ind-r { border-radius:50%; }
+    .ind-c { border-radius:5px; }
+    .ind.on { background:var(--accent); border-color:var(--accent); }
+    .chk { color:#fff; font-size:11px; font-weight:800; }
 
-    .stat-box {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 18px 12px;
+    /* Fill-in-the-blank */
+    .fill-wrap { margin-top:18px; }
+    .fill-input {
+      width:100%; padding:16px 18px; font-size:16px; font-family:var(--font);
+      background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-sm);
+      color:var(--text); outline:none; transition:border-color 0.2s;
     }
-
-    .stat-value {
-      font-family: var(--mono);
-      color: var(--accent);
-      font-size: 24px;
-      font-weight: 700;
-    }
-
-    .stat-label {
-      color: var(--text-dimmer);
-      font-size: 11px;
-      margin-top: 4px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .note-box {
-      background: var(--accent-soft);
-      border: 1px solid rgba(108,123,255,0.2);
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 36px;
-      text-align: left;
-    }
-
-    .note-title {
-      color: var(--accent);
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-
-    .note-text {
-      color: var(--text-dim);
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #5b6bff 0%, #8b5cf6 100%);
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      padding: 15px 52px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.15s;
-      font-family: var(--font);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 32px var(--accent-glow);
-    }
-
-    .btn-primary:active { transform: translateY(0); }
-
-    /* ── Header ── */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 24px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(7,7,26,0.85);
-      backdrop-filter: blur(16px);
-      position: sticky;
-      top: 0;
-      z-index: 20;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .q-counter {
-      font-family: var(--mono);
-      color: var(--text-dim);
-      font-size: 13px;
-      font-weight: 500;
-    }
-
-    .badge {
-      font-size: 11px;
-      padding: 3px 12px;
-      border-radius: 20px;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    .badge-prof {
-      background: rgba(251,191,36,0.12);
-      color: var(--yellow);
-    }
-
-    .badge-chapter {
-      background: var(--accent-soft);
-      color: var(--accent);
-    }
-
-    .timer {
-      font-family: var(--mono);
-      font-weight: 700;
-      font-size: 20px;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .timer-ok { color: var(--accent); }
-    .timer-warn { color: var(--red); animation: pulse 1s infinite; }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
-    }
-
-    /* ── Question Area ── */
-    .question-area {
-      flex: 1;
-      padding: 36px 24px;
-      max-width: 740px;
-      margin: 0 auto;
-      width: 100%;
-      animation: fadeIn 0.3s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    .question-text {
-      font-size: 20px;
-      font-weight: 600;
-      line-height: 1.55;
-      margin-bottom: 6px;
-      color: #fff;
-    }
-
-    .question-hint {
-      color: var(--accent);
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 20px;
-    }
-
-    .options-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 16px;
-    }
-
-    .option-btn {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-light);
-      border-radius: 12px;
-      padding: 16px 20px;
-      color: var(--text);
-      font-size: 15px;
-      line-height: 1.5;
-      text-align: left;
-      cursor: pointer;
-      transition: all 0.15s;
-      font-family: var(--font);
-      width: 100%;
-    }
-
-    .option-btn:not(:disabled):hover {
-      background: var(--bg-card-hover);
-      border-color: rgba(255,255,255,0.18);
-    }
-
-    .option-btn:disabled { cursor: default; }
-
-    .option-btn.selected {
-      background: var(--accent-soft);
-      border-color: rgba(108,123,255,0.5);
-    }
-
-    .option-btn.correct {
-      background: var(--green-soft);
-      border-color: var(--green-border);
-    }
-
-    .option-btn.incorrect {
-      background: var(--red-soft);
-      border-color: var(--red-border);
-    }
-
-    .option-btn.missed {
-      background: rgba(74,222,128,0.05);
-      border-color: rgba(74,222,128,0.2);
-    }
-
-    .radio {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      border: 2px solid var(--text-dimmer);
-      flex-shrink: 0;
-      margin-top: 1px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
-    }
-
-    .checkbox {
-      width: 22px;
-      height: 22px;
-      border-radius: 5px;
-      border: 2px solid var(--text-dimmer);
-      flex-shrink: 0;
-      margin-top: 1px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
-    }
-
-    .radio.checked, .checkbox.checked {
-      background: var(--accent);
-      border-color: var(--accent);
-    }
-
-    .check-mark {
-      color: #fff;
-      font-size: 12px;
-      font-weight: 800;
-    }
+    .fill-input:focus { border-color:rgba(129,140,248,0.5); }
+    .fill-input:disabled { opacity:0.6; }
+    .fill-input.fill-ok { border-color:var(--green-b); background:var(--green-dim); }
+    .fill-input.fill-bad { border-color:var(--red-b); background:var(--red-dim); }
+    .fill-hint { margin-top:8px; font-size:13px; color:var(--text3); }
+    .fill-answer { margin-top:10px; font-size:14px; padding:10px 14px; border-radius:8px; }
+    .fill-answer.fill-ok-box { background:var(--green-dim); color:var(--green); }
+    .fill-answer.fill-bad-box { background:var(--red-dim); color:var(--red); }
 
     /* Free response */
-    .free-textarea {
-      width: 100%;
-      min-height: 200px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border-light);
-      border-radius: 12px;
-      padding: 18px;
-      color: var(--text);
-      font-size: 15px;
-      line-height: 1.7;
-      font-family: var(--font);
-      resize: vertical;
-      outline: none;
-      transition: border-color 0.2s;
-      margin-top: 16px;
+    .free-ta {
+      width:100%; min-height:200px; padding:18px; font-size:15px; line-height:1.7;
+      font-family:var(--font); background:var(--surface); border:1px solid var(--border2);
+      border-radius:var(--radius-sm); color:var(--text); resize:vertical; outline:none;
+      margin-top:16px; transition:border-color 0.2s;
     }
-
-    .free-textarea:focus {
-      border-color: rgba(108,123,255,0.5);
-    }
-
-    .free-textarea:disabled {
-      opacity: 0.6;
-    }
+    .free-ta:focus { border-color:rgba(129,140,248,0.5); }
+    .free-ta:disabled { opacity:0.6; }
 
     /* Explanation */
-    .explanation-toggle {
-      background: none;
-      border: none;
-      color: var(--accent);
-      font-size: 14px;
-      cursor: pointer;
-      font-family: var(--font);
-      font-weight: 600;
-      padding: 0;
-      margin-top: 20px;
+    .exp-toggle { background:none; border:none; color:var(--accent); font-size:14px; cursor:pointer; font-family:var(--font); font-weight:600; padding:0; margin-top:20px; }
+    .exp-box {
+      margin-top:12px; background:var(--accent-dim); border:1px solid rgba(129,140,248,0.18);
+      border-radius:var(--radius-sm); padding:18px 22px; color:rgba(255,255,255,0.75);
+      font-size:14px; line-height:1.7; animation:rise 0.2s ease;
     }
+    .exp-box .exp-lbl { color:var(--accent); font-weight:700; font-size:12px; margin-bottom:8px; text-transform:uppercase; letter-spacing:1.5px; }
 
-    .explanation-box {
-      margin-top: 12px;
-      background: var(--accent-soft);
-      border: 1px solid rgba(108,123,255,0.2);
-      border-radius: 12px;
-      padding: 18px 22px;
-      color: rgba(255,255,255,0.75);
-      font-size: 14px;
-      line-height: 1.7;
-      animation: fadeIn 0.25s ease;
+    /* ───── Footer ───── */
+    .ftr {
+      padding:12px 20px; border-top:1px solid var(--border);
+      background:rgba(5,5,16,0.88); backdrop-filter:blur(14px);
+      display:flex; align-items:center; justify-content:space-between;
+      position:sticky; bottom:0; z-index:20;
     }
-
-    .explanation-label {
-      color: var(--accent);
-      font-weight: 700;
-      font-size: 13px;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+    .ftr-btn {
+      border:none; border-radius:8px; padding:10px 26px; font-size:14px;
+      font-weight:600; cursor:pointer; font-family:var(--font); transition:all 0.12s;
     }
+    .ftr-prev { background:rgba(255,255,255,0.06); color:var(--text); }
+    .ftr-prev:disabled { color:var(--text3); cursor:default; }
+    .ftr-next { background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; }
+    .ftr-next:disabled { background:rgba(255,255,255,0.06); color:var(--text3); cursor:default; }
 
-    /* ── Footer Nav ── */
-    .footer-nav {
-      padding: 14px 24px;
-      border-top: 1px solid var(--border);
-      background: rgba(7,7,26,0.85);
-      backdrop-filter: blur(16px);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      bottom: 0;
-      z-index: 20;
-    }
-
-    .btn-nav {
-      border: none;
-      border-radius: 10px;
-      padding: 11px 28px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-      font-family: var(--font);
-    }
-
-    .btn-prev {
-      background: rgba(255,255,255,0.07);
-      color: var(--text);
-    }
-
-    .btn-prev:disabled {
-      color: var(--text-dimmer);
-      cursor: default;
-    }
-
-    .btn-next {
-      background: linear-gradient(135deg, #5b6bff, #8b5cf6);
-      color: #fff;
-    }
-
-    .btn-next:disabled {
-      background: rgba(255,255,255,0.07);
-      color: var(--text-dimmer);
-      cursor: default;
-    }
-
-    .btn-submit {
-      background: linear-gradient(135deg, #4ade80, #22c55e);
-      color: #000;
-      border: none;
-      border-radius: 10px;
-      padding: 11px 28px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: var(--font);
-      transition: transform 0.15s;
-    }
-
-    .btn-submit:hover { transform: translateY(-1px); }
-
-    .dots-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      justify-content: center;
-      max-width: 420px;
-    }
-
+    .dots { display:flex; flex-wrap:wrap; gap:4px; justify-content:center; max-width:440px; }
     .dot {
-      width: 13px;
-      height: 13px;
-      border-radius: 3px;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      transition: all 0.15s;
+      width:13px; height:13px; border-radius:3px; border:none; padding:0;
+      cursor:pointer; transition:all 0.1s;
+    }
+    .dot-e { background:rgba(255,255,255,0.1); }
+    .dot-a { background:var(--accent); }
+    .dot-cur { outline:2px solid var(--accent); outline-offset:2px; }
+
+    /* ───── Results ───── */
+    .results { padding:40px 20px; max-width:740px; margin:0 auto; width:100%; animation:rise 0.5s ease; }
+    .res-hero {
+      text-align:center; background:var(--surface); border:1px solid var(--border);
+      border-radius:24px; padding:52px 36px; margin-bottom:24px;
+    }
+    .res-pct { font-family:var(--mono); font-size:80px; font-weight:900; line-height:1; }
+    .res-pct.hi { color:var(--green); }
+    .res-pct.mid { color:var(--amber); }
+    .res-pct.lo { color:var(--red); }
+    .res-det { color:var(--text2); font-size:15px; margin-top:10px; }
+    .res-btns { display:flex; gap:12px; justify-content:center; margin-top:28px; flex-wrap:wrap; }
+
+    .ch-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; }
+    .ch-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+    .ch-lbl { color:var(--text3); font-size:11px; text-transform:uppercase; letter-spacing:1.5px; }
+    .ch-score { font-family:var(--mono); color:#fff; font-size:24px; font-weight:700; margin-top:6px; }
+    .ch-bar { height:4px; background:rgba(255,255,255,0.06); border-radius:2px; margin-top:10px; overflow:hidden; }
+    .ch-fill { height:100%; border-radius:2px; transition:width 0.8s ease; }
+
+    .shuffle-note {
+      text-align:center; color:var(--text3); font-size:13px; margin-top:16px; padding-bottom:32px;
     }
 
-    .dot-empty { background: rgba(255,255,255,0.12); }
-    .dot-answered { background: var(--accent); }
-    .dot-current { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-    /* ── Results ── */
-    .results-screen {
-      padding: 40px 24px;
-      max-width: 740px;
-      margin: 0 auto;
-      width: 100%;
-      animation: fadeUp 0.5s ease-out;
-    }
-
-    .results-hero {
-      text-align: center;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 48px 36px;
-      margin-bottom: 28px;
-    }
-
-    .results-label {
-      font-size: 12px;
-      letter-spacing: 4px;
-      color: var(--accent);
-      text-transform: uppercase;
-      font-weight: 700;
-      margin-bottom: 16px;
-    }
-
-    .results-pct {
-      font-family: var(--mono);
-      font-size: 72px;
-      font-weight: 800;
-      line-height: 1;
-    }
-
-    .results-pct.great { color: var(--green); }
-    .results-pct.ok { color: var(--yellow); }
-    .results-pct.low { color: var(--red); }
-
-    .results-detail {
-      color: var(--text-dim);
-      font-size: 15px;
-      margin-top: 10px;
-    }
-
-    .chapter-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-bottom: 28px;
-    }
-
-    .chapter-box {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px 22px;
-    }
-
-    .chapter-label {
-      color: var(--text-dimmer);
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .chapter-score {
-      font-family: var(--mono);
-      color: #fff;
-      font-size: 22px;
-      font-weight: 700;
-      margin-top: 6px;
-    }
-
-    .chapter-bar {
-      height: 4px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 2px;
-      margin-top: 10px;
-      overflow: hidden;
-    }
-
-    .chapter-bar-fill {
-      height: 100%;
-      border-radius: 2px;
-      transition: width 0.8s ease;
-    }
-
-    /* ── Responsive ── */
-    @media (max-width: 600px) {
-      .start-card { padding: 36px 24px; }
-      .start-title { font-size: 26px; }
-      .stats-row { grid-template-columns: 1fr; gap: 10px; }
-      .question-text { font-size: 18px; }
-      .header { padding: 12px 16px; }
-      .question-area { padding: 24px 16px; }
-      .footer-nav { padding: 12px 16px; }
-      .dots-container { max-width: 260px; }
-      .chapter-grid { grid-template-columns: 1fr; }
-      .results-pct { font-size: 56px; }
+    /* responsive */
+    @media(max-width:600px) {
+      .start-card { padding:36px 22px; }
+      .start-card h1 { font-size:28px; }
+      .grid3 { grid-template-columns:1fr; }
+      .q-text { font-size:17px; }
+      .hdr,.ftr { padding:10px 14px; }
+      .q-wrap { padding:24px 14px; }
+      .dots { max-width:260px; }
+      .ch-grid { grid-template-columns:1fr; }
+      .res-pct { font-size:60px; }
+      .res-btns { flex-direction:column; align-items:center; }
     }
   </style>
 </head>
 <body>
-  <div class="bg-gradient"></div>
+  <div class="ambient"></div>
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useRef, useCallback } = React;
+    const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
-    // ═══════════════════════════════════════════
-    //  QUESTIONS DATABASE
-    // ═══════════════════════════════════════════
-    const QUESTIONS = [
-      {
-        id: 1, chapter: 1, type: "single", fromProfessor: true,
-        question: 'In a "Plan-driven" process, how is progress typically measured?',
-        options: [
-          "By the number of user stories completed each day.",
-          "Against a pre-determined plan of activities and stages.",
-          "Based on the customer's satisfaction at the end of each sprint.",
-          "Based on the level of pair programming used.",
-        ],
-        answer: [1],
-        explanation: "In plan-driven processes (like Waterfall), progress is measured against a pre-determined plan with defined activities and stages, unlike agile where progress is measured by working software increments.",
-      },
-      {
-        id: 2, chapter: 3, type: "single", fromProfessor: true,
-        question: 'In the Scrum agile method, what is a "Sprint"?',
-        options: [
-          "A race between developers to finish their code.",
-          "A fixed time period, usually 2-4 weeks, during which a system increment is developed.",
-          "A meeting where the Scrum Master reports to the CEO.",
-          "The process of moving requirements from the product backlog to the archive.",
-          "A specialized tool used for automated testing.",
-          "The final release of the software to the customer.",
-          "A method for scaling agile to large organizations.",
-        ],
-        answer: [1],
-        explanation: "A Sprint is a fixed time period (typically 2-4 weeks) during which a potentially shippable system increment is developed. It's the core iteration cycle in Scrum.",
-      },
-      {
-        id: 3, chapter: 1, type: "single", fromProfessor: true,
-        question: "Software engineering ethics dictate that engineers should NOT:",
-        options: [
-          "Respect the confidentiality of employers or clients.",
-          "Misuse their skills to take over or damage others' computers.",
-          "Be honest about their level of competence.",
-          "Support the professional software development of their colleagues.",
-        ],
-        answer: [1],
-        explanation: "B is what engineers should NOT do. The question asks what they should NOT do — misusing skills to damage others' computers is unethical. Options A, C, and D are all things engineers SHOULD do according to the ACM/IEEE Code of Ethics.",
-      },
-      {
-        id: 4, chapter: 3, type: "multi", fromProfessor: true,
-        question: "What are the characteristics of agile development? (Select all that apply)",
-        options: [
-          "Detailed documentation.",
-          "Mostly focused on coding.",
-          "Frequent delivery of new versions.",
-          "Implementation starts after the system design has been fully completed.",
-          "Minimal documentation.",
-          "None of the above.",
-        ],
-        answer: [1, 2, 4],
-        explanation: "Agile development is characterized by: focus on coding over documentation, frequent delivery of new versions for evaluation, and minimal documentation with focus on working code. Detailed documentation and completing design before implementation are plan-driven traits.",
-      },
-      {
-        id: 5, chapter: 2, type: "single", fromProfessor: true,
-        question: "The prototype of the software will be very close to the final software version. Therefore, the prototype should not be discarded.",
-        options: ["True", "False"],
-        answer: [1],
-        explanation: "False. Prototypes are typically throw-away. They are built to explore requirements and validate ideas, not to become the final product. Prototypes often cut corners on structure and quality, so they should be discarded after serving their purpose.",
-      },
-      {
-        id: 6, chapter: 1, type: "single", fromProfessor: true,
-        question: "There are two types of software products: Generic products and customized products. Which one of the following statements is true about a generic product?",
-        options: [
-          "Software that is commissioned for specific customer needs.",
-          "Software that is developed to maintain the hardware in a specific factory.",
-          "Software made for any customer who wants to buy it.",
-          "Banking app made for a specific bank to manage its internal activities (ex: Citi bank).",
-        ],
-        answer: [2],
-        explanation: "Generic products (also called COTS — Commercial Off-The-Shelf) are stand-alone systems produced for a general market and sold to any customer who wants to buy them. Options A, B, and D describe customized (bespoke) products.",
-      },
-      {
-        id: 7, chapter: 2, type: "multi", fromProfessor: true,
-        question: "The Waterfall Model presents the software development process in a number of stages. What are the phases of the waterfall model? (Select all that apply)",
-        options: [
-          "Requirements analysis and definition",
-          "Customer involvement",
-          "System and software design",
-          "Product increments",
-          "Implementation and unit testing",
-          "Integration and system testing",
-          "Version development",
-          "Operation and maintenance",
-        ],
-        answer: [0, 2, 4, 5, 7],
-        explanation: "The five phases of the Waterfall Model are: (1) Requirements analysis and definition, (2) System and software design, (3) Implementation and unit testing, (4) Integration and system testing, (5) Operation and maintenance.",
-      },
-      {
-        id: 8, chapter: 1, type: "single", fromProfessor: true,
-        question: "Which essential software product attribute ensures the system can be adapted to meet the changing needs of customers?",
-        options: ["Dependability", "Efficiency", "Security", "Maintainability", "Portability"],
-        answer: [3],
-        explanation: "Maintainability means software should be written so it can evolve to meet the changing needs of customers. This is one of the four essential product attributes.",
-      },
-      {
-        id: 9, chapter: 1, type: "single",
-        question: "What is the key difference between software engineering and computer science?",
-        options: [
-          "Software engineering focuses on theories and fundamentals, while computer science focuses on practical development.",
-          "Computer science focuses on theories and fundamentals, while software engineering is concerned with the practicalities of developing useful software.",
-          "They are the same discipline with different names.",
-          "Computer science only deals with hardware design.",
-        ],
-        answer: [1],
-        explanation: "Computer science focuses on theory and fundamentals. Software engineering is concerned with the practicalities of developing and delivering useful software to customers.",
-      },
-      {
-        id: 10, chapter: 1, type: "single",
-        question: "Which essential software product attribute means the software should not cause physical or economic damage in the event of system failure?",
-        options: ["Maintainability", "Acceptability", "Dependability and Security", "Efficiency"],
-        answer: [2],
-        explanation: "Dependability and security means software should not cause physical or economic damage in the event of system failure. It includes reliability, security, and safety.",
-      },
-      {
-        id: 11, chapter: 1, type: "single",
-        question: "Which of the following is true about maintenance costs in software engineering?",
-        options: [
-          "Maintenance costs are typically less than development costs.",
-          "Maintenance costs usually exceed development costs for long-lived systems.",
-          "Maintenance is not necessary for well-designed software.",
-          "Maintenance only includes fixing bugs.",
-        ],
-        answer: [1],
-        explanation: "For most long-lived software systems, the majority of costs are in maintaining and evolving the software after deployment, not in original development.",
-      },
-      {
-        id: 12, chapter: 1, type: "single",
-        question: 'What is a "system of systems"?',
-        options: [
-          "A single monolithic application.",
-          "A system built by integrating multiple independently managed systems to create a new system.",
-          "A backup system that mirrors the primary system.",
-          "A system that only runs on one operating system.",
-        ],
-        answer: [1],
-        explanation: "A system of systems is created by integrating independently managed systems to form a new, larger system with emergent properties.",
-      },
-      {
-        id: 13, chapter: 1, type: "single",
-        question: "Which essential product attribute means the software must be understandable, usable, and compatible with existing systems?",
-        options: ["Efficiency", "Maintainability", "Acceptability", "Dependability"],
-        answer: [2],
-        explanation: "Acceptability means the software must be acceptable to its users — understandable, usable, and compatible with other systems they use.",
-      },
-      {
-        id: 14, chapter: 2, type: "single",
-        question: "Which software process model develops the system as a series of versions (increments), with each version adding functionality?",
-        options: ["Waterfall Model", "Incremental Development", "Reuse-oriented Software Engineering", "Formal Methods"],
-        answer: [1],
-        explanation: "Incremental development interleaves specification, development, and validation. The system is developed as a series of increments.",
-      },
-      {
-        id: 15, chapter: 2, type: "single",
-        question: "In the software process, which activity involves checking that the software meets its specification and the customer's actual needs?",
-        options: ["Specification", "Design and Implementation", "Validation", "Evolution"],
-        answer: [2],
-        explanation: "Software validation (V&V) checks that the system conforms to its specification and meets the real needs of the customer.",
-      },
-      {
-        id: 16, chapter: 2, type: "multi",
-        question: "Which of the following are general process activities common to all software processes? (Select all that apply)",
-        options: ["Specification", "Design and implementation", "Pair programming", "Validation", "Evolution", "Daily standups"],
-        answer: [0, 1, 3, 4],
-        explanation: "The four fundamental process activities are: Specification, Design and Implementation, Validation, and Evolution. Pair programming and daily standups are specific agile practices.",
-      },
-      {
-        id: 17, chapter: 2, type: "single",
-        question: "What is the primary advantage of incremental development over the waterfall model?",
-        options: [
-          "It requires more detailed documentation.",
-          "It is easier to accommodate changing customer requirements.",
-          "It requires no testing.",
-          "It eliminates the need for requirements gathering.",
-        ],
-        answer: [1],
-        explanation: "A key advantage of incremental development is that it's easier to accommodate changing requirements because customers can provide feedback on each increment.",
-      },
-      {
-        id: 18, chapter: 2, type: "single",
-        question: "Which testing stage focuses on testing individual components in isolation?",
-        options: ["System testing", "Acceptance testing", "Component (unit) testing", "Integration testing"],
-        answer: [2],
-        explanation: "Component (unit) testing focuses on testing individual program components independently.",
-      },
-      {
-        id: 19, chapter: 2, type: "single",
-        question: "In the Integration and Configuration model, what are COTS systems?",
-        options: [
-          "Custom-designed systems built from scratch.",
-          "Commercial Off-The-Shelf systems that can be adapted and integrated.",
-          "Testing frameworks for component testing.",
-          "Coding standards enforced by the team.",
-        ],
-        answer: [1],
-        explanation: "COTS (Commercial Off-The-Shelf) are pre-existing software systems or components that can be configured and integrated to create a new system.",
-      },
-      {
-        id: 20, chapter: 2, type: "single",
-        question: "What is the main purpose of prototyping in software development?",
-        options: [
-          "To create the final production version of the software.",
-          "To help with requirements elicitation and validation by providing a working model.",
-          "To replace the need for testing.",
-          "To generate detailed documentation.",
-        ],
-        answer: [1],
-        explanation: "Prototyping helps with requirements elicitation and validation by allowing stakeholders to experiment with a working model.",
-      },
-      {
-        id: 21, chapter: 3, type: "single",
-        question: "According to the Agile Manifesto, which of the following is valued MORE?",
-        options: [
-          "Processes and tools over individuals and interactions.",
-          "Comprehensive documentation over working software.",
-          "Customer collaboration over contract negotiation.",
-          "Following a plan over responding to change.",
-        ],
-        answer: [2],
-        explanation: "The Agile Manifesto values: Individuals and interactions over processes and tools, Working software over comprehensive documentation, Customer collaboration over contract negotiation, and Responding to change over following a plan.",
-      },
-      {
-        id: 22, chapter: 3, type: "single",
-        question: "In Extreme Programming (XP), what is the practice of improving the design of existing code without changing its external behavior called?",
-        options: ["Pair programming", "Refactoring", "Test-first development", "Continuous integration"],
-        answer: [1],
-        explanation: "Refactoring is the process of restructuring/improving existing code without changing its external behavior.",
-      },
-      {
-        id: 23, chapter: 3, type: "single",
-        question: "What is 'test-first development' in XP?",
-        options: [
-          "Testing the software only after all code is written.",
-          "Writing tests before writing the code that makes those tests pass.",
-          "Having customers write all the tests.",
-          "Testing only the user interface first.",
-        ],
-        answer: [1],
-        explanation: "Test-first development (TDD) involves writing automated tests BEFORE writing the code, then writing the minimum code to pass the test.",
-      },
-      {
-        id: 24, chapter: 3, type: "single",
-        question: "What does 'collective ownership' mean in XP?",
-        options: [
-          "The project manager owns all the code.",
-          "All developers share responsibility for all the code, and anyone can change anything.",
-          "Each developer owns specific modules that only they can modify.",
-          "The customer owns the source code.",
-        ],
-        answer: [1],
-        explanation: "Collective ownership means all developers work on all areas of the system. Any developer can change any code, preventing knowledge silos.",
-      },
-      {
-        id: 25, chapter: 3, type: "single",
-        question: "In Scrum, what is the Product Backlog?",
-        options: [
-          "A list of bugs found during testing.",
-          "A prioritized list of features, enhancements, and fixes that serves as the work to be done.",
-          "The final release documentation.",
-          "A record of all past sprints.",
-        ],
-        answer: [1],
-        explanation: "The Product Backlog is a prioritized to-do list for the project containing features, enhancements, bug fixes, and other work items.",
-      },
-      {
-        id: 26, chapter: 3, type: "single",
-        question: "What is the purpose of the Daily Scrum (standup)?",
-        options: [
-          "To assign blame for bugs.",
-          "To provide a brief synchronization where team members share what they did, what they'll do, and any blockers.",
-          "To write detailed design documents.",
-          "To demo the product to customers.",
-        ],
-        answer: [1],
-        explanation: "The Daily Scrum is a short (~15 min) meeting where each team member shares: what they did, what they'll do, and any impediments.",
-      },
-      {
-        id: 27, chapter: 3, type: "single",
-        question: "In XP, what are 'user stories'?",
-        options: [
-          "Detailed UML diagrams of user interactions.",
-          "Short descriptions of functionality from the user's perspective, used for planning.",
-          "Full requirements specification documents.",
-          "Bug reports submitted by end users.",
-        ],
-        answer: [1],
-        explanation: "User stories are short, simple descriptions of a feature told from the user's perspective, used as the basis for planning iterations.",
-      },
-      {
-        id: 28, chapter: 3, type: "single",
-        question: "What does 'small releases' mean as an XP practice?",
-        options: [
-          "Only releasing software once a year.",
-          "Releasing small, frequent increments of the system so that value is delivered to the customer quickly.",
-          "Releasing only bug fixes, not new features.",
-          "Only releasing to a small number of customers.",
-        ],
-        answer: [1],
-        explanation: "Small releases means the system is developed in frequent, small increments so the customer receives value quickly and can provide feedback.",
-      },
-      {
-        id: 29, chapter: 4, type: "single",
-        question: "What is the difference between functional and non-functional requirements?",
-        options: [
-          "Functional requirements describe system constraints; non-functional describe what the system should do.",
-          "Functional requirements describe what the system should do; non-functional describe constraints and quality attributes.",
-          "There is no difference; they are interchangeable terms.",
-          "Functional requirements are optional; non-functional are mandatory.",
-        ],
-        answer: [1],
-        explanation: "Functional requirements describe what the system should do. Non-functional requirements describe constraints such as performance, reliability, usability.",
-      },
-      {
-        id: 30, chapter: 4, type: "multi",
-        question: "Non-functional requirements can be classified into which of the following categories? (Select all that apply)",
-        options: ["Product requirements", "Organizational requirements", "External requirements", "Functional requirements", "Aesthetic requirements"],
-        answer: [0, 1, 2],
-        explanation: "Non-functional requirements are classified into three categories: Product requirements, Organizational requirements, and External requirements.",
-      },
-      {
-        id: 31, chapter: 4, type: "single",
-        question: "What is the difference between user requirements and system requirements?",
-        options: [
-          "User requirements are written in natural language for stakeholders; system requirements are more detailed technical descriptions.",
-          "System requirements are written in natural language; user requirements are technical specifications.",
-          "User requirements are only for developers; system requirements are for managers.",
-          "There is no meaningful difference between them.",
-        ],
-        answer: [0],
-        explanation: "User requirements are high-level statements in natural language for customers. System requirements are detailed technical descriptions for developers.",
-      },
-      {
-        id: 32, chapter: 4, type: "multi",
-        question: "Which of the following are requirements elicitation techniques? (Select all that apply)",
-        options: ["Interviews", "Ethnography", "Scenarios and user stories", "Pair programming", "Refactoring"],
-        answer: [0, 1, 2],
-        explanation: "Interviews, ethnography, and scenarios/user stories are requirements elicitation techniques. Pair programming and refactoring are XP development practices.",
-      },
-      {
-        id: 33, chapter: 4, type: "single",
-        question: "What is ethnography in the context of requirements elicitation?",
-        options: [
-          "A formal mathematical specification technique.",
-          "An observational technique where an analyst spends time observing how people actually work to discover implicit requirements.",
-          "A type of automated testing.",
-          "A project management methodology.",
-        ],
-        answer: [1],
-        explanation: "Ethnography is an observational technique where an analyst immerses themselves in the work environment to discover implicit requirements.",
-      },
-      {
-        id: 34, chapter: 4, type: "multi",
-        question: "Requirements validation checks include which of the following? (Select all that apply)",
-        options: [
-          "Validity checks — Do requirements reflect real needs?",
-          "Consistency checks — Are there contradictions between requirements?",
-          "Completeness checks — Are all required functions included?",
-          "Realism checks — Can requirements be implemented within budget/schedule?",
-          "Verifiability checks — Can requirements be tested?",
-        ],
-        answer: [0, 1, 2, 3, 4],
-        explanation: "All five are standard requirements validation checks: validity, consistency, completeness, realism, and verifiability.",
-      },
-      {
-        id: 35, chapter: 4, type: "single",
-        question: "What is requirements management?",
-        options: [
-          "The process of writing all requirements in one sitting.",
-          "The process of managing changing requirements during the requirements engineering process and system development.",
-          "Deleting requirements that are too difficult to implement.",
-          "Assigning each requirement to a specific developer.",
-        ],
-        answer: [1],
-        explanation: "Requirements management is the process of managing changes to requirements as they evolve during development.",
-      },
-      {
-        id: 36, chapter: 4, type: "single",
-        question: "Who are stakeholders in requirements engineering?",
-        options: [
-          "Only the development team.",
-          "Only the end users of the system.",
-          "Anyone who is affected by the system, including end users, managers, engineers, domain experts, and others.",
-          "Only the project manager and the client.",
-        ],
-        answer: [2],
-        explanation: "Stakeholders include anyone who has an interest in or is affected by the system.",
-      },
-      {
-        id: 37, chapter: 2, type: "single",
-        question: "In customer (acceptance) testing, who primarily performs the testing?",
-        options: [
-          "The development team.",
-          "An automated testing framework.",
-          "The customer or end users to validate the system meets their needs.",
-          "The project manager.",
-        ],
-        answer: [2],
-        explanation: "Acceptance testing is performed by the customer or representative users to validate the system meets their actual needs.",
-      },
-      {
-        id: 38, chapter: 1, type: "single",
-        question: "Which of the following best describes the 'efficiency' attribute of software?",
-        options: [
-          "Software should be easy to modify.",
-          "Software should not waste system resources like memory and processor cycles.",
-          "Software should be secure from external attacks.",
-          "Software should be understandable to users.",
-        ],
-        answer: [1],
-        explanation: "Efficiency means the software should not waste system resources such as memory and processor cycles.",
-      },
-      {
-        id: 39, chapter: 4, type: "single",
-        question: "What is the main problem with writing requirements in natural language?",
-        options: [
-          "It's too expensive.",
-          "Natural language is inherently ambiguous, which can lead to misunderstandings between stakeholders and developers.",
-          "Only programmers can understand natural language specifications.",
-          "Natural language cannot express functional requirements.",
-        ],
-        answer: [1],
-        explanation: "Natural language is inherently ambiguous. The same statement can be interpreted differently by different readers.",
-      },
-      {
-        id: 40, chapter: 3, type: "free",
-        question: "Describe the four core values of the Agile Manifesto. For each value, explain what is valued more and what is valued less, and why this matters for software development.",
-        answer: [],
-        explanation: "The Agile Manifesto states four core values: (1) Individuals and interactions over processes and tools — people and communication are more important than rigid processes. (2) Working software over comprehensive documentation — delivering functional software is the primary measure of progress. (3) Customer collaboration over contract negotiation — working closely with the customer leads to better outcomes. (4) Responding to change over following a plan — being adaptable is valued because requirements change. Items on the right still have value, but items on the left are valued more.",
-      },
-      {
-        id: 41, chapter: 2, type: "free",
-        question: "Compare and contrast the Waterfall Model with Incremental Development. Discuss the advantages and disadvantages of each, and explain in which situations each model would be most appropriate.",
-        answer: [],
-        explanation: "Waterfall: Sequential phases (requirements → design → implementation → testing → maintenance). Advantages: clear structure, good documentation, suitable for well-understood requirements. Disadvantages: inflexible to change, late discovery of problems. Best for: safety-critical systems, stable requirements. Incremental: Interleaved activities with multiple versions. Advantages: early delivery, customer feedback, easier to accommodate changes. Disadvantages: process not visible, system structure may degrade. Best for: business systems where requirements are likely to change.",
-      },
-    ];
+    // ═══════════════════════════════════════
+    //  QUIZ ENGINE — Shuffle & Select
+    // ═══════════════════════════════════════
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function buildExam(bank) {
+      // Always include professor questions and free response
+      const profQs = bank.filter(q => q.fromProfessor);
+      const freeQs = bank.filter(q => q.type === "free");
+      const pool = bank.filter(q => !q.fromProfessor && q.type !== "free");
+
+      // Target: 37 MC (8 prof + 29 from pool) + 2 free = 39 total
+      // Balance by chapter and type
+      const byChapter = { 1: [], 2: [], 3: [], 4: [] };
+      pool.forEach(q => { if (byChapter[q.chapter]) byChapter[q.chapter].push(q); });
+
+      // Shuffle each chapter pool
+      Object.keys(byChapter).forEach(k => { byChapter[k] = shuffle(byChapter[k]); });
+
+      // Pick ~7-8 from each chapter to get 29 total
+      const targets = { 1: 7, 2: 8, 3: 7, 4: 7 };
+      let selected = [];
+      Object.entries(targets).forEach(([ch, count]) => {
+        const available = byChapter[ch];
+        // Ensure a mix of types
+        const fills = available.filter(q => q.type === "fill");
+        const others = available.filter(q => q.type !== "fill");
+
+        // Include at least 1-2 fill-in-the-blank per chapter if available
+        const fillCount = Math.min(fills.length, Math.floor(count * 0.25) + 1);
+        const otherCount = count - fillCount;
+
+        selected.push(...fills.slice(0, fillCount));
+        selected.push(...others.slice(0, otherCount));
+      });
+
+      // Trim to exactly 29 if over
+      selected = selected.slice(0, 29);
+
+      // Combine: prof first (shuffled among themselves), then pool (shuffled), then free
+      const mcQuestions = [...shuffle(profQs), ...shuffle(selected)];
+      return [...mcQuestions, ...freeQs];
+    }
+
+    // ═══════════════════════════════════════
+    //  FILL-IN-THE-BLANK GRADING
+    // ═══════════════════════════════════════
+
+    function gradeFill(question, userInput) {
+      if (!userInput || !userInput.trim()) return false;
+      const input = userInput.trim().toLowerCase();
+
+      // Check multi-blank (comma separated or space separated)
+      if (question.acceptableAnswers) {
+        return question.acceptableAnswers.some(acceptable => {
+          // Each acceptable is an array of required words
+          if (acceptable.length === 1) {
+            return input.includes(acceptable[0].toLowerCase());
+          }
+          // Multi-blank: check all words present
+          return acceptable.every(word => input.includes(word.toLowerCase()));
+        });
+      }
+
+      // Fallback: simple match
+      return question.answer.some(a => input.includes(a.toLowerCase()));
+    }
+
+    // ═══════════════════════════════════════
+    //  MAIN APP
+    // ═══════════════════════════════════════
 
     const TOTAL_TIME = 60 * 60;
 
     function App() {
       const [screen, setScreen] = useState("start");
+      const [questions, setQuestions] = useState([]);
       const [currentQ, setCurrentQ] = useState(0);
       const [answers, setAnswers] = useState({});
-      const [showExplanation, setShowExplanation] = useState({});
+      const [showExp, setShowExp] = useState({});
       const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
-      const [timerActive, setTimerActive] = useState(false);
+      const [timerOn, setTimerOn] = useState(false);
       const [submitted, setSubmitted] = useState(false);
       const timerRef = useRef(null);
 
       useEffect(() => {
-        if (timerActive && timeLeft > 0) {
+        if (timerOn && timeLeft > 0) {
           timerRef.current = setInterval(() => {
-            setTimeLeft((t) => {
-              if (t <= 1) {
-                clearInterval(timerRef.current);
-                setSubmitted(true);
-                setScreen("results");
-                return 0;
-              }
+            setTimeLeft(t => {
+              if (t <= 1) { clearInterval(timerRef.current); setSubmitted(true); setScreen("results"); return 0; }
               return t - 1;
             });
           }, 1000);
         }
         return () => clearInterval(timerRef.current);
-      }, [timerActive]);
+      }, [timerOn]);
 
-      const formatTime = (s) => {
-        const m = Math.floor(s / 60);
-        const sec = s % 60;
-        return `${m}:${sec.toString().padStart(2, "0")}`;
+      const fmt = s => `${Math.floor(s/60)}:${(s%60).toString().padStart(2,"0")}`;
+
+      const startExam = () => {
+        const exam = buildExam(window.QUESTION_BANK);
+        setQuestions(exam);
+        setAnswers({});
+        setShowExp({});
+        setTimeLeft(TOTAL_TIME);
+        setSubmitted(false);
+        setCurrentQ(0);
+        setScreen("exam");
+        setTimerOn(true);
       };
 
-      const handleSelect = useCallback((qId, optIdx) => {
+      const handleSelect = useCallback((qId, val) => {
         if (submitted) return;
-        const q = QUESTIONS.find((q) => q.id === qId);
-        if (q.type === "free") {
-          setAnswers((prev) => ({ ...prev, [qId]: optIdx }));
+        const q = questions.find(q => q.id === qId);
+        if (!q) return;
+        if (q.type === "free" || q.type === "fill") {
+          setAnswers(p => ({ ...p, [qId]: val }));
           return;
         }
         if (q.type === "multi") {
-          setAnswers((prev) => {
-            const current = prev[qId] || [];
-            const updated = current.includes(optIdx)
-              ? current.filter((i) => i !== optIdx)
-              : [...current, optIdx];
-            return { ...prev, [qId]: updated };
+          setAnswers(p => {
+            const cur = p[qId] || [];
+            const upd = cur.includes(val) ? cur.filter(i => i !== val) : [...cur, val];
+            return { ...p, [qId]: upd };
           });
         } else {
-          setAnswers((prev) => ({ ...prev, [qId]: [optIdx] }));
+          setAnswers(p => ({ ...p, [qId]: [val] }));
         }
-      }, [submitted]);
+      }, [submitted, questions]);
 
       const isCorrect = useCallback((qId) => {
-        const q = QUESTIONS.find((q) => q.id === qId);
+        const q = questions.find(q => q.id === qId);
+        if (!q) return null;
         if (q.type === "free") return null;
-        const userAns = answers[qId] || [];
-        if (userAns.length !== q.answer.length) return false;
-        return q.answer.every((a) => userAns.includes(a)) && userAns.every((a) => q.answer.includes(a));
-      }, [answers]);
+        if (q.type === "fill") return gradeFill(q, answers[qId]);
+        const ua = answers[qId] || [];
+        if (ua.length !== q.answer.length) return false;
+        return q.answer.every(a => ua.includes(a)) && ua.every(a => q.answer.includes(a));
+      }, [answers, questions]);
 
-      const getScore = useCallback(() => {
+      const score = useMemo(() => {
         let correct = 0, total = 0;
-        QUESTIONS.forEach((q) => {
-          if (q.type !== "free") {
-            total++;
-            if (isCorrect(q.id)) correct++;
-          }
+        questions.forEach(q => {
+          if (q.type !== "free") { total++; if (isCorrect(q.id)) correct++; }
         });
         return { correct, total };
-      }, [isCorrect]);
-
-      const startExam = () => {
-        setScreen("exam");
-        setTimerActive(true);
-        setCurrentQ(0);
-      };
+      }, [questions, isCorrect]);
 
       const handleSubmit = () => {
-        if (!window.confirm("Submit your exam? You won't be able to change answers.")) return;
-        setSubmitted(true);
-        setTimerActive(false);
-        clearInterval(timerRef.current);
-        setScreen("results");
+        if (!confirm("Submit your exam? You won't be able to change answers.")) return;
+        setSubmitted(true); setTimerOn(false); clearInterval(timerRef.current); setScreen("results");
       };
 
-      const resetExam = () => {
-        setScreen("start");
-        setCurrentQ(0);
-        setAnswers({});
-        setShowExplanation({});
-        setTimeLeft(TOTAL_TIME);
-        setTimerActive(false);
-        setSubmitted(false);
-      };
-
-      const q = QUESTIONS[currentQ];
-      const { correct, total } = getScore();
-      const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+      const q = questions[currentQ];
+      const pct = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
       const isReview = screen === "review";
 
-      // ── Start Screen ──
+      // ── Start ──
       if (screen === "start") {
         return (
-          <div className="app-container">
-            <div className="start-screen">
+          <div className="app">
+            <div className="start">
               <div className="start-card">
-                <div className="start-label">CS 3365 — Software Engineering</div>
-                <h1 className="start-title">Exam 1 Practice Quiz</h1>
-                <p className="start-subtitle">Chapters 1, 2, 3 &amp; 4</p>
-                <div className="stats-row">
-                  <div className="stat-box">
-                    <div className="stat-value">41</div>
-                    <div className="stat-label">Questions</div>
-                  </div>
-                  <div className="stat-box">
-                    <div className="stat-value">60m</div>
-                    <div className="stat-label">Time Limit</div>
-                  </div>
-                  <div className="stat-box">
-                    <div className="stat-value">8</div>
-                    <div className="stat-label">Prof Questions</div>
-                  </div>
+                <div className="tag">CS 3365 · Software Engineering</div>
+                <h1>Exam 1 Practice</h1>
+                <p className="sub">Chapters 1 – 4 · Randomized each attempt</p>
+                <div className="grid3">
+                  <div className="g-box"><div className="g-val">39</div><div className="g-lbl">Questions</div></div>
+                  <div className="g-box"><div className="g-val">60m</div><div className="g-lbl">Time Limit</div></div>
+                  <div className="g-box"><div className="g-val">4</div><div className="g-lbl">Question Types</div></div>
                 </div>
-                <div className="note-box">
-                  <div className="note-title">📌 Note</div>
-                  <div className="note-text">
-                    Questions 1–8 are directly from your professor's slides. Questions 9–39 cover remaining exam topics. Questions 40–41 are free response.
-                  </div>
+                <div className="info-box">
+                  <strong>How it works</strong>
+                  <p>
+                    Your professor's 8 confirmed questions are always included. The remaining 29 MC questions are randomly
+                    drawn from a bank of 60+ questions — you'll get a different mix every time. Includes multiple choice,
+                    select-all-that-apply, fill-in-the-blank, and 2 free response questions.
+                  </p>
                 </div>
-                <button className="btn-primary" onClick={startExam}>Start Exam</button>
+                <button className="btn btn-accent" onClick={startExam}>Start Exam</button>
               </div>
             </div>
           </div>
         );
       }
 
-      // ── Results Screen ──
+      // ── Results ──
       if (screen === "results") {
         return (
-          <div className="app-container">
-            <div className="results-screen">
-              <div className="results-hero">
-                <div className="results-label">Final Score</div>
-                <div className={`results-pct ${pct >= 70 ? "great" : pct >= 50 ? "ok" : "low"}`}>
-                  {pct}%
-                </div>
-                <div className="results-detail">
-                  {correct} / {total} multiple choice correct
-                </div>
-                <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 28 }}>
-                  <button className="btn-primary" onClick={() => { setScreen("review"); setCurrentQ(0); }}>
-                    Review Answers
-                  </button>
-                  <button className="btn-nav btn-prev" onClick={resetExam} style={{ padding: "15px 32px", fontSize: 16 }}>
-                    Retake
-                  </button>
+          <div className="app">
+            <div className="results">
+              <div className="res-hero">
+                <div className="tag" style={{marginBottom:16}}>Final Score</div>
+                <div className={`res-pct ${pct >= 70 ? "hi" : pct >= 50 ? "mid" : "lo"}`}>{pct}%</div>
+                <div className="res-det">{score.correct} / {score.total} scored questions correct</div>
+                <div className="res-btns">
+                  <button className="btn btn-accent" onClick={() => { setScreen("review"); setCurrentQ(0); }}>Review Answers</button>
+                  <button className="btn btn-ghost" onClick={startExam}>New Attempt</button>
                 </div>
               </div>
-
-              <div className="chapter-grid">
-                {[1, 2, 3, 4].map((ch) => {
-                  const chQs = QUESTIONS.filter((q) => q.chapter === ch && q.type !== "free");
-                  const chCorrect = chQs.filter((q) => isCorrect(q.id)).length;
-                  const chPct = chQs.length > 0 ? (chCorrect / chQs.length) * 100 : 0;
+              <div className="ch-grid">
+                {[1,2,3,4].map(ch => {
+                  const chQs = questions.filter(q => q.chapter === ch && q.type !== "free");
+                  const chOk = chQs.filter(q => isCorrect(q.id)).length;
+                  const chPct = chQs.length > 0 ? (chOk/chQs.length)*100 : 0;
                   return (
-                    <div key={ch} className="chapter-box">
-                      <div className="chapter-label">Chapter {ch}</div>
-                      <div className="chapter-score">{chCorrect}/{chQs.length}</div>
-                      <div className="chapter-bar">
-                        <div
-                          className="chapter-bar-fill"
-                          style={{
-                            width: `${chPct}%`,
-                            background: chPct >= 70 ? "var(--green)" : chPct >= 50 ? "var(--yellow)" : "var(--red)",
-                          }}
-                        />
-                      </div>
+                    <div key={ch} className="ch-box">
+                      <div className="ch-lbl">Chapter {ch}</div>
+                      <div className="ch-score">{chOk}/{chQs.length}</div>
+                      <div className="ch-bar"><div className="ch-fill" style={{width:`${chPct}%`, background: chPct >= 70 ? "var(--green)" : chPct >= 50 ? "var(--amber)" : "var(--red)"}} /></div>
                     </div>
                   );
                 })}
               </div>
+              <div className="shuffle-note">Questions are randomized — retake for a different set!</div>
             </div>
           </div>
         );
       }
 
-      // ── Exam / Review Screen ──
+      if (!q) return null;
+
       const isAnswered = (idx) => {
-        const qq = QUESTIONS[idx];
+        const qq = questions[idx]; if (!qq) return false;
         const a = answers[qq.id];
-        if (qq.type === "free") return a && a.length > 0;
+        if (qq.type === "free" || qq.type === "fill") return a && a.length > 0;
         return a && a.length > 0;
       };
 
+      const typeLabel = { single: "Multiple Choice", multi: "Select All", fill: "Fill in the Blank", free: "Free Response" };
+
       return (
-        <div className="app-container">
+        <div className="app">
           {/* Header */}
-          <div className="header">
-            <div className="header-left">
-              <span className="q-counter">Q{currentQ + 1}/{QUESTIONS.length}</span>
-              {q.fromProfessor && <span className="badge badge-prof">⭐ FROM PROFESSOR</span>}
-              <span className="badge badge-chapter">Ch. {q.chapter}</span>
+          <div className="hdr">
+            <div className="hdr-l">
+              <span className="cnt">Q{currentQ+1}/{questions.length}</span>
+              {q.fromProfessor && <span className="pill pill-prof">⭐ PROFESSOR</span>}
+              <span className="pill pill-ch">Ch. {q.chapter}</span>
+              <span className="pill pill-type">{typeLabel[q.type]}</span>
             </div>
             {!isReview ? (
-              <div className={`timer ${timeLeft < 300 ? "timer-warn" : "timer-ok"}`}>
-                {formatTime(timeLeft)}
-              </div>
+              <div className={`timer ${timeLeft < 300 ? "timer-warn" : "timer-ok"}`}>{fmt(timeLeft)}</div>
             ) : (
-              <span style={{ color: "var(--text-dim)", fontSize: 13 }}>Review Mode</span>
+              <span style={{color:"var(--text2)", fontSize:13}}>Review Mode</span>
             )}
           </div>
 
-          {/* Question */}
-          <div className="question-area" key={currentQ}>
-            <h2 className="question-text">{q.question}</h2>
-            {q.type === "multi" && <div className="question-hint">Select all that apply</div>}
+          {/* Question body */}
+          <div className="q-wrap" key={`${q.id}-${currentQ}`}>
+            <h2 className="q-text">{q.question}</h2>
+            {q.type === "multi" && <div className="q-hint">Select all that apply</div>}
+            {q.type === "fill" && !isReview && !submitted && <div className="q-hint">Type your answer below</div>}
 
-            {q.type === "free" ? (
+            {/* ── Fill in the blank ── */}
+            {q.type === "fill" && (
+              <div className="fill-wrap">
+                <input
+                  type="text"
+                  className={`fill-input ${(isReview || submitted) ? (isCorrect(q.id) ? "fill-ok" : "fill-bad") : ""}`}
+                  value={answers[q.id] || ""}
+                  onChange={e => handleSelect(q.id, e.target.value)}
+                  placeholder="Type your answer..."
+                  disabled={isReview || submitted}
+                  autoComplete="off"
+                />
+                {(isReview || submitted) && (
+                  <div className={`fill-answer ${isCorrect(q.id) ? "fill-ok-box" : "fill-bad-box"}`}>
+                    {isCorrect(q.id) ? "✓ Correct!" : `✗ Correct answer: ${q.answer.join(", ")}`}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Free response ── */}
+            {q.type === "free" && (
               <div>
                 <textarea
-                  className="free-textarea"
+                  className="free-ta"
                   value={answers[q.id] || ""}
-                  onChange={(e) => handleSelect(q.id, e.target.value)}
+                  onChange={e => handleSelect(q.id, e.target.value)}
                   placeholder="Type your answer here..."
                   disabled={isReview}
                 />
                 {isReview && (
-                  <div className="explanation-box" style={{ marginTop: 16 }}>
-                    <div className="explanation-label">Sample Answer</div>
+                  <div className="exp-box" style={{marginTop:16}}>
+                    <div className="exp-lbl">Sample Answer</div>
                     {q.explanation}
                   </div>
                 )}
               </div>
-            ) : (
-              <div className="options-list">
+            )}
+
+            {/* ── MC / Multi ── */}
+            {(q.type === "single" || q.type === "multi") && (
+              <div className="opts">
                 {q.options.map((opt, idx) => {
                   const selected = (answers[q.id] || []).includes(idx);
                   const isRight = q.answer.includes(idx);
-                  let cls = "option-btn";
-
-                  if ((isReview || submitted) && selected && isRight) cls += " correct";
-                  else if ((isReview || submitted) && selected && !isRight) cls += " incorrect";
-                  else if ((isReview || submitted) && !selected && isRight) cls += " missed";
-                  else if (selected) cls += " selected";
+                  let cls = "opt";
+                  if ((isReview || submitted) && selected && isRight) cls += " ok";
+                  else if ((isReview || submitted) && selected && !isRight) cls += " bad";
+                  else if ((isReview || submitted) && !selected && isRight) cls += " miss";
+                  else if (selected) cls += " sel";
 
                   return (
-                    <button
-                      key={idx}
-                      className={cls}
-                      onClick={() => handleSelect(q.id, idx)}
-                      disabled={isReview || submitted}
-                    >
-                      <div className={`${q.type === "multi" ? "checkbox" : "radio"} ${selected ? "checked" : ""}`}>
-                        {selected && <span className="check-mark">✓</span>}
+                    <button key={idx} className={cls} onClick={() => handleSelect(q.id, idx)} disabled={isReview || submitted}>
+                      <div className={`ind ${q.type === "multi" ? "ind-c" : "ind-r"} ${selected ? "on" : ""}`}>
+                        {selected && <span className="chk">✓</span>}
                       </div>
                       {opt}
                     </button>
@@ -1327,17 +590,15 @@
               </div>
             )}
 
-            {isReview && q.type !== "free" && (
+            {/* Explanation */}
+            {(isReview || submitted) && q.type !== "free" && (
               <div>
-                <button
-                  className="explanation-toggle"
-                  onClick={() => setShowExplanation((p) => ({ ...p, [q.id]: !p[q.id] }))}
-                >
-                  {showExplanation[q.id] ? "▾ Hide" : "▸ Show"} Explanation
+                <button className="exp-toggle" onClick={() => setShowExp(p => ({...p, [q.id]: !p[q.id]}))}>
+                  {showExp[q.id] ? "▾ Hide" : "▸ Show"} Explanation
                 </button>
-                {showExplanation[q.id] && (
-                  <div className="explanation-box">
-                    <div className="explanation-label">Explanation</div>
+                {showExp[q.id] && (
+                  <div className="exp-box">
+                    <div className="exp-lbl">Explanation</div>
                     {q.explanation}
                   </div>
                 )}
@@ -1345,36 +606,18 @@
             )}
           </div>
 
-          {/* Footer Navigation */}
-          <div className="footer-nav">
-            <button
-              className="btn-nav btn-prev"
-              onClick={() => setCurrentQ((c) => Math.max(0, c - 1))}
-              disabled={currentQ === 0}
-            >
-              ← Prev
-            </button>
-
-            <div className="dots-container">
-              {QUESTIONS.map((_, i) => (
-                <button
-                  key={i}
-                  className={`dot ${isAnswered(i) ? "dot-answered" : "dot-empty"} ${i === currentQ ? "dot-current" : ""}`}
-                  onClick={() => setCurrentQ(i)}
-                />
+          {/* Footer */}
+          <div className="ftr">
+            <button className="ftr-btn ftr-prev" onClick={() => setCurrentQ(c => Math.max(0, c-1))} disabled={currentQ === 0}>← Prev</button>
+            <div className="dots">
+              {questions.map((_, i) => (
+                <button key={i} className={`dot ${isAnswered(i) ? "dot-a" : "dot-e"} ${i === currentQ ? "dot-cur" : ""}`} onClick={() => setCurrentQ(i)} />
               ))}
             </div>
-
-            {currentQ === QUESTIONS.length - 1 && !isReview && !submitted ? (
-              <button className="btn-submit" onClick={handleSubmit}>Submit</button>
+            {currentQ === questions.length - 1 && !isReview && !submitted ? (
+              <button className="btn btn-green" style={{padding:"10px 26px", fontSize:14}} onClick={handleSubmit}>Submit</button>
             ) : (
-              <button
-                className="btn-nav btn-next"
-                onClick={() => setCurrentQ((c) => Math.min(QUESTIONS.length - 1, c + 1))}
-                disabled={currentQ === QUESTIONS.length - 1}
-              >
-                Next →
-              </button>
+              <button className="ftr-btn ftr-next" onClick={() => setCurrentQ(c => Math.min(questions.length-1, c+1))} disabled={currentQ === questions.length-1}>Next →</button>
             )}
           </div>
         </div>
