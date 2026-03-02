@@ -151,6 +151,23 @@
 
     .shuffle-note { text-align:center; color:var(--text3); font-size:13px; padding-bottom:32px; }
 
+    /* Hint system */
+    .hint-panel { margin-top:20px; animation:rise 0.3s ease; }
+    .hint-btn { background:var(--orange-dim); border:1px solid rgba(251,146,60,0.3); color:var(--orange); border-radius:var(--radius-sm); padding:10px 22px; font-size:14px; font-weight:600; cursor:pointer; font-family:var(--font); transition:all 0.15s; margin-top:18px; display:inline-flex; align-items:center; gap:8px; }
+    .hint-btn:hover { background:rgba(251,146,60,0.2); border-color:rgba(251,146,60,0.5); }
+    .hint-revealed { background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius); padding:20px 24px; margin-top:14px; }
+    .hint-answer-label { color:var(--orange); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:10px; }
+    .hint-answer-text { color:#fff; font-size:15px; line-height:1.6; margin-bottom:16px; padding:12px 16px; background:rgba(251,146,60,0.08); border:1px solid rgba(251,146,60,0.2); border-radius:8px; }
+    .hint-confirm-label { color:var(--text2); font-size:13px; margin-bottom:8px; }
+    .hint-confirm-input { width:100%; padding:14px 16px; font-size:15px; font-family:var(--font); background:rgba(255,255,255,0.04); border:2px solid var(--border2); border-radius:8px; color:var(--text); outline:none; transition:border-color 0.2s; }
+    .hint-confirm-input:focus { border-color:rgba(251,146,60,0.5); }
+    .hint-confirm-input.hint-match { border-color:var(--green-b); background:var(--green-dim); }
+    .hint-confirmed { margin-top:12px; display:flex; align-items:center; gap:8px; color:var(--green); font-size:14px; font-weight:600; animation:rise 0.2s ease; }
+    .hint-locked { opacity:0.5; pointer-events:none; }
+
+    .dot-hinted { background:var(--amber); }
+    .dot-confirmed { background:var(--green); }
+
     @media(max-width:600px) {
       .start-card { padding:36px 22px; }
       .start-card h1 { font-size:28px; }
@@ -349,6 +366,9 @@
       const [reinforceIdx, setReinforceIdx] = useState(0);
       const [reinforceSubmitted, setReinforceSubmitted] = useState(false);
 
+      // Hint system state — tracks per-question: {qId: {revealed, confirmText, confirmed}}
+      const [hints, setHints] = useState({});
+
       const timerRef = useRef(null);
 
       useEffect(() => {
@@ -377,13 +397,67 @@
 
       const handleReinforceSelect = useCallback((qId, val) => {
         if (reinforceSubmitted) return;
+        // Block selection if hint is revealed but not confirmed
+        const h = hints[qId];
+        if (h && h.revealed && !h.confirmed) return;
         const q = reinforceQs.find(q => q.id === qId);
         if (!q) return;
         if (q.type === "free" || q.type === "fill") { setReinforceAnswers(p => ({ ...p, [qId]: val })); return; }
         if (q.type === "multi") {
           setReinforceAnswers(p => { const c = p[qId] || []; return { ...p, [qId]: c.includes(val) ? c.filter(i => i !== val) : [...c, val] }; });
         } else { setReinforceAnswers(p => ({ ...p, [qId]: [val] })); }
-      }, [reinforceSubmitted, reinforceQs]);
+      }, [reinforceSubmitted, reinforceQs, hints]);
+
+      // ═══ Hint System ═══
+      const getHintAnswer = useCallback((q) => {
+        if (!q) return "";
+        if (q.type === "fill") return q.answer.join(", ");
+        if (q.type === "free") return "";
+        // For MC/multi: return the correct option text(s)
+        return q.answer.map(i => q.options[i]).join(" | ");
+      }, []);
+
+      const revealHint = useCallback((qId) => {
+        setHints(p => ({ ...p, [qId]: { revealed: true, confirmText: "", confirmed: false } }));
+      }, []);
+
+      const updateHintConfirm = useCallback((qId, text) => {
+        setHints(p => ({ ...p, [qId]: { ...p[qId], confirmText: text } }));
+      }, []);
+
+      const checkHintMatch = useCallback((qId) => {
+        const h = hints[qId];
+        if (!h || !h.confirmText) return false;
+        const q = reinforceQs.find(q => q.id === qId);
+        if (!q) return false;
+        const typed = h.confirmText.trim().toLowerCase();
+        if (q.type === "fill") {
+          // Match any acceptable answer
+          if (q.acceptableAnswers) return q.acceptableAnswers.some(acc => acc.every(w => typed.includes(w.toLowerCase())));
+          return q.answer.some(a => typed.includes(a.toLowerCase()));
+        }
+        // For MC/multi: user must type the correct option text (fuzzy match — just check key words)
+        const correctTexts = q.answer.map(i => q.options[i].toLowerCase());
+        // Accept if they typed enough of any correct answer (at least 60% of the words)
+        return correctTexts.every(ct => {
+          const words = ct.split(/\s+/).filter(w => w.length > 3); // skip small words
+          const matched = words.filter(w => typed.includes(w));
+          return matched.length >= Math.ceil(words.length * 0.5);
+        });
+      }, [hints, reinforceQs]);
+
+      const confirmHint = useCallback((qId) => {
+        if (checkHintMatch(qId)) {
+          const q = reinforceQs.find(q => q.id === qId);
+          setHints(p => ({ ...p, [qId]: { ...p[qId], confirmed: true } }));
+          // Auto-select the correct answer so it counts
+          if (q && (q.type === "single" || q.type === "multi")) {
+            setReinforceAnswers(p => ({ ...p, [qId]: [...q.answer] }));
+          } else if (q && q.type === "fill") {
+            setReinforceAnswers(p => ({ ...p, [qId]: q.answer[0] }));
+          }
+        }
+      }, [checkHintMatch, reinforceQs]);
 
       const checkCorrect = useCallback((q, ans) => {
         if (!q || q.type === "free") return null;
@@ -426,7 +500,7 @@
 
       const startReinforce = () => {
         const { questions: rQs, topics } = buildReinforcement(wrongQuestions, window.QUESTION_BANK, window.REINFORCEMENT_BANK || []);
-        setReinforceQs(rQs); setReinforceTopics(topics); setReinforceAnswers({}); setReinforceShowExp({}); setReinforceIdx(0); setReinforceSubmitted(false);
+        setReinforceQs(rQs); setReinforceTopics(topics); setReinforceAnswers({}); setReinforceShowExp({}); setReinforceIdx(0); setReinforceSubmitted(false); setHints({});
         setScreen("reinforce");
       };
 
@@ -543,7 +617,7 @@
                 {stillWrong.length > 0 && (
                   <button className="btn btn-orange" onClick={() => {
                     const { questions: rQs, topics } = buildReinforcement(stillWrong, window.QUESTION_BANK, window.REINFORCEMENT_BANK || []);
-                    setReinforceQs(rQs); setReinforceTopics(topics); setReinforceAnswers({}); setReinforceShowExp({}); setReinforceIdx(0); setReinforceSubmitted(false); setScreen("reinforce");
+                    setReinforceQs(rQs); setReinforceTopics(topics); setReinforceAnswers({}); setReinforceShowExp({}); setReinforceIdx(0); setReinforceSubmitted(false); setHints({}); setScreen("reinforce");
                   }}>🔄 Practice Again ({stillWrong.length} still wrong)</button>
                 )}
                 <button className="btn btn-ghost" onClick={startExam}>New Full Exam</button>
@@ -558,6 +632,13 @@
         if (!rq) return null;
         const isRR = screen === "reinforce-review";
         const showRes = isRR || reinforceSubmitted;
+        const hint = hints[rq.id] || {};
+        const hintRevealed = hint.revealed && !hint.confirmed && !showRes;
+        const hintConfirmed = hint.confirmed;
+
+        // Block nav to next question if hint is revealed but not confirmed
+        const canAdvance = !hintRevealed;
+
         return (
           <div className="app">
             <div className="hdr">
@@ -572,23 +653,127 @@
               </span>
             </div>
 
-            <QuestionView
-              q={rq} answers={reinforceAnswers} onSelect={handleReinforceSelect}
-              showResults={showRes} isCorrect={showRes ? isReinforceCorrect(rq.id) : null}
-              showExp={reinforceShowExp} onToggleExp={(id) => setReinforceShowExp(p => ({...p, [id]: !p[id]}))}
-            />
+            <div className="q-wrap">
+              <h2 className="q-text">{rq.question}</h2>
+              {rq.type === "multi" && <div className="q-hint">Select all that apply</div>}
+              {rq.type === "fill" && !showRes && !hintRevealed && <div className="q-hint">Type your answer below</div>}
+
+              {/* Fill-in-the-blank */}
+              {rq.type === "fill" && (
+                <div className="fill-wrap">
+                  <input
+                    type="text"
+                    className={`fill-input ${showRes ? (isReinforceCorrect(rq.id) ? "fill-ok" : "fill-bad") : ""} ${hintRevealed ? "hint-locked" : ""} ${hintConfirmed ? "fill-ok" : ""}`}
+                    value={reinforceAnswers[rq.id] || ""} onChange={e => handleReinforceSelect(rq.id, e.target.value)}
+                    placeholder="Type your answer..." disabled={showRes || hintRevealed || hintConfirmed} autoComplete="off"
+                  />
+                  {showRes && (
+                    <div className={`fill-answer ${isReinforceCorrect(rq.id) ? "fill-ok-box" : "fill-bad-box"}`}>
+                      {isReinforceCorrect(rq.id) ? "✓ Correct!" : `✗ Correct answer: ${rq.answer.join(", ")}`}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Free response */}
+              {rq.type === "free" && (
+                <div>
+                  <textarea className="free-ta" value={reinforceAnswers[rq.id] || ""} onChange={e => handleReinforceSelect(rq.id, e.target.value)} placeholder="Type your answer here..." disabled={showRes} />
+                  {showRes && <div className="exp-box" style={{marginTop:16}}><div className="exp-lbl">Sample Answer</div>{rq.explanation}</div>}
+                </div>
+              )}
+
+              {/* MC / Multi */}
+              {(rq.type === "single" || rq.type === "multi") && (
+                <div className={`opts ${hintRevealed ? "hint-locked" : ""}`}>
+                  {rq.options.map((opt, idx) => {
+                    const selected = (reinforceAnswers[rq.id] || []).includes(idx);
+                    const isRight = rq.answer.includes(idx);
+                    let cls = "opt";
+                    if (showRes && selected && isRight) cls += " ok";
+                    else if (showRes && selected && !isRight) cls += " bad";
+                    else if (showRes && !selected && isRight) cls += " miss";
+                    else if (hintConfirmed && isRight) cls += " ok";
+                    else if (selected) cls += " sel";
+                    return (
+                      <button key={idx} className={cls} onClick={() => handleReinforceSelect(rq.id, idx)} disabled={showRes || hintRevealed || hintConfirmed}>
+                        <div className={`ind ${rq.type === "multi" ? "ind-c" : "ind-r"} ${selected || (hintConfirmed && isRight) ? "on" : ""}`}>
+                          {(selected || (hintConfirmed && isRight)) && <span className="chk">✓</span>}
+                        </div>
+                        {opt}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Explanation in review */}
+              {showRes && rq.type !== "free" && (
+                <div>
+                  <button className="exp-toggle" onClick={() => setReinforceShowExp(p => ({...p, [rq.id]: !p[rq.id]}))}>
+                    {reinforceShowExp[rq.id] ? "▾ Hide" : "▸ Show"} Explanation
+                  </button>
+                  {reinforceShowExp[rq.id] && <div className="exp-box"><div className="exp-lbl">Explanation</div>{rq.explanation}</div>}
+                </div>
+              )}
+
+              {/* ═══ HINT SYSTEM ═══ */}
+              {!showRes && !hintConfirmed && rq.type !== "free" && (
+                <div className="hint-panel">
+                  {!hint.revealed ? (
+                    <button className="hint-btn" onClick={() => revealHint(rq.id)}>
+                      💡 Get Hint
+                    </button>
+                  ) : (
+                    <div className="hint-revealed">
+                      <div className="hint-answer-label">💡 Correct Answer</div>
+                      <div className="hint-answer-text">{getHintAnswer(rq)}</div>
+                      <div className="hint-confirm-label">Type the answer below to continue:</div>
+                      <input
+                        type="text"
+                        className={`hint-confirm-input ${checkHintMatch(rq.id) ? "hint-match" : ""}`}
+                        value={hint.confirmText || ""}
+                        onChange={e => updateHintConfirm(rq.id, e.target.value)}
+                        onKeyDown={e => { if (e.key === "Enter" && checkHintMatch(rq.id)) confirmHint(rq.id); }}
+                        placeholder="Type the answer to confirm you've read it..."
+                        autoComplete="off"
+                        autoFocus
+                      />
+                      {checkHintMatch(rq.id) && (
+                        <button className="btn btn-green" style={{marginTop:12, padding:"10px 28px", fontSize:14}} onClick={() => confirmHint(rq.id)}>
+                          ✓ Confirm & Continue
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Hint confirmed badge */}
+              {hintConfirmed && !showRes && (
+                <div className="hint-confirmed">✓ Answer confirmed via hint — now you can continue</div>
+              )}
+            </div>
 
             <div className="ftr">
               <button className="ftr-btn ftr-prev" onClick={() => setReinforceIdx(c => Math.max(0, c-1))} disabled={reinforceIdx === 0}>← Prev</button>
               <div className="dots">
-                {reinforceQs.map((_, i) => (
-                  <button key={i} className={`dot ${isAnswered(reinforceQs, reinforceAnswers, i) ? "dot-reinforce" : "dot-e"} ${i === reinforceIdx ? "dot-cur" : ""}`} onClick={() => setReinforceIdx(i)} />
-                ))}
+                {reinforceQs.map((_, i) => {
+                  const qid = reinforceQs[i].id;
+                  const h = hints[qid];
+                  let cls = "dot ";
+                  if (h && h.confirmed) cls += "dot-confirmed ";
+                  else if (h && h.revealed) cls += "dot-hinted ";
+                  else if (isAnswered(reinforceQs, reinforceAnswers, i)) cls += "dot-reinforce ";
+                  else cls += "dot-e ";
+                  if (i === reinforceIdx) cls += "dot-cur";
+                  return <button key={i} className={cls} onClick={() => { if (canAdvance || i <= reinforceIdx) setReinforceIdx(i); }} />;
+                })}
               </div>
               {reinforceIdx === reinforceQs.length - 1 && !isRR && !reinforceSubmitted ? (
-                <button className="btn btn-green" style={{padding:"10px 26px",fontSize:14}} onClick={handleReinforceSubmit}>Submit</button>
+                <button className="btn btn-green" style={{padding:"10px 26px",fontSize:14}} onClick={handleReinforceSubmit} disabled={!canAdvance}>Submit</button>
               ) : (
-                <button className="ftr-btn ftr-next" onClick={() => setReinforceIdx(c => Math.min(reinforceQs.length-1, c+1))} disabled={reinforceIdx === reinforceQs.length-1}>Next →</button>
+                <button className="ftr-btn ftr-next" onClick={() => setReinforceIdx(c => Math.min(reinforceQs.length-1, c+1))} disabled={reinforceIdx === reinforceQs.length-1 || !canAdvance}>Next →</button>
               )}
             </div>
           </div>
