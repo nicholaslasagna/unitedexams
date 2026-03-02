@@ -187,6 +187,27 @@
       return q.answer.some(a => val.includes(a.toLowerCase()));
     }
 
+    /* ═══ Option Shuffler ═══ */
+    // Shuffles options for MC/multi questions while remapping correct answer indices
+    // Skips True/False questions (2 options where first is True)
+    function shuffleOptions(q) {
+      if (q.type === "fill" || q.type === "free") return { ...q };
+      // Don't shuffle True/False
+      if (q.options.length === 2 && q.options[0] === "True" && q.options[1] === "False") return { ...q };
+      // Build index map: [{originalIdx, text}]
+      const indexed = q.options.map((text, i) => ({ orig: i, text }));
+      // Shuffle
+      for (let i = indexed.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indexed[i], indexed[j]] = [indexed[j], indexed[i]];
+      }
+      // Remap answers
+      const origToNew = {};
+      indexed.forEach((item, newIdx) => { origToNew[item.orig] = newIdx; });
+      const newAnswer = q.answer.map(a => origToNew[a]);
+      return { ...q, options: indexed.map(item => item.text), answer: newAnswer };
+    }
+
     /* ═══ Exam Builder ═══ */
     function buildExam(bank) {
       const profQs = bank.filter(q => q.fromProfessor);
@@ -205,7 +226,9 @@
         selected.push(...fills.slice(0, fc), ...others.slice(0, count - fc));
       });
       selected = selected.slice(0, 29);
-      return [...shuffle(profQs), ...shuffle(selected), ...freeQs];
+      // Shuffle option order on every MC/multi question
+      const all = [...shuffle(profQs), ...shuffle(selected), ...freeQs];
+      return all.map(q => shuffleOptions(q));
     }
 
     /* ═══ Reinforcement Builder ═══ */
@@ -235,8 +258,8 @@
       const seen = new Set();
       const deduped = combined.filter(q => { if (seen.has(q.id)) return false; seen.add(q.id); return true; });
 
-      // Cap at reasonable size (max ~20 questions)
-      return { questions: deduped.slice(0, 20), topics: [...weakTopics] };
+      // Cap at reasonable size (max ~20 questions), shuffle their options too
+      return { questions: deduped.slice(0, 20).map(q => shuffleOptions(q)), topics: [...weakTopics] };
     }
 
     /* ═══ Shared Question Renderer ═══ */
