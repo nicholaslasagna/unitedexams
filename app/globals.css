@@ -228,6 +228,18 @@ html[data-reduce-motion="on"] .mesh-hero::after {
   @apply my-4 border-l-4 border-brand-1/50 bg-brand-1/10 px-4 py-2 text-muted;
 }
 
+.markdown .katex {
+  color: hsl(var(--text));
+  font-size: 1.03em;
+}
+
+.markdown .katex-display {
+  margin: 0.9rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.15rem 0.2rem;
+}
+
 .markdown table {
   @apply my-4 w-full border-collapse overflow-hidden rounded-xl border border-white/[0.07];
 }
