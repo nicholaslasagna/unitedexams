@@ -23,7 +23,7 @@ export default function LeaderboardPage() {
       points
     };
     return [...seededLeaderboard, me].sort((a, b) => b.points - a.points);
-  }, [profile, streak.current, points]);
+  }, [profile, streak, points]);
 
   return (
     <div className="space-y-6">

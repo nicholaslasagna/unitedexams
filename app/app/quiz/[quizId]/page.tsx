@@ -166,21 +166,8 @@ export default function QuizPage() {
     ? questionsById.get(missedQuestionIds[reviewIndex])
     : undefined;
 
-  if (!quiz || !course) {
-    return (
-      <Card>
-        <CardBody className="space-y-3 p-8 text-center">
-          <p className="font-display text-2xl font-semibold">Quiz not found</p>
-          <p className="text-sm text-muted">The requested quiz set is unavailable.</p>
-          <Button asChild>
-            <Link href="/app/courses">Back to courses</Link>
-          </Button>
-        </CardBody>
-      </Card>
-    );
-  }
-
   const startQuiz = (override?: Partial<QuizSettings>) => {
+    if (!quiz) return;
     const effective = { ...settings, ...(override ?? {}) };
     const ids = quiz.questions.map((q) => q.id);
     const nextOrder = effective.randomizeQuestions ? shuffle(ids) : ids;
@@ -282,6 +269,7 @@ export default function QuizPage() {
   };
 
   const finalizeAttempt = async () => {
+    if (!quiz) return;
     if (finalizingRef.current) return;
     finalizingRef.current = true;
 
@@ -386,6 +374,20 @@ export default function QuizPage() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [stage, currentQuestion, submittedByQuestion, selfMarkedByQuestion, push]);
+
+  if (!quiz || !course) {
+    return (
+      <Card>
+        <CardBody className="space-y-3 p-8 text-center">
+          <p className="font-display text-2xl font-semibold">Quiz not found</p>
+          <p className="text-sm text-muted">The requested quiz set is unavailable.</p>
+          <Button asChild>
+            <Link href="/app/courses">Back to courses</Link>
+          </Button>
+        </CardBody>
+      </Card>
+    );
+  }
 
   if (stage === "overview") {
     return (

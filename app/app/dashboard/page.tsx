@@ -15,7 +15,6 @@ import {
   courseProgress,
   getStreak,
   leaderboardPoints,
-  latestAttemptForQuiz,
   recentAttempts,
   streakSparkline
 } from "@/features/progress/metrics";
