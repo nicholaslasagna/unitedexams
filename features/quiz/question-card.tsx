@@ -94,7 +94,7 @@ export function QuestionCard({
 
         {/* Question prompt */}
         <div id={promptId} className="space-y-4">
-          <Markdown content={question.prompt} />
+          <Markdown content={question.prompt} promoteMathInInlineCode />
           {question.imageUrl ? (
             <img src={question.imageUrl} alt="Question visual" className="max-h-72 w-full rounded-xl border border-borderc object-cover" />
           ) : null}
@@ -165,7 +165,7 @@ export function QuestionCard({
                           {idx + 1}
                         </span>
                         <div className="flex-1">
-                          <Markdown content={hint} />
+                          <Markdown content={hint} promoteMathInInlineCode />
                         </div>
                       </li>
                     ))}
@@ -225,7 +225,7 @@ export function QuestionCard({
                     {key}
                   </span>
                   <span className="flex-1 pt-0.5 text-sm leading-relaxed text-text">
-                    <Markdown content={option} />
+                    <Markdown content={option} promoteMathInInlineCode />
                   </span>
                   {submitted && optionState === "ok" ? (
                     <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-success" />
@@ -338,13 +338,13 @@ export function QuestionCard({
             <div className="rounded-xl border border-borderc bg-soft p-5">
               <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted">Explanation</p>
               <div className="prose-sm">
-                <Markdown content={question.explanation} />
+                <Markdown content={question.explanation} promoteMathInInlineCode />
               </div>
               {question.sampleAnswer ? (
                 <div className="mt-4 rounded-lg border border-success/30 bg-success/10 p-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-success">Correct Answer</p>
                   <div className="mt-1 text-sm text-text">
-                    <Markdown content={question.sampleAnswer} />
+                    <Markdown content={question.sampleAnswer} promoteMathInInlineCode />
                   </div>
                 </div>
               ) : null}
@@ -401,7 +401,7 @@ export function QuestionCard({
                     {idx + 1}
                   </span>
                   <div className="flex-1 text-sm text-text">
-                    <Markdown content={step} />
+                    <Markdown content={step} promoteMathInInlineCode />
                   </div>
                 </div>
               ))}

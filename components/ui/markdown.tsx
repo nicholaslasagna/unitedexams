@@ -21,7 +21,48 @@ function slug(text: string) {
     .replace(/(^-|-$)/g, "");
 }
 
-export function Markdown({ content, className = "" }: { content: string; className?: string }) {
+function looksLikeMathExpression(value: string) {
+  const text = value.trim();
+  if (!text) return false;
+
+  // Keep real code-like snippets as code.
+  if (
+    /\b(add|addi|sub|lw|sw|beq|bne|jal|jalr|lui|ori|const|let|function|return)\b/i.test(text) ||
+    /[{};]|=>|===|&&|\|\|/.test(text)
+  ) {
+    return false;
+  }
+
+  return (
+    /\\[a-zA-Z]+/.test(text) ||
+    /\bdy\/dx\b|\bd\/dx\b|\bdy\b|\bdx\b/.test(text) ||
+    /[a-zA-Z]'+/.test(text) ||
+    /[=<>]/.test(text) ||
+    /[\^_]/.test(text) ||
+    /[∫√π∞≤≥]/.test(text) ||
+    /[a-zA-Z0-9)\]]\s*[+\-*/]\s*[a-zA-Z0-9([\\]/.test(text)
+  );
+}
+
+function promoteInlineMath(content: string) {
+  return content.replace(/`([^`\n]+)`/g, (full, inner: string) => {
+    const candidate = inner.trim();
+    if (!looksLikeMathExpression(candidate)) return full;
+    return `$${candidate}$`;
+  });
+}
+
+export function Markdown({
+  content,
+  className = "",
+  promoteMathInInlineCode = false
+}: {
+  content: string;
+  className?: string;
+  promoteMathInInlineCode?: boolean;
+}) {
+  const processedContent = promoteMathInInlineCode ? promoteInlineMath(content) : content;
+
   return (
     <div className={`markdown ${className}`}>
       <ReactMarkdown
@@ -32,7 +73,7 @@ export function Markdown({ content, className = "" }: { content: string; classNa
           h3: ({ children }) => <h3 id={slug(flattenText(children))}>{children}</h3>
         }}
       >
-        {content}
+        {processedContent}
       </ReactMarkdown>
     </div>
   );
