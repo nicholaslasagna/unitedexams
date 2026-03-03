@@ -4,81 +4,119 @@
 // ═══════════════════════════════════════════════════════════
 
 const ReactApi = window.React || {};
-const { useState, useEffect, useRef, useCallback, useMemo } = ReactApi;
-let HashRouter;
-let Routes;
-let Route;
-let Link;
-let useParams;
-let useNavigate;
-let useLocation;
+const { useState, useEffect, useRef, useCallback, useMemo, useContext } = ReactApi;
+const RouterContext = ReactApi.createContext
+  ? ReactApi.createContext({ location: { pathname: "/", search: "" }, navigate: () => {} })
+  : { Provider: ({ children }) => children };
+const RouteParamsContext = ReactApi.createContext
+  ? ReactApi.createContext({})
+  : { Provider: ({ children }) => children };
 
-function bindRouterApi() {
-  const rr = window.ReactRouterDOM || {};
-  HashRouter = rr.HashRouter;
-  Routes = rr.Routes;
-  Route = rr.Route;
-  Link = rr.Link;
-  useParams = rr.useParams;
-  useNavigate = rr.useNavigate;
-  useLocation = rr.useLocation;
+function normalizePath(path) {
+  if (!path) return "/";
+  let p = String(path);
+  if (p.startsWith("#")) p = p.slice(1);
+  if (!p.startsWith("/")) p = `/${p}`;
+  if (p.length > 1 && p.endsWith("/")) p = p.slice(0, -1);
+  return p || "/";
 }
 
-bindRouterApi();
+function parseHashLocation() {
+  const rawHash = window.location.hash || "#/";
+  const hashPath = rawHash.startsWith("#") ? rawHash.slice(1) : rawHash;
+  const normalized = normalizePath(hashPath || "/");
+  const searchIdx = normalized.indexOf("?");
+  if (searchIdx === -1) return { pathname: normalized, search: "" };
+  return {
+    pathname: normalizePath(normalized.slice(0, searchIdx)),
+    search: normalized.slice(searchIdx)
+  };
+}
 
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector(`script[src="${src}"]`);
-    if (existing) {
-      if (existing.getAttribute("data-loaded") === "true") {
-        resolve();
-        return;
-      }
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error(`Failed to load ${src}`)), { once: true });
+function matchPathPattern(pattern, pathname) {
+  if (pattern === "*") return { matched: true, params: {} };
+  const normPattern = normalizePath(pattern || "/");
+  const normPathname = normalizePath(pathname || "/");
+  const pParts = normPattern.split("/").filter(Boolean);
+  const pathParts = normPathname.split("/").filter(Boolean);
+  if (pParts.length !== pathParts.length) return { matched: false, params: {} };
+  const params = {};
+  for (let i = 0; i < pParts.length; i += 1) {
+    const pp = pParts[i];
+    const current = pathParts[i];
+    if (pp.startsWith(":")) {
+      params[pp.slice(1)] = decodeURIComponent(current || "");
+      continue;
+    }
+    if (pp !== current) return { matched: false, params: {} };
+  }
+  return { matched: true, params };
+}
+
+function HashRouter({ children }) {
+  const [location, setLocation] = useState(() => parseHashLocation());
+
+  useEffect(() => {
+    const onHashChange = () => setLocation(parseHashLocation());
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+
+  const navigate = useCallback((to) => {
+    const target = normalizePath(to);
+    const current = parseHashLocation();
+    if (current.pathname === target && !current.search) {
+      setLocation(current);
       return;
     }
+    window.location.hash = target;
+  }, []);
 
-    const s = document.createElement("script");
-    s.src = src;
-    s.async = true;
-    s.onload = () => { s.setAttribute("data-loaded", "true"); resolve(); };
-    s.onerror = () => reject(new Error(`Failed to load ${src}`));
-    document.head.appendChild(s);
-  });
+  const value = useMemo(() => ({ location, navigate }), [location, navigate]);
+  return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>;
 }
 
-function ensureRouterLoaded() {
-  bindRouterApi();
-  if (HashRouter && Routes && Route && Link && useParams && useNavigate && useLocation) {
-    return Promise.resolve();
+function useLocation() {
+  return useContext(RouterContext).location;
+}
+
+function useNavigate() {
+  return useContext(RouterContext).navigate;
+}
+
+function useParams() {
+  return useContext(RouteParamsContext);
+}
+
+function Route() {
+  return null;
+}
+
+function Routes({ children }) {
+  const location = useLocation();
+  const routeList = ReactApi.Children.toArray(children);
+  for (const entry of routeList) {
+    if (!entry || !entry.props) continue;
+    const { path, element } = entry.props;
+    const match = matchPathPattern(path, location.pathname);
+    if (!match.matched) continue;
+    return <RouteParamsContext.Provider value={match.params}>{element}</RouteParamsContext.Provider>;
   }
+  return null;
+}
 
-  var routerSources = [
-    "https://cdn.jsdelivr.net/npm/react-router-dom@6.30.1/dist/umd/react-router-dom.production.min.js",
-    "https://unpkg.com/react-router-dom@6/umd/react-router-dom.production.min.js"
-  ];
-  var i = 0;
-
-  function tryNext() {
-    if (i >= routerSources.length) {
-      return Promise.reject(new Error("ReactRouterDOM is not defined"));
-    }
-    var src = routerSources[i];
-    i += 1;
-    return loadScript(src)
-      .then(function() {
-        bindRouterApi();
-        if (HashRouter && Routes && Route && Link && useParams && useNavigate && useLocation) return;
-        return tryNext();
-      })
-      .catch(function(err) {
-        console.warn("Router CDN failed:", src, err);
-        return tryNext();
-      });
-  }
-
-  return tryNext();
+function Link({ to, onClick, target, children, ...rest }) {
+  const navigate = useNavigate();
+  const href = `#${normalizePath(to)}`;
+  const handleClick = (e) => {
+    if (onClick) onClick(e);
+    if (e.defaultPrevented) return;
+    if (target === "_blank") return;
+    if (e.button !== 0 || e.metaKey || e.altKey || e.ctrlKey || e.shiftKey) return;
+    e.preventDefault();
+    navigate(to);
+  };
+  return <a {...rest} target={target} href={href} onClick={handleClick}>{children}</a>;
 }
 
 /* ═══ Helpers ═══ */
@@ -340,6 +378,27 @@ function HomePage() {
         </div>
       </section>
 
+      <section className="lane-grid">
+        <article className="lane-card">
+          <div className="lane-top">Exam Prep</div>
+          <h3>Simulated Test Runs</h3>
+          <p>Run full timed sets, then review with line-by-line explanations before retaking.</p>
+          <Link to="/dashboard" className="lane-link">Open exam mode &rarr;</Link>
+        </article>
+        <article className="lane-card">
+          <div className="lane-top">Concept Mastery</div>
+          <h3>Notes + Reinforcement Loop</h3>
+          <p>Read concise notes, identify weak topics, and drill targeted reinforcement questions.</p>
+          <Link to="/dashboard" className="lane-link">Train weak areas &rarr;</Link>
+        </article>
+        <article className="lane-card">
+          <div className="lane-top">Sprint Sessions</div>
+          <h3>Short High-Impact Quizzes</h3>
+          <p>Use short focused sets when you have 15-30 minutes between classes.</p>
+          <Link to="/dashboard" className="lane-link">Start a quick sprint &rarr;</Link>
+        </article>
+      </section>
+
       <section id="courses" className="landing-courses">
         <h2 className="landing-title">Course Tracks</h2>
         <div className="landing-course-grid">
@@ -421,6 +480,14 @@ function DashboardPage({ streak }) {
   const continueQuizSet = continueCourse
     ? continueCourse.quizSets.find(qs => qs.name === continueRow.quizName)
     : null;
+  const quickLaunch = courses
+    .flatMap(course => course.quizSets.map(quizSet => ({
+      id: `${course.id}-${quizSet.id}`,
+      label: `${course.code}: ${quizSet.name}`,
+      path: `/quiz/${course.id}/${quizSet.id}`,
+      color: course.color
+    })))
+    .slice(0, 6);
 
   return (
     <div className="dashboard">
@@ -490,6 +557,18 @@ function DashboardPage({ streak }) {
           placeholder="Search courses (e.g., architecture, automata, MATH)..."
           aria-label="Search courses"
         />
+      </div>
+
+      <div className="dash-tools">
+        <h3 className="section-title">Quick Launch</h3>
+        <div className="launch-grid">
+          {quickLaunch.map(item => (
+            <Link key={item.id} to={item.path} className="launch-chip" style={{ "--chip-color": item.color }}>
+              <span>{item.label}</span>
+              <span className="launch-arrow">&rarr;</span>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* Course Cards */}
@@ -1213,21 +1292,20 @@ function mountUnitedExamsApp() {
   if (!window.React || !window.ReactDOM) {
     throw new Error("React dependencies failed to load.");
   }
-
-  return ensureRouterLoaded().then(function() {
-    if (!window.UE || !UE.storage || !UE.buildExam || !window.UE_COURSES) {
-      throw new Error("Core study data failed to initialize.");
-    }
-    ReactDOM.createRoot(root).render(<App />);
-    if (window.UE_BOOT && typeof window.UE_BOOT.markLoaded === "function") {
-      window.UE_BOOT.markLoaded();
-    }
-  });
+  if (!window.UE || !UE.storage || !UE.buildExam || !window.UE_COURSES) {
+    throw new Error("Core study data failed to initialize.");
+  }
+  ReactDOM.createRoot(root).render(<App />);
+  if (window.UE_BOOT && typeof window.UE_BOOT.markLoaded === "function") {
+    window.UE_BOOT.markLoaded();
+  }
 }
 
-mountUnitedExamsApp().catch((err) => {
+try {
+  mountUnitedExamsApp();
+} catch (err) {
   console.error("United Exams failed to boot:", err);
   if (window.UE_BOOT && typeof window.UE_BOOT.showError === "function") {
     window.UE_BOOT.showError(err && err.message ? err.message : String(err));
   }
-});
+}
