@@ -48,7 +48,12 @@ function promoteInlineMath(content: string) {
   return content.replace(/`([^`\n]+)`/g, (full, inner: string) => {
     const candidate = inner.trim();
     if (!looksLikeMathExpression(candidate)) return full;
-    return `$${candidate}$`;
+    const normalized = candidate
+      // Make derivative notation render as a real fraction in KaTeX.
+      .replace(/\bdy\s*\/\s*dx\b/g, "\\frac{dy}{dx}")
+      .replace(/\bdx\s*\/\s*dt\b/g, "\\frac{dx}{dt}")
+      .replace(/\bd([a-zA-Z][a-zA-Z0-9]*)\s*\/\s*d([a-zA-Z][a-zA-Z0-9]*)\b/g, "\\frac{d$1}{d$2}");
+    return `$${normalized}$`;
   });
 }
 
