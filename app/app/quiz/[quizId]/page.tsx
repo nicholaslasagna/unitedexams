@@ -13,7 +13,7 @@ import {
   Settings2
 } from "lucide-react";
 import { getCourse, getQuizSet } from "@/data/seed";
-import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DonutChart } from "@/components/charts/donut-chart";
@@ -55,6 +55,8 @@ export default function QuizPage() {
   const [order, setOrder] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedByQuestion, setSelectedByQuestion] = useState<Record<string, number[]>>({});
+  const [responseByQuestion, setResponseByQuestion] = useState<Record<string, string>>({});
+  const [selfMarkedByQuestion, setSelfMarkedByQuestion] = useState<Record<string, boolean | undefined>>({});
   const [submittedByQuestion, setSubmittedByQuestion] = useState<Record<string, boolean>>({});
   const [correctByQuestion, setCorrectByQuestion] = useState<Record<string, boolean>>({});
   const [showExplanation, setShowExplanation] = useState<Record<string, boolean>>({});
@@ -134,16 +136,26 @@ export default function QuizPage() {
     Object.entries(selectedByQuestion).forEach(([id, selected]) => {
       if ((selected?.length ?? 0) > 0) set.add(id);
     });
+    Object.entries(responseByQuestion).forEach(([id, response]) => {
+      if (response.trim().length > 0) set.add(id);
+    });
     return set;
-  }, [selectedByQuestion]);
+  }, [selectedByQuestion, responseByQuestion]);
 
   const scorePreview = useMemo(() => {
     if (order.length === 0) return 0;
     const submittedIds = order.filter((id) => submittedByQuestion[id]);
     if (submittedIds.length === 0) return 0;
-    const correct = submittedIds.filter((id) => correctByQuestion[id]).length;
+    const correct = submittedIds.filter((id) => {
+      const question = questionsById.get(id);
+      if (!question) return false;
+      if (question.type === "free") {
+        return Boolean(selfMarkedByQuestion[id]);
+      }
+      return Boolean(correctByQuestion[id]);
+    }).length;
     return Math.round((correct / submittedIds.length) * 100);
-  }, [order, submittedByQuestion, correctByQuestion]);
+  }, [order, submittedByQuestion, correctByQuestion, questionsById, selfMarkedByQuestion]);
 
   const missedQuestionIds = useMemo(() => {
     if (!result) return [];
@@ -176,6 +188,8 @@ export default function QuizPage() {
     setOrder(nextOrder);
     setCurrentIndex(0);
     setSelectedByQuestion({});
+    setResponseByQuestion({});
+    setSelfMarkedByQuestion({});
     setSubmittedByQuestion({});
     setCorrectByQuestion({});
     setShowExplanation({});
@@ -191,6 +205,7 @@ export default function QuizPage() {
   const toggleOption = (index: number) => {
     if (!currentQuestion) return;
     if (submittedByQuestion[currentQuestion.id]) return;
+    if (currentQuestion.type === "free") return;
 
     setSelectedByQuestion((prev) => {
       const existing = prev[currentQuestion.id] ?? [];
@@ -207,9 +222,36 @@ export default function QuizPage() {
     });
   };
 
+  const updateCurrentFreeResponse = (value: string) => {
+    if (!currentQuestion || currentQuestion.type !== "free") return;
+    if (submittedByQuestion[currentQuestion.id]) return;
+    setResponseByQuestion((prev) => ({ ...prev, [currentQuestion.id]: value }));
+  };
+
+  const markCurrentFreeQuestion = (isCorrect: boolean) => {
+    if (!currentQuestion || currentQuestion.type !== "free") return;
+    if (!submittedByQuestion[currentQuestion.id]) return;
+
+    setSelfMarkedByQuestion((prev) => ({ ...prev, [currentQuestion.id]: isCorrect }));
+    setCorrectByQuestion((prev) => ({ ...prev, [currentQuestion.id]: isCorrect }));
+  };
+
   const submitCurrentQuestion = () => {
     if (!currentQuestion) return;
     if (submittedByQuestion[currentQuestion.id]) return;
+
+    if (currentQuestion.type === "free") {
+      const response = responseByQuestion[currentQuestion.id]?.trim() ?? "";
+      if (!response) {
+        push({ title: "Write your response first", description: "Add your reasoning before submitting." });
+        return;
+      }
+      setSubmittedByQuestion((prev) => ({ ...prev, [currentQuestion.id]: true }));
+      if (settings.explanationMode === "afterEach") {
+        setShowExplanation((prev) => ({ ...prev, [currentQuestion.id]: true }));
+      }
+      return;
+    }
 
     const selected = selectedByQuestion[currentQuestion.id] ?? [];
     if (selected.length === 0) {
@@ -250,9 +292,13 @@ export default function QuizPage() {
       if (!finalSubmitted[id]) {
         const question = questionsById.get(id);
         if (!question) return;
-        const selected = selectedByQuestion[id] ?? [];
         finalSubmitted[id] = true;
-        finalCorrect[id] = gradeQuestion(question, selected);
+        if (question.type === "free") {
+          finalCorrect[id] = Boolean(selfMarkedByQuestion[id]);
+        } else {
+          const selected = selectedByQuestion[id] ?? [];
+          finalCorrect[id] = gradeQuestion(question, selected);
+        }
       }
     });
 
@@ -262,6 +308,8 @@ export default function QuizPage() {
     const attempt = summarizeAttempt({
       quiz,
       selectedByQuestion,
+      freeResponseByQuestion: responseByQuestion,
+      selfMarkedByQuestion,
       order,
       timeSpentSeconds: timeSpent
     });
@@ -291,11 +339,14 @@ export default function QuizPage() {
       if (isTyping) return;
 
       const key = event.key.toLowerCase();
-      const optionIndex = keyMap.indexOf(key);
-      if (optionIndex >= 0 && optionIndex < currentQuestion.options.length) {
-        event.preventDefault();
-        toggleOption(optionIndex);
-        return;
+      if (currentQuestion.type !== "free") {
+        const optionIndex = keyMap.indexOf(key);
+        const optionsLength = currentQuestion.options?.length ?? 0;
+        if (optionIndex >= 0 && optionIndex < optionsLength) {
+          event.preventDefault();
+          toggleOption(optionIndex);
+          return;
+        }
       }
 
       if (key === "enter") {
@@ -303,11 +354,25 @@ export default function QuizPage() {
         if (!submittedByQuestion[currentQuestion.id]) {
           submitCurrentQuestion();
         } else {
+          if (currentQuestion.type === "free" && selfMarkedByQuestion[currentQuestion.id] === undefined) {
+            push({
+              title: "Mark your self-check first",
+              description: "Choose 'I got this' or 'Need review' before moving on."
+            });
+            return;
+          }
           gotoNext();
         }
       }
 
       if (key === "arrowright") {
+        if (currentQuestion.type === "free" && submittedByQuestion[currentQuestion.id] && selfMarkedByQuestion[currentQuestion.id] === undefined) {
+          push({
+            title: "Self-check required",
+            description: "Mark your response before navigating to the next question."
+          });
+          return;
+        }
         event.preventDefault();
         gotoNext();
       }
@@ -320,7 +385,7 @@ export default function QuizPage() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [stage, currentQuestion, submittedByQuestion, selectedByQuestion]);
+  }, [stage, currentQuestion, submittedByQuestion, selfMarkedByQuestion, push]);
 
   if (stage === "overview") {
     return (
@@ -380,7 +445,9 @@ export default function QuizPage() {
             </div>
 
             <div className="rounded-xl border border-borderc bg-soft p-4 text-xs text-muted">
-              Keyboard shortcuts in quiz: A/B/C/D choose options • Enter submit/next • Arrow keys navigate.
+              {quiz.courseId === "differential-equations"
+                ? "Differential Equations mode: open-ended free response with hint-by-hint guidance and walkthrough self-check."
+                : "Keyboard shortcuts in quiz: A/B/C/D choose options • Enter submit/next • Arrow keys navigate."}
             </div>
           </CardBody>
         </Card>
@@ -478,11 +545,16 @@ export default function QuizPage() {
               questionNumber={reviewIndex + 1}
               totalQuestions={missedQuestionIds.length}
               selected={selectedByQuestion[reviewQuestion.id] ?? []}
+              responseText={responseByQuestion[reviewQuestion.id] ?? ""}
               onToggleOption={() => undefined}
+              onResponseChange={() => undefined}
               onSubmitQuestion={() => undefined}
               submitted
               isCorrect={false}
+              selfMarked={selfMarkedByQuestion[reviewQuestion.id]}
+              onSelfMark={() => undefined}
               lockInteraction
+              disableSelfMark
               showExplanation
               onToggleExplanation={() => undefined}
             />
@@ -506,7 +578,15 @@ export default function QuizPage() {
 
   const answeredCount = answeredSet.size;
   const questionSubmitted = currentQuestion ? submittedByQuestion[currentQuestion.id] : false;
-  const canMoveForward = questionSubmitted || settings.explanationMode === "end";
+  const pendingSelfMark = currentQuestion?.type === "free" && questionSubmitted
+    ? selfMarkedByQuestion[currentQuestion.id] === undefined
+    : false;
+  const canMoveForward =
+    settings.explanationMode === "end"
+      ? currentQuestion?.type === "free"
+        ? questionSubmitted && !pendingSelfMark
+        : true
+      : questionSubmitted && !pendingSelfMark;
 
   return (
     <div className="space-y-4">
@@ -538,14 +618,20 @@ export default function QuizPage() {
               questionNumber={currentIndex + 1}
               totalQuestions={order.length}
               selected={selectedByQuestion[currentQuestion.id] ?? []}
+              responseText={responseByQuestion[currentQuestion.id] ?? ""}
               onToggleOption={toggleOption}
+              onResponseChange={updateCurrentFreeResponse}
               onSubmitQuestion={submitCurrentQuestion}
               submitted={Boolean(submittedByQuestion[currentQuestion.id])}
               isCorrect={
                 submittedByQuestion[currentQuestion.id]
-                  ? Boolean(correctByQuestion[currentQuestion.id])
+                  ? currentQuestion.type === "free" && selfMarkedByQuestion[currentQuestion.id] === undefined
+                    ? null
+                    : Boolean(correctByQuestion[currentQuestion.id])
                   : null
               }
+              selfMarked={selfMarkedByQuestion[currentQuestion.id]}
+              onSelfMark={markCurrentFreeQuestion}
               lockInteraction={Boolean(submittedByQuestion[currentQuestion.id])}
               showExplanation={Boolean(showExplanation[currentQuestion.id]) || settings.explanationMode === "end"}
               onToggleExplanation={() =>
@@ -564,9 +650,11 @@ export default function QuizPage() {
             </Button>
 
             {currentIndex === order.length - 1 ? (
-              <Button onClick={finalizeAttempt}>Finish Quiz</Button>
+              <Button onClick={finalizeAttempt} disabled={!canMoveForward}>
+                Finish Quiz
+              </Button>
             ) : (
-              <Button onClick={gotoNext} disabled={!canMoveForward && settings.explanationMode === "afterEach"}>
+              <Button onClick={gotoNext} disabled={!canMoveForward}>
                 Next
                 <ArrowRight className="h-4 w-4" />
               </Button>

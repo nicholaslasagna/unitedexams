@@ -2,18 +2,24 @@ import { uid } from "@/lib/utils";
 import type { Attempt, PerQuestionResult, Question, QuizSet } from "@/lib/types";
 
 export function gradeQuestion(question: Question, selected: number[]) {
-  if (question.correct.length !== selected.length) return false;
-  return question.correct.every((idx) => selected.includes(idx));
+  if (question.type === "free") return false;
+  const correct = question.correct ?? [];
+  if (correct.length !== selected.length) return false;
+  return correct.every((idx) => selected.includes(idx));
 }
 
 export function summarizeAttempt({
   quiz,
   selectedByQuestion,
+  freeResponseByQuestion,
+  selfMarkedByQuestion,
   order,
   timeSpentSeconds
 }: {
   quiz: QuizSet;
   selectedByQuestion: Record<string, number[]>;
+  freeResponseByQuestion?: Record<string, string>;
+  selfMarkedByQuestion?: Record<string, boolean | undefined>;
   order: string[];
   timeSpentSeconds: number;
 }): Attempt {
@@ -23,13 +29,28 @@ export function summarizeAttempt({
     .map((id) => questionsMap.get(id))
     .filter((q): q is Question => Boolean(q))
     .map((question) => {
+      if (question.type === "free") {
+        const selfMarked = Boolean(selfMarkedByQuestion?.[question.id]);
+        return {
+          questionId: question.id,
+          questionType: question.type,
+          isCorrect: selfMarked,
+          selected: [],
+          correct: [],
+          responseText: freeResponseByQuestion?.[question.id]?.trim() ?? "",
+          selfMarked,
+          tags: question.tags
+        };
+      }
+
       const selected = selectedByQuestion[question.id] ?? [];
       const isCorrect = gradeQuestion(question, selected);
       return {
         questionId: question.id,
+        questionType: question.type,
         isCorrect,
         selected,
-        correct: question.correct,
+        correct: question.correct ?? [],
         tags: question.tags
       };
     });
