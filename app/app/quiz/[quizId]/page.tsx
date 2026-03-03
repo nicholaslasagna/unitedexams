@@ -75,7 +75,8 @@ export default function QuizPage() {
         timed: false,
         timerMinutes: quiz.timerDefaultMinutes,
         randomizeQuestions: false,
-        explanationMode: "afterEach"
+        explanationMode: "afterEach",
+        questionCount: "all"
       });
     }
 
@@ -84,7 +85,8 @@ export default function QuizPage() {
         timed: true,
         timerMinutes: quiz.timerDefaultMinutes,
         randomizeQuestions: true,
-        explanationMode: "end"
+        explanationMode: "end",
+        questionCount: "all"
       });
     }
   }, [searchParams, quiz]);
@@ -170,7 +172,13 @@ export default function QuizPage() {
     if (!quiz) return;
     const effective = { ...settings, ...(override ?? {}) };
     const ids = quiz.questions.map((q) => q.id);
-    const nextOrder = effective.randomizeQuestions ? shuffle(ids) : ids;
+    const orderedIds = effective.randomizeQuestions ? shuffle(ids) : ids;
+    const maxQuestions = ids.length;
+    const requestedCount =
+      effective.questionCount === "all"
+        ? maxQuestions
+        : Math.min(maxQuestions, Math.max(1, Number(effective.questionCount || maxQuestions)));
+    const nextOrder = orderedIds.slice(0, requestedCount);
 
     setOrder(nextOrder);
     setCurrentIndex(0);
@@ -446,6 +454,12 @@ export default function QuizPage() {
               </Button>
             </div>
 
+            <p className="text-xs text-muted">
+              Current attempt length:{" "}
+              {settings.questionCount === "all" ? `All ${quiz.questions.length}` : settings.questionCount} question
+              {settings.questionCount === 1 ? "" : "s"}.
+            </p>
+
             <div className="rounded-xl border border-borderc bg-soft p-4 text-xs text-muted">
               {quiz.courseId === "differential-equations"
                 ? "Differential Equations mode: open-ended free response with hint-by-hint guidance and walkthrough self-check."
@@ -458,6 +472,7 @@ export default function QuizPage() {
           open={settingsOpen}
           onClose={() => setSettingsOpen(false)}
           initial={settings}
+          maxQuestions={quiz.questions.length}
           onConfirm={setSettings}
         />
       </div>

@@ -22,8 +22,7 @@ import {
   courseProgress,
   getStreak,
   leaderboardPoints,
-  recentAttempts,
-  streakSparkline
+  recentAttempts
 } from "@/features/progress/metrics";
 import { formatRelativeDate } from "@/lib/utils";
 

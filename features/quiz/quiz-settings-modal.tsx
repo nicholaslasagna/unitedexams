@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import type { QuizSettings } from "@/lib/types";
@@ -9,12 +8,18 @@ import type { QuizSettings } from "@/lib/types";
 interface QuizSettingsModalProps {
   open: boolean;
   initial: QuizSettings;
+  maxQuestions: number;
   onClose: () => void;
   onConfirm: (settings: QuizSettings) => void;
 }
 
-export function QuizSettingsModal({ open, initial, onClose, onConfirm }: QuizSettingsModalProps) {
+export function QuizSettingsModal({ open, initial, maxQuestions, onClose, onConfirm }: QuizSettingsModalProps) {
   const [settings, setSettings] = useState<QuizSettings>(initial);
+  const countOptions = useMemo(() => {
+    const stepped = [5, 10, 15, 20].filter((count) => count < maxQuestions);
+    const dynamic = [maxQuestions];
+    return [...new Set([...stepped, ...dynamic])].sort((a, b) => a - b);
+  }, [maxQuestions]);
 
   useEffect(() => {
     if (open) {
@@ -76,6 +81,33 @@ export function QuizSettingsModal({ open, initial, onClose, onConfirm }: QuizSet
               }
             />
           </label>
+        </div>
+
+        <div className="rounded-xl border border-borderc bg-soft p-4">
+          <p className="text-sm font-semibold text-text">Practice question count</p>
+          <p className="mt-1 text-xs text-muted">Choose how many questions to include in this attempt.</p>
+          <div className="mt-3">
+            <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+              Questions in this attempt
+            </label>
+            <select
+              value={settings.questionCount === "all" ? "all" : String(settings.questionCount)}
+              onChange={(event) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  questionCount: event.target.value === "all" ? "all" : Number(event.target.value)
+                }))
+              }
+              className="mt-1 h-10 w-full rounded-lg border border-borderc bg-surface px-3 text-sm text-text"
+            >
+              <option value="all">All ({maxQuestions})</option>
+              {countOptions.map((count) => (
+                <option key={`question-count-${count}`} value={count}>
+                  {count}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="rounded-xl border border-borderc bg-soft p-4">
