@@ -32,6 +32,7 @@ import { minutesSeconds, percentile, shuffle } from "@/lib/utils";
 import type { Attempt, QuizSettings } from "@/lib/types";
 
 type Stage = "overview" | "quiz" | "results" | "review";
+type AttemptMode = "test" | "study" | "timed";
 
 const keyMap = ["a", "b", "c", "d", "e", "f"];
 
@@ -47,6 +48,7 @@ export default function QuizPage() {
   const { push } = useToast();
 
   const [stage, setStage] = useState<Stage>("overview");
+  const [attemptMode, setAttemptMode] = useState<AttemptMode>("test");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<QuizSettings>(() =>
     defaultQuizSettings(quiz?.timerDefaultMinutes ?? 20)
@@ -71,6 +73,7 @@ export default function QuizPage() {
     if (!quiz) return;
 
     if (mode === "study") {
+      setAttemptMode("study");
       setSettings({
         timed: false,
         timerMinutes: quiz.timerDefaultMinutes,
@@ -81,6 +84,7 @@ export default function QuizPage() {
     }
 
     if (mode === "timed") {
+      setAttemptMode("timed");
       setSettings({
         timed: true,
         timerMinutes: quiz.timerDefaultMinutes,
@@ -168,7 +172,7 @@ export default function QuizPage() {
     ? questionsById.get(missedQuestionIds[reviewIndex])
     : undefined;
 
-  const startQuiz = (override?: Partial<QuizSettings>) => {
+  const startQuiz = (override?: Partial<QuizSettings>, mode: AttemptMode = attemptMode) => {
     if (!quiz) return;
     const effective = { ...settings, ...(override ?? {}) };
     const ids = quiz.questions.map((q) => q.id);
@@ -193,8 +197,45 @@ export default function QuizPage() {
     finalizingRef.current = false;
     setTimeSpent(0);
     setSettings(effective);
+    setAttemptMode(mode);
     setTimeLeft(effective.timerMinutes * 60);
     setStage("quiz");
+  };
+
+  const startStudyMode = () => {
+    startQuiz(
+      {
+        timed: false,
+        randomizeQuestions: false,
+        explanationMode: "afterEach",
+        questionCount: settings.questionCount
+      },
+      "study",
+    );
+  };
+
+  const startTestMode = () => {
+    startQuiz(
+      {
+        timed: false,
+        randomizeQuestions: true,
+        explanationMode: "end",
+        questionCount: settings.questionCount
+      },
+      "test",
+    );
+  };
+
+  const startTimedMode = () => {
+    startQuiz(
+      {
+        timed: true,
+        randomizeQuestions: true,
+        explanationMode: "end",
+        questionCount: settings.questionCount
+      },
+      "timed",
+    );
   };
 
   const toggleOption = (index: number) => {
@@ -431,27 +472,35 @@ export default function QuizPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => startQuiz()}>Start Quiz</Button>
+              <Button onClick={startTestMode}>Start Test Mode</Button>
               <Button
                 variant="secondary"
-                onClick={() => {
-                  startQuiz({ timed: false, explanationMode: "afterEach", randomizeQuestions: false });
-                }}
+                onClick={startStudyMode}
               >
-                Study Mode
+                Start Study Walkthrough
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => {
-                  startQuiz({ timed: true, explanationMode: "end", randomizeQuestions: true });
-                }}
+                onClick={startTimedMode}
               >
-                Timed Mode
+                Start Timed Exam
               </Button>
               <Button variant="ghost" onClick={() => setSettingsOpen(true)}>
                 <Settings2 className="h-4 w-4" />
                 Quiz Settings
               </Button>
+            </div>
+
+            <div className="grid gap-2 md:grid-cols-3">
+              <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
+                <span className="font-semibold text-text">Test Mode:</span> answer-first flow, graded accuracy, and explanations on demand.
+              </div>
+              <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
+                <span className="font-semibold text-text">Study Walkthrough:</span> guided hints + full step-by-step solution shown after each submit.
+              </div>
+              <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
+                <span className="font-semibold text-text">Timed Exam:</span> strict clock with randomized order and end-of-quiz review.
+              </div>
             </div>
 
             <p className="text-xs text-muted">
@@ -599,11 +648,9 @@ export default function QuizPage() {
     ? selfMarkedByQuestion[currentQuestion.id] === undefined
     : false;
   const canMoveForward =
-    settings.explanationMode === "end"
-      ? currentQuestion?.type === "free"
-        ? questionSubmitted && !pendingSelfMark
-        : true
-      : questionSubmitted && !pendingSelfMark;
+    currentQuestion?.type === "free"
+      ? questionSubmitted && !pendingSelfMark
+      : questionSubmitted;
 
   return (
     <div className="space-y-4">
@@ -614,7 +661,11 @@ export default function QuizPage() {
         </Button>
         <div className="inline-flex items-center gap-2 rounded-lg border border-borderc bg-soft px-3 py-2 text-xs text-muted">
           <Clock3 className="h-3.5 w-3.5" />
-          {settings.timed ? `Timed • ${minutesSeconds(timeLeft)} left` : `${minutesSeconds(timeSpent)} elapsed`}
+          {attemptMode === "study"
+            ? `Study walkthrough • ${minutesSeconds(timeSpent)} elapsed`
+            : settings.timed
+              ? `Timed exam • ${minutesSeconds(timeLeft)} left`
+              : `Test mode • ${minutesSeconds(timeSpent)} elapsed`}
         </div>
       </div>
 
@@ -650,7 +701,9 @@ export default function QuizPage() {
               selfMarked={selfMarkedByQuestion[currentQuestion.id]}
               onSelfMark={markCurrentFreeQuestion}
               lockInteraction={Boolean(submittedByQuestion[currentQuestion.id])}
-              showExplanation={Boolean(showExplanation[currentQuestion.id]) || settings.explanationMode === "end"}
+              studyMode={attemptMode === "study"}
+              showHintsBeforeSubmit={attemptMode === "study"}
+              showExplanation={attemptMode === "study" ? true : Boolean(showExplanation[currentQuestion.id])}
               onToggleExplanation={() =>
                 setShowExplanation((prev) => ({
                   ...prev,

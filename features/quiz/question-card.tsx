@@ -26,6 +26,8 @@ interface QuestionCardProps {
   disableSelfMark?: boolean;
   showExplanation: boolean;
   onToggleExplanation: () => void;
+  studyMode?: boolean;
+  showHintsBeforeSubmit?: boolean;
 }
 
 const optionKeys = ["A", "B", "C", "D", "E", "F"];
@@ -46,7 +48,9 @@ export function QuestionCard({
   lockInteraction = false,
   disableSelfMark = false,
   showExplanation,
-  onToggleExplanation
+  onToggleExplanation,
+  studyMode = false,
+  showHintsBeforeSubmit = true
 }: QuestionCardProps) {
   const [showWalkthrough, setShowWalkthrough] = useState(false);
   const [revealedSteps, setRevealedSteps] = useState(0);
@@ -66,9 +70,12 @@ export function QuestionCard({
   const options = question.options ?? [];
   const correctSet = useMemo(() => new Set(question.correct ?? []), [question.correct]);
   const hints = question.hintSteps ?? [];
-  const hintedSteps = hints.slice(0, revealedHints);
+  const effectiveHintCount = studyMode && submitted ? hints.length : revealedHints;
+  const hintedSteps = hints.slice(0, effectiveHintCount);
   const walkthroughSteps = question.walkthroughSteps ?? [];
-  const visibleSteps = walkthroughSteps.slice(0, revealedSteps);
+  const effectiveRevealedSteps = studyMode && submitted ? walkthroughSteps.length : revealedSteps;
+  const visibleSteps = walkthroughSteps.slice(0, effectiveRevealedSteps);
+  const walkthroughExpanded = (studyMode && submitted) || showWalkthrough;
 
   return (
     <Card className="overflow-hidden">
@@ -120,16 +127,16 @@ export function QuestionCard({
               aria-labelledby={promptId}
             />
 
-            {hints.length > 0 ? (
+            {hints.length > 0 && (showHintsBeforeSubmit || submitted) ? (
               <div className="rounded-xl border border-brand-2/30 bg-brand-2/10 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Lightbulb className="h-4 w-4 text-brand-2" />
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-2">
-                      Guided Hints ({revealedHints}/{hints.length})
+                      Guided Hints ({effectiveHintCount}/{hints.length})
                     </p>
                   </div>
-                  {!submitted ? (
+                  {!submitted && showHintsBeforeSubmit ? (
                     <Button
                       variant="ghost"
                       disabled={revealedHints >= hints.length}
@@ -293,7 +300,7 @@ export function QuestionCard({
                 <BookCheck className="h-4 w-4" />
                 {showExplanation ? "Hide explanation" : "Show explanation"}
               </Button>
-              {walkthroughSteps.length > 0 ? (
+              {walkthroughSteps.length > 0 && !studyMode ? (
                 <Button variant="ghost" onClick={() => {
                   setShowWalkthrough((prev) => !prev);
                   if (!showWalkthrough && revealedSteps === 0) setRevealedSteps(1);
@@ -301,6 +308,12 @@ export function QuestionCard({
                   <GraduationCap className="h-4 w-4" />
                   {showWalkthrough ? "Hide walkthrough" : "Step-by-step walkthrough"}
                 </Button>
+              ) : null}
+              {walkthroughSteps.length > 0 && studyMode ? (
+                <span className="inline-flex items-center gap-2 rounded-lg border border-brand-2/35 bg-brand-2/10 px-3 py-1.5 text-xs font-semibold text-brand-2">
+                  <GraduationCap className="h-3.5 w-3.5" />
+                  Guided walkthrough enabled
+                </span>
               ) : null}
             </div>
 
@@ -363,7 +376,7 @@ export function QuestionCard({
         ) : null}
 
         {/* Progressive walkthrough panel */}
-        {submitted && showWalkthrough && walkthroughSteps.length > 0 ? (
+        {submitted && walkthroughExpanded && walkthroughSteps.length > 0 ? (
           <div className="rounded-xl border border-brand-2/35 bg-brand-2/[0.06] p-5">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
@@ -373,7 +386,7 @@ export function QuestionCard({
                 </p>
               </div>
               <p className="text-xs font-mono text-brand-2/70">
-                {revealedSteps}/{walkthroughSteps.length}
+                {effectiveRevealedSteps}/{walkthroughSteps.length}
               </p>
             </div>
 
@@ -384,7 +397,7 @@ export function QuestionCard({
                   key={`step-bar-${idx}`}
                   className={cn(
                     "h-1 flex-1 rounded-full transition-all duration-500",
-                    idx < revealedSteps ? "bg-brand-2" : "bg-brand-2/15"
+                    idx < effectiveRevealedSteps ? "bg-brand-2" : "bg-brand-2/15"
                   )}
                 />
               ))}
@@ -408,7 +421,7 @@ export function QuestionCard({
             </div>
 
             {/* Reveal next step button */}
-            {revealedSteps < walkthroughSteps.length ? (
+            {!studyMode && revealedSteps < walkthroughSteps.length ? (
               <button
                 type="button"
                 onClick={() => setRevealedSteps((prev) => Math.min(walkthroughSteps.length, prev + 1))}
