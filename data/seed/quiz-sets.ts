@@ -1,6 +1,9 @@
 import type { QuizSet } from "@/lib/types";
+import { computerArchitectureQuizSets } from "./quiz-ca";
+import { automataQuizSets } from "./quiz-automata";
+import { softwareEngineeringQuizSets } from "./quiz-se";
 
-export const quizSets: QuizSet[] = [
+const legacyQuizSets: QuizSet[] = [
   {
     "id": "se-core-legacy",
     "courseId": "software-engineering",
@@ -2131,6 +2134,13 @@ export const quizSets: QuizSet[] = [
       }
     ]
   }
+];
+
+export const quizSets: QuizSet[] = [
+  ...legacyQuizSets,
+  ...computerArchitectureQuizSets,
+  ...automataQuizSets,
+  ...softwareEngineeringQuizSets,
 ];
 
 export function getQuizSetById(quizId: string) {
