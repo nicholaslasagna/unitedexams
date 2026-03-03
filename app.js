@@ -3,8 +3,72 @@
 //  React + React Router (HashRouter) — compiled via Babel
 // ═══════════════════════════════════════════════════════════
 
-const { useState, useEffect, useRef, useCallback, useMemo } = React;
-const { HashRouter, Routes, Route, Link, useParams, useNavigate, useLocation } = ReactRouterDOM;
+const ReactApi = window.React || {};
+const { useState, useEffect, useRef, useCallback, useMemo } = ReactApi;
+let HashRouter;
+let Routes;
+let Route;
+let Link;
+let useParams;
+let useNavigate;
+let useLocation;
+
+function bindRouterApi() {
+  const rr = window.ReactRouterDOM || {};
+  HashRouter = rr.HashRouter;
+  Routes = rr.Routes;
+  Route = rr.Route;
+  Link = rr.Link;
+  useParams = rr.useParams;
+  useNavigate = rr.useNavigate;
+  useLocation = rr.useLocation;
+}
+
+bindRouterApi();
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing) {
+      if (existing.getAttribute("data-loaded") === "true") {
+        resolve();
+        return;
+      }
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error(`Failed to load ${src}`)), { once: true });
+      return;
+    }
+
+    const s = document.createElement("script");
+    s.src = src;
+    s.async = true;
+    s.onload = () => { s.setAttribute("data-loaded", "true"); resolve(); };
+    s.onerror = () => reject(new Error(`Failed to load ${src}`));
+    document.head.appendChild(s);
+  });
+}
+
+async function ensureRouterLoaded() {
+  bindRouterApi();
+  if (HashRouter && Routes && Route && Link && useParams && useNavigate && useLocation) return;
+
+  const routerSources = [
+    "https://cdn.jsdelivr.net/npm/react-router-dom@6.30.1/dist/umd/react-router-dom.production.min.js",
+    "https://unpkg.com/react-router-dom@6/umd/react-router-dom.production.min.js"
+  ];
+
+  for (const src of routerSources) {
+    try {
+      await loadScript(src);
+      bindRouterApi();
+      if (HashRouter && Routes && Route && Link && useParams && useNavigate && useLocation) return;
+    } catch (err) {
+      console.warn("Router CDN failed:", src, err);
+    }
+  }
+
+  throw new Error("ReactRouterDOM is not defined");
+}
 
 /* ═══ Helpers ═══ */
 function getCourse(id) { return (window.UE_COURSES || []).find(c => c.id === id); }
@@ -58,39 +122,94 @@ function useStreak() {
 /* ═══ Layout (persistent nav) ═══ */
 function Layout({ children, theme, onToggleTheme, streak }) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [quickSearch, setQuickSearch] = useState("");
   const isLanding = location.pathname === "/" || location.pathname === "";
   const isDashboard = location.pathname === "/dashboard";
   const isCourse = location.pathname.startsWith("/course/");
   const isQuiz = location.pathname.startsWith("/quiz/");
 
+  useEffect(() => {
+    if (location.pathname !== "/dashboard") return;
+    const q = new URLSearchParams(location.search || "").get("q") || "";
+    setQuickSearch(q);
+  }, [location.pathname, location.search]);
+
+  const handleQuickSearch = (e) => {
+    e.preventDefault();
+    const q = quickSearch.trim();
+    if (!q) {
+      navigate("/dashboard");
+      return;
+    }
+    navigate(`/dashboard?q=${encodeURIComponent(q)}`);
+  };
+
   return (
     <div className="app">
-      <nav className="top-nav">
-        <div className="nav-left">
-          <Link to="/" className="nav-brand">
-            <span className="nav-logo">UE</span>
-            <span className="nav-title">United Exams</span>
-          </Link>
-          <div className="nav-links">
-            <Link to="/" className={`nav-link ${isLanding ? "nav-link-active" : ""}`}>Home</Link>
-            <Link to="/dashboard" className={`nav-link ${isDashboard || isCourse || isQuiz ? "nav-link-active" : ""}`}>Study Dashboard</Link>
+      <header className="portal-header">
+        <div className="utility-row">
+          <div className="utility-left">
+            <span className="utility-pill">Campus Portal</span>
+            <span className="utility-item">UnitedExams.com</span>
+            <span className="utility-divider" />
+            <span className="utility-item utility-muted">Students + Professors</span>
+          </div>
+          <div className="utility-right">
+            <Link to="/dashboard" className="utility-link">Support Center</Link>
+            <Link to="/dashboard" className="utility-link">Leaderboard</Link>
+            <Link to="/dashboard" className="utility-link">My Progress</Link>
           </div>
         </div>
-        <div className="nav-right">
-          {streak.current > 0 && !isLanding && (
-            <div className="streak-badge" title={`Best: ${streak.best} days`}>
-              <span className="streak-flame">&#x1F525;</span>
-              <span className="streak-num">{streak.current}</span>
-            </div>
-          )}
-          {isLanding && (
-            <Link to="/dashboard" className="nav-cta">Open Dashboard</Link>
-          )}
-          <button className="theme-toggle" onClick={onToggleTheme} title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}>
-            {theme === "dark" ? "\u2600\uFE0F" : "\u{1F319}"}
-          </button>
+
+        <div className="main-row">
+          <Link to="/" className="nav-brand">
+            <span className="nav-logo">&#x1F393;</span>
+            <span className="nav-title-wrap">
+              <span className="nav-title">United Exams</span>
+              <span className="nav-subtitle">College Study Hub</span>
+            </span>
+          </Link>
+
+          <div className="main-actions">
+            {streak.current > 0 && !isLanding && (
+              <div className="streak-badge" title={`Best: ${streak.best} days`}>
+                <span className="streak-flame">&#x1F525;</span>
+                <span className="streak-num">{streak.current}</span>
+              </div>
+            )}
+            <button className="theme-toggle" onClick={onToggleTheme} title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}>
+              {theme === "dark" ? "\u2600\uFE0F" : "\u{1F319}"}
+            </button>
+            <Link to="/dashboard" className="action-pill action-outline">Instructor Portal</Link>
+            <Link to="/dashboard" className="action-pill action-solid">Student Sign In</Link>
+          </div>
         </div>
-      </nav>
+
+        <div className="menu-row">
+          <div className="menu-links">
+            <Link to="/" className={`menu-link ${isLanding ? "menu-link-active" : ""}`}>Home</Link>
+            <Link to="/dashboard" className={`menu-link ${isDashboard ? "menu-link-active" : ""}`}>Study Dashboard</Link>
+            <Link to="/dashboard" className={`menu-link ${isCourse || isQuiz ? "menu-link-active" : ""}`}>Courses</Link>
+            <Link to="/dashboard" className="menu-link">Quiz Sets</Link>
+          </div>
+          <form className="menu-search" onSubmit={handleQuickSearch}>
+            <input
+              type="text"
+              value={quickSearch}
+              onChange={(e) => setQuickSearch(e.target.value)}
+              placeholder="Search topics, courses, or quiz sets..."
+              aria-label="Global course search"
+            />
+            <button type="submit">Search</button>
+          </form>
+        </div>
+      </header>
+
+      <div className="notice-bar">
+        <span className="notice-icon">i</span>
+        <p>New this week: course notes + walkthrough reinforcement are live across Software Engineering, Differential Equations, Computer Architecture, and Automata.</p>
+      </div>
       {children}
     </div>
   );
@@ -114,29 +233,31 @@ function HomePage() {
     if (rows.length === 0) return 0;
     return Math.round(rows.reduce((acc, row) => acc + (row.bestScore || 0), 0) / rows.length);
   })();
+  const quickActions = courses
+    .map(course => {
+      const quizSet = course.quizSets[0];
+      if (!quizSet) return null;
+      return {
+        label: `${course.code} ${quizSet.name}`,
+        path: `/quiz/${course.id}/${quizSet.id}`
+      };
+    })
+    .filter(Boolean)
+    .slice(0, 6);
 
   return (
     <div className="landing">
-      <section className="hero">
-        <div className="hero-copy">
+      <section className="hero home-stage">
+        <div className="hero-copy home-stage-primary">
           <div className="hero-tag">UnitedExams.com</div>
-          <h1 className="hero-title">A Professional Study Platform for College Courses</h1>
+          <h1 className="hero-title">A 10/10 Study Experience for College Courses</h1>
           <p className="hero-sub">
-            Practice realistic quiz sets, review targeted walkthroughs, track progress over time, and study across Software Engineering,
-            Differential Equations, Computer Architecture, and Theory of Automata.
+            Built as a clean academic portal: fast access to courses, search-first quiz discovery, walkthrough explanations,
+            saved progress, and focused reinforcement for weak topics.
           </p>
           <div className="hero-actions">
             <Link to="/dashboard" className="btn btn-accent">Start Studying</Link>
-            <button
-              type="button"
-              className="btn btn-ghost"
-              onClick={() => {
-                const el = document.getElementById("courses");
-                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
-            >
-              Explore Courses
-            </button>
+            <Link to="/dashboard" className="btn btn-ghost">Open Dashboard</Link>
           </div>
           <div className="hero-chips">
             <span className="hero-chip">Progress Tracking</span>
@@ -145,8 +266,13 @@ function HomePage() {
             <span className="hero-chip">Student + Professor Friendly</span>
           </div>
         </div>
-        <div className="hero-panel">
-          <h3>Live Platform Snapshot</h3>
+        <div className="hero-panel home-stage-side">
+          <h3>Today's Study Suggestions</h3>
+          <div className="suggestion-grid">
+            {quickActions.map(item => (
+              <Link key={item.path} to={item.path} className="suggestion-pill">{item.label}</Link>
+            ))}
+          </div>
           <div className="hero-metric-grid">
             <div className="hero-metric">
               <span className="hero-metric-label">Courses</span>
@@ -177,11 +303,11 @@ function HomePage() {
       <section className="audience-grid">
         <div className="aud-card">
           <h3>For Students</h3>
-          <p>Train with exam-style questions, timer pressure, adaptive reinforcement, and saved best scores per quiz set.</p>
+          <p>Train with exam-style questions, timer pressure, adaptive reinforcement, and score history by quiz set.</p>
         </div>
         <div className="aud-card">
           <h3>For Professors and TAs</h3>
-          <p>Use topic-tagged sets, consistent terminology, and structured walkthroughs to support tutorials and review sessions.</p>
+          <p>Use topic-tagged sets, consistent terminology, and structured walkthroughs for tutorials and exam review sessions.</p>
         </div>
       </section>
 
@@ -227,9 +353,15 @@ function HomePage() {
    DASHBOARD PAGE
    ═══════════════════════════════════════════════════════════ */
 function DashboardPage({ streak }) {
-  const [query, setQuery] = useState("");
+  const location = useLocation();
+  const [query, setQuery] = useState(() => new URLSearchParams(location.search || "").get("q") || "");
   const progress = UE.storage.getAllProgress();
   const courses = window.UE_COURSES || [];
+
+  useEffect(() => {
+    const q = new URLSearchParams(location.search || "").get("q") || "";
+    setQuery(q);
+  }, [location.search]);
 
   // Collect all progress rows for dashboard widgets.
   const activity = [];
@@ -1064,12 +1196,13 @@ function App() {
   );
 }
 
-function mountUnitedExamsApp() {
+async function mountUnitedExamsApp() {
   const root = document.getElementById("root");
   if (!root) throw new Error("Missing #root container.");
-  if (!window.React || !window.ReactDOM || !window.ReactRouterDOM) {
+  if (!window.React || !window.ReactDOM) {
     throw new Error("React dependencies failed to load.");
   }
+  await ensureRouterLoaded();
   if (!window.UE || !UE.storage || !UE.buildExam || !window.UE_COURSES) {
     throw new Error("Core study data failed to initialize.");
   }
@@ -1079,11 +1212,9 @@ function mountUnitedExamsApp() {
   }
 }
 
-try {
-  mountUnitedExamsApp();
-} catch (err) {
+mountUnitedExamsApp().catch((err) => {
   console.error("United Exams failed to boot:", err);
   if (window.UE_BOOT && typeof window.UE_BOOT.showError === "function") {
     window.UE_BOOT.showError(err && err.message ? err.message : String(err));
   }
-}
+});
