@@ -1064,4 +1064,26 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+function mountUnitedExamsApp() {
+  const root = document.getElementById("root");
+  if (!root) throw new Error("Missing #root container.");
+  if (!window.React || !window.ReactDOM || !window.ReactRouterDOM) {
+    throw new Error("React dependencies failed to load.");
+  }
+  if (!window.UE || !UE.storage || !UE.buildExam || !window.UE_COURSES) {
+    throw new Error("Core study data failed to initialize.");
+  }
+  ReactDOM.createRoot(root).render(<App />);
+  if (window.UE_BOOT && typeof window.UE_BOOT.markLoaded === "function") {
+    window.UE_BOOT.markLoaded();
+  }
+}
+
+try {
+  mountUnitedExamsApp();
+} catch (err) {
+  console.error("United Exams failed to boot:", err);
+  if (window.UE_BOOT && typeof window.UE_BOOT.showError === "function") {
+    window.UE_BOOT.showError(err && err.message ? err.message : String(err));
+  }
+}
