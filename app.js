@@ -21,6 +21,20 @@ function courseIcon(icon) {
   };
   return icons[icon] || "\u{1F4DA}";
 }
+function estimateQuizCount(quizSet) {
+  const bank = window[quizSet.questionBankKey] || [];
+  const cfg = quizSet.config || {};
+  const chapterSet = new Set(cfg.chapters || []);
+  const professorCount = cfg.professorQuestions === false
+    ? 0
+    : bank.filter(item => item.fromProfessor).length;
+  const freeCount = cfg.freeResponseIncluded === false
+    ? 0
+    : bank.filter(item => item.type === "free").length;
+  const chapterPool = bank.filter(item => !item.fromProfessor && item.type !== "free" && chapterSet.has(item.chapter)).length;
+  const randomCount = Math.min(cfg.maxQuestions || chapterPool, chapterPool);
+  return professorCount + freeCount + randomCount;
+}
 
 /* ═══ Theme Manager ═══ */
 function useTheme() {
@@ -44,7 +58,10 @@ function useStreak() {
 /* ═══ Layout (persistent nav) ═══ */
 function Layout({ children, theme, onToggleTheme, streak }) {
   const location = useLocation();
-  const isHome = location.pathname === "/" || location.pathname === "";
+  const isLanding = location.pathname === "/" || location.pathname === "";
+  const isDashboard = location.pathname === "/dashboard";
+  const isCourse = location.pathname.startsWith("/course/");
+  const isQuiz = location.pathname.startsWith("/quiz/");
 
   return (
     <div className="app">
@@ -54,13 +71,20 @@ function Layout({ children, theme, onToggleTheme, streak }) {
             <span className="nav-logo">UE</span>
             <span className="nav-title">United Exams</span>
           </Link>
+          <div className="nav-links">
+            <Link to="/" className={`nav-link ${isLanding ? "nav-link-active" : ""}`}>Home</Link>
+            <Link to="/dashboard" className={`nav-link ${isDashboard || isCourse || isQuiz ? "nav-link-active" : ""}`}>Study Dashboard</Link>
+          </div>
         </div>
         <div className="nav-right">
-          {streak.current > 0 && (
+          {streak.current > 0 && !isLanding && (
             <div className="streak-badge" title={`Best: ${streak.best} days`}>
               <span className="streak-flame">&#x1F525;</span>
               <span className="streak-num">{streak.current}</span>
             </div>
+          )}
+          {isLanding && (
+            <Link to="/dashboard" className="nav-cta">Open Dashboard</Link>
           )}
           <button className="theme-toggle" onClick={onToggleTheme} title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}>
             {theme === "dark" ? "\u2600\uFE0F" : "\u{1F319}"}
@@ -73,9 +97,137 @@ function Layout({ children, theme, onToggleTheme, streak }) {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   LANDING PAGE
+   ═══════════════════════════════════════════════════════════ */
+function HomePage() {
+  const courses = window.UE_COURSES || [];
+  const progress = UE.storage.getAllProgress();
+  const totalQuizSets = courses.reduce((acc, course) => acc + course.quizSets.length, 0);
+  const totalQuestions = courses.reduce((acc, course) => {
+    return acc + course.quizSets.reduce((sum, quizSet) => sum + estimateQuizCount(quizSet), 0);
+  }, 0);
+  const completedQuizSets = courses.reduce((acc, course) => {
+    return acc + course.quizSets.filter(qs => progress[qs.id]).length;
+  }, 0);
+  const avgBest = (() => {
+    const rows = Object.values(progress || {});
+    if (rows.length === 0) return 0;
+    return Math.round(rows.reduce((acc, row) => acc + (row.bestScore || 0), 0) / rows.length);
+  })();
+
+  return (
+    <div className="landing">
+      <section className="hero">
+        <div className="hero-copy">
+          <div className="hero-tag">UnitedExams.com</div>
+          <h1 className="hero-title">A Professional Study Platform for College Courses</h1>
+          <p className="hero-sub">
+            Practice realistic quiz sets, review targeted walkthroughs, track progress over time, and study across Software Engineering,
+            Differential Equations, Computer Architecture, and Theory of Automata.
+          </p>
+          <div className="hero-actions">
+            <Link to="/dashboard" className="btn btn-accent">Start Studying</Link>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => {
+                const el = document.getElementById("courses");
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+            >
+              Explore Courses
+            </button>
+          </div>
+          <div className="hero-chips">
+            <span className="hero-chip">Progress Tracking</span>
+            <span className="hero-chip">Walkthrough Explanations</span>
+            <span className="hero-chip">Weak-Area Reinforcement</span>
+            <span className="hero-chip">Student + Professor Friendly</span>
+          </div>
+        </div>
+        <div className="hero-panel">
+          <h3>Live Platform Snapshot</h3>
+          <div className="hero-metric-grid">
+            <div className="hero-metric">
+              <span className="hero-metric-label">Courses</span>
+              <span className="hero-metric-value">{courses.length}</span>
+            </div>
+            <div className="hero-metric">
+              <span className="hero-metric-label">Quiz Sets</span>
+              <span className="hero-metric-value">{totalQuizSets}</span>
+            </div>
+            <div className="hero-metric">
+              <span className="hero-metric-label">Question Pool</span>
+              <span className="hero-metric-value">{totalQuestions}+</span>
+            </div>
+            <div className="hero-metric">
+              <span className="hero-metric-label">Your Completion</span>
+              <span className="hero-metric-value">{completedQuizSets}/{totalQuizSets}</span>
+            </div>
+          </div>
+          <div className="hero-inline-note">
+            {completedQuizSets > 0
+              ? `Current average best score: ${avgBest}%`
+              : "No attempts yet — your dashboard will fill with scores and activity after your first quiz."
+            }
+          </div>
+        </div>
+      </section>
+
+      <section className="audience-grid">
+        <div className="aud-card">
+          <h3>For Students</h3>
+          <p>Train with exam-style questions, timer pressure, adaptive reinforcement, and saved best scores per quiz set.</p>
+        </div>
+        <div className="aud-card">
+          <h3>For Professors and TAs</h3>
+          <p>Use topic-tagged sets, consistent terminology, and structured walkthroughs to support tutorials and review sessions.</p>
+        </div>
+      </section>
+
+      <section className="how-grid">
+        <div className="how-step">
+          <span className="how-num">1</span>
+          <h4>Pick a Course</h4>
+          <p>Start in the study dashboard and choose your class track.</p>
+        </div>
+        <div className="how-step">
+          <span className="how-num">2</span>
+          <h4>Take a Quiz Set</h4>
+          <p>Answer randomized questions with real exam pacing and mixed question types.</p>
+        </div>
+        <div className="how-step">
+          <span className="how-num">3</span>
+          <h4>Close Weak Areas</h4>
+          <p>Review explanations and launch reinforcement rounds focused on missed topics.</p>
+        </div>
+      </section>
+
+      <section id="courses" className="landing-courses">
+        <h2 className="landing-title">Course Tracks</h2>
+        <div className="landing-course-grid">
+          {courses.map(course => (
+            <Link to={`/course/${course.id}`} key={course.id} className="landing-course-card" style={{ "--card-accent": course.color }}>
+              <div className="landing-course-head">
+                <span className="course-icon">{courseIcon(course.icon)}</span>
+                <span className="landing-course-code">{course.code}</span>
+              </div>
+              <h3>{course.name}</h3>
+              <p>{course.description}</p>
+              <div className="landing-course-foot">{course.quizSets.length} quiz sets</div>
+            </Link>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
    DASHBOARD PAGE
    ═══════════════════════════════════════════════════════════ */
 function DashboardPage({ streak }) {
+  const [query, setQuery] = useState("");
   const progress = UE.storage.getAllProgress();
   const courses = window.UE_COURSES || [];
 
@@ -115,12 +267,23 @@ function DashboardPage({ streak }) {
   const averageBest = completedQuizSets > 0
     ? Math.round(activity.reduce((acc, r) => acc + r.score, 0) / completedQuizSets)
     : 0;
+  const filteredCourses = courses.filter(course => {
+    const target = `${course.name} ${course.code} ${course.description}`.toLowerCase();
+    return target.includes(query.trim().toLowerCase());
+  });
+  const continueRow = recent[0] || null;
+  const continueCourse = continueRow
+    ? courses.find(c => c.name === continueRow.courseName)
+    : null;
+  const continueQuizSet = continueCourse
+    ? continueCourse.quizSets.find(qs => qs.name === continueRow.quizName)
+    : null;
 
   return (
     <div className="dashboard">
       <div className="dash-hero">
-        <h1 className="dash-title">Welcome to United Exams</h1>
-        <p className="dash-sub">Your college study hub. Pick a course and start practicing.</p>
+        <h1 className="dash-title">Study Dashboard</h1>
+        <p className="dash-sub">Pick a course, launch a quiz set, and keep your score trend moving up.</p>
       </div>
 
       {/* Streak Banner */}
@@ -165,9 +328,30 @@ function DashboardPage({ streak }) {
         </div>
       </div>
 
+      {continueCourse && continueQuizSet && (
+        <Link className="continue-card" to={`/quiz/${continueCourse.id}/${continueQuizSet.id}`}>
+          <div>
+            <div className="continue-label">Continue Studying</div>
+            <div className="continue-title">{continueRow.courseName} — {continueRow.quizName}</div>
+            <div className="continue-sub">Last best: {continueRow.score}% • Attempts: {continueRow.attempts}</div>
+          </div>
+          <div className="continue-arrow">&rarr;</div>
+        </Link>
+      )}
+
+      <div className="dash-search-wrap">
+        <input
+          className="dash-search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search courses (e.g., architecture, automata, MATH)..."
+          aria-label="Search courses"
+        />
+      </div>
+
       {/* Course Cards */}
       <div className="course-grid">
-        {courses.map(c => {
+        {filteredCourses.map(c => {
           const totalQuizzes = c.quizSets.length;
           const completed = c.quizSets.filter(qs => progress[qs.id]).length;
           const bestOverall = c.quizSets.reduce((best, qs) => {
@@ -195,6 +379,11 @@ function DashboardPage({ streak }) {
           );
         })}
       </div>
+      {filteredCourses.length === 0 && (
+        <div className="empty-state" style={{ paddingTop: 8 }}>
+          <p>No courses matched "{query}". Try a broader keyword.</p>
+        </div>
+      )}
 
       {/* Recent Activity */}
       {recent.length > 0 && (
@@ -262,7 +451,7 @@ function CoursePage() {
   if (!course) return (
     <div className="not-found">
       <h2>Course not found</h2>
-      <Link to="/" className="btn btn-accent">Back to Dashboard</Link>
+      <Link to="/dashboard" className="btn btn-accent">Back to Dashboard</Link>
     </div>
   );
 
@@ -271,7 +460,7 @@ function CoursePage() {
   return (
     <div className="course-page" style={{ "--course-color": course.color }}>
       <div className="course-header">
-        <Link to="/" className="back-link">&larr; All Courses</Link>
+        <Link to="/dashboard" className="back-link">&larr; All Courses</Link>
         <div className="course-hero-icon">{courseIcon(course.icon)}</div>
         <div className="course-code-lg">{course.code}</div>
         <h1 className="course-title">{course.name}</h1>
@@ -464,7 +653,7 @@ function QuizPage({ onQuizComplete }) {
   if (!course || !quizSet) return (
     <div className="not-found">
       <h2>Quiz not found</h2>
-      <Link to="/" className="btn btn-accent">Back to Dashboard</Link>
+      <Link to="/dashboard" className="btn btn-accent">Back to Dashboard</Link>
     </div>
   );
 
@@ -864,9 +1053,11 @@ function App() {
     <HashRouter>
       <Layout theme={theme} onToggleTheme={toggleTheme} streak={streak}>
         <Routes>
-          <Route path="/" element={<DashboardPage streak={streak} />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/dashboard" element={<DashboardPage streak={streak} />} />
           <Route path="/course/:courseId" element={<CoursePage />} />
           <Route path="/quiz/:courseId/:quizId" element={<QuizPage onQuizComplete={refreshStreak} />} />
+          <Route path="*" element={<HomePage />} />
         </Routes>
       </Layout>
     </HashRouter>
