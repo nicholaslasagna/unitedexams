@@ -5,40 +5,38 @@
 @import "katex/dist/katex.min.css";
 
 :root {
-  --bg: 240 20% 97%;
+  --bg: 220 20% 96%;
   --surface: 0 0% 100%;
-  --surface-raised: 240 15% 98%;
-  --soft: 240 18% 95%;
-  --border: 240 12% 87%;
-  --border-bright: 240 14% 78%;
-  --text: 240 30% 8%;
-  --muted: 240 10% 42%;
-  --faint: 240 8% 58%;
-  --accent: 235 89% 74%;
-  --accent-dim: 235 89% 74%;
-  --brand-1: 235 89% 66%;
-  --brand-2: 262 83% 66%;
-  --brand-3: 235 89% 74%;
-  --success: 160 67% 48%;
-  --warn: 43 96% 56%;
-  --danger: 351 90% 68%;
-  --layer-0: 240 50% 4%;
-  --layer-1: 240 40% 8%;
-  --layer-2: 240 30% 12%;
+  --surface-raised: 220 14% 98%;
+  --soft: 220 16% 95%;
+  --border: 220 13% 86%;
+  --border-bright: 220 14% 74%;
+  --text: 220 30% 10%;
+  --muted: 220 10% 44%;
+  --faint: 220 8% 62%;
+  --accent: 235 85% 62%;
+  --accent-dim: 235 85% 62%;
+  --brand-1: 235 80% 58%;
+  --brand-2: 262 72% 56%;
+  --brand-3: 235 85% 62%;
+  --success: 160 67% 38%;
+  --warn: 43 96% 44%;
+  --danger: 351 80% 52%;
+  --layer-0: 220 16% 94%;
+  --layer-1: 220 14% 90%;
+  --layer-2: 220 12% 86%;
 }
 
 :root.dark {
-  /* Near-black atmospheric base — matching the quiz aesthetic */
   --bg: 240 50% 3%;
   --surface: 240 30% 6%;
   --surface-raised: 240 25% 9%;
   --soft: 240 22% 11%;
-  --border: 0 0% 100%;
-  --border-bright: 0 0% 100%;
+  --border: 240 18% 18%;
+  --border-bright: 240 15% 25%;
   --text: 230 20% 94%;
   --muted: 230 10% 55%;
   --faint: 230 8% 30%;
-  /* Indigo / purple accent system — quiz DNA */
   --accent: 235 89% 74%;
   --accent-dim: 235 89% 74%;
   --brand-1: 235 89% 66%;
@@ -115,10 +113,19 @@ html[data-reduce-motion="on"] *::after {
   inset: 0;
   z-index: 0;
   pointer-events: none;
+}
+
+:root.dark .ambient-glow {
   background:
     radial-gradient(ellipse 70% 50% at 15% 10%, hsl(var(--accent) / 0.07), transparent 65%),
     radial-gradient(ellipse 50% 40% at 85% 90%, hsl(var(--brand-2) / 0.05), transparent 55%),
     radial-gradient(ellipse 80% 80% at 50% 50%, hsl(var(--bg)), transparent);
+}
+
+:root:not(.dark) .ambient-glow {
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 10%, hsl(var(--accent) / 0.04), transparent 65%),
+    radial-gradient(ellipse 50% 40% at 85% 90%, hsl(var(--brand-2) / 0.03), transparent 55%);
 }
 
 /* ── Mesh hero — animated gradient card background ── */
@@ -138,15 +145,27 @@ html[data-reduce-motion="on"] *::after {
   opacity: 0.5;
 }
 
-.mesh-hero::before {
+:root.dark .mesh-hero::before {
   background: radial-gradient(circle at 18% 18%, hsl(var(--brand-1) / 0.35), transparent 50%),
     radial-gradient(circle at 82% 38%, hsl(var(--brand-2) / 0.3), transparent 56%);
   animation: meshShift 22s ease-in-out infinite;
 }
 
-.mesh-hero::after {
+:root.dark .mesh-hero::after {
   background: radial-gradient(circle at 62% 76%, hsl(var(--brand-3) / 0.28), transparent 52%),
     radial-gradient(circle at 30% 70%, hsl(var(--brand-2) / 0.22), transparent 52%);
+  animation: meshShift 30s ease-in-out infinite reverse;
+}
+
+:root:not(.dark) .mesh-hero::before {
+  background: radial-gradient(circle at 18% 18%, hsl(var(--brand-1) / 0.12), transparent 50%),
+    radial-gradient(circle at 82% 38%, hsl(var(--brand-2) / 0.1), transparent 56%);
+  animation: meshShift 22s ease-in-out infinite;
+}
+
+:root:not(.dark) .mesh-hero::after {
+  background: radial-gradient(circle at 62% 76%, hsl(var(--brand-3) / 0.1), transparent 52%),
+    radial-gradient(circle at 30% 70%, hsl(var(--brand-2) / 0.08), transparent 52%);
   animation: meshShift 30s ease-in-out infinite reverse;
 }
 
@@ -169,7 +188,11 @@ html[data-reduce-motion="on"] .mesh-hero::after {
 .glass {
   background: linear-gradient(150deg, hsl(var(--surface) / 0.84), hsl(var(--surface) / 0.72));
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 14px 38px rgba(2, 8, 24, 0.12);
+}
+
+:root.dark .glass {
   box-shadow: 0 14px 38px rgba(2, 8, 24, 0.36);
 }
 
@@ -190,7 +213,7 @@ html[data-reduce-motion="on"] .mesh-hero::after {
 }
 
 .markdown h2 {
-  @apply mt-8 border-b border-white/[0.07] pb-2 text-[30px] leading-tight;
+  @apply mt-8 border-b border-borderc pb-2 text-[30px] leading-tight;
 }
 
 .markdown h3 {
@@ -211,11 +234,19 @@ html[data-reduce-motion="on"] .mesh-hero::after {
 }
 
 .markdown code {
-  @apply rounded-md bg-white/[0.05] px-1.5 py-0.5 font-mono text-[0.88em] text-text;
+  @apply rounded-md bg-soft px-1.5 py-0.5 font-mono text-[0.88em] text-text;
 }
 
 .markdown pre {
-  @apply my-4 overflow-x-auto rounded-xl border border-white/[0.07] bg-[#050510] p-4 text-slate-100;
+  @apply my-4 overflow-x-auto rounded-xl border border-borderc p-4;
+}
+
+:root.dark .markdown pre {
+  @apply bg-[#050510] text-slate-100;
+}
+
+:root:not(.dark) .markdown pre {
+  @apply bg-[#1e1e2e] text-slate-100;
 }
 
 .markdown pre code {
@@ -261,19 +292,19 @@ html[data-reduce-motion="on"] .mesh-hero::after {
 }
 
 .markdown table {
-  @apply my-4 w-full border-collapse overflow-hidden rounded-xl border border-white/[0.07];
+  @apply my-4 w-full border-collapse overflow-hidden rounded-xl border border-borderc;
 }
 
 .markdown th,
 .markdown td {
-  @apply border border-white/[0.07] px-3 py-2 text-left text-sm;
+  @apply border border-borderc px-3 py-2 text-left text-sm;
 }
 
 /* ── Skeleton ── */
 .skeleton {
   position: relative;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.035);
+  background: hsl(var(--soft));
   border-radius: 14px;
 }
 
@@ -282,7 +313,7 @@ html[data-reduce-motion="on"] .mesh-hero::after {
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
+  background: linear-gradient(90deg, transparent, hsl(var(--surface) / 0.6), transparent);
   animation: shimmer 1.4s infinite;
 }
 
@@ -307,10 +338,10 @@ html[data-reduce-motion="on"] .skeleton::after {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: hsl(var(--border));
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: hsl(var(--border-bright));
 }
