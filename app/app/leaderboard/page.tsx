@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import { Crown, Flame, Trophy } from "lucide-react";
-import { seededLeaderboard } from "@/data/seed/leaderboard";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAppData } from "@/lib/app-data-context";
@@ -13,17 +12,16 @@ export default function LeaderboardPage() {
   const streak = useMemo(() => getStreak(attempts), [attempts]);
   const points = useMemo(() => leaderboardPoints(attempts), [attempts]);
 
-  const rows = useMemo(() => {
-    const me = {
+  const rows = [
+    {
       id: "me",
       name: profile.name || "You",
       school: profile.school,
       role: "student" as const,
       streak: streak.current,
       points
-    };
-    return [...seededLeaderboard, me].sort((a, b) => b.points - a.points);
-  }, [profile, streak, points]);
+    }
+  ];
 
   return (
     <div className="space-y-6">
@@ -49,15 +47,15 @@ export default function LeaderboardPage() {
         <Card>
           <CardBody className="p-5">
             <p className="text-xs uppercase tracking-[0.14em] text-muted">Leaderboard style</p>
-            <p className="mt-2 text-sm text-muted">Friends/classboard style. No global vanity ranking.</p>
+            <p className="mt-2 text-sm text-muted">Local-first for now. Class/friends entries will appear once real sync is connected.</p>
           </CardBody>
         </Card>
       </section>
 
       <Card>
         <CardHeader>
-          <h1 className="font-display text-3xl font-semibold">Class + Friends Leaderboard</h1>
-          <p className="text-sm text-muted">Tasteful motivation: streak consistency and quality points.</p>
+          <h1 className="font-display text-3xl font-semibold">Leaderboard</h1>
+          <p className="text-sm text-muted">Only real user data is shown. No seeded or synthetic users.</p>
         </CardHeader>
         <CardBody>
           <div className="space-y-2">
@@ -77,7 +75,7 @@ export default function LeaderboardPage() {
                     <p className="text-xs text-muted">{row.school || "Independent"}</p>
                   </div>
                   {idx === 0 ? <Crown className="h-4 w-4 text-warn" /> : null}
-                  <Badge tone={row.role === "professor" ? "warn" : row.role === "ta" ? "brand" : "default"}>{row.role || "student"}</Badge>
+                  <Badge tone="default">{row.role || "student"}</Badge>
                 </div>
                 <div className="text-right">
                   <p className="font-mono text-base font-bold text-text">{row.points} pts</p>
@@ -85,6 +83,9 @@ export default function LeaderboardPage() {
                 </div>
               </div>
             ))}
+          </div>
+          <div className="mt-4 rounded-xl border border-dashed border-borderc/75 bg-soft/70 px-4 py-3 text-sm text-muted">
+            No classmates connected yet. When backend sync is enabled, this board will populate with real class/friend standings.
           </div>
         </CardBody>
       </Card>
