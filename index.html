@@ -418,6 +418,21 @@
     .hint-confirmed { margin-top: 12px; display: flex; align-items: center; gap: 8px; color: var(--green); font-size: 14px; font-weight: 600; animation: rise 0.2s ease; }
     .hint-locked { opacity: 0.5; pointer-events: none; }
 
+    /* Boot Safety */
+    .boot-error-banner { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 60;
+      background: rgba(251,113,133,0.14); border: 1px solid rgba(251,113,133,0.55); color: var(--text-heading);
+      border-radius: 10px; padding: 10px 14px; font-size: 13px; max-width: min(92vw, 980px); }
+    .fallback-shell { max-width: 980px; margin: 0 auto; padding: 56px 20px 40px; }
+    .fallback-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 34px 32px; margin-bottom: 16px; }
+    .fallback-card h1 { color: var(--text-heading); font-size: 42px; letter-spacing: -1px; line-height: 1.05; max-width: 15ch; }
+    .fallback-card p { color: var(--text2); margin-top: 12px; font-size: 15px; line-height: 1.7; max-width: 64ch; }
+    .fallback-actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+    .fallback-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .fallback-mini { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+    .fallback-mini h3 { color: var(--text-heading); font-size: 16px; margin-bottom: 6px; }
+    .fallback-mini p { color: var(--text2); font-size: 13px; line-height: 1.65; }
+    #root[data-app-loaded="true"] .fallback-shell { display: none; }
+
     /* ═══ Responsive ═══ */
     @media (max-width: 600px) {
       .top-nav { padding: 10px 14px; }
@@ -451,6 +466,10 @@
       .res-btns { flex-direction: column; align-items: center; }
       .weak-stat { flex-direction: column; gap: 10px; }
       .course-title { font-size: 24px; }
+      .fallback-shell { padding: 24px 14px 30px; }
+      .fallback-card { padding: 24px 18px; }
+      .fallback-card h1 { font-size: 33px; }
+      .fallback-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -461,8 +480,66 @@
     catch(e) {}
   </script>
 
+  <div id="boot-error" class="boot-error-banner" hidden></div>
   <div class="ambient"></div>
-  <div id="root"></div>
+  <div id="root">
+    <div class="fallback-shell" id="fallback-shell">
+      <div class="fallback-card">
+        <div class="hero-tag">UnitedExams.com</div>
+        <h1>United Exams, built for real college study workflows.</h1>
+        <p>
+          Launch course-specific quiz sets, review walkthrough explanations, and track your best scores in Software Engineering,
+          Differential Equations, Computer Architecture, and Theory of Automata.
+        </p>
+        <div class="fallback-actions">
+          <a href="#/dashboard" class="btn btn-accent">Open Study Dashboard</a>
+          <a href="#/" class="btn btn-ghost">Go to Home</a>
+        </div>
+      </div>
+      <div class="fallback-grid">
+        <div class="fallback-mini">
+          <h3>Progress Tracking</h3>
+          <p>Best score and attempt history saved by quiz set for fast weekly review cycles.</p>
+        </div>
+        <div class="fallback-mini">
+          <h3>Targeted Reinforcement</h3>
+          <p>Weak-topic follow-up questions and hint-confirm flow to close specific gaps.</p>
+        </div>
+        <div class="fallback-mini">
+          <h3>Student + Professor Friendly</h3>
+          <p>Structured question banks, topic tags, and course notes for class-aligned prep.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var root = document.getElementById("root");
+      var errorBanner = document.getElementById("boot-error");
+      function showError(message) {
+        if (!errorBanner) return;
+        errorBanner.hidden = false;
+        errorBanner.textContent = "United Exams could not load the app shell. " + message + " Use the fallback links below while this reloads.";
+      }
+      window.UE_BOOT = {
+        markLoaded: function() {
+          if (root) root.setAttribute("data-app-loaded", "true");
+          if (errorBanner) errorBanner.hidden = true;
+        },
+        showError: showError
+      };
+      window.addEventListener("error", function(event) {
+        if (!event) return;
+        showError(event.message || "Unexpected runtime error.");
+      });
+      window.addEventListener("unhandledrejection", function(event) {
+        var reason = event && event.reason;
+        var msg = (reason && reason.message) ? reason.message : String(reason || "Unhandled promise rejection.");
+        showError(msg);
+      });
+    })();
+  </script>
 
   <!-- Lib (plain JS) -->
   <script src="lib/storage.js"></script>
