@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 export function ProgressBar({ value, className }: { value: number; className?: string }) {
   const pct = Math.max(0, Math.min(100, value));
   return (
-    <div className={cn("h-2.5 w-full overflow-hidden rounded-full bg-soft", className)} aria-hidden>
+    <div className={cn("h-2.5 w-full overflow-hidden rounded-full bg-soft/85", className)} aria-hidden>
       <div
-        className="h-full rounded-full bg-brand-gradient transition-all duration-700"
+        className="h-full rounded-full bg-brand-gradient shadow-[0_0_14px_hsl(var(--brand-2)/0.45)] transition-all duration-700"
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -31,7 +31,7 @@ export function ProgressRing({
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90" aria-hidden>
-        <circle cx={size / 2} cy={size / 2} r={radius} stroke="currentColor" strokeWidth={stroke} className="text-soft" fill="none" />
+        <circle cx={size / 2} cy={size / 2} r={radius} stroke="currentColor" strokeWidth={stroke} className="text-soft/80" fill="none" />
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -53,7 +53,7 @@ export function ProgressRing({
       </svg>
       <div className="absolute text-center">
         <div className="font-mono text-2xl font-bold text-text">{Math.round(pct)}%</div>
-        {label ? <div className="text-xs text-muted">{label}</div> : null}
+        {label ? <div className="text-[11px] uppercase tracking-[0.12em] text-muted">{label}</div> : null}
       </div>
     </div>
   );

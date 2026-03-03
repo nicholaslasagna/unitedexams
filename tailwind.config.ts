@@ -32,12 +32,13 @@ const config: Config = {
         danger: "hsl(var(--danger))"
       },
       boxShadow: {
-        soft: "0 10px 40px rgba(6, 12, 35, 0.12)",
-        glass: "0 1px 0 rgba(255,255,255,0.18) inset, 0 18px 40px rgba(6, 12, 35, 0.18)",
+        soft: "0 10px 28px -14px rgba(2, 8, 24, 0.56)",
+        glass: "0 1px 0 rgba(255,255,255,0.14) inset, 0 18px 40px -22px rgba(2, 8, 24, 0.78)",
+        elevated: "0 20px 48px -28px rgba(3, 10, 30, 0.9)",
         focus: "0 0 0 3px rgba(59, 130, 246, 0.35)"
       },
       backgroundImage: {
-        "brand-gradient": "linear-gradient(135deg, hsl(var(--brand-1)) 0%, hsl(var(--brand-2)) 45%, hsl(var(--brand-3)) 100%)"
+        "brand-gradient": "linear-gradient(135deg, hsl(var(--brand-1)) 0%, hsl(var(--brand-2)) 70%)"
       },
       borderRadius: {
         xl2: "1.25rem"
