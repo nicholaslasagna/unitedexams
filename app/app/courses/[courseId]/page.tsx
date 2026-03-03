@@ -39,6 +39,22 @@ export default function CourseDetailPage() {
   const [query, setQuery] = useState("");
   const [difficulty, setDifficulty] = useState("all");
 
+  const sets = course ? getCourseQuizSets(course.id) : [];
+  const progress = course ? courseProgress(attempts, course.id) : 0;
+  const attemptCount = course ? attemptsForCourse(attempts, course.id).length : 0;
+  const mastery = course ? topicMasteryForCourse(attempts, course.id).slice(0, 8) : [];
+
+  const filteredSets = useMemo(() => {
+    return sets.filter((set) => {
+      const q = query.toLowerCase();
+      const searchMatch =
+        q.length === 0 ||
+        `${set.title} ${set.description} ${set.tags.join(" ")}`.toLowerCase().includes(q);
+      const diffMatch = difficulty === "all" || set.difficulty === difficulty;
+      return searchMatch && diffMatch;
+    });
+  }, [sets, query, difficulty]);
+
   if (!course || !content) {
     return (
       <Card>
@@ -52,22 +68,6 @@ export default function CourseDetailPage() {
       </Card>
     );
   }
-
-  const sets = getCourseQuizSets(course.id);
-  const progress = courseProgress(attempts, course.id);
-  const attemptCount = attemptsForCourse(attempts, course.id).length;
-  const mastery = topicMasteryForCourse(attempts, course.id).slice(0, 8);
-
-  const filteredSets = useMemo(() => {
-    return sets.filter((set) => {
-      const q = query.toLowerCase();
-      const searchMatch =
-        q.length === 0 ||
-        `${set.title} ${set.description} ${set.tags.join(" ")}`.toLowerCase().includes(q);
-      const diffMatch = difficulty === "all" || set.difficulty === difficulty;
-      return searchMatch && diffMatch;
-    });
-  }, [sets, query, difficulty]);
 
   return (
     <div className="space-y-6">
