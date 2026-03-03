@@ -43,13 +43,16 @@ Initial dataset includes:
   - Computer Architecture
   - Theory of Automata
 - 8 quiz sets (2 per course)
-- 64 seeded questions total (8 per set)
-- mix of single-answer and multi-select
+- 88 seeded questions total (10-12 per set)
+- mixed modes:
+  - single-answer + multi-select for SE, Computer Architecture, Automata
+  - open-ended free-response for Differential Equations
 - walkthrough-enabled questions with step-by-step reasoning
 - markdown + math + code block examples
 
 ## Quiz Features
 - Single-answer and multi-select questions
+- Open-ended free-response questions with hint-by-hint reveal
 - Walkthrough steps (on-demand after submit)
 - Optional timer
 - Randomize question order toggle
@@ -80,10 +83,10 @@ This makes backend migration straightforward: add a new repository implementing 
 
 ## Quiz Data Model
 `Question` supports:
-- `type: "single" | "multi"`
+- `type: "single" | "multi" | "free"`
 - `prompt` (markdown/math/code)
-- `options[]`
-- `correct[]`
+- `options[]` / `correct[]` (for choice-based questions)
+- `hintSteps[]` + `sampleAnswer` (for free-response flow)
 - `explanation` (markdown)
 - `walkthroughSteps[]` (optional)
 - `references[]` (optional)

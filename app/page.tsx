@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { ArrowRight, BookOpenCheck, ChartNoAxesCombined, Orbit, Sparkles } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/card";
-import { courses } from "@/data/seed";
+import { courses, quizSets } from "@/data/seed";
 import { testimonials } from "@/data/seed/leaderboard";
 
 const features = [
   {
     title: "Quiz Engine Built for Mastery",
     description:
-      "Single-answer, multi-select, walkthrough reasoning, and clean review loops with keyboard support.",
+      "Single-answer, multi-select, and open-ended walkthrough reasoning with clean review loops and keyboard support.",
     icon: Orbit
   },
   {
@@ -26,26 +26,23 @@ const features = [
 ];
 
 export default function LandingPage() {
+  const totalQuestions = quizSets.reduce((sum, set) => sum + set.questions.length, 0);
+
   return (
     <div className="min-h-screen bg-bg text-text">
-      <header className="mx-auto flex w-full max-w-[1240px] items-center justify-between px-6 py-6">
+      <header className="mx-auto flex w-full max-w-[1240px] items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-gradient text-white shadow-soft">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-gradient text-white shadow-soft">
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
-            <p className="font-display text-lg font-bold leading-tight">United Exams</p>
-            <p className="text-xs tracking-[0.16em] text-muted">UNITEDEXAMS.COM</p>
+            <p className="font-display text-base font-bold leading-tight">United Exams</p>
+            <p className="text-[11px] tracking-[0.16em] text-muted">UNITEDEXAMS.COM</p>
           </div>
         </Link>
-        <div className="flex items-center gap-3">
-          <Link href="/app/courses" className="rounded-xl border border-borderc px-4 py-2 text-sm font-semibold text-muted hover:text-text">
-            Browse Courses
-          </Link>
-          <Link href="/app/dashboard" className="rounded-xl bg-brand-gradient px-4 py-2 text-sm font-semibold text-white shadow-soft">
-            Get Started
-          </Link>
-        </div>
+        <Link href="/app/dashboard" className="rounded-xl bg-brand-gradient px-4 py-2 text-sm font-semibold text-white shadow-soft">
+          Get Started
+        </Link>
       </header>
 
       <section className="mesh-hero mx-auto w-full max-w-[1240px] px-6 pb-16 pt-8">
@@ -77,15 +74,15 @@ export default function LandingPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl border border-borderc bg-soft p-4">
                   <p className="text-xs text-muted">Quiz Sets</p>
-                  <p className="mt-1 font-mono text-3xl font-bold">8</p>
+                  <p className="mt-1 font-mono text-3xl font-bold">{quizSets.length}</p>
                 </div>
                 <div className="rounded-xl border border-borderc bg-soft p-4">
                   <p className="text-xs text-muted">Seed Questions</p>
-                  <p className="mt-1 font-mono text-3xl font-bold">64</p>
+                  <p className="mt-1 font-mono text-3xl font-bold">{totalQuestions}</p>
                 </div>
                 <div className="rounded-xl border border-borderc bg-soft p-4">
                   <p className="text-xs text-muted">Courses</p>
-                  <p className="mt-1 font-mono text-3xl font-bold">4</p>
+                  <p className="mt-1 font-mono text-3xl font-bold">{courses.length}</p>
                 </div>
                 <div className="rounded-xl border border-borderc bg-soft p-4">
                   <p className="text-xs text-muted">Modes</p>

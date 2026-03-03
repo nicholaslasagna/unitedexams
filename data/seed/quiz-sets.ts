@@ -2,899 +2,2132 @@ import type { QuizSet } from "@/lib/types";
 
 export const quizSets: QuizSet[] = [
   {
-    id: "se-foundations",
-    courseId: "software-engineering",
-    title: "SE Foundations: Requirements to Delivery",
-    description: "Core concepts for structured software engineering workflows.",
-    difficulty: "Intermediate",
-    estMinutes: 24,
-    tags: ["requirements", "agile", "testing"],
-    timerDefaultMinutes: 22,
-    questions: [
+    "id": "se-core-legacy",
+    "courseId": "software-engineering",
+    "title": "Software Engineering Test 1 (Legacy Core)",
+    "description": "Imported from existing question bank used in your current workspace.",
+    "difficulty": "Intermediate",
+    "estMinutes": 28,
+    "tags": [
+      "legacy",
+      "core",
+      "professor-aligned"
+    ],
+    "timerDefaultMinutes": 25,
+    "questions": [
       {
-        id: "se-f-1",
-        type: "single",
-        prompt: "Which artifact best captures **functional requirements** from a user perspective?",
-        options: ["Class diagram", "Use case", "Deployment diagram", "Sequence diagram"],
-        correct: [1],
-        explanation: "Use cases describe user goals and system interactions at a functional level.",
-        tags: ["requirements", "uml"],
-        references: ["IEEE 29148 Requirements Engineering"]
-      },
-      {
-        id: "se-f-2",
-        type: "multi",
-        prompt: "You are defining a sprint goal. Which practices usually improve delivery quality?",
-        options: [
-          "Definition of Done with test criteria",
-          "Daily stand-up with blockers",
-          "Skipping retrospective to save time",
-          "Small vertical slices"
+        "id": "se-core-legacy-q1",
+        "type": "single",
+        "prompt": "In a \"Plan-driven\" process, how is progress typically measured?",
+        "options": [
+          "By the number of user stories completed each day.",
+          "Against a pre-determined plan of activities and stages.",
+          "Based on the customer's satisfaction at the end of each sprint.",
+          "Based on the level of pair programming used."
         ],
-        correct: [0, 1, 3],
-        explanation:
-          "Reliable sprints require shared quality gates, continuous communication, and incremental slices of value.",
-        tags: ["agile", "delivery"],
-        walkthroughSteps: [
-          "Start from **what reduces risk each day** in a sprint.",
-          "Keep options that improve visibility and quality control.",
-          "Reject options that remove learning loops (like skipping retrospective)."
+        "correct": [
+          1
+        ],
+        "explanation": "In plan-driven processes, progress is measured against a pre-determined plan with defined activities and stages.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "plan-driven",
+          "process-models",
+          "waterfall",
+          "chapter-1"
         ]
       },
       {
-        id: "se-f-3",
-        type: "single",
-        prompt: "In SOLID, the **Open/Closed Principle** suggests that modules should be:",
-        options: [
-          "Open for modification, closed for extension",
-          "Closed for modification, open for extension",
-          "Closed for both",
-          "Open for both"
+        "id": "se-core-legacy-q2",
+        "type": "single",
+        "prompt": "In the Scrum agile method, what is a \"Sprint\"?",
+        "options": [
+          "A race between developers to finish their code.",
+          "A fixed time period, usually 2-4 weeks, during which a system increment is developed.",
+          "A meeting where the Scrum Master reports to the CEO.",
+          "The process of moving requirements from the product backlog to the archive.",
+          "A specialized tool used for automated testing.",
+          "The final release of the software to the customer.",
+          "A method for scaling agile to large organizations."
         ],
-        correct: [1],
-        explanation:
-          "You should be able to add behavior by extension, without rewriting stable code.",
-        tags: ["solid", "design"]
-      },
-      {
-        id: "se-f-4",
-        type: "single",
-        prompt:
-          "A product owner requests a fast patch in production. Which approach balances speed and reliability best?",
-        options: [
-          "Hotfix straight to production with no tests",
-          "Hotfix branch with targeted tests + rollback plan",
-          "Wait for next quarter release",
-          "Disable CI temporarily"
+        "correct": [
+          1
         ],
-        correct: [1],
-        explanation:
-          "A controlled hotfix path with tests and rollback strategy is standard incident-safe practice.",
-        tags: ["devops", "quality"],
-        walkthroughSteps: [
-          "Identify what minimizes blast radius.",
-          "Look for explicit risk controls: tests, branch isolation, rollback.",
-          "Prefer the option that is fast **and** reversible."
+        "explanation": "A Sprint is a fixed time period (typically 2-4 weeks) during which a potentially shippable system increment is developed.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "scrum",
+          "sprint",
+          "agile-practices",
+          "chapter-3"
         ]
       },
       {
-        id: "se-f-5",
-        type: "multi",
-        prompt: "Which are valid examples of **non-functional requirements**?",
-        options: [
-          "API p95 latency under 200ms",
-          "User can reset password",
-          "99.9% monthly availability",
-          "System shall support 20,000 concurrent sessions"
+        "id": "se-core-legacy-q3",
+        "type": "single",
+        "prompt": "Software engineering ethics dictate that engineers should NOT:",
+        "options": [
+          "Respect the confidentiality of employers or clients.",
+          "Misuse their skills to take over or damage others' computers.",
+          "Be honest about their level of competence.",
+          "Support the professional software development of their colleagues."
         ],
-        correct: [0, 2, 3],
-        explanation: "Performance, reliability, and scalability are non-functional qualities.",
-        tags: ["requirements", "quality-attributes"]
+        "correct": [
+          1
+        ],
+        "explanation": "B is what engineers should NOT do. Misusing skills to damage others' computers is unethical.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "ethics",
+          "professional-responsibility",
+          "chapter-1"
+        ]
       },
       {
-        id: "se-f-6",
-        type: "single",
-        prompt: "Which test type primarily validates behavior between collaborating modules?",
-        options: ["Unit test", "Integration test", "Snapshot test", "Linting"],
-        correct: [1],
-        explanation: "Integration tests validate interfaces and collaboration boundaries.",
-        tags: ["testing"]
+        "id": "se-core-legacy-q4",
+        "type": "multi",
+        "prompt": "What are the characteristics of agile development? (Select all that apply)",
+        "options": [
+          "Detailed documentation.",
+          "Mostly focused on coding.",
+          "Frequent delivery of new versions.",
+          "Implementation starts after the system design has been fully completed.",
+          "Minimal documentation.",
+          "None of the above."
+        ],
+        "correct": [
+          1,
+          2,
+          4
+        ],
+        "explanation": "Agile: focus on coding, frequent delivery, minimal documentation.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "agile-characteristics",
+          "agile-principles",
+          "documentation",
+          "chapter-3"
+        ]
       },
       {
-        id: "se-f-7",
-        type: "single",
-        prompt:
-          "A team has high lead time and low deployment frequency. What is the highest-leverage first move?",
-        options: [
-          "Add manual QA stage at end",
-          "Introduce CI with fast test suite and branch protections",
-          "Increase sprint duration",
-          "Remove code review"
+        "id": "se-core-legacy-q5",
+        "type": "single",
+        "prompt": "The prototype of the software will be very close to the final software version. Therefore, the prototype should not be discarded.",
+        "options": [
+          "True",
+          "False"
         ],
-        correct: [1],
-        explanation:
-          "Fast, trustworthy CI reduces merge friction and unlocks frequent safe deployments.",
-        tags: ["devops", "metrics"]
+        "correct": [
+          1
+        ],
+        "explanation": "False. Prototypes are throw-away — built to explore requirements, not to become the final product.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "prototyping",
+          "coping-with-change",
+          "chapter-2"
+        ]
       },
       {
-        id: "se-f-8",
-        type: "multi",
-        prompt: "Code review quality improves when reviewers do which actions?",
-        options: [
-          "Focus comments on correctness and maintainability",
-          "Block every stylistic preference difference",
-          "Ask for tests around risky logic",
-          "Reference architecture decisions"
+        "id": "se-core-legacy-q6",
+        "type": "single",
+        "prompt": "There are two types of software products: Generic products and customized products. Which one of the following statements is true about a generic product?",
+        "options": [
+          "Software that is commissioned for specific customer needs.",
+          "Software that is developed to maintain the hardware in a specific factory.",
+          "Software made for any customer who wants to buy it.",
+          "Banking app made for a specific bank to manage its internal activities (ex: Citi bank)."
         ],
-        correct: [0, 2, 3],
-        explanation: "High-quality reviews optimize signal: risk, correctness, and architectural alignment.",
-        tags: ["review", "quality"]
+        "correct": [
+          2
+        ],
+        "explanation": "Generic products (COTS) are sold to any customer on the open market.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "generic-vs-customized",
+          "product-types",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "se-core-legacy-q7",
+        "type": "multi",
+        "prompt": "The Waterfall Model presents the software development process in a number of stages. What are the phases of the waterfall model? (Select all that apply)",
+        "options": [
+          "Requirements analysis and definition",
+          "Customer involvement",
+          "System and software design",
+          "Product increments",
+          "Implementation and unit testing",
+          "Integration and system testing",
+          "Version development",
+          "Operation and maintenance"
+        ],
+        "correct": [
+          0,
+          2,
+          4,
+          5,
+          7
+        ],
+        "explanation": "Waterfall phases: Requirements → Design → Implementation/unit testing → Integration/system testing → Operation/maintenance.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "waterfall",
+          "waterfall-phases",
+          "process-models",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "se-core-legacy-q8",
+        "type": "single",
+        "prompt": "Which essential software product attribute ensures the system can be adapted to meet the changing needs of customers?",
+        "options": [
+          "Dependability",
+          "Efficiency",
+          "Security",
+          "Maintainability",
+          "Portability"
+        ],
+        "correct": [
+          3
+        ],
+        "explanation": "Maintainability = software can evolve with changing customer needs.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "essential-attributes",
+          "maintainability",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "se-core-legacy-q9",
+        "type": "single",
+        "prompt": "What is the key difference between software engineering and computer science?",
+        "options": [
+          "Software engineering is the study of algorithms and data structures in isolation.",
+          "Computer science focuses on theory and fundamentals while software engineering focuses on practical development.",
+          "Computer science deals exclusively with hardware and circuit design.",
+          "Software engineering only covers the testing phase of development.",
+          "They are identical disciplines with different names used at different universities.",
+          "Computer science is about building products while software engineering is about theory."
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "CS = theory and fundamentals. SE = practical development and delivery.",
+        "tags": [
+          "se-vs-cs",
+          "definitions",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "se-core-legacy-q10",
+        "type": "single",
+        "prompt": "Which essential attribute means the software should not cause physical or economic damage in the event of system failure?",
+        "options": [
+          "Maintainability — the system can be changed to meet evolving needs.",
+          "Acceptability — the system is usable and compatible with other tools.",
+          "Dependability and Security — the system should not cause damage upon failure.",
+          "Efficiency — the system does not waste memory or processor resources.",
+          "Portability — the system can run on multiple hardware platforms.",
+          "Scalability — the system can handle growing numbers of users."
+        ],
+        "correct": [
+          2
+        ],
+        "explanation": "Dependability and security = no physical or economic damage upon failure.",
+        "tags": [
+          "essential-attributes",
+          "dependability",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "se-core-legacy-q11",
+        "type": "single",
+        "prompt": "Which of the following is true about maintenance costs in software engineering?",
+        "options": [
+          "Maintenance costs are typically a small fraction of development costs.",
+          "Maintenance costs usually exceed development costs for long-lived systems.",
+          "Maintenance is unnecessary for software that was well-designed initially.",
+          "Maintenance only involves correcting bugs found after initial deployment.",
+          "Maintenance costs decrease as the software ages and stabilizes over time.",
+          "Maintenance is only required for customized products, not generic ones."
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "For most long-lived systems, maintenance costs exceed development costs.",
+        "tags": [
+          "maintenance-costs",
+          "evolution",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "se-core-legacy-q12",
+        "type": "single",
+        "prompt": "What is a \"system of systems\"?",
+        "options": [
+          "A single monolithic application deployed across multiple servers for redundancy.",
+          "A system built by integrating multiple independently managed systems together.",
+          "A backup system that mirrors the primary system for disaster recovery.",
+          "A system that only runs on one specific operating system or platform.",
+          "A development methodology where systems are built in sequential layers.",
+          "A testing framework that validates systems against multiple specifications."
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "System of systems = integrating independently managed systems into a larger system.",
+        "tags": [
+          "system-of-systems",
+          "definitions",
+          "chapter-1"
+        ]
       }
     ]
   },
   {
-    id: "se-architecture-patterns",
-    courseId: "software-engineering",
-    title: "Architecture Patterns & Tradeoffs",
-    description: "Reason about modularity, scalability, and maintainability tradeoffs.",
-    difficulty: "Advanced",
-    estMinutes: 26,
-    tags: ["architecture", "patterns", "scalability"],
-    timerDefaultMinutes: 24,
-    questions: [
+    "id": "se-reinforce-legacy",
+    "courseId": "software-engineering",
+    "title": "Software Engineering Reinforcement (Legacy)",
+    "description": "Targeted reinforcement set imported from your existing bank.",
+    "difficulty": "Intermediate",
+    "estMinutes": 24,
+    "tags": [
+      "legacy",
+      "reinforcement"
+    ],
+    "timerDefaultMinutes": 22,
+    "questions": [
       {
-        id: "se-a-1",
-        type: "single",
-        prompt: "In a layered architecture, what is a common anti-pattern?",
-        options: [
-          "Dependency inversion at boundaries",
-          "Skipping domain validation in service layer",
-          "Explicit repository interfaces",
-          "Contract tests between layers"
+        "id": "se-reinforce-legacy-q1",
+        "type": "single",
+        "prompt": "A client says: 'We need new regulatory reporting features every quarter as laws change.' Which essential attribute is MOST important here?",
+        "options": [
+          "Efficiency — the system must use minimal processing resources.",
+          "Maintainability — the system must be easily modified for new requirements.",
+          "Dependability — the system must never crash during normal operations.",
+          "Acceptability — the system must be intuitive for non-technical staff.",
+          "Security — the system must prevent all unauthorized data access.",
+          "Portability — the system must run on both Windows and macOS."
         ],
-        correct: [1],
-        explanation: "Bypassing validation in service logic causes data integrity and business rule drift.",
-        tags: ["architecture", "anti-pattern"]
-      },
-      {
-        id: "se-a-2",
-        type: "multi",
-        prompt: "When introducing a message queue, which benefits are typical?",
-        options: [
-          "Temporal decoupling",
-          "Smoothing traffic spikes",
-          "Guaranteed zero complexity",
-          "Retry and dead-letter handling"
+        "correct": [
+          1
         ],
-        correct: [0, 1, 3],
-        explanation: "Queues decouple producers/consumers and support resilience patterns.",
-        tags: ["distributed-systems", "reliability"],
-        walkthroughSteps: [
-          "Map each option to real queue behavior.",
-          "Keep operational resilience traits.",
-          "Discard absolute claims like 'zero complexity'."
+        "explanation": "Frequently changing features = maintainability is critical.",
+        "tags": [
+          "essential-attributes",
+          "maintainability",
+          "chapter-1"
         ]
       },
       {
-        id: "se-a-3",
-        type: "single",
-        prompt: "Which metric best indicates service reliability from a user perspective?",
-        options: ["Lines of code", "Uptime/SLO attainment", "Pull request count", "Build minutes"],
-        correct: [1],
-        explanation: "Reliability is measured against user-facing availability and latency objectives.",
-        tags: ["sre", "metrics"]
-      },
-      {
-        id: "se-a-4",
-        type: "single",
-        prompt: "A monolith is becoming hard to scale. What migration strategy is usually safest?",
-        options: [
-          "Immediate rewrite into 20 microservices",
-          "Strangler pattern around high-change domains",
-          "Pause features for one year",
-          "Duplicate entire system"
+        "id": "se-reinforce-legacy-q2",
+        "type": "single",
+        "prompt": "A medical device software failure could endanger patients in a hospital. Which essential attribute should be the TOP priority?",
+        "options": [
+          "Acceptability — patients should find the interface easy to use.",
+          "Efficiency — the device must respond within strict time constraints.",
+          "Dependability and Security — failures could cause physical harm.",
+          "Maintainability — the device software must be updated frequently.",
+          "Portability — the device must work across different hospital systems.",
+          "Scalability — the device must support hundreds of simultaneous users."
         ],
-        correct: [1],
-        explanation: "The strangler approach incrementally replaces functionality with lower migration risk.",
-        tags: ["migration", "architecture"],
-        walkthroughSteps: [
-          "Choose incremental over big-bang migration.",
-          "Prefer domain-by-domain extraction with observability.",
-          "Preserve delivery cadence while migrating."
+        "correct": [
+          2
+        ],
+        "explanation": "Potential physical harm = dependability and security is top priority.",
+        "tags": [
+          "essential-attributes",
+          "dependability",
+          "chapter-1"
         ]
       },
       {
-        id: "se-a-5",
-        type: "multi",
-        prompt: "For API versioning, which practices usually reduce client breakage?",
-        options: [
-          "Backward-compatible schema evolution",
-          "Deprecation windows + migration guides",
-          "Silent breaking changes",
-          "Contract tests per client-critical flow"
+        "id": "se-reinforce-legacy-q3",
+        "type": "single",
+        "prompt": "An embedded system for a satellite has only 256KB of RAM and limited battery. Which attribute is most constrained?",
+        "options": [
+          "Maintainability — the software needs to be updated after launch.",
+          "Efficiency — severely limited resources make resource usage critical.",
+          "Acceptability — astronauts must find the interface comfortable to use.",
+          "Dependability — the satellite must operate reliably in orbit for years.",
+          "Security — the system must prevent unauthorized command transmissions.",
+          "Portability — the system must run on multiple satellite platforms."
         ],
-        correct: [0, 1, 3],
-        explanation: "Compatibility and communication are central to safe API evolution.",
-        tags: ["api", "versioning"]
+        "correct": [
+          1
+        ],
+        "explanation": "Severely limited resources = efficiency is the critical constraint.",
+        "tags": [
+          "essential-attributes",
+          "efficiency",
+          "chapter-1"
+        ]
       },
       {
-        id: "se-a-6",
-        type: "single",
-        prompt: "What is the primary purpose of an ADR (Architecture Decision Record)?",
-        options: [
-          "Store build artifacts",
-          "Document design decisions and tradeoffs",
-          "Replace unit tests",
-          "Track sprint velocity"
+        "id": "se-reinforce-legacy-q4",
+        "type": "single",
+        "prompt": "Users find a new payroll system confusing and incompatible with their existing HR tools. Which attribute is lacking?",
+        "options": [
+          "Dependability — the system crashes frequently during payroll runs.",
+          "Acceptability — the system is not usable or compatible with existing tools.",
+          "Maintainability — the development team cannot add new features easily.",
+          "Efficiency — the system takes too long to process payroll calculations.",
+          "Security — unauthorized employees can access salary information.",
+          "Portability — the system only works on one specific web browser."
         ],
-        correct: [1],
-        explanation: "ADRs preserve architectural context and rationale for future teams.",
-        tags: ["documentation", "architecture"]
+        "correct": [
+          1
+        ],
+        "explanation": "Confusing + incompatible with existing tools = poor acceptability.",
+        "tags": [
+          "essential-attributes",
+          "acceptability",
+          "chapter-1"
+        ]
       },
       {
-        id: "se-a-7",
-        type: "single",
-        prompt: "Which caching strategy most directly protects the database under heavy read load?",
-        options: ["Write-through only", "Read-through with TTL", "No cache", "Random eviction"],
-        correct: [1],
-        explanation: "Read-through + TTL can dramatically reduce repetitive read pressure.",
-        tags: ["performance", "cache"]
+        "id": "se-reinforce-legacy-q5",
+        "type": "multi",
+        "prompt": "Which of the following are the four essential attributes of good software? (Select all that apply)",
+        "options": [
+          "Maintainability — ability to evolve with changing needs.",
+          "Scalability — ability to handle growing user loads.",
+          "Dependability and Security — reliability and protection from harm.",
+          "Efficiency — responsible use of system resources.",
+          "Acceptability — usable, understandable, and compatible.",
+          "Portability — ability to run on multiple operating systems."
+        ],
+        "correct": [
+          0,
+          2,
+          3,
+          4
+        ],
+        "explanation": "The four: Maintainability, Dependability & Security, Efficiency, Acceptability.",
+        "tags": [
+          "essential-attributes",
+          "chapter-1"
+        ]
       },
       {
-        id: "se-a-8",
-        type: "multi",
-        prompt: "Which are signals of healthy engineering architecture governance?",
-        options: [
-          "Shared standards and review guidelines",
-          "Architecture board with no feedback loop",
-          "Periodic postmortems feeding design improvements",
-          "Explicit ownership of critical systems"
+        "id": "se-reinforce-legacy-q6",
+        "type": "single",
+        "prompt": "An engineer discovers their employer is knowingly shipping software with critical security flaws. Per the ACM/IEEE Code, they should prioritize:",
+        "options": [
+          "Unconditional loyalty to their employer above all other concerns.",
+          "The public interest and safety over organizational loyalty.",
+          "Meeting the delivery deadline regardless of any quality concerns.",
+          "Keeping quiet to avoid creating conflict within the organization.",
+          "Requesting a raise in compensation for taking on additional risk.",
+          "Waiting to see if customers actually discover the security flaws."
         ],
-        correct: [0, 2, 3],
-        explanation: "Governance works when it is documented, iterative, and ownership-driven.",
-        tags: ["governance", "quality"]
+        "correct": [
+          1
+        ],
+        "explanation": "Public interest and safety = highest priority in the code of ethics.",
+        "tags": [
+          "ethics",
+          "professional-responsibility",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "se-reinforce-legacy-q7",
+        "type": "single",
+        "prompt": "An engineer is asked to work on a project outside their area of expertise. Per professional ethics, they should:",
+        "options": [
+          "Accept the assignment and figure it out silently without telling anyone.",
+          "Be honest about their competence level and seek training or assistance.",
+          "Decline all work that falls outside their specific area of expertise.",
+          "Blame any resulting failures on the project manager who assigned them.",
+          "Outsource the work to a third party without informing their employer.",
+          "Agree enthusiastically and hope the team carries the technical load."
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "Be honest about competence; seek training or assistance as needed.",
+        "walkthroughSteps": [
+          "Be honest about competence.",
+          "seek training or assistance as needed."
+        ],
+        "tags": [
+          "ethics",
+          "professional-responsibility",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "se-reinforce-legacy-q8",
+        "type": "single",
+        "prompt": "Microsoft Word is an example of which type of software product?",
+        "options": [
+          "A customized product built for a specific organization's needs.",
+          "A generic product sold on the open market to any interested buyer.",
+          "An open-source product maintained by a community of volunteers.",
+          "An embedded product designed for a specific hardware platform only.",
+          "A prototype product used to explore requirements before full development.",
+          "A legacy product that is no longer maintained or updated by Microsoft."
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "Sold to anyone on the open market = generic product.",
+        "tags": [
+          "generic-vs-customized",
+          "product-types",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "se-reinforce-legacy-q9",
+        "type": "single",
+        "prompt": "Who decides what features to include in the next version of a generic software product?",
+        "options": [
+          "Individual customers submit feature requests that must be implemented.",
+          "The development organization decides based on market analysis and strategy.",
+          "Government regulators mandate specific features that must be included.",
+          "End users vote democratically on which features should be prioritized.",
+          "An independent standards body publishes required feature specifications.",
+          "The QA team determines features based on which areas have the most bugs."
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "For generic products, the development organization controls the specification.",
+        "tags": [
+          "generic-vs-customized",
+          "specification-control",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "se-reinforce-legacy-q10",
+        "type": "single",
+        "prompt": "In the Waterfall Model, which phase comes immediately after 'System and software design'?",
+        "options": [
+          "Requirements analysis and definition — gathering what users need.",
+          "Implementation and unit testing — building and testing individual modules.",
+          "Integration and system testing — combining and testing the full system.",
+          "Operation and maintenance — deploying and supporting the live system.",
+          "Project planning and scheduling — creating timelines and milestones.",
+          "Customer acceptance testing — having users validate the final product."
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "Sequence: Requirements → Design → Implementation and unit testing.",
+        "tags": [
+          "waterfall",
+          "waterfall-phases",
+          "chapter-2"
+        ]
       }
     ]
   },
   {
-    id: "de-core-methods",
-    courseId: "differential-equations",
-    title: "Core Methods: First/Second Order ODEs",
-    description: "Separable equations, linear ODEs, characteristic roots, and solution strategy.",
-    difficulty: "Advanced",
-    estMinutes: 28,
-    tags: ["separable", "characteristic", "strategy"],
-    timerDefaultMinutes: 25,
-    questions: [
+    "id": "de-core-legacy",
+    "courseId": "differential-equations",
+    "title": "Differential Equations Test 1 (Legacy Core)",
+    "description": "Open-ended Differential Equations practice with free-response answers and progressive hints.",
+    "difficulty": "Advanced",
+    "estMinutes": 30,
+    "tags": [
+      "legacy",
+      "core",
+      "ode",
+      "open-ended",
+      "free-response",
+      "hint-driven"
+    ],
+    "timerDefaultMinutes": 27,
+    "questions": [
       {
-        id: "de-c-1",
-        type: "single",
-        prompt: "Which equation is separable as written?",
-        options: ["$y' + y = x$", "$y' = x(1+y)$", "$y'' + y = 0$", "$y' + \sin(y)=x$"],
-        correct: [1],
-        explanation:
-          "$y' = x(1+y)$ rearranges to $\frac{dy}{1+y}=x\,dx$, so variables separate cleanly.",
-        tags: ["separable", "first-order"]
-      },
-      {
-        id: "de-c-2",
-        type: "multi",
-        prompt:
-          "For a second-order linear nonhomogeneous equation with constant coefficients, which solution workflow is correct?",
-        options: [
-          "Solve homogeneous part using characteristic equation",
-          "Find one particular solution using UC or variation of parameters",
-          "Add $y_h + y_p$ and apply initial conditions",
-          "Skip initial conditions because constants cancel"
+        "id": "de-core-legacy-q1",
+        "type": "free",
+        "prompt": "Which first-order differential equation is separable as written?",
+        "options": [],
+        "correct": [],
+        "explanation": "y' = x(1+y) can be rearranged as dy/(1+y) = x dx, so it is separable.\n\n**One valid final answer:** y' = x(1 + y)",
+        "references": [
+          "Professor-priority legacy question",
+          "Differential Equations guided practice"
         ],
-        correct: [0, 1, 2],
-        explanation:
-          "Standard process: solve $y_h$, find $y_p$, combine, then fit constants from initial data.",
-        tags: ["second-order", "workflow"],
-        walkthroughSteps: [
-          "Write the homogeneous equation and solve for characteristic roots.",
-          "Pick a particular-solution method based on forcing type.",
-          "Combine and apply initial conditions at the end."
+        "tags": [
+          "separable",
+          "first-order",
+          "chapter-1"
         ],
-        references: ["Boyce & DiPrima, Ch. 3"]
-      },
-      {
-        id: "de-c-3",
-        type: "single",
-        prompt:
-          "If characteristic roots are $r = 2 \pm 3i$, which homogeneous form is correct?",
-        options: [
-          "$y_h=e^{2x}(c_1\cos 3x + c_2\sin 3x)$",
-          "$y_h=c_1e^{2x}+c_2e^{3x}$",
-          "$y_h=(c_1+c_2x)e^{2x}$",
-          "$y_h=c_1\cos 2x + c_2\sin 2x$"
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "y' = x(1+y) can be rearranged as dy/(1+y) = x dx, so it is separable."
         ],
-        correct: [0],
-        explanation: "Complex roots $a\pm bi$ produce $e^{ax}(c_1\cos bx+c_2\sin bx)$.",
-        tags: ["characteristic", "complex-roots"]
-      },
-      {
-        id: "de-c-4",
-        type: "single",
-        prompt: "For $y' + P(x)y = Q(x)$, the integrating factor is:",
-        options: ["$e^{\int Q(x)dx}$", "$e^{\int P(x)dx}$", "$\int P(x)Q(x)dx$", "$P(x)^{-1}$"],
-        correct: [1],
-        explanation: "Integrating factor: $\mu(x)=e^{\int P(x)dx}$.",
-        tags: ["linear-ode", "integrating-factor"]
-      },
-      {
-        id: "de-c-5",
-        type: "single",
-        prompt: "When trial particular solution overlaps with $y_h$, what should you do?",
-        options: [
-          "Stop and switch to numerical methods",
-          "Multiply trial by $x$ (or higher power if needed)",
-          "Change the equation",
-          "Ignore overlap"
+        "walkthroughSteps": [
+          "y' = x(1+y) can be rearranged as dy/(1+y) = x dx, so it is separable."
         ],
-        correct: [1],
-        explanation: "Resonance correction restores linear independence from homogeneous basis.",
-        tags: ["undetermined-coefficients", "resonance"]
+        "sampleAnswer": "y' = x(1 + y)"
       },
       {
-        id: "de-c-6",
-        type: "multi",
-        prompt: "Which statements about Wronskian are generally true in this context?",
-        options: [
-          "Nonzero Wronskian on interval implies linear independence",
-          "Wronskian is only used for PDEs",
-          "Wronskian helps in variation of parameters",
-          "Wronskian determines boundary conditions directly"
+        "id": "de-core-legacy-q2",
+        "type": "free",
+        "prompt": "For y'' - 4y' + 4y = 0, which general solution is correct?",
+        "options": [],
+        "correct": [],
+        "explanation": "Characteristic equation r^2 - 4r + 4 = (r-2)^2 has repeated root r=2, so y=(c1+c2 x)e^{2x}.\n\n**One valid final answer:** y = (c1 + c2 x)e^{2x}",
+        "references": [
+          "Professor-priority legacy question",
+          "Differential Equations guided practice"
         ],
-        correct: [0, 2],
-        explanation: "Wronskian is a key linear independence tool and appears in variation-of-parameters formulas.",
-        tags: ["wronskian", "vop"]
-      },
-      {
-        id: "de-c-7",
-        type: "single",
-        prompt: "For logistic model $y'=ry(1-y/K)$, equilibrium solutions are:",
-        options: ["$y=r, K$", "$y=0, K$", "$y=1, r$", "$y=-K, K$"],
-        correct: [1],
-        explanation: "Set RHS to zero: $y=0$ or $y=K$.",
-        tags: ["logistic", "equilibria"]
-      },
-      {
-        id: "de-c-8",
-        type: "single",
-        prompt: "Which forcing term is especially convenient for undetermined coefficients?",
-        options: [
-          "$\ln x$",
-          "$x^2 + 3e^x - 2\cos x$",
-          "$\tan x$",
-          "$\frac{1}{1+x^2}$"
+        "tags": [
+          "second-order",
+          "characteristic-equation",
+          "chapter-2"
         ],
-        correct: [1],
-        explanation:
-          "Polynomials, exponentials, and sines/cosines are canonical UC-friendly forcing types.",
-        tags: ["undetermined-coefficients"]
-      }
-    ]
-  },
-  {
-    id: "de-laplace-systems",
-    courseId: "differential-equations",
-    title: "Laplace, IVPs, and Dynamical Systems",
-    description: "Transform methods, piecewise forcing, and linear system stability.",
-    difficulty: "Advanced",
-    estMinutes: 30,
-    tags: ["laplace", "ivp", "systems"],
-    timerDefaultMinutes: 27,
-    questions: [
-      {
-        id: "de-l-1",
-        type: "single",
-        prompt: "If $\mathcal{L}\{y(t)\}=Y(s)$, then $\mathcal{L}\{y'(t)\}$ equals:",
-        options: ["$sY(s)$", "$sY(s)-y(0)$", "$Y(s)-y(0)$", "$s^2Y(s)$"],
-        correct: [1],
-        explanation: "Derivative rule: $\mathcal{L}\{y'\}=sY(s)-y(0)$.",
-        tags: ["laplace", "derivative-rule"]
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "Characteristic equation r^2 - 4r + 4 = (r-2)^2 has repeated root r=2, so y=(c1+c2 x)e^{2x}."
+        ],
+        "walkthroughSteps": [
+          "Characteristic equation r^2 - 4r + 4 = (r-2)^2 has repeated root r=2, so y=(c1+c2 x)e^{2x}."
+        ],
+        "sampleAnswer": "y = (c1 + c2 x)e^{2x}"
       },
       {
-        id: "de-l-2",
-        type: "multi",
-        prompt: "Why is Laplace transform often preferred for IVPs?",
-        options: [
-          "Converts derivatives to algebraic terms",
-          "Encodes initial conditions naturally",
-          "Cannot handle piecewise forcing",
-          "Works well with impulses and unit-step inputs"
+        "id": "de-core-legacy-q3",
+        "type": "free",
+        "prompt": "If L{y(t)} = Y(s), then L{y'(t)} equals:",
+        "options": [],
+        "correct": [],
+        "explanation": "Derivative rule: L{y'} = sY(s) - y(0).\n\n**One valid final answer:** sY(s) - y(0)",
+        "references": [
+          "Professor-priority legacy question",
+          "Differential Equations guided practice"
         ],
-        correct: [0, 1, 3],
-        explanation: "Laplace is strong on initial-value and discontinuous forcing problems.",
-        tags: ["ivp", "forcing"],
-        walkthroughSteps: [
-          "List what makes direct ODE solving hard (piecewise/impulse inputs).",
-          "Match Laplace strengths to those pain points.",
-          "Reject options that contradict transform theorems."
+        "tags": [
+          "laplace",
+          "derivative-rule",
+          "chapter-3"
+        ],
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "Derivative rule: L{y'} = sY(s) - y(0)."
+        ],
+        "walkthroughSteps": [
+          "Derivative rule: L{y'} = sY(s) - y(0)."
+        ],
+        "sampleAnswer": "sY(s) - y(0)"
+      },
+      {
+        "id": "de-core-legacy-q4",
+        "type": "free",
+        "prompt": "A linear system x' = Ax is solved by diagonalizing A primarily to:",
+        "options": [],
+        "correct": [],
+        "explanation": "Diagonalization decouples the system into modes associated with eigenvalues/eigenvectors.\n\n**One valid final answer:** Reduce the system to independent modes along eigenvectors.",
+        "references": [
+          "Professor-priority legacy question",
+          "Differential Equations guided practice"
+        ],
+        "tags": [
+          "systems",
+          "matrix-form",
+          "chapter-4"
+        ],
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "Diagonalization decouples the system into modes associated with eigenvalues/eigenvectors."
+        ],
+        "walkthroughSteps": [
+          "Diagonalization decouples the system into modes associated with eigenvalues/eigenvectors."
+        ],
+        "sampleAnswer": "Reduce the system to independent modes along eigenvectors."
+      },
+      {
+        "id": "de-core-legacy-q5",
+        "type": "free",
+        "prompt": "The order of y''' + 2y' - y = e^x is:",
+        "options": [],
+        "correct": [],
+        "explanation": "The highest derivative is third derivative, so order is 3.\n\n**One valid final answer:** 3",
+        "tags": [
+          "classification",
+          "order",
+          "chapter-1"
+        ],
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "The highest derivative is third derivative, so order is 3."
+        ],
+        "walkthroughSteps": [
+          "The highest derivative is third derivative, so order is 3."
+        ],
+        "sampleAnswer": "3",
+        "references": [
+          "Differential Equations guided practice"
         ]
       },
       {
-        id: "de-l-3",
-        type: "single",
-        prompt: "$\mathcal{L}\{\sin(at)\}$ is:",
-        options: ["$\frac{a}{s^2+a^2}$", "$\frac{s}{s^2+a^2}$", "$\frac{1}{s-a}$", "$\frac{a}{s-a}$"],
-        correct: [0],
-        explanation: "Standard table entry: $\mathcal{L}\{\sin(at)\}=a/(s^2+a^2)$.",
-        tags: ["laplace-table"]
-      },
-      {
-        id: "de-l-4",
-        type: "single",
-        prompt: "Inverse Laplace of $\frac{1}{s-3}$ is:",
-        options: ["$e^{-3t}$", "$3e^t$", "$e^{3t}$", "$te^{3t}$"],
-        correct: [2],
-        explanation: "$\mathcal{L}^{-1}\{1/(s-a)\}=e^{at}$.",
-        tags: ["inverse-laplace"]
-      },
-      {
-        id: "de-l-5",
-        type: "multi",
-        prompt: "In phase portrait analysis for linear systems, useful qualitative objects include:",
-        options: ["Equilibria", "Nullclines", "Flow direction arrows", "Only exact decimal trajectories"],
-        correct: [0, 1, 2],
-        explanation: "Qualitative analysis prioritizes structure and behavior classes, not exact numeric traces.",
-        tags: ["phase-plane", "systems"]
-      },
-      {
-        id: "de-l-6",
-        type: "single",
-        prompt:
-          "For $\mathbf{x}'=A\mathbf{x}$, if all eigenvalues of $A$ have negative real parts, origin is:",
-        options: ["Unstable", "Asymptotically stable", "Always center", "Indeterminate"],
-        correct: [1],
-        explanation: "Negative real parts imply decay to the equilibrium.",
-        tags: ["stability", "eigenvalues"]
-      },
-      {
-        id: "de-l-7",
-        type: "single",
-        prompt: "Convolution in time domain corresponds to what in Laplace domain?",
-        options: ["Subtraction", "Multiplication", "Differentiation", "Time shift"],
-        correct: [1],
-        explanation: "Convolution theorem: $\mathcal{L}\{f * g\}=F(s)G(s)$.",
-        tags: ["convolution", "laplace"]
-      },
-      {
-        id: "de-l-8",
-        type: "single",
-        prompt: "A linear 2D system with one positive and one negative real eigenvalue has a:",
-        options: ["Stable node", "Center", "Saddle", "Spiral sink"],
-        correct: [2],
-        explanation: "Opposite-sign eigenvalues imply saddle behavior.",
-        tags: ["classification", "phase-plane"]
-      }
-    ]
-  },
-  {
-    id: "ca-isa-and-assembly",
-    courseId: "computer-architecture",
-    title: "ISA, Assembly, and Performance Basics",
-    description: "Instruction behavior, register usage, and performance metrics.",
-    difficulty: "Intermediate",
-    estMinutes: 25,
-    tags: ["isa", "assembly", "cpi"],
-    timerDefaultMinutes: 22,
-    questions: [
-      {
-        id: "ca-i-1",
-        type: "single",
-        prompt: "Which quantity is captured by CPI?",
-        options: [
-          "Cycles per instruction",
-          "Clock speed per instruction",
-          "Instructions per cycle",
-          "Cache misses per instruction"
+        "id": "de-core-legacy-q6",
+        "type": "free",
+        "prompt": "Which equation is linear in y?",
+        "options": [],
+        "correct": [],
+        "explanation": "Linear means y and derivatives appear to first power and are not multiplied together.\n\n**One valid final answer:** y' + x y = cos(x)",
+        "tags": [
+          "linear-first-order",
+          "chapter-1"
         ],
-        correct: [0],
-        explanation: "CPI directly means average cycles required for each instruction.",
-        tags: ["performance", "cpi"]
-      },
-      {
-        id: "ca-i-2",
-        type: "single",
-        prompt: "Given this MIPS snippet, what does it compute?\n\n```asm\nadd $t0, $t1, $t2\nsub $t3, $t0, $t4\n```",
-        options: [
-          "$t3 = ($t1 + $t2) - $t4$",
-          "$t3 = $t1 - $t2 - $t4$",
-          "$t0 = $t3 + $t4$",
-          "$t3 = $t1 + $t2 + $t4$"
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "Linear means y and derivatives appear to first power and are not multiplied together."
         ],
-        correct: [0],
-        explanation: "First add computes intermediate in $t0$, then subtract uses that intermediate.",
-        tags: ["assembly", "registers"],
-        walkthroughSteps: [
-          "Track register values line by line.",
-          "Write symbolic expression after each instruction.",
-          "Substitute the intermediate into final assignment."
+        "walkthroughSteps": [
+          "Linear means y and derivatives appear to first power and are not multiplied together."
+        ],
+        "sampleAnswer": "y' + x y = cos(x)",
+        "references": [
+          "Differential Equations guided practice"
         ]
       },
       {
-        id: "ca-i-3",
-        type: "multi",
-        prompt: "RISC design philosophy generally emphasizes:",
-        options: [
-          "Simple instructions with uniform formats",
-          "Large microcoded complex instructions",
-          "Load/store architecture",
-          "Pipeline-friendly operations"
+        "id": "de-core-legacy-q7",
+        "type": "free",
+        "prompt": "Solve y' = 2x with y(0)=3. What is y(x)?",
+        "options": [],
+        "correct": [],
+        "explanation": "Integrate: y = x^2 + C, and y(0)=3 gives C=3.\n\n**One valid final answer:** x^2 + 3",
+        "tags": [
+          "initial-value-problem",
+          "separable",
+          "chapter-1"
         ],
-        correct: [0, 2, 3],
-        explanation: "RISC prioritizes simpler, regular instructions and pipeline efficiency.",
-        tags: ["isa", "risc"]
-      },
-      {
-        id: "ca-i-4",
-        type: "single",
-        prompt: "If CPU time = Instruction Count × CPI × Clock Cycle Time, reducing CPI does what?",
-        options: ["Always increases time", "Reduces CPU time, all else fixed", "No effect", "Only affects memory"],
-        correct: [1],
-        explanation: "Direct proportionality: lower CPI lowers total CPU execution time.",
-        tags: ["performance"]
-      },
-      {
-        id: "ca-i-5",
-        type: "single",
-        prompt: "What is the main purpose of an instruction set architecture (ISA)?",
-        options: [
-          "Define compiler UI",
-          "Define software-hardware contract",
-          "Define motherboard layout",
-          "Define cache replacement policy"
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "Integrate: y = x^2 + C, and y(0)=3 gives C=3."
         ],
-        correct: [1],
-        explanation: "ISA specifies operations, registers, addressing, and visible behavior.",
-        tags: ["isa"]
-      },
-      {
-        id: "ca-i-6",
-        type: "multi",
-        prompt: "Which factors can increase effective instruction throughput?",
-        options: [
-          "Reducing branch misprediction",
-          "Higher cache hit rate",
-          "Increasing pipeline stalls",
-          "Compiler optimizations reducing dynamic instruction count"
+        "walkthroughSteps": [
+          "Integrate: y = x^2 + C, and y(0)=3 gives C=3."
         ],
-        correct: [0, 1, 3],
-        explanation: "Throughput improves when stalls and memory delays are reduced.",
-        tags: ["pipeline", "cache", "performance"]
-      },
-      {
-        id: "ca-i-7",
-        type: "single",
-        prompt: "In little-endian systems, the least significant byte is stored at:",
-        options: ["Highest address", "Lowest address", "Random address", "Middle address"],
-        correct: [1],
-        explanation: "Little-endian places low-significance bytes first in memory.",
-        tags: ["memory", "endianness"]
-      },
-      {
-        id: "ca-i-8",
-        type: "single",
-        prompt: "What does this branch do?\n\n```asm\nbeq $t0, $zero, done\n```",
-        options: [
-          "Branch to done if $t0 != 0",
-          "Branch to done if $t0 == 0",
-          "Always branch",
-          "Compare $t0 with $t1"
-        ],
-        correct: [1],
-        explanation: "`beq` branches when the compared registers are equal.",
-        tags: ["assembly", "control-flow"]
-      }
-    ]
-  },
-  {
-    id: "ca-pipeline-cache",
-    courseId: "computer-architecture",
-    title: "Pipelining, Hazards, and Cache Systems",
-    description: "Pipeline behavior, hazard handling, and memory hierarchy design.",
-    difficulty: "Advanced",
-    estMinutes: 29,
-    tags: ["pipeline", "hazards", "cache"],
-    timerDefaultMinutes: 26,
-    questions: [
-      {
-        id: "ca-p-1",
-        type: "single",
-        prompt: "A **data hazard** occurs when:",
-        options: [
-          "Two instructions need same ALU simultaneously",
-          "An instruction depends on result not yet written back",
-          "Branch target is unknown",
-          "Cache line is dirty"
-        ],
-        correct: [1],
-        explanation: "Data dependencies in overlapping pipeline stages create data hazards.",
-        tags: ["pipeline", "hazards"]
-      },
-      {
-        id: "ca-p-2",
-        type: "multi",
-        prompt: "Common ways to mitigate control hazards include:",
-        options: ["Branch prediction", "Delayed branching", "Instruction forwarding", "Speculative execution"],
-        correct: [0, 1, 3],
-        explanation: "Control hazards involve branch decisions and speculative control flow handling.",
-        tags: ["control-hazard", "prediction"],
-        walkthroughSteps: [
-          "Separate data-hazard fixes from control-hazard fixes.",
-          "Keep branch-specific techniques.",
-          "Forwarding solves data hazards, not branch decision timing."
+        "sampleAnswer": "x^2 + 3",
+        "references": [
+          "Differential Equations guided practice"
         ]
       },
       {
-        id: "ca-p-3",
-        type: "single",
-        prompt: "A direct-mapped cache maps each memory block to:",
-        options: ["Any cache line", "Exactly one cache line", "Two possible sets", "Only L2 cache"],
-        correct: [1],
-        explanation: "Direct mapping has one deterministic location per block.",
-        tags: ["cache", "mapping"]
-      },
-      {
-        id: "ca-p-4",
-        type: "single",
-        prompt: "What is the main tradeoff of increasing cache associativity?",
-        options: [
-          "Lower hit rate, lower complexity",
-          "Potentially higher hit rate, higher lookup complexity",
-          "No effect on misses",
-          "Only affects write policy"
+        "id": "de-core-legacy-q8",
+        "type": "free",
+        "prompt": "For y' = r y(1 - y/K), the equilibrium solutions are:",
+        "options": [],
+        "correct": [],
+        "explanation": "Set y' = 0: y=0 or (1-y/K)=0 => y=K.\n\n**One valid final answer:** y = 0 and y = K",
+        "tags": [
+          "logistic",
+          "equilibria",
+          "chapter-1"
         ],
-        correct: [1],
-        explanation: "Higher associativity reduces conflict misses but increases hardware lookup complexity.",
-        tags: ["cache", "associativity"]
-      },
-      {
-        id: "ca-p-5",
-        type: "multi",
-        prompt: "Which options are **structural hazards** examples?",
-        options: [
-          "Single memory port needed by instruction fetch and data load simultaneously",
-          "Two instructions requiring same multiplier unit in same cycle",
-          "Branch direction unknown",
-          "Read-after-write dependency"
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "Set y' = 0: y=0 or (1-y/K)=0 => y=K."
         ],
-        correct: [0, 1],
-        explanation: "Structural hazards arise from resource contention.",
-        tags: ["hazards", "resources"]
-      },
-      {
-        id: "ca-p-6",
-        type: "single",
-        prompt: "`AMAT = Hit Time + Miss Rate × Miss Penalty` models:",
-        options: ["CPU throughput", "Average memory access latency", "Branch delay", "Power efficiency"],
-        correct: [1],
-        explanation: "AMAT estimates effective memory access cost under cache behavior.",
-        tags: ["cache", "amat"]
-      },
-      {
-        id: "ca-p-7",
-        type: "single",
-        prompt: "Instruction forwarding primarily helps with:",
-        options: ["Control hazards", "Data hazards", "Cache misses", "TLB misses"],
-        correct: [1],
-        explanation: "Forwarding bypasses yet-to-be-written values to dependent pipeline stages.",
-        tags: ["pipeline", "forwarding"]
-      },
-      {
-        id: "ca-p-8",
-        type: "single",
-        prompt: "If branch predictor accuracy improves, expected pipeline performance typically:",
-        options: ["Decreases", "Stays same", "Improves due to fewer flushes", "Becomes unstable"],
-        correct: [2],
-        explanation: "Fewer mispredictions means fewer costly pipeline flushes.",
-        tags: ["branch", "performance"]
-      }
-    ]
-  },
-  {
-    id: "ta-automata-core",
-    courseId: "theory-of-automata",
-    title: "Finite Automata & Regular Languages",
-    description: "DFA/NFA behavior, regular expressions, and closure properties.",
-    difficulty: "Intermediate",
-    estMinutes: 26,
-    tags: ["dfa", "nfa", "regex"],
-    timerDefaultMinutes: 24,
-    questions: [
-      {
-        id: "ta-c-1",
-        type: "single",
-        prompt: "A DFA differs from an NFA mainly because:",
-        options: [
-          "DFA can have epsilon transitions",
-          "DFA has exactly one transition per symbol from each state",
-          "NFA cannot recognize regular languages",
-          "DFA requires stack memory"
+        "walkthroughSteps": [
+          "Set y' = 0: y=0 or (1-y/K)=0 => y=K."
         ],
-        correct: [1],
-        explanation: "DFA transition function is total and deterministic.",
-        tags: ["dfa", "nfa"]
-      },
-      {
-        id: "ta-c-2",
-        type: "multi",
-        prompt: "Regular languages are closed under which operations?",
-        options: ["Union", "Concatenation", "Complement", "Intersection"],
-        correct: [0, 1, 2, 3],
-        explanation: "All listed operations preserve regularity.",
-        tags: ["closure", "regular-languages"],
-        walkthroughSteps: [
-          "Recall canonical closure theorem list for regular languages.",
-          "Use DeMorgan + complement to reason about intersection if needed.",
-          "All four operations are valid closures."
-        ],
-        references: ["Hopcroft-Ullman, Ch. 2"]
-      },
-      {
-        id: "ta-c-3",
-        type: "single",
-        prompt: "Which regex matches binary strings ending in `01`?",
-        options: ["`(0|1)*01`", "`01(0|1)*`", "`(01)*`", "`0*1*`"],
-        correct: [0],
-        explanation: "Any prefix over `{0,1}` followed by literal suffix `01`.",
-        tags: ["regex"]
-      },
-      {
-        id: "ta-c-4",
-        type: "single",
-        prompt: "The subset construction converts:",
-        options: ["DFA to NFA", "NFA to DFA", "PDA to CFG", "TM to DFA"],
-        correct: [1],
-        explanation: "Subset (powerset) construction determinizes an NFA.",
-        tags: ["construction", "dfa"]
-      },
-      {
-        id: "ta-c-5",
-        type: "multi",
-        prompt: "What are typical reasons to minimize a DFA?",
-        options: [
-          "Reduce state count",
-          "Obtain canonical equivalent form",
-          "Increase language class",
-          "Simplify implementation"
-        ],
-        correct: [0, 1, 3],
-        explanation: "Minimization preserves language while reducing complexity.",
-        tags: ["minimization"]
-      },
-      {
-        id: "ta-c-6",
-        type: "single",
-        prompt: "A language is regular if there exists:",
-        options: ["A DFA recognizing it", "A TM halting on all input", "A context-free grammar only", "A PDA only"],
-        correct: [0],
-        explanation: "Existence of a DFA is equivalent characterization of regular languages.",
-        tags: ["regular-languages"]
-      },
-      {
-        id: "ta-c-7",
-        type: "single",
-        prompt: "What does pumping lemma for regular languages primarily help prove?",
-        options: ["Language is regular", "Language is non-regular", "Automaton is minimal", "Grammar is ambiguous"],
-        correct: [1],
-        explanation: "Pumping lemma is mostly used for contradiction to show non-regularity.",
-        tags: ["proofs", "pumping-lemma"]
-      },
-      {
-        id: "ta-c-8",
-        type: "single",
-        prompt: "If two states are distinguishable, then in minimization they:",
-        options: ["Merge", "Stay separate", "Become accepting", "Must be start states"],
-        correct: [1],
-        explanation: "Distinguishable states cannot be merged without changing the language.",
-        tags: ["minimization", "equivalence"]
-      }
-    ]
-  },
-  {
-    id: "ta-cfg-tm",
-    courseId: "theory-of-automata",
-    title: "CFGs, PDAs, and Turing Machines",
-    description: "Context-free structure, parsing intuition, and computability boundaries.",
-    difficulty: "Advanced",
-    estMinutes: 31,
-    tags: ["cfg", "pda", "tm"],
-    timerDefaultMinutes: 28,
-    questions: [
-      {
-        id: "ta-a-1",
-        type: "single",
-        prompt: "Which model recognizes exactly the context-free languages?",
-        options: ["DFA", "NFA", "PDA", "LBA"],
-        correct: [2],
-        explanation: "Pushdown automata characterize context-free languages.",
-        tags: ["cfg", "pda"]
-      },
-      {
-        id: "ta-a-2",
-        type: "multi",
-        prompt: "For CFGs, which statements are true?",
-        options: [
-          "Ambiguity means a string can have more than one parse tree",
-          "Every CFL has an unambiguous grammar",
-          "Leftmost and rightmost derivations can represent same parse tree",
-          "CNF conversion preserves language except possibly $\epsilon$ handling"
-        ],
-        correct: [0, 2, 3],
-        explanation: "Not all CFLs are unambiguous, but ambiguity and CNF properties hold as stated.",
-        tags: ["cfg", "parsing"],
-        walkthroughSteps: [
-          "Evaluate each statement against standard CFL theorems.",
-          "Watch for absolute claims like 'every'.",
-          "Remember CNF conversion caveat around epsilon/start symbol handling."
+        "sampleAnswer": "y = 0 and y = K",
+        "references": [
+          "Differential Equations guided practice"
         ]
       },
       {
-        id: "ta-a-3",
-        type: "single",
-        prompt: "A language is decidable if there exists a TM that:",
-        options: [
-          "Accepts members and may loop forever on non-members",
-          "Halts on every input and answers yes/no correctly",
-          "Uses at most one tape",
-          "Has no reject state"
+        "id": "de-core-legacy-q9",
+        "type": "free",
+        "prompt": "For a separable ODE, which steps are valid? (Select all that apply)",
+        "options": [],
+        "correct": [],
+        "explanation": "Separable workflow: separate variables, integrate, then apply conditions.\n\n**One valid final answer:** Collect y terms with dy on one side and x terms with dx on the other.; Integrate both sides after separation.; Apply initial conditions after finding the antiderivative relation.",
+        "tags": [
+          "separable",
+          "technique",
+          "chapter-1"
         ],
-        correct: [1],
-        explanation: "Deciders must halt on all inputs.",
-        tags: ["decidability", "tm"]
-      },
-      {
-        id: "ta-a-4",
-        type: "single",
-        prompt: "Which is a classic undecidable problem?",
-        options: ["DFA emptiness", "TM acceptance problem", "DFA minimization", "CFG membership"],
-        correct: [1],
-        explanation: "General TM acceptance is undecidable.",
-        tags: ["undecidable", "tm"]
-      },
-      {
-        id: "ta-a-5",
-        type: "multi",
-        prompt: "Useful proof techniques in automata/computability include:",
-        options: ["Reduction", "Diagonalization", "Induction", "Random guessing"],
-        correct: [0, 1, 2],
-        explanation: "Rigorous proofs rely on formal methods, not random guessing.",
-        tags: ["proof-techniques"]
-      },
-      {
-        id: "ta-a-6",
-        type: "single",
-        prompt: "The language $\{a^n b^n \mid n\ge 0\}$ is:",
-        options: ["Regular", "Context-free but not regular", "Not context-free", "Finite"],
-        correct: [1],
-        explanation: "It is CFL (recognized by PDA) but fails regular pumping lemma.",
-        tags: ["cfl", "regular-vs-cfl"]
-      },
-      {
-        id: "ta-a-7",
-        type: "single",
-        prompt: "What does Rice's theorem broadly assert?",
-        options: [
-          "All TM properties are decidable",
-          "Any nontrivial semantic property of TM-recognized languages is undecidable",
-          "Only syntax properties are undecidable",
-          "Regex matching is undecidable"
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "Separable workflow: separate variables, integrate, then apply conditions."
         ],
-        correct: [1],
-        explanation: "Rice classifies broad semantic language properties as undecidable if nontrivial.",
-        tags: ["rice-theorem", "undecidability"]
+        "walkthroughSteps": [
+          "Separable workflow: separate variables, integrate, then apply conditions."
+        ],
+        "sampleAnswer": "Collect y terms with dy on one side and x terms with dx on the other. | Integrate both sides after separation. | Apply initial conditions after finding the antiderivative relation.",
+        "references": [
+          "Differential Equations guided practice"
+        ]
       },
       {
-        id: "ta-a-8",
-        type: "single",
-        prompt: "If a language and its complement are both Turing-recognizable, then the language is:",
-        options: ["Undecidable", "Decidable", "Context-free", "Regular"],
-        correct: [1],
-        explanation: "Recognizable + co-recognizable implies decidable by dovetailing recognizers.",
-        tags: ["recognizable", "decidable"]
+        "id": "de-core-legacy-q10",
+        "type": "free",
+        "prompt": "If r1 and r2 are distinct real roots of the characteristic equation, the homogeneous solution is:",
+        "options": [],
+        "correct": [],
+        "explanation": "Distinct real roots produce sum of exponentials.\n\n**One valid final answer:** y_h = c1 e^{r1 x} + c2 e^{r2 x}",
+        "tags": [
+          "characteristic-equation",
+          "distinct-roots",
+          "chapter-2"
+        ],
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "Distinct real roots produce sum of exponentials."
+        ],
+        "walkthroughSteps": [
+          "Distinct real roots produce sum of exponentials."
+        ],
+        "sampleAnswer": "y_h = c1 e^{r1 x} + c2 e^{r2 x}",
+        "references": [
+          "Differential Equations guided practice"
+        ]
+      },
+      {
+        "id": "de-core-legacy-q11",
+        "type": "free",
+        "prompt": "For roots r = a +- bi, the real-form solution is:",
+        "options": [],
+        "correct": [],
+        "explanation": "Complex conjugate roots give damped sinusoidal form.\n\n**One valid final answer:** y = c1 e^{ax} cos(bx) + c2 e^{ax} sin(bx)",
+        "tags": [
+          "complex-roots",
+          "chapter-2"
+        ],
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "Complex conjugate roots give damped sinusoidal form."
+        ],
+        "walkthroughSteps": [
+          "Complex conjugate roots give damped sinusoidal form."
+        ],
+        "sampleAnswer": "y = c1 e^{ax} cos(bx) + c2 e^{ax} sin(bx)",
+        "references": [
+          "Differential Equations guided practice"
+        ]
+      },
+      {
+        "id": "de-core-legacy-q12",
+        "type": "free",
+        "prompt": "Method of undetermined coefficients is typically used for:",
+        "options": [],
+        "correct": [],
+        "explanation": "Undetermined coefficients targets linear constant-coefficient ODEs with compatible forcing forms.\n\n**One valid final answer:** Linear ODEs with simple forcing terms like polynomials, exponentials, sines/cosines",
+        "tags": [
+          "undetermined-coefficients",
+          "chapter-2"
+        ],
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "Undetermined coefficients targets linear constant-coefficient ODEs with compatible forcing forms."
+        ],
+        "walkthroughSteps": [
+          "Undetermined coefficients targets linear constant-coefficient ODEs with compatible forcing forms."
+        ],
+        "sampleAnswer": "Linear ODEs with simple forcing terms like polynomials, exponentials, sines/cosines",
+        "references": [
+          "Differential Equations guided practice"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "de-reinforce-legacy",
+    "courseId": "differential-equations",
+    "title": "Differential Equations Reinforcement (Legacy)",
+    "description": "Open-ended Differential Equations practice with free-response answers and progressive hints.",
+    "difficulty": "Advanced",
+    "estMinutes": 24,
+    "tags": [
+      "legacy",
+      "reinforcement",
+      "laplace",
+      "open-ended",
+      "free-response",
+      "hint-driven"
+    ],
+    "timerDefaultMinutes": 22,
+    "questions": [
+      {
+        "id": "de-reinforce-legacy-q1",
+        "type": "free",
+        "prompt": "Which rewrite confirms y' = (x^2)/(1+y) is separable?",
+        "options": [],
+        "correct": [],
+        "explanation": "Move (1+y) with dy and x terms with dx.\n\n**One valid final answer:** (1+y)dy = x^2 dx",
+        "tags": [
+          "separable",
+          "first-order",
+          "chapter-1"
+        ],
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "Move (1+y) with dy and x terms with dx."
+        ],
+        "walkthroughSteps": [
+          "Move (1+y) with dy and x terms with dx."
+        ],
+        "sampleAnswer": "(1+y)dy = x^2 dx",
+        "references": [
+          "Differential Equations guided practice"
+        ]
+      },
+      {
+        "id": "de-reinforce-legacy-q2",
+        "type": "free",
+        "prompt": "For y' + 2y = e^x, the integrating factor is:",
+        "options": [],
+        "correct": [],
+        "explanation": "mu(x)=exp(integral 2 dx)=e^{2x}.\n\n**One valid final answer:** e^{2x}",
+        "tags": [
+          "linear-first-order",
+          "integrating-factor",
+          "chapter-1"
+        ],
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "mu(x)=exp(integral 2 dx)=e^{2x}."
+        ],
+        "walkthroughSteps": [
+          "mu(x)=exp(integral 2 dx)=e^{2x}."
+        ],
+        "sampleAnswer": "e^{2x}",
+        "references": [
+          "Differential Equations guided practice"
+        ]
+      },
+      {
+        "id": "de-reinforce-legacy-q3",
+        "type": "free",
+        "prompt": "For M(x,y)dx + N(x,y)dy = 0, exactness means: (Select all that apply)",
+        "options": [],
+        "correct": [],
+        "explanation": "Exact equations correspond to total differentials.\n\n**One valid final answer:** There exists potential F with dF = M dx + N dy.; Partial M/partial y equals partial N/partial x.; Solution can be written F(x,y)=C.",
+        "tags": [
+          "exact-equations",
+          "first-order",
+          "chapter-1"
+        ],
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "Exact equations correspond to total differentials."
+        ],
+        "walkthroughSteps": [
+          "Exact equations correspond to total differentials."
+        ],
+        "sampleAnswer": "There exists potential F with dF = M dx + N dy. | Partial M/partial y equals partial N/partial x. | Solution can be written F(x,y)=C.",
+        "references": [
+          "Differential Equations guided practice"
+        ]
+      },
+      {
+        "id": "de-reinforce-legacy-q4",
+        "type": "free",
+        "prompt": "Repeated root r=3 for y''-6y'+9y=0 gives:",
+        "options": [],
+        "correct": [],
+        "explanation": "Repeated root form includes x factor.\n\n**One valid final answer:** (c1+c2x)e^{3x}",
+        "tags": [
+          "characteristic-equation",
+          "repeated-roots",
+          "chapter-2"
+        ],
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "Repeated root form includes x factor."
+        ],
+        "walkthroughSteps": [
+          "Repeated root form includes x factor."
+        ],
+        "sampleAnswer": "(c1+c2x)e^{3x}",
+        "references": [
+          "Differential Equations guided practice"
+        ]
+      },
+      {
+        "id": "de-reinforce-legacy-q5",
+        "type": "free",
+        "prompt": "A good first trial for y''+y = 3cos x is:",
+        "options": [],
+        "correct": [],
+        "explanation": "cos x overlaps homogeneous basis, so multiply by x.\n\n**One valid final answer:** x(Acos x + Bsin x)",
+        "tags": [
+          "undetermined-coefficients",
+          "chapter-2"
+        ],
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "cos x overlaps homogeneous basis, so multiply by x."
+        ],
+        "walkthroughSteps": [
+          "cos x overlaps homogeneous basis, so multiply by x."
+        ],
+        "sampleAnswer": "x(Acos x + Bsin x)",
+        "references": [
+          "Differential Equations guided practice"
+        ]
+      },
+      {
+        "id": "de-reinforce-legacy-q6",
+        "type": "free",
+        "prompt": "Which statements describe underdamped motion? (Select all that apply)",
+        "options": [],
+        "correct": [],
+        "explanation": "Underdamped systems oscillate while decaying.\n\n**One valid final answer:** Oscillatory behavior is present.; Amplitude decays over time.; Complex conjugate roots with negative real part appear.",
+        "tags": [
+          "damping",
+          "modeling",
+          "chapter-2"
+        ],
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "Underdamped systems oscillate while decaying."
+        ],
+        "walkthroughSteps": [
+          "Underdamped systems oscillate while decaying."
+        ],
+        "sampleAnswer": "Oscillatory behavior is present. | Amplitude decays over time. | Complex conjugate roots with negative real part appear.",
+        "references": [
+          "Differential Equations guided practice"
+        ]
+      },
+      {
+        "id": "de-reinforce-legacy-q7",
+        "type": "free",
+        "prompt": "L{e^{at}} equals:",
+        "options": [],
+        "correct": [],
+        "explanation": "L{e^{at}} = 1/(s-a) for s>a.\n\n**One valid final answer:** 1/(s-a)",
+        "tags": [
+          "laplace-table",
+          "chapter-3"
+        ],
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "L{e^{at}} = 1/(s-a) for s>a."
+        ],
+        "walkthroughSteps": [
+          "L{e^{at}} = 1/(s-a) for s>a."
+        ],
+        "sampleAnswer": "1/(s-a)",
+        "references": [
+          "Differential Equations guided practice"
+        ]
+      },
+      {
+        "id": "de-reinforce-legacy-q8",
+        "type": "free",
+        "prompt": "Inverse Laplace of 1/(s-2) is:",
+        "options": [],
+        "correct": [],
+        "explanation": "1/(s-a) maps to e^{at}.\n\n**One valid final answer:** e^{2t}",
+        "tags": [
+          "inverse-laplace",
+          "partial-fractions",
+          "chapter-3"
+        ],
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "1/(s-a) maps to e^{at}."
+        ],
+        "walkthroughSteps": [
+          "1/(s-a) maps to e^{at}."
+        ],
+        "sampleAnswer": "e^{2t}",
+        "references": [
+          "Differential Equations guided practice"
+        ]
+      },
+      {
+        "id": "de-reinforce-legacy-q9",
+        "type": "free",
+        "prompt": "Unit step functions are useful for representing: (Select all that apply)",
+        "options": [],
+        "correct": [],
+        "explanation": "u(t-a) captures delayed/switching input structure.\n\n**One valid final answer:** Piecewise forcing that turns on at time a.; Inputs with delays.; Switching behavior in circuits/mechanical loads.",
+        "tags": [
+          "unit-step",
+          "piecewise",
+          "chapter-3"
+        ],
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "u(t-a) captures delayed/switching input structure."
+        ],
+        "walkthroughSteps": [
+          "u(t-a) captures delayed/switching input structure."
+        ],
+        "sampleAnswer": "Piecewise forcing that turns on at time a. | Inputs with delays. | Switching behavior in circuits/mechanical loads.",
+        "references": [
+          "Differential Equations guided practice"
+        ]
+      },
+      {
+        "id": "de-reinforce-legacy-q10",
+        "type": "free",
+        "prompt": "In x' = Ax, eigenvectors primarily determine:",
+        "options": [],
+        "correct": [],
+        "explanation": "Eigenvectors define invariant directions of modal solutions.\n\n**One valid final answer:** Solution directions/modes",
+        "tags": [
+          "systems",
+          "eigenvectors",
+          "chapter-4"
+        ],
+        "hintSteps": [
+          "Classify the ODE type first (separable, linear, exact, etc.).",
+          "Choose the matching solving method and set up the transformed equation.",
+          "Eigenvectors define invariant directions of modal solutions."
+        ],
+        "walkthroughSteps": [
+          "Eigenvectors define invariant directions of modal solutions."
+        ],
+        "sampleAnswer": "Solution directions/modes",
+        "references": [
+          "Differential Equations guided practice"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ca-core-legacy",
+    "courseId": "computer-architecture",
+    "title": "Computer Architecture Test 1 (Legacy Core)",
+    "description": "Core architecture/assembly/pipeline bank imported from existing files.",
+    "difficulty": "Intermediate",
+    "estMinutes": 28,
+    "tags": [
+      "legacy",
+      "core",
+      "architecture"
+    ],
+    "timerDefaultMinutes": 25,
+    "questions": [
+      {
+        "id": "ca-core-legacy-q1",
+        "type": "single",
+        "prompt": "For C code `if (i == j) a = b + c; else a = b - c;` with i in s6 and j in s7, the branch condition should compare:",
+        "options": [
+          "s6 and s7",
+          "a0 and a1",
+          "ra and sp",
+          "t0 and t1"
+        ],
+        "correct": [
+          0
+        ],
+        "explanation": "The condition depends on i and j, so compare s6 with s7 before choosing add/sub path.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "assembly",
+          "branch",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ca-core-legacy-q2",
+        "type": "single",
+        "prompt": "In `A[2*i] = a + A[i]` for 4-byte integers, the byte offset for A[2*i] is:",
+        "options": [
+          "i << 1",
+          "i << 2",
+          "i << 3",
+          "i << 4"
+        ],
+        "correct": [
+          2
+        ],
+        "explanation": "Index 2*i times 4 bytes = 8*i, implemented as left shift by 3.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "assembly",
+          "array-addressing",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ca-core-legacy-q3",
+        "type": "single",
+        "prompt": "Machine code (hex) for `addi t0, zero, -101` is:",
+        "options": [
+          "0xF9B00293",
+          "0xF9B00313",
+          "0x09B00293",
+          "0x41680FB3"
+        ],
+        "correct": [
+          0
+        ],
+        "explanation": "-101 encoded in 12-bit immediate (two's complement) with rd=t0 and opcode for ADDI.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "machine-code",
+          "encoding",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ca-core-legacy-q4",
+        "type": "single",
+        "prompt": "Instruction `0x41680FB3` decodes to:",
+        "options": [
+          "add x31, x16, x22",
+          "sub x31, x16, x22",
+          "and x31, x16, x22",
+          "beq x31, x16, x22"
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "R-type with funct7=0100000 and funct3=000 corresponds to SUB.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "machine-code",
+          "decode",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ca-core-legacy-q5",
+        "type": "single",
+        "prompt": "In a 5-stage pipeline, a load-use dependency typically requires a stall because:",
+        "options": [
+          "Register file cannot be written at all.",
+          "Loaded value is produced too late for immediate next EX stage operand use.",
+          "Branch predictor disables forwarding.",
+          "All loads are multicycle and unpipelined by definition."
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "Load result becomes available after MEM, often too late for next instruction EX without bubble.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "pipeline",
+          "hazards",
+          "chapter-3"
+        ]
+      },
+      {
+        "id": "ca-core-legacy-q6",
+        "type": "single",
+        "prompt": "A 2-bit dynamic predictor reduces mispredictions vs 1-bit because it:",
+        "options": [
+          "Eliminates branch hazards completely.",
+          "Requires two consecutive opposite outcomes to reverse strong prediction.",
+          "Uses floating-point confidence counters.",
+          "Predicts using opcode parity."
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "Saturating 2-bit FSM adds hysteresis against one-off branch behavior.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "branch-prediction",
+          "2-bit",
+          "chapter-3"
+        ]
+      },
+      {
+        "id": "ca-core-legacy-q7",
+        "type": "single",
+        "prompt": "Which metric measures time to finish one task?",
+        "options": [
+          "Throughput",
+          "Response time",
+          "Utilization",
+          "Bandwidth"
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "Response time (latency) is completion time for a single task.",
+        "tags": [
+          "performance",
+          "metrics",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ca-core-legacy-q8",
+        "type": "single",
+        "prompt": "Speedup of machine X over machine Y is:",
+        "options": [
+          "Exec time X / Exec time Y",
+          "Exec time Y / Exec time X",
+          "CPI X / CPI Y",
+          "Clock rate X / Clock rate Y"
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "Lower execution time means better performance; ratio uses Y over X.",
+        "tags": [
+          "performance",
+          "speedup",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ca-core-legacy-q9",
+        "type": "single",
+        "prompt": "Processor performance equation is commonly written as CPU time =",
+        "options": [
+          "IC + CPI + cycle time",
+          "IC x CPI x cycle time",
+          "IC / CPI / cycle time",
+          "CPI / IC x cycle time"
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "Instruction count times cycles per instruction times cycle time.",
+        "tags": [
+          "cpu-time",
+          "equation",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ca-core-legacy-q10",
+        "type": "single",
+        "prompt": "In the slides, the 'old' view of architecture focused mainly on:",
+        "options": [
+          "Cooling and datacenter design",
+          "ISA decisions only",
+          "Compiler optimization only",
+          "Network protocols"
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "Old view centered on ISA choices (registers, addressing, encoding, etc.).",
+        "tags": [
+          "isa",
+          "architecture-definition",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ca-core-legacy-q11",
+        "type": "single",
+        "prompt": "SIMD stands for:",
+        "options": [
+          "Single instruction, multiple data",
+          "Single instruction, mixed data",
+          "Sequential instruction, multiple decode",
+          "Synchronous instruction, memory distributed"
+        ],
+        "correct": [
+          0
+        ],
+        "explanation": "Flynn taxonomy: single instruction stream over multiple data streams.",
+        "tags": [
+          "parallelism",
+          "flynn",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ca-core-legacy-q12",
+        "type": "multi",
+        "prompt": "Which of the following are core ISA design decisions include: (Select all that apply)",
+        "options": [
+          "Registers",
+          "Addressing modes",
+          "Instruction encoding",
+          "Cooling fan geometry"
+        ],
+        "correct": [
+          0,
+          1,
+          2
+        ],
+        "explanation": "ISA defines programmer-visible instruction/register/address behavior.",
+        "tags": [
+          "isa",
+          "risc-v",
+          "chapter-1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ca-reinforce-legacy",
+    "courseId": "computer-architecture",
+    "title": "Computer Architecture Reinforcement (Legacy)",
+    "description": "Targeted architecture reinforcement from existing bank.",
+    "difficulty": "Intermediate",
+    "estMinutes": 24,
+    "tags": [
+      "legacy",
+      "reinforcement",
+      "pipeline"
+    ],
+    "timerDefaultMinutes": 22,
+    "questions": [
+      {
+        "id": "ca-reinforce-legacy-q1",
+        "type": "single",
+        "prompt": "If execution time is cut in half, speedup is:",
+        "options": [
+          "0.5x",
+          "1x",
+          "2x",
+          "4x"
+        ],
+        "correct": [
+          2
+        ],
+        "explanation": "Speedup = old/new; halving time gives 2x.",
+        "walkthroughSteps": [
+          "Speedup = old/new.",
+          "halving time gives 2x."
+        ],
+        "tags": [
+          "performance",
+          "speedup",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ca-reinforce-legacy-q2",
+        "type": "single",
+        "prompt": "CPU time depends directly on:",
+        "options": [
+          "IC, CPI, cycle time",
+          "Clock rate only",
+          "CPI only",
+          "Cache size only"
+        ],
+        "correct": [
+          0
+        ],
+        "explanation": "Core equation multiplies these three factors.",
+        "tags": [
+          "cpu-time",
+          "equation",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ca-reinforce-legacy-q3",
+        "type": "multi",
+        "prompt": "Flynn classes include: (Select all that apply)",
+        "options": [
+          "SISD",
+          "SIMD",
+          "MISD",
+          "MIMD"
+        ],
+        "correct": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "explanation": "All four are Flynn taxonomy categories.",
+        "tags": [
+          "parallelism",
+          "flynn",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ca-reinforce-legacy-q4",
+        "type": "single",
+        "prompt": "addi belongs to:",
+        "options": [
+          "R-type",
+          "I-type",
+          "S-type",
+          "B-type"
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "addi uses immediate format.",
+        "tags": [
+          "instruction-format",
+          "addi",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ca-reinforce-legacy-q5",
+        "type": "single",
+        "prompt": "sw (store word) uses:",
+        "options": [
+          "S-type",
+          "R-type",
+          "U-type",
+          "J-type"
+        ],
+        "correct": [
+          0
+        ],
+        "explanation": "Store immediates are split in S-type encoding.",
+        "tags": [
+          "instruction-format",
+          "store",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ca-reinforce-legacy-q6",
+        "type": "single",
+        "prompt": "If R-type funct7 is 0100000 and funct3 is 000, operation is usually:",
+        "options": [
+          "ADD",
+          "SUB",
+          "AND",
+          "OR"
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "In base integer ALU ops, this encodes SUB.",
+        "tags": [
+          "machine-code",
+          "decode",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ca-reinforce-legacy-q7",
+        "type": "multi",
+        "prompt": "Standard convention facts: (Select all that apply)",
+        "options": [
+          "a0-a7 used for arguments",
+          "a0 used for return value",
+          "ra stores return address",
+          "x0 used as stack pointer"
+        ],
+        "correct": [
+          0,
+          1,
+          2
+        ],
+        "explanation": "sp is x2; x0 is constant zero.",
+        "walkthroughSteps": [
+          "sp is x2.",
+          "x0 is constant zero."
+        ],
+        "tags": [
+          "calling-convention",
+          "procedures",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ca-reinforce-legacy-q8",
+        "type": "single",
+        "prompt": "For int array A, byte offset of A[i] is typically:",
+        "options": [
+          "i",
+          "2*i",
+          "4*i",
+          "8*i"
+        ],
+        "correct": [
+          2
+        ],
+        "explanation": "Word-size scaling for 4-byte ints.",
+        "tags": [
+          "array-addressing",
+          "assembly",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ca-reinforce-legacy-q9",
+        "type": "single",
+        "prompt": "Which stage reads data memory for loads?",
+        "options": [
+          "IF",
+          "ID",
+          "MEM",
+          "WB"
+        ],
+        "correct": [
+          2
+        ],
+        "explanation": "Memory access happens in MEM stage.",
+        "tags": [
+          "pipeline",
+          "stages",
+          "chapter-3"
+        ]
+      },
+      {
+        "id": "ca-reinforce-legacy-q10",
+        "type": "single",
+        "prompt": "Dependency `producer writes reg, consumer later reads same reg` is:",
+        "options": [
+          "RAW",
+          "WAR",
+          "WAW",
+          "RAR"
+        ],
+        "correct": [
+          0
+        ],
+        "explanation": "Classic read-after-write dependency.",
+        "tags": [
+          "hazards",
+          "raw",
+          "chapter-3"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ta-core-legacy",
+    "courseId": "theory-of-automata",
+    "title": "Theory of Automata Test 1 (Legacy Core)",
+    "description": "Core automata/regex/formal language set imported from existing bank.",
+    "difficulty": "Advanced",
+    "estMinutes": 29,
+    "tags": [
+      "legacy",
+      "core",
+      "automata"
+    ],
+    "timerDefaultMinutes": 26,
+    "questions": [
+      {
+        "id": "ta-core-legacy-q1",
+        "type": "single",
+        "prompt": "For relation R, the directed graph of R union R^-1 is best interpreted as:",
+        "options": [
+          "Keeping only self-loops from R.",
+          "Adding reverse-direction edges for every edge in R.",
+          "Removing all asymmetric edges from R.",
+          "Creating a total order from R."
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "R union R^-1 contains each pair and its reverse, so edges appear both directions where applicable.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "relations",
+          "graphs",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ta-core-legacy-q2",
+        "type": "single",
+        "prompt": "Which statement matches Homework/Test material?",
+        "options": [
+          "(b* a*) intersection (a* b*) = empty set",
+          "(b* a*) intersection (a* b*) = a* union b*",
+          "(b* a*) intersection (a* b*) = (ab)*",
+          "(b* a*) intersection (a* b*) = (a+b)*"
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "The overlap of a* b* and b* a* is strings of only a's or only b's.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "regex",
+          "set-identity",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ta-core-legacy-q3",
+        "type": "single",
+        "prompt": "A lecture-note expression for strings over {0,1} with 2 or 3 ones and first two non-consecutive starts with:",
+        "options": [
+          "0*10*010*",
+          "(01)*",
+          "1*0*1*",
+          "(0+1)*111"
+        ],
+        "correct": [
+          0
+        ],
+        "explanation": "The note example uses 0*10*010*... to force spacing between first and second 1.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "regex",
+          "language-design",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ta-core-legacy-q4",
+        "type": "single",
+        "prompt": "A valid regex for strings over {a,b} with number of a's divisible by 3 is:",
+        "options": [
+          "b*(ab*ab*ab*)*",
+          "(ab)*",
+          "a*b*",
+          "(aa)*b*"
+        ],
+        "correct": [
+          0
+        ],
+        "explanation": "Each block contributes exactly three a's with any number of b's in between.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "regex",
+          "homework",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ta-core-legacy-q5",
+        "type": "single",
+        "prompt": "A DFA for language 'w has abab as a substring' must:",
+        "options": [
+          "Track progress through a,b,a,b pattern states.",
+          "Count total a's only.",
+          "Accept only length-4 strings.",
+          "Use a stack to match symbols."
+        ],
+        "correct": [
+          0
+        ],
+        "explanation": "Substring DFAs track partial matched prefix of target pattern.",
+        "references": [
+          "Professor-priority legacy question"
+        ],
+        "tags": [
+          "dfa",
+          "substring",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ta-core-legacy-q6",
+        "type": "single",
+        "prompt": "Which identity is correct?",
+        "options": [
+          "A - (B intersection C) = (A - B) union (A - C)",
+          "A - (B intersection C) = (A union B) - C",
+          "A - (B intersection C) = (A - B) intersection C",
+          "A - (B intersection C) = B - (A intersection C)"
+        ],
+        "correct": [
+          0
+        ],
+        "explanation": "This is the De Morgan-style set-difference identity proved in HW1.",
+        "tags": [
+          "sets",
+          "de-morgan",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ta-core-legacy-q7",
+        "type": "single",
+        "prompt": "For relations R and S, composition R o S means:",
+        "options": [
+          "(a,b) is in R o S if (a,b) is in both R and S directly.",
+          "(a,b) is in R o S if there exists c with (a,c) in R and (c,b) in S.",
+          "R o S always equals S o R.",
+          "R o S contains only reflexive pairs."
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "Composition chains through an intermediate element c.",
+        "tags": [
+          "relations",
+          "composition",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ta-core-legacy-q8",
+        "type": "single",
+        "prompt": "If (x,y) is in relation R, then R^-1 contains:",
+        "options": [
+          "(x,y)",
+          "(y,x)",
+          "(x,x)",
+          "(y,y)"
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "Inverse relation swaps ordered-pair components.",
+        "tags": [
+          "relations",
+          "inverse",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ta-core-legacy-q9",
+        "type": "single",
+        "prompt": "A directed graph represents a function exactly when each node in domain has:",
+        "options": [
+          "At least one outgoing edge",
+          "Exactly one outgoing edge",
+          "Exactly one incoming edge",
+          "No self-loops"
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "Function requires one and only one output for each input.",
+        "tags": [
+          "functions",
+          "graph-criterion",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ta-core-legacy-q10",
+        "type": "single",
+        "prompt": "On positive integers, relation aRb iff b is divisible by a is:",
+        "options": [
+          "Neither partial nor total order",
+          "A partial order but not total order",
+          "A total order",
+          "An equivalence relation"
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "It is reflexive/antisymmetric/transitive but not comparable for every pair (e.g., 2 and 3).",
+        "tags": [
+          "partial-order",
+          "divisibility",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ta-core-legacy-q11",
+        "type": "multi",
+        "prompt": "Which properties define an equivalence relation? (Select all that apply)",
+        "options": [
+          "Reflexive",
+          "Symmetric",
+          "Transitive",
+          "Antisymmetric"
+        ],
+        "correct": [
+          0,
+          1,
+          2
+        ],
+        "explanation": "Equivalence relation uses reflexive + symmetric + transitive.",
+        "tags": [
+          "relation-properties",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ta-core-legacy-q12",
+        "type": "single",
+        "prompt": "In a DFA transition table, each state/symbol pair has:",
+        "options": [
+          "Zero or more next states",
+          "Exactly one next state",
+          "A stack action",
+          "A grammar rule"
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "Determinism means one defined transition per symbol from each state.",
+        "tags": [
+          "dfa",
+          "deterministic",
+          "chapter-2"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ta-reinforce-legacy",
+    "courseId": "theory-of-automata",
+    "title": "Theory of Automata Reinforcement (Legacy)",
+    "description": "Automata reinforcement set imported from your existing files.",
+    "difficulty": "Advanced",
+    "estMinutes": 24,
+    "tags": [
+      "legacy",
+      "reinforcement",
+      "proofs"
+    ],
+    "timerDefaultMinutes": 22,
+    "questions": [
+      {
+        "id": "ta-reinforce-legacy-q1",
+        "type": "single",
+        "prompt": "Which expression equals A - (B intersection C)?",
+        "options": [
+          "(A-B) union (A-C)",
+          "(A-B) intersection (A-C)",
+          "A-(B union C)",
+          "(B-A) union (C-A)"
+        ],
+        "correct": [
+          0
+        ],
+        "explanation": "Matches the set identity used in HW1.",
+        "tags": [
+          "sets",
+          "de-morgan",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ta-reinforce-legacy-q2",
+        "type": "single",
+        "prompt": "If R = {(a,b),(c,d)}, then R^-1 contains:",
+        "options": [
+          "(a,b),(c,d)",
+          "(b,a),(d,c)",
+          "(a,a),(b,b)",
+          "(a,d),(c,b)"
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "Inverse swaps each ordered pair.",
+        "tags": [
+          "relations",
+          "inverse",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ta-reinforce-legacy-q3",
+        "type": "multi",
+        "prompt": "Which are required for partial order? (Select all that apply)",
+        "options": [
+          "Reflexive",
+          "Antisymmetric",
+          "Transitive",
+          "Symmetric"
+        ],
+        "correct": [
+          0,
+          1,
+          2
+        ],
+        "explanation": "Partial order = reflexive + antisymmetric + transitive.",
+        "tags": [
+          "relation-properties",
+          "chapter-1"
+        ]
+      },
+      {
+        "id": "ta-reinforce-legacy-q4",
+        "type": "single",
+        "prompt": "In a DFA, transitions are:",
+        "options": [
+          "Nondeterministic",
+          "Exactly one per state-symbol pair",
+          "Based on stack top",
+          "Allowed only from accept states"
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "Deterministic transition function gives one next state.",
+        "tags": [
+          "dfa",
+          "definition",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ta-reinforce-legacy-q5",
+        "type": "single",
+        "prompt": "Epsilon transitions consume:",
+        "options": [
+          "One input symbol",
+          "No input symbol",
+          "Only terminal symbols",
+          "Only if stack empty"
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "They are empty-string moves.",
+        "tags": [
+          "nfa",
+          "epsilon",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ta-reinforce-legacy-q6",
+        "type": "single",
+        "prompt": "Regex for 'no more than three a's' over {a,b} may be built by union of terms containing:",
+        "options": [
+          "0,1,2,3 occurrences of a",
+          "Only exactly three a's",
+          "Only even number of a's",
+          "Only odd number of a's"
+        ],
+        "correct": [
+          0
+        ],
+        "explanation": "HW solution builds cases for 0 through 3 a's.",
+        "tags": [
+          "regex",
+          "homework",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ta-reinforce-legacy-q7",
+        "type": "multi",
+        "prompt": "Regular languages are closed under: (Select all that apply)",
+        "options": [
+          "Union",
+          "Concatenation",
+          "Kleene star",
+          "Intersection"
+        ],
+        "correct": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "explanation": "All listed operations preserve regularity.",
+        "tags": [
+          "closure",
+          "regular",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ta-reinforce-legacy-q8",
+        "type": "single",
+        "prompt": "Pumping lemma gives a necessary condition for:",
+        "options": [
+          "Context-free languages",
+          "Regular languages",
+          "Decidable languages",
+          "Finite languages only"
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "Every regular language must satisfy pumping property.",
+        "tags": [
+          "pumping-lemma",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ta-reinforce-legacy-q9",
+        "type": "single",
+        "prompt": "The expression b*a* intersection a*b* allows which strings?",
+        "options": [
+          "Only strings with both a and b alternating",
+          "Only all-a strings or all-b strings",
+          "All binary strings",
+          "Only epsilon"
+        ],
+        "correct": [
+          1
+        ],
+        "explanation": "Intersection collapses to a* union b*.",
+        "tags": [
+          "regex",
+          "test1",
+          "chapter-2"
+        ]
+      },
+      {
+        "id": "ta-reinforce-legacy-q10",
+        "type": "single",
+        "prompt": "Which language is nonregular?",
+        "options": [
+          "(ab)*",
+          "a* union b*",
+          "{a^n b^n : n>=0}",
+          "b*(ab*ab*ab*)*"
+        ],
+        "correct": [
+          2
+        ],
+        "explanation": "Finite-state machines cannot enforce equal unbounded counts.",
+        "tags": [
+          "nonregular",
+          "examples",
+          "chapter-2"
+        ]
       }
     ]
   }

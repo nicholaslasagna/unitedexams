@@ -1,4 +1,4 @@
-export type QuestionType = "single" | "multi";
+export type QuestionType = "single" | "multi" | "free";
 
 export interface Course {
   id: string;
@@ -16,10 +16,12 @@ export interface Question {
   id: string;
   type: QuestionType;
   prompt: string;
-  options: string[];
-  correct: number[];
+  options?: string[];
+  correct?: number[];
   explanation: string;
   walkthroughSteps?: string[];
+  hintSteps?: string[];
+  sampleAnswer?: string;
   references?: string[];
   tags: string[];
   imageUrl?: string;
@@ -39,9 +41,12 @@ export interface QuizSet {
 
 export interface PerQuestionResult {
   questionId: string;
+  questionType: QuestionType;
   isCorrect: boolean;
   selected: number[];
   correct: number[];
+  responseText?: string;
+  selfMarked?: boolean;
   tags: string[];
 }
 
