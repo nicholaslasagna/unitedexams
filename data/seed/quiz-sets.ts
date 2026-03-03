@@ -2139,7 +2139,9 @@ const legacyQuizSets: QuizSet[] = [
 
 const replacementQuizSetIds = new Set(testReviewQuizSetReplacements.map((quizSet) => quizSet.id));
 const legacyQuizSetsWithoutReplacedReviews = legacyQuizSets.filter(
-  (quizSet) => !replacementQuizSetIds.has(quizSet.id),
+  (quizSet) =>
+    !replacementQuizSetIds.has(quizSet.id) &&
+    quizSet.courseId !== "differential-equations",
 );
 
 export const quizSets: QuizSet[] = [
