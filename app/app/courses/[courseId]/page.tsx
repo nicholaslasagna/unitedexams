@@ -39,7 +39,7 @@ export default function CourseDetailPage() {
   const [query, setQuery] = useState("");
   const [difficulty, setDifficulty] = useState("all");
 
-  const sets = course ? getCourseQuizSets(course.id) : [];
+  const sets = useMemo(() => (course ? getCourseQuizSets(course.id) : []), [course]);
   const progress = course ? courseProgress(attempts, course.id) : 0;
   const attemptCount = course ? attemptsForCourse(attempts, course.id).length : 0;
   const mastery = course ? topicMasteryForCourse(attempts, course.id).slice(0, 8) : [];
