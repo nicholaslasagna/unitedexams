@@ -24,12 +24,15 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-[256px] shrink-0 border-r border-borderc bg-[hsl(var(--layer-1)/0.95)] px-4 pb-5 pt-4 backdrop-blur-xl lg:block">
-      <Link href="/" className="mb-8 flex items-center gap-3 rounded-xl px-2 py-2">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-gradient text-lg text-white shadow-soft">
+    <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 border-r border-white/[0.07] bg-[rgba(5,5,16,0.88)] px-4 pb-5 pt-5 backdrop-blur-xl lg:block">
+      <Link href="/" className="mb-10 flex items-center gap-3 rounded-xl px-2 py-2">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-gradient text-lg text-white shadow-glow">
           <GraduationCap className="h-[18px] w-[18px]" />
         </div>
-        <p className="font-display text-[15px] font-semibold leading-tight text-text">United Exams</p>
+        <div>
+          <p className="font-display text-[15px] font-bold leading-tight text-white">United Exams</p>
+          <p className="text-[10px] font-semibold tracking-[5px] text-accent uppercase">STUDY</p>
+        </div>
       </Link>
 
       <nav aria-label="Main" className="space-y-1">
@@ -41,23 +44,23 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "group flex items-center gap-3 rounded-xl text-sm font-medium transition duration-150",
+                "group flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-[14px] font-medium transition duration-150",
                 active
-                  ? "border-l-2 border-brand-2 bg-brand-2/[0.12] pl-[10px] pr-3 py-2.5 text-text"
-                  : "border-l-2 border-transparent pl-[10px] pr-3 py-2.5 text-faint hover:text-muted hover:bg-white/[0.04]"
+                  ? "bg-accent/[0.15] text-white"
+                  : "text-white/[0.3] hover:text-white/[0.55] hover:bg-white/[0.04]"
               )}
             >
-              <Icon className={cn("h-4 w-4", active ? "text-brand-2" : "text-faint group-hover:text-muted")} />
+              <Icon className={cn("h-[17px] w-[17px]", active ? "text-accent" : "text-white/[0.3] group-hover:text-white/[0.55]")} />
               <span>{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-8 rounded-2xl bg-soft p-4">
-        <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-faint">Today&apos;s goal</p>
-        <p className="mt-2 text-sm font-medium text-text">Complete one quiz set in 20 minutes.</p>
-        <p className="mt-1 text-xs text-faint">Low friction. Keep streak momentum.</p>
+      <div className="mt-10 rounded-[14px] border border-white/[0.07] bg-white/[0.025] p-5">
+        <p className="text-[11px] font-bold tracking-[1.5px] text-accent uppercase">Today&apos;s goal</p>
+        <p className="mt-2 text-[14px] font-medium text-white">Complete one quiz set in 20 minutes.</p>
+        <p className="mt-1 text-[13px] text-white/[0.3]">Low friction. Keep streak momentum.</p>
       </div>
     </aside>
   );

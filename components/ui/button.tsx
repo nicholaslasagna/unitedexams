@@ -12,13 +12,13 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantStyles: Record<Variant, string> = {
   primary:
-    "bg-brand-gradient text-white shadow-soft border border-white/20 hover:shadow-elevated hover:-translate-y-[1px] active:translate-y-0 active:shadow-subtle transition-all duration-150",
+    "bg-accent-gradient text-white shadow-soft border border-white/[0.15] hover:shadow-glow hover:-translate-y-[1px] active:translate-y-0 active:shadow-subtle transition-all duration-150",
   secondary:
-    "bg-soft text-muted border border-borderc hover:text-text hover:bg-surface-raised hover:border-border-bright active:bg-soft transition-all duration-150",
+    "bg-white/[0.035] text-muted border border-white/[0.12] hover:text-text hover:bg-white/[0.065] hover:border-white/[0.18] active:bg-white/[0.035] transition-all duration-150",
   ghost:
     "bg-transparent text-muted border border-transparent hover:text-text hover:bg-white/[0.05] active:bg-white/[0.03] transition-all duration-150",
   danger:
-    "bg-danger/90 text-white border border-danger/70 hover:bg-danger hover:-translate-y-[1px] active:translate-y-0 transition-all duration-150"
+    "bg-danger/90 text-white border border-danger/50 hover:bg-danger hover:-translate-y-[1px] hover:shadow-[0_8px_28px_hsl(351_90%_71%/0.3)] active:translate-y-0 transition-all duration-150"
 };
 
 export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
@@ -26,7 +26,7 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
   ref
 ) {
   const classes = cn(
-    "inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-2/65 disabled:cursor-not-allowed disabled:opacity-60",
+    "inline-flex h-11 items-center justify-center gap-2 rounded-[10px] px-5 text-sm font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/65 disabled:cursor-not-allowed disabled:opacity-60",
     variantStyles[variant],
     className
   );

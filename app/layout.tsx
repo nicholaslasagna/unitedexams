@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Inter, Manrope, JetBrains_Mono } from "next/font/google";
+import { Outfit, Fira_Code } from "next/font/google";
 import { Providers } from "@/app/providers";
 import "@/app/globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
-const jetBrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
+const firaCode = Fira_Code({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://unitedexams.com"),
@@ -47,7 +46,7 @@ const themeBootScript = `
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${manrope.variable} ${jetBrains.variable} font-sans`}>
+      <body className={`${outfit.variable} ${firaCode.variable} font-sans`}>
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
         <Providers>{children}</Providers>
       </body>
