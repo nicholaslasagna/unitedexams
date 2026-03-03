@@ -19,11 +19,17 @@ export const STORAGE_KEYS = {
 } as const;
 
 export const defaultProfile: UserProfile = {
-  name: "Student"
+  name: "Student",
+  showRealName: false,
+  showUniversity: false,
+  role: "student"
 };
 
 export const defaultPreferences: AppPreferences = {
-  theme: "system",
+  theme: "dark",
   reducedMotion: false,
-  confettiEnabled: true
+  confettiEnabled: true,
+  accentHue: 265,
+  accentStrength: 60,
+  dashboardLayout: "default"
 };

@@ -5,6 +5,8 @@
 @import "katex/dist/katex.min.css";
 
 :root {
+  --accent-hue: 265;
+  --accent-strength: 60;
   --bg: 220 20% 96%;
   --surface: 0 0% 100%;
   --surface-raised: 220 14% 98%;
@@ -14,11 +16,11 @@
   --text: 220 30% 10%;
   --muted: 220 10% 44%;
   --faint: 220 8% 62%;
-  --accent: 235 85% 62%;
-  --accent-dim: 235 85% 62%;
-  --brand-1: 235 80% 58%;
-  --brand-2: 262 72% 56%;
-  --brand-3: 235 85% 62%;
+  --accent: var(--accent-hue) 78% 58%;
+  --accent-dim: var(--accent-hue) 74% 56%;
+  --brand-1: calc(var(--accent-hue) - 28) 74% 54%;
+  --brand-2: var(--accent-hue) 72% 56%;
+  --brand-3: calc(var(--accent-hue) - 18) 82% 62%;
   --success: 160 67% 38%;
   --warn: 43 96% 44%;
   --danger: 351 80% 52%;
@@ -37,11 +39,11 @@
   --text: 230 20% 94%;
   --muted: 230 10% 55%;
   --faint: 230 8% 30%;
-  --accent: 235 89% 74%;
-  --accent-dim: 235 89% 74%;
-  --brand-1: 235 89% 66%;
-  --brand-2: 262 83% 66%;
-  --brand-3: 235 89% 74%;
+  --accent: var(--accent-hue) calc(72% + (var(--accent-strength) * 0.2%)) calc(64% + (var(--accent-strength) * 0.08%));
+  --accent-dim: var(--accent-hue) calc(68% + (var(--accent-strength) * 0.16%)) calc(60% + (var(--accent-strength) * 0.06%));
+  --brand-1: calc(var(--accent-hue) - 28) calc(70% + (var(--accent-strength) * 0.18%)) calc(58% + (var(--accent-strength) * 0.06%));
+  --brand-2: var(--accent-hue) calc(70% + (var(--accent-strength) * 0.17%)) calc(62% + (var(--accent-strength) * 0.07%));
+  --brand-3: calc(var(--accent-hue) - 16) calc(74% + (var(--accent-strength) * 0.2%)) calc(66% + (var(--accent-strength) * 0.07%));
   --success: 160 67% 52%;
   --warn: 43 96% 56%;
   --danger: 351 90% 71%;

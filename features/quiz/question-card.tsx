@@ -155,7 +155,7 @@ export function QuestionCard({
                       key={`hint-dot-${idx}`}
                       className={cn(
                         "h-1.5 flex-1 rounded-full transition-all duration-300",
-                        idx < revealedHints ? "bg-brand-2" : "bg-brand-2/20"
+                        idx < effectiveHintCount ? "bg-brand-2" : "bg-brand-2/20"
                       )}
                     />
                   ))}
@@ -180,6 +180,15 @@ export function QuestionCard({
                 ) : (
                   <p className="mt-3 text-sm text-muted">Stuck? Reveal hints one at a time to guide your thinking.</p>
                 )}
+
+                {question.sampleAnswer && effectiveHintCount === hints.length ? (
+                  <div className="mt-4 rounded-lg border border-success/30 bg-success/10 p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-success">Guided Final Answer</p>
+                    <div className="mt-2 text-sm text-text">
+                      <Markdown content={question.sampleAnswer} promoteMathInInlineCode />
+                    </div>
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </div>

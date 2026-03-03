@@ -91,7 +91,10 @@ export class LocalRepository implements DataRepository {
 
 let singleton: LocalRepository | null = null;
 
-export function getRepository(): LocalRepository {
+export function getLocalRepository(): LocalRepository {
   if (!singleton) singleton = new LocalRepository();
   return singleton;
 }
+
+// Backward compatible export for existing imports.
+export const getRepository = getLocalRepository;
