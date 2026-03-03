@@ -423,7 +423,7 @@ export default function QuizPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button onClick={startQuiz}>Start Quiz</Button>
+              <Button onClick={() => startQuiz()}>Start Quiz</Button>
               <Button
                 variant="secondary"
                 onClick={() => {
@@ -487,7 +487,7 @@ export default function QuizPage() {
                 <Button onClick={() => setStage("review")} disabled={countMissed(result) === 0}>
                   Review Missed
                 </Button>
-                <Button variant="secondary" onClick={startQuiz}>
+                <Button variant="secondary" onClick={() => startQuiz()}>
                   <RotateCcw className="h-4 w-4" />
                   Retake Quiz
                 </Button>
