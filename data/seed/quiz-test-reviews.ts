@@ -745,18 +745,20 @@ export const testReviewQuizSetReplacements: QuizSet[] = [
         explanation:
           "Compute two subexpressions in temporaries, then subtract.",
         sampleAnswer:
-          "add t0,s1,s2\naddi t1,s3,-15\nsub s0,t0,t1",
+          "```asm\n# a: s0, b: s1, c: s2, d: s3\n# Temporary registers used: t0, t1\n\nadd  t0, s1, s2      # t0 = b + c\naddi t1, s3, -15     # t1 = d - 15\nsub  s0, t0, t1      # a = t0 - t1\n```\n\nNo comments:\n\n```asm\nadd  t0, s1, s2\naddi t1, s3, -15\nsub  s0, t0, t1\n```",
         hintSteps: [
           "Preserve expression structure with temporaries.",
           "Use addi for subtracting constant 15.",
           "Perform outer subtraction last.",
-          "Store final result in s0."
+          "Store final result in s0.",
+          "Final answer should be the 3-instruction sequence using `t0` and `t1`."
         ],
         walkthroughSteps: [
           "Compute `(b+c)` into t0.",
           "Compute `(d-15)` into t1 using addi -15.",
           "Subtract second subexpression from first.",
-          "Write final result into destination register s0."
+          "Write final result into destination register s0.",
+          "Final output:\n```asm\n# a: s0, b: s1, c: s2, d: s3\n# Temporary registers used: t0, t1\n\nadd  t0, s1, s2      # t0 = b + c\naddi t1, s3, -15     # t1 = d - 15\nsub  s0, t0, t1      # a = t0 - t1\n```\nNo comments:\n```asm\nadd  t0, s1, s2\naddi t1, s3, -15\nsub  s0, t0, t1\n```"
         ],
         references: ["Assignment 2 Problem 2"],
         tags: ["assembly", "arithmetic", "c-to-riscv", "assignment2"]

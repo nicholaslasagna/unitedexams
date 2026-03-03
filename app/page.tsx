@@ -39,9 +39,14 @@ export default function LandingPage() {
             <p className="text-[11px] tracking-[0.16em] text-muted">UNITEDEXAMS.COM</p>
           </div>
         </Link>
-        <Link href="/app/dashboard" className="rounded-xl bg-brand-gradient px-4 py-2 text-sm font-semibold text-white shadow-soft">
-          Get Started
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/contact" className="rounded-xl border border-borderc px-4 py-2 text-sm font-semibold text-text hover:bg-soft">
+            Contact
+          </Link>
+          <Link href="/app/dashboard" className="rounded-xl bg-brand-gradient px-4 py-2 text-sm font-semibold text-white shadow-soft">
+            Get Started
+          </Link>
+        </div>
       </header>
 
       <section className="mesh-hero mx-auto w-full max-w-[1240px] px-6 pb-16 pt-8">
@@ -144,8 +149,20 @@ export default function LandingPage() {
 
       <footer className="border-t border-borderc/70 bg-surface/60">
         <div className="mx-auto flex w-full max-w-[1240px] flex-wrap items-center justify-between gap-3 px-6 py-6 text-sm text-muted">
-          <p>© {new Date().getFullYear()} United Exams. Academic-premium by design.</p>
+          <p>
+            © {new Date().getFullYear()}{" "}
+            <a
+              href="https://imagicaststudios.com"
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-accent hover:text-text"
+            >
+              Imagicast Studios
+            </a>
+          </p>
           <div className="flex gap-4">
+            <Link href="/contact">Contact</Link>
+            <Link href="/login">Login</Link>
             <Link href="/app/settings">Settings</Link>
             <Link href="/app/courses">Courses</Link>
             <Link href="/app/leaderboard">Leaderboard</Link>

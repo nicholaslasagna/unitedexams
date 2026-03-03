@@ -9,12 +9,19 @@ import {
   useState
 } from "react";
 import type { ReactNode } from "react";
-import { getRepository } from "@/lib/storage/local-repository";
-import { defaultPreferences, defaultProfile } from "@/lib/storage/repository";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
+import { getLocalRepository } from "@/lib/storage/local-repository";
+import { SupabaseRepository } from "@/lib/storage/supabase-repository";
+import { defaultPreferences, defaultProfile, type DataRepository } from "@/lib/storage/repository";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { AppDataDump, AppPreferences, Attempt, UserProfile } from "@/lib/types";
 
 interface AppDataContextValue {
   ready: boolean;
+  authReady: boolean;
+  isAuthenticated: boolean;
+  user: User | null;
+  supabase: SupabaseClient | null;
   attempts: Attempt[];
   profile: UserProfile;
   preferences: AppPreferences;
@@ -24,9 +31,14 @@ interface AppDataContextValue {
   refresh: () => Promise<void>;
   exportData: () => Promise<AppDataDump>;
   importData: (data: AppDataDump) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 const AppDataContext = createContext<AppDataContextValue | null>(null);
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
 
 function resolveTheme(theme: AppPreferences["theme"]) {
   if (theme === "system") {
@@ -39,11 +51,22 @@ function resolveTheme(theme: AppPreferences["theme"]) {
 }
 
 export function AppDataProvider({ children }: { children: ReactNode }) {
-  const repo = useMemo(() => getRepository(), []);
+  const localRepo = useMemo(() => getLocalRepository(), []);
+  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+
+  const [authReady, setAuthReady] = useState(!supabase);
+  const [user, setUser] = useState<User | null>(null);
   const [ready, setReady] = useState(false);
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [profile, setProfile] = useState<UserProfile>(defaultProfile);
   const [preferences, setPreferences] = useState<AppPreferences>(defaultPreferences);
+
+  const repo = useMemo<DataRepository>(() => {
+    if (supabase && user) {
+      return new SupabaseRepository(supabase, user);
+    }
+    return localRepo;
+  }, [supabase, user, localRepo]);
 
   const applyPreferences = useCallback((prefs: AppPreferences) => {
     if (typeof document === "undefined") return;
@@ -52,6 +75,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     root.classList.toggle("dark", resolved === "dark");
     root.style.colorScheme = resolved;
     root.dataset.reduceMotion = prefs.reducedMotion ? "on" : "off";
+    root.style.setProperty("--accent-hue", String(clamp(prefs.accentHue, 220, 295)));
+    root.style.setProperty("--accent-strength", String(clamp(prefs.accentStrength, 0, 100)));
   }, []);
 
   const refresh = useCallback(async () => {
@@ -65,12 +90,56 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setProfile(nextProfile);
     setPreferences(nextPrefs);
     applyPreferences(nextPrefs);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("ue.preferences.v1", JSON.stringify(nextPrefs));
+      window.localStorage.setItem("ue.profile.v1", JSON.stringify(nextProfile));
+    }
     setReady(true);
   }, [repo, applyPreferences]);
 
   useEffect(() => {
+    if (!supabase) {
+      setAuthReady(true);
+      return;
+    }
+
+    let active = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      const sessionUser = data.session?.user ?? null;
+      if (sessionUser) {
+        const remember = localStorage.getItem("ue.rememberSession");
+        const sessionActive = sessionStorage.getItem("ue.activeSession");
+        if (remember === "0" && !sessionActive) {
+          supabase.auth.signOut();
+          setUser(null);
+          setAuthReady(true);
+          return;
+        }
+        sessionStorage.setItem("ue.activeSession", "1");
+      }
+      setUser(sessionUser);
+      setAuthReady(true);
+    });
+
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
+
+  useEffect(() => {
+    if (!authReady) return;
+    setReady(false);
     refresh();
-  }, [refresh]);
+  }, [authReady, refresh]);
 
   useEffect(() => {
     if (!ready) return;
@@ -81,6 +150,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         applyPreferences(preferences);
       }
     };
+
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
   }, [ready, preferences, applyPreferences]);
@@ -97,6 +167,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const saveProfile = useCallback(
     async (next: UserProfile) => {
       setProfile(next);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("ue.profile.v1", JSON.stringify(next));
+      }
       await repo.saveProfile(next);
     },
     [repo]
@@ -106,12 +179,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     async (next: AppPreferences) => {
       setPreferences(next);
       applyPreferences(next);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("ue.preferences.v1", JSON.stringify(next));
+      }
       await repo.savePreferences(next);
     },
     [repo, applyPreferences]
   );
 
   const exportData = useCallback(() => repo.exportData(), [repo]);
+
   const importData = useCallback(
     async (data: AppDataDump) => {
       await repo.importData(data);
@@ -120,9 +197,20 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     [repo, refresh]
   );
 
+  const signOut = useCallback(async () => {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    sessionStorage.removeItem("ue.activeSession");
+    localStorage.removeItem("ue.rememberSession");
+  }, [supabase]);
+
   const value = useMemo<AppDataContextValue>(
     () => ({
       ready,
+      authReady,
+      isAuthenticated: Boolean(user),
+      user,
+      supabase,
       attempts,
       profile,
       preferences,
@@ -131,10 +219,14 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       savePreferences,
       refresh,
       exportData,
-      importData
+      importData,
+      signOut
     }),
     [
       ready,
+      authReady,
+      user,
+      supabase,
       attempts,
       profile,
       preferences,
@@ -143,7 +235,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       savePreferences,
       refresh,
       exportData,
-      importData
+      importData,
+      signOut
     ]
   );
 

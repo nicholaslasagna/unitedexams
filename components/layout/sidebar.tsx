@@ -8,6 +8,7 @@ import {
   Trophy,
   NotebookTabs,
   Settings,
+  UserRound,
   GraduationCap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,7 @@ const items = [
   { href: "/app/courses", label: "Courses", icon: LibraryBig },
   { href: "/app/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/app/notes/software-engineering", label: "Notes", icon: NotebookTabs },
+  { href: "/app/account", label: "Account", icon: UserRound },
   { href: "/app/settings", label: "Settings", icon: Settings }
 ];
 

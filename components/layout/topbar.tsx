@@ -10,7 +10,7 @@ import { useToast } from "@/lib/hooks/use-toast";
 
 export function Topbar() {
   const router = useRouter();
-  const { profile, preferences, savePreferences } = useAppData();
+  const { profile, preferences, savePreferences, signOut, user } = useAppData();
   const { push } = useToast();
   const [query, setQuery] = useState("");
 
@@ -92,14 +92,32 @@ export function Topbar() {
             <div className="absolute right-0 mt-2 w-60 rounded-[14px] border border-white/[0.07] bg-[rgba(5,5,16,0.95)] p-3 shadow-elevated backdrop-blur-xl">
               <p className="text-[10px] font-bold tracking-[1.5px] text-white/[0.3] uppercase">Account</p>
               <p className="mt-1 text-sm font-semibold text-white">{profile.name || "Student"}</p>
-              <p className="text-xs text-white/[0.3]">{profile.school || "No school set"}</p>
+              <p className="text-xs text-white/[0.3]">{user?.email || profile.email || "No email"}</p>
               <div className="mt-3 border-t border-white/[0.07] pt-2">
+                <button
+                  type="button"
+                  className="w-full rounded-lg px-2 py-2 text-left text-sm text-white/[0.55] hover:bg-white/[0.05] hover:text-text"
+                  onClick={() => router.push("/app/account")}
+                >
+                  Account
+                </button>
                 <button
                   type="button"
                   className="w-full rounded-lg px-2 py-2 text-left text-sm text-white/[0.55] hover:bg-white/[0.05] hover:text-text"
                   onClick={() => router.push("/app/settings")}
                 >
-                  Profile & Settings
+                  Settings
+                </button>
+                <button
+                  type="button"
+                  className="w-full rounded-lg px-2 py-2 text-left text-sm text-danger hover:bg-danger/10"
+                  onClick={async () => {
+                    await signOut();
+                    router.replace("/login");
+                    router.refresh();
+                  }}
+                >
+                  Sign out
                 </button>
               </div>
             </div>

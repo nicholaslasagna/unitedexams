@@ -72,22 +72,36 @@ export interface QuizSettings {
 }
 
 export interface UserProfile {
+  id?: string;
+  email?: string;
   name: string;
   school?: string;
+  realName?: string;
+  showRealName?: boolean;
+  showUniversity?: boolean;
+  universityId?: string;
+  role?: "student" | "professor" | "admin";
+  resetRequired?: boolean;
 }
 
 export interface AppPreferences {
   theme: "light" | "dark" | "system";
   reducedMotion: boolean;
   confettiEnabled: boolean;
+  accentHue: number;
+  accentStrength: number;
+  dashboardLayout: string;
 }
 
 export interface LeaderboardEntry {
   id: string;
   name: string;
+  realName?: string;
   school?: string;
   streak: number;
   points: number;
+  rank?: number;
+  isCurrentUser?: boolean;
   role?: "student" | "ta" | "professor";
 }
 

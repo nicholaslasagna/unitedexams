@@ -196,18 +196,20 @@ export const computerArchitectureQuizSets: QuizSet[] = [
         type: "free",
         prompt: "Convert the following C code to RISC-V assembly:\n\n```c\na = (b + c) - (d - 15);\n```\n\nAssume a, b, c, d → s0, s1, s2, s3.",
         explanation: "Break the expression into parts: compute (b+c) in a temp, compute (d-15) in another temp, then subtract.",
-        sampleAnswer: "add t0, s1, s2\naddi t1, s3, -15\nsub s0, t0, t1",
+        sampleAnswer:
+          "```asm\n# a: s0, b: s1, c: s2, d: s3\n# Temporary registers used: t0, t1\n\nadd  t0, s1, s2      # t0 = b + c\naddi t1, s3, -15     # t1 = d - 15\nsub  s0, t0, t1      # a = t0 - t1\n```\n\nNo comments:\n\n```asm\nadd  t0, s1, s2\naddi t1, s3, -15\nsub  s0, t0, t1\n```",
         hintSteps: [
           "Split the expression: `(b + c)` and `(d - 15)` need to be computed separately first.",
           "Use `add` for register-register addition, `addi` for subtracting 15 (add -15).",
-          "Store intermediates in temporary registers (t0, t1), then `sub` for the final result."
+          "Store intermediates in temporary registers (t0, t1), then `sub` for the final result.",
+          "Final assembly should be exactly 3 instructions with destination `s0`."
         ],
         walkthroughSteps: [
           "**Mapping**: a → s0, b → s1, c → s2, d → s3.",
           "**Compute (b + c)**: `add t0, s1, s2` — t0 now holds b + c.",
           "**Compute (d - 15)**: `addi t1, s3, -15` — t1 now holds d - 15. Note: subtract 15 = add (-15).",
           "**Final subtraction**: `sub s0, t0, t1` — s0 = (b+c) - (d-15) = a.",
-          "**Answer**: `add t0, s1, s2` / `addi t1, s3, -15` / `sub s0, t0, t1`."
+          "**Final answer format**:\n```asm\n# a: s0, b: s1, c: s2, d: s3\n# Temporary registers used: t0, t1\n\nadd  t0, s1, s2      # t0 = b + c\naddi t1, s3, -15     # t1 = d - 15\nsub  s0, t0, t1      # a = t0 - t1\n```\nNo comments:\n```asm\nadd  t0, s1, s2\naddi t1, s3, -15\nsub  s0, t0, t1\n```"
         ],
         references: ["Assignment 2 Problem 2"],
         tags: ["assembly", "c-to-asm", "arithmetic", "risc-v"]

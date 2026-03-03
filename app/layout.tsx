@@ -32,12 +32,16 @@ const themeBootScript = `
     var prefs = raw ? JSON.parse(raw) : null;
     var theme = prefs && prefs.theme ? prefs.theme : 'system';
     var reduced = !!(prefs && prefs.reducedMotion);
+    var accentHue = prefs && typeof prefs.accentHue === 'number' ? Math.max(220, Math.min(295, prefs.accentHue)) : 265;
+    var accentStrength = prefs && typeof prefs.accentStrength === 'number' ? Math.max(0, Math.min(100, prefs.accentStrength)) : 60;
     var resolved = theme === 'system'
       ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
       : theme;
     if (resolved === 'dark') document.documentElement.classList.add('dark');
     document.documentElement.style.colorScheme = resolved;
     document.documentElement.dataset.reduceMotion = reduced ? 'on' : 'off';
+    document.documentElement.style.setProperty('--accent-hue', String(accentHue));
+    document.documentElement.style.setProperty('--accent-strength', String(accentStrength));
   } catch (err) {
     document.documentElement.dataset.reduceMotion = 'off';
   }
