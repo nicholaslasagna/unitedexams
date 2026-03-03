@@ -48,6 +48,10 @@ export default function NotesViewerPage() {
   const course = getCourse(params.courseId);
   const content = getCourseContent(params.courseId);
   const [search, setSearch] = useState("");
+  const notesMarkdown = content?.notes ?? "";
+
+  const headings = useMemo(() => extractHeadings(notesMarkdown), [notesMarkdown]);
+  const filtered = useMemo(() => filterMarkdown(notesMarkdown, search), [notesMarkdown, search]);
 
   if (!course || !content) {
     return (
@@ -59,9 +63,6 @@ export default function NotesViewerPage() {
       </div>
     );
   }
-
-  const headings = useMemo(() => extractHeadings(content.notes), [content.notes]);
-  const filtered = useMemo(() => filterMarkdown(content.notes, search), [content.notes, search]);
 
   return (
     <div className="grid gap-4 lg:grid-cols-[260px_1fr]">
