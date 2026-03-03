@@ -48,26 +48,37 @@ function loadScript(src) {
   });
 }
 
-async function ensureRouterLoaded() {
+function ensureRouterLoaded() {
   bindRouterApi();
-  if (HashRouter && Routes && Route && Link && useParams && useNavigate && useLocation) return;
+  if (HashRouter && Routes && Route && Link && useParams && useNavigate && useLocation) {
+    return Promise.resolve();
+  }
 
-  const routerSources = [
+  var routerSources = [
     "https://cdn.jsdelivr.net/npm/react-router-dom@6.30.1/dist/umd/react-router-dom.production.min.js",
     "https://unpkg.com/react-router-dom@6/umd/react-router-dom.production.min.js"
   ];
+  var i = 0;
 
-  for (const src of routerSources) {
-    try {
-      await loadScript(src);
-      bindRouterApi();
-      if (HashRouter && Routes && Route && Link && useParams && useNavigate && useLocation) return;
-    } catch (err) {
-      console.warn("Router CDN failed:", src, err);
+  function tryNext() {
+    if (i >= routerSources.length) {
+      return Promise.reject(new Error("ReactRouterDOM is not defined"));
     }
+    var src = routerSources[i];
+    i += 1;
+    return loadScript(src)
+      .then(function() {
+        bindRouterApi();
+        if (HashRouter && Routes && Route && Link && useParams && useNavigate && useLocation) return;
+        return tryNext();
+      })
+      .catch(function(err) {
+        console.warn("Router CDN failed:", src, err);
+        return tryNext();
+      });
   }
 
-  throw new Error("ReactRouterDOM is not defined");
+  return tryNext();
 }
 
 /* ═══ Helpers ═══ */
@@ -1196,20 +1207,22 @@ function App() {
   );
 }
 
-async function mountUnitedExamsApp() {
+function mountUnitedExamsApp() {
   const root = document.getElementById("root");
   if (!root) throw new Error("Missing #root container.");
   if (!window.React || !window.ReactDOM) {
     throw new Error("React dependencies failed to load.");
   }
-  await ensureRouterLoaded();
-  if (!window.UE || !UE.storage || !UE.buildExam || !window.UE_COURSES) {
-    throw new Error("Core study data failed to initialize.");
-  }
-  ReactDOM.createRoot(root).render(<App />);
-  if (window.UE_BOOT && typeof window.UE_BOOT.markLoaded === "function") {
-    window.UE_BOOT.markLoaded();
-  }
+
+  return ensureRouterLoaded().then(function() {
+    if (!window.UE || !UE.storage || !UE.buildExam || !window.UE_COURSES) {
+      throw new Error("Core study data failed to initialize.");
+    }
+    ReactDOM.createRoot(root).render(<App />);
+    if (window.UE_BOOT && typeof window.UE_BOOT.markLoaded === "function") {
+      window.UE_BOOT.markLoaded();
+    }
+  });
 }
 
 mountUnitedExamsApp().catch((err) => {
