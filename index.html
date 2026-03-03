@@ -13,10 +13,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet" />
 
   <!-- React + Router + Babel -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/react-router-dom@6.30.1/dist/umd/react-router-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-router-dom@6.30.1/dist/umd/react-router-dom.production.min.js" crossorigin="anonymous"></script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -604,6 +604,7 @@
     (function() {
       var root = document.getElementById("root");
       var errorBanner = document.getElementById("boot-error");
+      var loaded = false;
       function showError(message) {
         if (!errorBanner) return;
         errorBanner.hidden = false;
@@ -611,6 +612,7 @@
       }
       window.UE_BOOT = {
         markLoaded: function() {
+          loaded = true;
           if (root) root.setAttribute("data-app-loaded", "true");
           if (errorBanner) errorBanner.hidden = true;
         },
@@ -618,13 +620,23 @@
       };
       window.addEventListener("error", function(event) {
         if (!event) return;
-        showError(event.message || "Unexpected runtime error.");
-      });
+        var target = event.target || event.srcElement;
+        if (target && target.tagName === "SCRIPT") {
+          showError("Failed to load script: " + (target.src || "unknown script"));
+          return;
+        }
+        var msg = event.message || (event.error && event.error.message) || "Unexpected runtime error.";
+        if (msg === "Script error." && event.filename) msg += " (" + event.filename + ")";
+        showError(msg);
+      }, true);
       window.addEventListener("unhandledrejection", function(event) {
         var reason = event && event.reason;
         var msg = (reason && reason.message) ? reason.message : String(reason || "Unhandled promise rejection.");
         showError(msg);
       });
+      setTimeout(function() {
+        if (!loaded) showError("Initialization timed out.");
+      }, 8000);
     })();
   </script>
 
