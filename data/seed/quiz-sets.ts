@@ -2,6 +2,7 @@ import type { QuizSet } from "@/lib/types";
 import { computerArchitectureQuizSets } from "./quiz-ca";
 import { automataQuizSets } from "./quiz-automata";
 import { softwareEngineeringQuizSets } from "./quiz-se";
+import { testReviewQuizSetReplacements } from "./quiz-test-reviews";
 
 const legacyQuizSets: QuizSet[] = [
   {
@@ -2136,8 +2137,14 @@ const legacyQuizSets: QuizSet[] = [
   }
 ];
 
+const replacementQuizSetIds = new Set(testReviewQuizSetReplacements.map((quizSet) => quizSet.id));
+const legacyQuizSetsWithoutReplacedReviews = legacyQuizSets.filter(
+  (quizSet) => !replacementQuizSetIds.has(quizSet.id),
+);
+
 export const quizSets: QuizSet[] = [
-  ...legacyQuizSets,
+  ...legacyQuizSetsWithoutReplacedReviews,
+  ...testReviewQuizSetReplacements,
   ...computerArchitectureQuizSets,
   ...automataQuizSets,
   ...softwareEngineeringQuizSets,
