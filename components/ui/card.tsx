@@ -5,7 +5,7 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        "rounded-2xl border border-borderc/75 bg-surface/80 shadow-soft backdrop-blur-md transition duration-300 hover:border-borderc",
+        "rounded-2xl border border-borderc bg-surface shadow-subtle transition duration-200 hover:bg-surface-raised hover:shadow-soft hover:border-border-bright",
         className
       )}
       {...props}
@@ -14,7 +14,7 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
 }
 
 export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("border-b border-borderc/60 px-6 py-4", className)} {...props} />;
+  return <div className={cn("border-b border-borderc px-6 py-4", className)} {...props} />;
 }
 
 export function CardBody({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
@@ -22,5 +22,5 @@ export function CardBody({ className, ...props }: HTMLAttributes<HTMLDivElement>
 }
 
 export function CardFooter({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("border-t border-borderc/60 px-6 py-4", className)} {...props} />;
+  return <div className={cn("border-t border-borderc px-6 py-4", className)} {...props} />;
 }

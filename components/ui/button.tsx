@@ -12,13 +12,13 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantStyles: Record<Variant, string> = {
   primary:
-    "bg-brand-gradient text-white shadow-soft hover:brightness-110 hover:shadow-elevated active:scale-[0.99] border border-white/15",
+    "bg-brand-gradient text-white shadow-soft border border-white/20 hover:shadow-elevated hover:-translate-y-[1px] active:translate-y-0 active:shadow-subtle transition-all duration-150",
   secondary:
-    "bg-soft/90 text-text border border-borderc/85 hover:border-borderc hover:bg-white/[0.08] active:scale-[0.99]",
+    "bg-soft text-muted border border-borderc hover:text-text hover:bg-surface-raised hover:border-border-bright active:bg-soft transition-all duration-150",
   ghost:
-    "bg-transparent text-text border border-transparent hover:border-borderc/80 hover:bg-soft/85 active:scale-[0.99]",
+    "bg-transparent text-muted border border-transparent hover:text-text hover:bg-white/[0.05] active:bg-white/[0.03] transition-all duration-150",
   danger:
-    "bg-danger/90 text-white border border-danger/80 hover:bg-danger active:scale-[0.99]"
+    "bg-danger/90 text-white border border-danger/70 hover:bg-danger hover:-translate-y-[1px] active:translate-y-0 transition-all duration-150"
 };
 
 export const Button = forwardRef<HTMLButtonElement, Props>(function Button(

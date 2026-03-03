@@ -18,10 +18,13 @@ const config: Config = {
       colors: {
         bg: "hsl(var(--bg))",
         surface: "hsl(var(--surface))",
+        "surface-raised": "hsl(var(--surface-raised))",
         soft: "hsl(var(--soft))",
         borderc: "hsl(var(--border))",
+        "border-bright": "hsl(var(--border-bright))",
         text: "hsl(var(--text))",
         muted: "hsl(var(--muted))",
+        faint: "hsl(var(--faint))",
         brand: {
           1: "hsl(var(--brand-1))",
           2: "hsl(var(--brand-2))",
@@ -32,9 +35,10 @@ const config: Config = {
         danger: "hsl(var(--danger))"
       },
       boxShadow: {
-        soft: "0 10px 28px -14px rgba(2, 8, 24, 0.56)",
+        subtle: "0 1px 2px rgba(0,0,0,0.3)",
+        soft: "0 8px 24px -8px rgba(0,0,0,0.5)",
         glass: "0 1px 0 rgba(255,255,255,0.14) inset, 0 18px 40px -22px rgba(2, 8, 24, 0.78)",
-        elevated: "0 20px 48px -28px rgba(3, 10, 30, 0.9)",
+        elevated: "0 16px 40px -12px rgba(0,0,0,0.7)",
         focus: "0 0 0 3px rgba(59, 130, 246, 0.35)"
       },
       backgroundImage: {
