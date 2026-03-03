@@ -1,0 +1,118 @@
+// United Exams - Computer Architecture Reinforcement Bank (aligned to TrainingData)
+window.COMPARCH_TEST1_REINFORCE = [
+{id:"CR-01",chapter:1,type:"single",topics:["performance","speedup"],
+  question:"If execution time is cut in half, speedup is:",
+  options:["0.5x", "1x", "2x", "4x"],
+  answer:[2],
+  explanation:"Speedup = old/new; halving time gives 2x."},
+
+{id:"CR-02",chapter:1,type:"single",topics:["cpu-time","equation"],
+  question:"CPU time depends directly on:",
+  options:["IC, CPI, cycle time", "Clock rate only", "CPI only", "Cache size only"],
+  answer:[0],
+  explanation:"Core equation multiplies these three factors."},
+
+{id:"CR-03",chapter:1,type:"fill",topics:["registers","risc-v"],
+  question:"RISC-V base integer register count is _______.",
+  answer:["32"],acceptableAnswers:[["32"],["thirty two"],["thirty-two"]],
+  explanation:"x0..x31."},
+
+{id:"CR-04",chapter:1,type:"multi",topics:["parallelism","flynn"],
+  question:"Flynn classes include: (Select all that apply)",
+  options:["SISD","SIMD","MISD","MIMD"],
+  answer:[0,1,2,3],
+  explanation:"All four are Flynn taxonomy categories."},
+
+{id:"CR-05",chapter:2,type:"single",topics:["instruction-format","addi"],
+  question:"addi belongs to:",
+  options:["R-type", "I-type", "S-type", "B-type"],
+  answer:[1],
+  explanation:"addi uses immediate format."},
+
+{id:"CR-06",chapter:2,type:"single",topics:["instruction-format","store"],
+  question:"sw (store word) uses:",
+  options:["S-type", "R-type", "U-type", "J-type"],
+  answer:[0],
+  explanation:"Store immediates are split in S-type encoding."},
+
+{id:"CR-07",chapter:2,type:"fill",topics:["immediate","encoding"],
+  question:"I-type immediates in RV32I are sign-extended _______ bits.",
+  answer:["12"],acceptableAnswers:[["12"],["twelve"]],
+  explanation:"Immediate field width is 12 bits."},
+
+{id:"CR-08",chapter:2,type:"single",topics:["machine-code","decode"],
+  question:"If R-type funct7 is 0100000 and funct3 is 000, operation is usually:",
+  options:["ADD", "SUB", "AND", "OR"],
+  answer:[1],
+  explanation:"In base integer ALU ops, this encodes SUB."},
+
+{id:"CR-09",chapter:2,type:"multi",topics:["calling-convention","procedures"],
+  question:"Standard convention facts: (Select all that apply)",
+  options:["a0-a7 used for arguments", "a0 used for return value", "ra stores return address", "x0 used as stack pointer"],
+  answer:[0,1,2],
+  explanation:"sp is x2; x0 is constant zero."},
+
+{id:"CR-10",chapter:2,type:"single",topics:["array-addressing","assembly"],
+  question:"For int array A, byte offset of A[i] is typically:",
+  options:["i", "2*i", "4*i", "8*i"],
+  answer:[2],
+  explanation:"Word-size scaling for 4-byte ints."},
+
+{id:"CR-11",chapter:3,type:"single",topics:["pipeline","stages"],
+  question:"Which stage reads data memory for loads?",
+  options:["IF", "ID", "MEM", "WB"],
+  answer:[2],
+  explanation:"Memory access happens in MEM stage."},
+
+{id:"CR-12",chapter:3,type:"single",topics:["hazards","raw"],
+  question:"Dependency `producer writes reg, consumer later reads same reg` is:",
+  options:["RAW", "WAR", "WAW", "RAR"],
+  answer:[0],
+  explanation:"Classic read-after-write dependency."},
+
+{id:"CR-13",chapter:3,type:"single",topics:["forwarding","hazards"],
+  question:"Forwarding path sends values from:",
+  options:["Main memory to instruction memory", "Later pipeline registers to ALU inputs", "Register file to branch predictor", "Decoder to cache tags"],
+  answer:[1],
+  explanation:"Bypassing avoids waiting for architectural writeback."},
+
+{id:"CR-14",chapter:3,type:"fill",topics:["hazards","load-use"],
+  question:"An unresolved load-use dependency inserts a pipeline _______.",
+  answer:["bubble"],acceptableAnswers:[["bubble"],["stall"]],
+  explanation:"One-cycle bubble/stall is common."},
+
+{id:"CR-15",chapter:3,type:"multi",topics:["branch-prediction","2-bit"],
+  question:"2-bit predictor behavior includes: (Select all that apply)",
+  options:["Strong/weak taken states", "Strong/weak not-taken states", "Saturating counter updates", "No mispredictions ever"],
+  answer:[0,1,2],
+  explanation:"It reduces but does not eliminate mispredictions."},
+
+{id:"CR-16",chapter:3,type:"single",topics:["control-hazard","branch"],
+  question:"Predicted-not-taken strategy generally performs best when branches are:",
+  options:["Mostly taken", "Mostly not taken", "Random and independent", "Never executed"],
+  answer:[1],
+  explanation:"Correct prediction avoids flush penalty."},
+
+{id:"CR-17",chapter:4,type:"single",topics:["architecture","harvard"],
+  question:"Harvard architecture typically improves parallel fetch/access by:",
+  options:["Combining instruction and data bus", "Separating instruction/data paths", "Eliminating control logic", "Removing registers"],
+  answer:[1],
+  explanation:"Separate paths reduce structural conflict."},
+
+{id:"CR-18",chapter:4,type:"single",topics:["cache","amat"],
+  question:"If miss rate increases while hit time and miss penalty stay fixed, AMAT:",
+  options:["Decreases", "Increases", "Stays same", "Becomes zero"],
+  answer:[1],
+  explanation:"AMAT includes miss-rate term linearly."},
+
+{id:"CR-19",chapter:4,type:"fill",topics:["power","tdp"],
+  question:"Clock reduction often lowers power more directly than task _______.",
+  answer:["energy"],acceptableAnswers:[["energy"]],
+  explanation:"Slides distinguish power from total energy per task."},
+
+{id:"CR-20",chapter:3,type:"multi",topics:["midterm","hazards"],
+  question:"In the sequence `lw sp,...; and tp,sp,...; or s0,sp,...; add s1,tp,...; beq s0,s1,...`, likely RAW dependencies include: (Select all that apply)",
+  options:["lw -> and on sp", "lw -> or on sp", "and -> add on tp", "or/add -> beq compare operands"],
+  answer:[0,1,2,3],
+  explanation:"Each consumer reads value produced by earlier instruction."},
+];

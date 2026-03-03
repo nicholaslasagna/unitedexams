@@ -1,0 +1,118 @@
+// United Exams - Theory of Automata Reinforcement Bank (aligned to TrainingData)
+window.AUTOMATA_TEST1_REINFORCE = [
+{id:"AR-01",chapter:1,type:"single",topics:["sets","de-morgan"],
+  question:"Which expression equals A - (B intersection C)?",
+  options:["(A-B) union (A-C)","(A-B) intersection (A-C)","A-(B union C)","(B-A) union (C-A)"],
+  answer:[0],
+  explanation:"Matches the set identity used in HW1."},
+
+{id:"AR-02",chapter:1,type:"single",topics:["relations","inverse"],
+  question:"If R = {(a,b),(c,d)}, then R^-1 contains:",
+  options:["(a,b),(c,d)","(b,a),(d,c)","(a,a),(b,b)","(a,d),(c,b)"],
+  answer:[1],
+  explanation:"Inverse swaps each ordered pair."},
+
+{id:"AR-03",chapter:1,type:"fill",topics:["functions","graph-criterion"],
+  question:"A function graph must have exactly one _______ edge from each domain node.",
+  answer:["outgoing"],acceptableAnswers:[["outgoing"],["out"],["leaving"]],
+  explanation:"One input must map to one output."},
+
+{id:"AR-04",chapter:1,type:"multi",topics:["relation-properties"],
+  question:"Which are required for partial order? (Select all that apply)",
+  options:["Reflexive","Antisymmetric","Transitive","Symmetric"],
+  answer:[0,1,2],
+  explanation:"Partial order = reflexive + antisymmetric + transitive."},
+
+{id:"AR-05",chapter:2,type:"single",topics:["dfa","definition"],
+  question:"In a DFA, transitions are:",
+  options:["Nondeterministic", "Exactly one per state-symbol pair", "Based on stack top", "Allowed only from accept states"],
+  answer:[1],
+  explanation:"Deterministic transition function gives one next state."},
+
+{id:"AR-06",chapter:2,type:"single",topics:["nfa","epsilon"],
+  question:"Epsilon transitions consume:",
+  options:["One input symbol","No input symbol","Only terminal symbols","Only if stack empty"],
+  answer:[1],
+  explanation:"They are empty-string moves."},
+
+{id:"AR-07",chapter:2,type:"single",topics:["regex","homework"],
+  question:"Regex for 'no more than three a's' over {a,b} may be built by union of terms containing:",
+  options:["0,1,2,3 occurrences of a", "Only exactly three a's", "Only even number of a's", "Only odd number of a's"],
+  answer:[0],
+  explanation:"HW solution builds cases for 0 through 3 a's."},
+
+{id:"AR-08",chapter:2,type:"fill",topics:["regex","operations"],
+  question:"(L*)* simplifies to L* because star is _______.",
+  answer:["idempotent"],acceptableAnswers:[["idempotent"],["closure"]],
+  explanation:"Applying star again does not change the language."},
+
+{id:"AR-09",chapter:2,type:"multi",topics:["closure","regular"],
+  question:"Regular languages are closed under: (Select all that apply)",
+  options:["Union","Concatenation","Kleene star","Intersection"],
+  answer:[0,1,2,3],
+  explanation:"All listed operations preserve regularity."},
+
+{id:"AR-10",chapter:2,type:"single",topics:["pumping-lemma"],
+  question:"Pumping lemma gives a necessary condition for:",
+  options:["Context-free languages", "Regular languages", "Decidable languages", "Finite languages only"],
+  answer:[1],
+  explanation:"Every regular language must satisfy pumping property."},
+
+{id:"AR-11",chapter:2,type:"single",topics:["regex","test1"],
+  question:"The expression b*a* intersection a*b* allows which strings?",
+  options:["Only strings with both a and b alternating", "Only all-a strings or all-b strings", "All binary strings", "Only epsilon"],
+  answer:[1],
+  explanation:"Intersection collapses to a* union b*."},
+
+{id:"AR-12",chapter:2,type:"single",topics:["nonregular","examples"],
+  question:"Which language is nonregular?",
+  options:["(ab)*", "a* union b*", "{a^n b^n : n>=0}", "b*(ab*ab*ab*)*"],
+  answer:[2],
+  explanation:"Finite-state machines cannot enforce equal unbounded counts."},
+
+{id:"AR-13",chapter:3,type:"single",topics:["cfg","definition"],
+  question:"In CFG rule A -> alpha, A must be:",
+  options:["Terminal", "Nonterminal", "State", "Relation"],
+  answer:[1],
+  explanation:"Left-hand side is one nonterminal."},
+
+{id:"AR-14",chapter:3,type:"single",topics:["pda","cfl"],
+  question:"PDA extra power (vs FA) comes mainly from:",
+  options:["Two input tapes", "Stack memory", "Unlimited random memory", "Nondeterminism only"],
+  answer:[1],
+  explanation:"Stack supports nested/matched structure."},
+
+{id:"AR-15",chapter:3,type:"fill",topics:["ambiguity","parse-tree"],
+  question:"A grammar is _______ if some string has multiple parse trees.",
+  answer:["ambiguous"],acceptableAnswers:[["ambiguous"]],
+  explanation:"Multiple structural parses indicate ambiguity."},
+
+{id:"AR-16",chapter:3,type:"multi",topics:["cfl","relationships"],
+  question:"Which are true? (Select all that apply)",
+  options:["Every regular language is context-free", "Some context-free languages are not regular", "Every CFL is regular", "PDA recognizes exactly CFLs"],
+  answer:[0,1,3],
+  explanation:"Regular is a strict subset of CFL."},
+
+{id:"AR-17",chapter:4,type:"single",topics:["decidable","recognizable"],
+  question:"A decidable language has a TM that:",
+  options:["May loop on rejects", "Always halts", "Uses one state", "Has no tape"],
+  answer:[1],
+  explanation:"Decider halts for both yes/no instances."},
+
+{id:"AR-18",chapter:4,type:"single",topics:["computability","non-cfl"],
+  question:"{a^n b^n c^n : n>=0} is:",
+  options:["Regular", "Context-free", "Not context-free", "Finite"],
+  answer:[2],
+  explanation:"Classic language beyond CFL power."},
+
+{id:"AR-19",chapter:4,type:"multi",topics:["tm","foundations"],
+  question:"Which statements align with notes? (Select all that apply)",
+  options:["TMs can recognize languages beyond CFLs", "Church-Turing thesis links effective computation and TM computability", "Every recognizable language is regular", "TM model can decide many algorithmic tasks unavailable to FA/PDA"],
+  answer:[0,1,3],
+  explanation:"TM is the general formal model used in computability theory."},
+
+{id:"AR-20",chapter:4,type:"fill",topics:["tm","architecture"],
+  question:"A standard TM has finite control and an unbounded _______.",
+  answer:["tape"],acceptableAnswers:[["tape"]],
+  explanation:"Tape provides unbounded working memory abstraction."},
+];
