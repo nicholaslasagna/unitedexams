@@ -230,8 +230,6 @@ function Layout({ children, theme, onToggleTheme, streak }) {
             <button className="theme-toggle" onClick={onToggleTheme} title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}>
               {theme === "dark" ? "\u2600\uFE0F" : "\u{1F319}"}
             </button>
-            <Link to="/dashboard" className="action-pill action-outline">Instructor Portal</Link>
-            <Link to="/dashboard" className="action-pill action-solid">Student Sign In</Link>
           </div>
         </div>
 
@@ -737,19 +735,27 @@ function CoursePage() {
 /* ═══════════════════════════════════════════════════════════
    QUESTION VIEW (shared component)
    ═══════════════════════════════════════════════════════════ */
-function QuestionView({ q, answers, onSelect, showResults, isCorrect, showExp, onToggleExp, hintState, onRevealHint, onUpdateHintConfirm, onConfirmHint, checkHintMatch, getHintAnswer }) {
-  const typeLabel = { single: "Multiple Choice", multi: "Select All", fill: "Fill in the Blank", free: "Free Response" };
+function QuestionView({
+  q, answers, onSelect, showResults, isCorrect, showExp, onToggleExp,
+  hintState, onRevealHint, onUpdateHintConfirm, onConfirmHint, checkHintMatch, getHintAnswer,
+  guidedFreeResponse, guidedHintState, guidedHintSteps, onRevealGuidedHint
+}) {
+  const isGuided = !!guidedFreeResponse;
   const hint = hintState || {};
   const hintRevealed = hint.revealed && !hint.confirmed && !showResults;
   const hintConfirmed = hint.confirmed;
+  const guidedState = guidedHintState || {};
+  const guidedSteps = Array.isArray(guidedHintSteps) ? guidedHintSteps : [];
+  const guidedCount = Math.min(guidedState.revealedCount || 0, guidedSteps.length);
 
   return (
     <div className="q-wrap">
       <h2 className="q-text">{q.question}</h2>
-      {q.type === "multi" && <div className="q-hint">Select all that apply</div>}
-      {q.type === "fill" && !showResults && !hintRevealed && <div className="q-hint">Type your answer below</div>}
+      {isGuided && <div className="q-hint">Open response mode: write your reasoning, then reveal hints step by step if you need help.</div>}
+      {!isGuided && q.type === "multi" && <div className="q-hint">Select all that apply</div>}
+      {!isGuided && q.type === "fill" && !showResults && !hintRevealed && <div className="q-hint">Type your answer below</div>}
 
-      {q.type === "fill" && (
+      {!isGuided && q.type === "fill" && (
         <div className="fill-wrap">
           <input
             type="text"
@@ -765,14 +771,30 @@ function QuestionView({ q, answers, onSelect, showResults, isCorrect, showExp, o
         </div>
       )}
 
-      {q.type === "free" && (
+      {(isGuided || q.type === "free") && (
         <div>
-          <textarea className="free-ta" value={answers[q.id] || ""} onChange={e => onSelect(q.id, e.target.value)} placeholder="Type your answer here..." disabled={showResults} />
-          {showResults && <div className="exp-box" style={{ marginTop: 16 }}><div className="exp-lbl">Sample Answer</div>{q.explanation}</div>}
+          <textarea
+            className="free-ta"
+            value={answers[q.id] || ""}
+            onChange={e => onSelect(q.id, e.target.value)}
+            placeholder={isGuided ? "Write your setup, method, and final conclusion..." : "Type your answer here..."}
+            disabled={showResults}
+          />
+          {showResults && (
+            <div className="exp-box" style={{ marginTop: 16 }}>
+              <div className="exp-lbl">{isGuided ? "Reference Walkthrough" : "Sample Answer"}</div>
+              {q.explanation}
+              {isGuided && q.type !== "free" && (
+                <div style={{ marginTop: 10, color: "var(--text-heading)" }}>
+                  <strong>Target answer:</strong> {getHintAnswer(q)}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
-      {(q.type === "single" || q.type === "multi") && (
+      {!isGuided && (q.type === "single" || q.type === "multi") && (
         <div className={`opts ${hintRevealed ? "hint-locked" : ""}`}>
           {q.options.map((opt, idx) => {
             const selected = (answers[q.id] || []).includes(idx);
@@ -795,7 +817,7 @@ function QuestionView({ q, answers, onSelect, showResults, isCorrect, showExp, o
         </div>
       )}
 
-      {showResults && q.type !== "free" && (
+      {showResults && q.type !== "free" && !isGuided && (
         <div>
           <button className="exp-toggle" onClick={() => onToggleExp(q.id)}>
             {showExp[q.id] ? "\u25BE Hide" : "\u25B8 Show"} Explanation
@@ -804,8 +826,28 @@ function QuestionView({ q, answers, onSelect, showResults, isCorrect, showExp, o
         </div>
       )}
 
+      {isGuided && (
+        <div className="hint-panel">
+          {!showResults && guidedCount < guidedSteps.length && onRevealGuidedHint && (
+            <button className="hint-btn" onClick={() => onRevealGuidedHint(q.id, guidedSteps.length)}>
+              &#x1F4A1; Reveal Hint {guidedCount + 1} of {guidedSteps.length}
+            </button>
+          )}
+          {(guidedCount > 0 || showResults) && guidedSteps.length > 0 && (
+            <div className="hint-revealed">
+              <div className="hint-answer-label">&#x1F4A1; Step-by-step hints</div>
+              {(showResults ? guidedSteps : guidedSteps.slice(0, guidedCount)).map((step, idx) => (
+                <div key={`${q.id}-hint-${idx}`} className="guided-hint-step">
+                  <strong>Step {idx + 1}:</strong> {step}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Hint System (reinforcement mode) */}
-      {onRevealHint && !showResults && !hintConfirmed && q.type !== "free" && (
+      {onRevealHint && !showResults && !hintConfirmed && q.type !== "free" && !isGuided && (
         <div className="hint-panel">
           {!hint.revealed ? (
             <button className="hint-btn" onClick={() => onRevealHint(q.id)}>
@@ -835,7 +877,7 @@ function QuestionView({ q, answers, onSelect, showResults, isCorrect, showExp, o
         </div>
       )}
 
-      {hintConfirmed && !showResults && (
+      {hintConfirmed && !showResults && !isGuided && (
         <div className="hint-confirmed">{"\u2713"} Answer confirmed via hint — now you can continue</div>
       )}
     </div>
@@ -869,6 +911,7 @@ function QuizPage({ onQuizComplete }) {
   const [reinforceIdx, setReinforceIdx] = useState(0);
   const [reinforceSubmitted, setReinforceSubmitted] = useState(false);
   const [hints, setHints] = useState({});
+  const [guidedHints, setGuidedHints] = useState({});
 
   const timerRef = useRef(null);
 
@@ -882,6 +925,7 @@ function QuizPage({ onQuizComplete }) {
   const bank = window[quizSet.questionBankKey] || [];
   const reinforceBank = window[quizSet.reinforceBankKey] || [];
   const config = quizSet.config;
+  const isGuidedDiffeq = courseId === "diffeq";
   const TOTAL_TIME = config.totalTime || 3600;
   const chapterSet = new Set(config.chapters || []);
   const professorCount = config.professorQuestions === false
@@ -912,30 +956,108 @@ function QuizPage({ onQuizComplete }) {
     if (submitted) return;
     const q = questions.find(q => q.id === qId);
     if (!q) return;
-    if (q.type === "free" || q.type === "fill") { setAnswers(p => ({ ...p, [qId]: val })); return; }
+    if (isGuidedDiffeq || q.type === "free" || q.type === "fill") { setAnswers(p => ({ ...p, [qId]: val })); return; }
     if (q.type === "multi") {
       setAnswers(p => { const c = p[qId] || []; return { ...p, [qId]: c.includes(val) ? c.filter(i => i !== val) : [...c, val] }; });
     } else { setAnswers(p => ({ ...p, [qId]: [val] })); }
-  }, [submitted, questions]);
+  }, [submitted, questions, isGuidedDiffeq]);
 
   const handleReinforceSelect = useCallback((qId, val) => {
     if (reinforceSubmitted) return;
-    const h = hints[qId];
-    if (h && h.revealed && !h.confirmed) return;
+    if (!isGuidedDiffeq) {
+      const h = hints[qId];
+      if (h && h.revealed && !h.confirmed) return;
+    }
     const q = reinforceQs.find(q => q.id === qId);
     if (!q) return;
-    if (q.type === "free" || q.type === "fill") { setReinforceAnswers(p => ({ ...p, [qId]: val })); return; }
+    if (isGuidedDiffeq || q.type === "free" || q.type === "fill") { setReinforceAnswers(p => ({ ...p, [qId]: val })); return; }
     if (q.type === "multi") {
       setReinforceAnswers(p => { const c = p[qId] || []; return { ...p, [qId]: c.includes(val) ? c.filter(i => i !== val) : [...c, val] }; });
     } else { setReinforceAnswers(p => ({ ...p, [qId]: [val] })); }
-  }, [reinforceSubmitted, reinforceQs, hints]);
+  }, [reinforceSubmitted, reinforceQs, hints, isGuidedDiffeq]);
 
   // Hint system
   const getHintAnswer = useCallback((q) => {
     if (!q) return "";
     if (q.type === "fill") return q.answer.join(", ");
-    if (q.type === "free") return "";
+    if (q.type === "free") return q.modelAnswer || q.explanation || "";
     return q.answer.map(i => q.options[i]).join(" | ");
+  }, []);
+
+  const getGuidedHints = useCallback((q) => {
+    if (!q) return [];
+    if (Array.isArray(q.hints) && q.hints.length > 0) return q.hints;
+
+    const topicHint = q.topics && q.topics.length > 0
+      ? `Start by naming the method family: ${q.topics.slice(0, 2).join(" + ").replace(/-/g, " ")}.`
+      : "Start by identifying what type of differential equation this is and which solving method applies.";
+    const steps = [topicHint];
+
+    if (q.type === "fill") {
+      steps.push("Write the base formula/rule first, then isolate the missing term.");
+      steps.push(q.explanation || "Use the standard first-order/second-order DE workflow and simplify carefully.");
+      steps.push(`Expected fill target: ${q.answer.join(", ")}.`);
+      return steps;
+    }
+
+    if (q.type === "free") {
+      const split = (q.explanation || "")
+        .split(/;|\.(?=\s+[A-Z])/)
+        .map(s => s.trim())
+        .filter(Boolean)
+        .slice(0, 4);
+      if (split.length > 0) return steps.concat(split);
+      steps.push("Set up the equation, solve symbolically, then apply initial/boundary conditions.");
+      steps.push("Finish by checking the result in the original differential equation.");
+      return steps;
+    }
+
+    if (q.type === "single" || q.type === "multi") {
+      steps.push("Translate the prompt into a concrete checkpoint (equilibrium, characteristic roots, transform rule, or stability test).");
+      steps.push(q.explanation || "Use the method definition to eliminate options that break the required DE rule.");
+      steps.push(`Target answer idea: ${getHintAnswer(q)}.`);
+      return steps;
+    }
+
+    steps.push(q.explanation || "Work the method one algebraic step at a time.");
+    return steps;
+  }, [getHintAnswer]);
+
+  const revealGuidedHint = useCallback((qId, maxCount) => {
+    setGuidedHints(prev => {
+      const cur = prev[qId] || { revealedCount: 0 };
+      return { ...prev, [qId]: { ...cur, revealedCount: Math.min((cur.revealedCount || 0) + 1, maxCount || 1) } };
+    });
+  }, []);
+
+  const gradeGuidedResponse = useCallback((q, rawValue) => {
+    if (!q || !rawValue || !rawValue.trim()) return false;
+    const text = rawValue.trim().toLowerCase();
+
+    if (q.type === "fill") return UE.gradeFill(q, rawValue);
+
+    const tokenize = (input) => (input || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .split(/\s+/)
+      .filter(Boolean)
+      .filter(token => token.length >= 4);
+
+    if (q.type === "free") {
+      const keys = (q.expectedKeywords && q.expectedKeywords.length
+        ? q.expectedKeywords
+        : tokenize(q.explanation).slice(0, 10)
+      ).map(k => k.toLowerCase());
+      if (keys.length === 0) return text.length >= 45;
+      const hits = keys.filter(k => text.includes(k));
+      return hits.length >= Math.max(1, Math.ceil(keys.length * 0.35));
+    }
+
+    const answerText = (q.answer || []).map(i => (q.options || [])[i] || "").join(" ");
+    const keySet = [...new Set(tokenize(answerText))];
+    if (keySet.length === 0) return text.length >= 28;
+    const hits = keySet.filter(k => text.includes(k));
+    return hits.length >= Math.max(1, Math.ceil(keySet.length * 0.4));
   }, []);
 
   const revealHint = useCallback((qId) => {
@@ -977,36 +1099,49 @@ function QuizPage({ onQuizComplete }) {
   }, [checkHintMatch, reinforceQs]);
 
   const checkCorrect = useCallback((q, ans) => {
-    if (!q || q.type === "free") return null;
+    if (!q) return null;
+    if (isGuidedDiffeq) return gradeGuidedResponse(q, ans[q.id]);
+    if (q.type === "free") return null;
     if (q.type === "fill") return UE.gradeFill(q, ans[q.id]);
     const ua = ans[q.id] || [];
     if (ua.length !== q.answer.length) return false;
     return q.answer.every(a => ua.includes(a)) && ua.every(a => q.answer.includes(a));
-  }, []);
+  }, [isGuidedDiffeq, gradeGuidedResponse]);
 
   const isCorrect = useCallback((qId) => checkCorrect(questions.find(q => q.id === qId), answers), [questions, answers, checkCorrect]);
   const isReinforceCorrect = useCallback((qId) => checkCorrect(reinforceQs.find(q => q.id === qId), reinforceAnswers), [reinforceQs, reinforceAnswers, checkCorrect]);
 
   const score = useMemo(() => {
     let correct = 0, total = 0;
-    questions.forEach(q => { if (q.type !== "free") { total++; if (isCorrect(q.id)) correct++; } });
+    questions.forEach(q => {
+      if (isGuidedDiffeq || q.type !== "free") {
+        total++;
+        if (isCorrect(q.id)) correct++;
+      }
+    });
     return { correct, total };
-  }, [questions, isCorrect]);
+  }, [questions, isCorrect, isGuidedDiffeq]);
 
   const reinforceScore = useMemo(() => {
     let correct = 0, total = 0;
-    reinforceQs.forEach(q => { if (q.type !== "free") { total++; if (isReinforceCorrect(q.id)) correct++; } });
+    reinforceQs.forEach(q => {
+      if (isGuidedDiffeq || q.type !== "free") {
+        total++;
+        if (isReinforceCorrect(q.id)) correct++;
+      }
+    });
     return { correct, total };
-  }, [reinforceQs, isReinforceCorrect]);
+  }, [reinforceQs, isReinforceCorrect, isGuidedDiffeq]);
 
   const wrongQuestions = useMemo(() => {
+    if (isGuidedDiffeq) return questions.filter(q => !isCorrect(q.id));
     return questions.filter(q => q.type !== "free" && !isCorrect(q.id));
-  }, [questions, isCorrect]);
+  }, [questions, isCorrect, isGuidedDiffeq]);
 
   const startExam = () => {
     const exam = UE.buildExam(bank, config);
     setQuestions(exam); setAnswers({}); setShowExp({}); setTimeLeft(TOTAL_TIME); setSubmitted(false); setCurrentQ(0);
-    setReinforceQs([]); setReinforceAnswers({}); setReinforceShowExp({}); setReinforceIdx(0); setReinforceSubmitted(false); setHints({});
+    setReinforceQs([]); setReinforceAnswers({}); setReinforceShowExp({}); setReinforceIdx(0); setReinforceSubmitted(false); setHints({}); setGuidedHints({});
     setScreen("exam"); setTimerOn(true);
   };
 
@@ -1021,7 +1156,7 @@ function QuizPage({ onQuizComplete }) {
 
   const startReinforce = () => {
     const { questions: rQs, topics } = UE.buildReinforcement(wrongQuestions, bank, reinforceBank);
-    setReinforceQs(rQs); setReinforceTopics(topics); setReinforceAnswers({}); setReinforceShowExp({}); setReinforceIdx(0); setReinforceSubmitted(false); setHints({});
+    setReinforceQs(rQs); setReinforceTopics(topics); setReinforceAnswers({}); setReinforceShowExp({}); setReinforceIdx(0); setReinforceSubmitted(false); setHints({}); setGuidedHints({});
     setScreen("reinforce");
   };
 
@@ -1039,7 +1174,7 @@ function QuizPage({ onQuizComplete }) {
   const isAnswered = (qs, ans, idx) => {
     const qq = qs[idx]; if (!qq) return false;
     const a = ans[qq.id];
-    return a && (typeof a === "string" ? a.length > 0 : a.length > 0);
+    return typeof a === "string" ? a.trim().length > 0 : Array.isArray(a) && a.length > 0;
   };
 
   // ── START ──
@@ -1056,11 +1191,15 @@ function QuizPage({ onQuizComplete }) {
           <div className="grid3">
             <div className="g-box"><div className="g-val">{totalQuestionCount}</div><div className="g-lbl">Questions</div></div>
             <div className="g-box"><div className="g-val">{Math.floor(TOTAL_TIME / 60)}m</div><div className="g-lbl">Time Limit</div></div>
-            <div className="g-box"><div className="g-val">4</div><div className="g-lbl">Types</div></div>
+            <div className="g-box"><div className="g-val">{isGuidedDiffeq ? "Guided" : "4"}</div><div className="g-lbl">{isGuidedDiffeq ? "Mode" : "Types"}</div></div>
           </div>
           <div className="info-box">
             <strong>How it works</strong>
-            <p>{config.professorQuestions ? `${bank.filter(q => q.fromProfessor).length} professor-confirmed questions always included. ` : ""}{config.maxQuestions} more drawn randomly. Includes MC, select-all, fill-in-the-blank, and free response. After the exam, you can practice your weak areas with targeted reinforcement questions.</p>
+            <p>
+              {isGuidedDiffeq
+                ? "Differential Equations runs in guided free-response mode. Every question is open ended, and you can reveal structured hints one step at a time before checking the walkthrough."
+                : `${config.professorQuestions ? `${bank.filter(q => q.fromProfessor).length} professor-confirmed questions always included. ` : ""}${config.maxQuestions} more drawn randomly. Includes MC, select-all, fill-in-the-blank, and free response. After the exam, you can practice your weak areas with targeted reinforcement questions.`}
+            </p>
           </div>
           <button className="btn btn-accent" onClick={startExam} style={{ background: `linear-gradient(135deg, ${course.color}, ${course.color}dd)` }}>Start Exam</button>
         </div></div>
@@ -1077,7 +1216,9 @@ function QuizPage({ onQuizComplete }) {
           <div className="res-hero">
             <div className="tag" style={{ marginBottom: 16, color: course.color }}>Final Score</div>
             <div className={`res-pct ${pct >= 70 ? "hi" : pct >= 50 ? "mid" : "lo"}`}>{pct}%</div>
-            <div className="res-det">{score.correct} / {score.total} scored questions correct</div>
+            <div className="res-det">
+              {score.correct} / {score.total} {isGuidedDiffeq ? "responses met solution checkpoints" : "scored questions correct"}
+            </div>
             <div className="res-btns">
               <button className="btn btn-accent" onClick={() => { setScreen("review"); setCurrentQ(0); }}>Review Answers</button>
               {wrongQuestions.length > 0 && (
@@ -1092,7 +1233,7 @@ function QuizPage({ onQuizComplete }) {
 
           <div className="ch-grid">
             {chapters.map(ch => {
-              const chQs = questions.filter(q => q.chapter === ch && q.type !== "free");
+              const chQs = questions.filter(q => q.chapter === ch && (isGuidedDiffeq || q.type !== "free"));
               const chOk = chQs.filter(q => isCorrect(q.id)).length;
               const chP = chQs.length > 0 ? (chOk / chQs.length) * 100 : 0;
               return (
@@ -1134,14 +1275,16 @@ function QuizPage({ onQuizComplete }) {
   // ── REINFORCE RESULTS ──
   if (screen === "reinforce-results") {
     const rPct = reinforceScore.total > 0 ? Math.round((reinforceScore.correct / reinforceScore.total) * 100) : 0;
-    const stillWrong = reinforceQs.filter(q => q.type !== "free" && !isReinforceCorrect(q.id));
+    const stillWrong = reinforceQs.filter(q => (isGuidedDiffeq || q.type !== "free") && !isReinforceCorrect(q.id));
     return (
       <div>
         <div className="results">
           <div className="reinforce-hero">
             <div className="tag" style={{ marginBottom: 16, color: "var(--orange)" }}>Reinforcement Results</div>
             <div className={`res-pct ${rPct >= 70 ? "hi" : rPct >= 50 ? "mid" : "lo"}`}>{rPct}%</div>
-            <div className="res-det">{reinforceScore.correct} / {reinforceScore.total} correct on weak-area questions</div>
+            <div className="res-det">
+              {reinforceScore.correct} / {reinforceScore.total} {isGuidedDiffeq ? "guided responses met checkpoints" : "correct on weak-area questions"}
+            </div>
             <div style={{ marginTop: 12, color: "var(--text2)", fontSize: 14 }}>
               {rPct >= 90 ? "\u{1F389} Excellent! You've solidified these topics." :
                 rPct >= 70 ? "\u{1F4AA} Good improvement! A few topics still need attention." :
@@ -1152,7 +1295,7 @@ function QuizPage({ onQuizComplete }) {
               {stillWrong.length > 0 && (
                 <button className="btn btn-orange" onClick={() => {
                   const { questions: rQs, topics } = UE.buildReinforcement(stillWrong, bank, reinforceBank);
-                  setReinforceQs(rQs); setReinforceTopics(topics); setReinforceAnswers({}); setReinforceShowExp({}); setReinforceIdx(0); setReinforceSubmitted(false); setHints({}); setScreen("reinforce");
+                  setReinforceQs(rQs); setReinforceTopics(topics); setReinforceAnswers({}); setReinforceShowExp({}); setReinforceIdx(0); setReinforceSubmitted(false); setHints({}); setGuidedHints({}); setScreen("reinforce");
                 }}>&#x1F504; Practice Again ({stillWrong.length} still wrong)</button>
               )}
               <button className="btn btn-ghost" onClick={startExam}>New Full Exam</button>
@@ -1171,7 +1314,7 @@ function QuizPage({ onQuizComplete }) {
     const showRes = isRR || reinforceSubmitted;
     const hint = hints[rq.id] || {};
     const hintRevealed = hint.revealed && !hint.confirmed && !showRes;
-    const canAdvance = !hintRevealed;
+    const canAdvance = isGuidedDiffeq ? true : !hintRevealed;
 
     return (
       <div>
@@ -1180,7 +1323,7 @@ function QuizPage({ onQuizComplete }) {
             <span className="cnt">Q{reinforceIdx + 1}/{reinforceQs.length}</span>
             <span className="pill pill-reinforce">&#x1F504; REINFORCE</span>
             <span className="pill pill-ch">Ch. {rq.chapter}</span>
-            <span className="pill pill-type">{typeLabel[rq.type]}</span>
+            <span className="pill pill-type">{isGuidedDiffeq ? "Guided Response" : typeLabel[rq.type]}</span>
           </div>
           <span style={{ color: "var(--orange)", fontSize: 13, fontWeight: 600 }}>
             {isRR ? "Review Mode" : "Weak Area Practice"}
@@ -1191,9 +1334,13 @@ function QuizPage({ onQuizComplete }) {
           q={rq} answers={reinforceAnswers} onSelect={handleReinforceSelect}
           showResults={showRes} isCorrect={showRes ? isReinforceCorrect(rq.id) : null}
           showExp={reinforceShowExp} onToggleExp={(id) => setReinforceShowExp(p => ({ ...p, [id]: !p[id] }))}
-          hintState={hints[rq.id]} onRevealHint={!showRes ? revealHint : null}
-          onUpdateHintConfirm={updateHintConfirm} onConfirmHint={confirmHint}
+          hintState={hints[rq.id]} onRevealHint={!showRes && !isGuidedDiffeq ? revealHint : null}
+          onUpdateHintConfirm={!isGuidedDiffeq ? updateHintConfirm : null} onConfirmHint={!isGuidedDiffeq ? confirmHint : null}
           checkHintMatch={checkHintMatch} getHintAnswer={getHintAnswer}
+          guidedFreeResponse={isGuidedDiffeq}
+          guidedHintState={guidedHints[rq.id]}
+          guidedHintSteps={getGuidedHints(rq)}
+          onRevealGuidedHint={!showRes && isGuidedDiffeq ? revealGuidedHint : null}
         />
 
         <div className="ftr">
@@ -1201,9 +1348,11 @@ function QuizPage({ onQuizComplete }) {
           <div className="dots">
             {reinforceQs.map((_, i) => {
               const qid = reinforceQs[i].id;
+              const gh = guidedHints[qid];
               const h = hints[qid];
               let cls = "dot ";
-              if (h && h.confirmed) cls += "dot-confirmed ";
+              if (isGuidedDiffeq && gh && gh.revealedCount > 0) cls += "dot-hinted ";
+              else if (h && h.confirmed) cls += "dot-confirmed ";
               else if (h && h.revealed) cls += "dot-hinted ";
               else if (isAnswered(reinforceQs, reinforceAnswers, i)) cls += "dot-reinforce ";
               else cls += "dot-e ";
@@ -1232,7 +1381,7 @@ function QuizPage({ onQuizComplete }) {
           <span className="cnt">Q{currentQ + 1}/{questions.length}</span>
           {q.fromProfessor && <span className="pill pill-prof">&#x2B50; PROFESSOR</span>}
           <span className="pill pill-ch">Ch. {q.chapter}</span>
-          <span className="pill pill-type">{typeLabel[q.type]}</span>
+          <span className="pill pill-type">{isGuidedDiffeq ? "Guided Response" : typeLabel[q.type]}</span>
         </div>
         {!isReview ? (
           <div className={`timer ${timeLeft < 300 ? "timer-warn" : "timer-ok"}`}>{fmt(timeLeft)}</div>
@@ -1245,6 +1394,11 @@ function QuizPage({ onQuizComplete }) {
         q={q} answers={answers} onSelect={handleSelect}
         showResults={showRes} isCorrect={showRes ? isCorrect(q.id) : null}
         showExp={showExp} onToggleExp={(id) => setShowExp(p => ({ ...p, [id]: !p[id] }))}
+        getHintAnswer={getHintAnswer}
+        guidedFreeResponse={isGuidedDiffeq}
+        guidedHintState={guidedHints[q.id]}
+        guidedHintSteps={getGuidedHints(q)}
+        onRevealGuidedHint={!showRes && isGuidedDiffeq ? revealGuidedHint : null}
       />
 
       <div className="ftr">
