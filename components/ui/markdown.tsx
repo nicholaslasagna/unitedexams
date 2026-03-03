@@ -28,7 +28,7 @@ function looksLikeMathExpression(value: string) {
   // Keep real code-like snippets as code.
   if (
     /\b(add|addi|sub|lw|sw|beq|bne|jal|jalr|lui|ori|const|let|function|return)\b/i.test(text) ||
-    /[{};]|=>|===|&&|\|\|/.test(text)
+    /;|=>|===|&&|\|\|/.test(text)
   ) {
     return false;
   }

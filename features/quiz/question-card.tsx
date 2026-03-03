@@ -94,7 +94,7 @@ export function QuestionCard({
 
         {/* Question prompt */}
         <div id={promptId} className="space-y-4">
-          <Markdown content={question.prompt} promoteMathInInlineCode />
+          <Markdown content={question.prompt} className="quiz-question-prompt" promoteMathInInlineCode />
           {question.imageUrl ? (
             <img src={question.imageUrl} alt="Question visual" className="max-h-72 w-full rounded-xl border border-borderc object-cover" />
           ) : null}
