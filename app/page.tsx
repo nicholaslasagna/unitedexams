@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowRight, BookOpenCheck, ChartNoAxesCombined, Orbit, Sparkles } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/card";
 import { courses, quizSets } from "@/data/seed";
-import { testimonials } from "@/data/seed/leaderboard";
 
 const features = [
   {
@@ -137,21 +136,6 @@ export default function LandingPage() {
                     </span>
                   ))}
                 </div>
-              </CardBody>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto w-full max-w-[1240px] px-6 pb-16">
-        <h2 className="mb-4 font-display text-3xl font-semibold">What students say</h2>
-        <div className="grid gap-4 md:grid-cols-3">
-          {testimonials.map((item) => (
-            <Card key={item.name}>
-              <CardBody>
-                <p className="text-sm leading-relaxed text-text">“{item.quote}”</p>
-                <p className="mt-4 text-sm font-semibold">{item.name}</p>
-                <p className="text-xs text-muted">{item.role}</p>
               </CardBody>
             </Card>
           ))}

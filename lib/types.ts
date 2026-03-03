@@ -68,6 +68,7 @@ export interface QuizSettings {
   timerMinutes: number;
   randomizeQuestions: boolean;
   explanationMode: "afterEach" | "end";
+  questionCount: number | "all";
 }
 
 export interface UserProfile {
