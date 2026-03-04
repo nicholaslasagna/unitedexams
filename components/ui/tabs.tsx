@@ -24,7 +24,7 @@ export function Tabs({ tabs, value, onChange, className }: TabsProps) {
             className={cn(
               "rounded-xl px-4 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-2/60",
               active
-                ? "bg-brand-gradient text-white shadow-soft"
+                ? "bg-brand-gradient text-accent-fg shadow-soft"
                 : "border border-borderc bg-soft text-muted hover:text-text"
             )}
             onClick={() => onChange(tab.id)}

@@ -20,12 +20,16 @@ const config: Config = {
         surface: "hsl(var(--surface))",
         "surface-raised": "hsl(var(--surface-raised))",
         soft: "hsl(var(--soft))",
+        overlay: "hsl(var(--overlay))",
         borderc: "hsl(var(--border))",
         "border-bright": "hsl(var(--border-bright))",
         text: "hsl(var(--text))",
         muted: "hsl(var(--muted))",
         faint: "hsl(var(--faint))",
         accent: "hsl(var(--accent))",
+        "accent-dim": "hsl(var(--accent-dim))",
+        "accent-subtle": "hsl(var(--accent-subtle))",
+        "accent-fg": "hsl(var(--accent-fg))",
         brand: {
           1: "hsl(var(--brand-1))",
           2: "hsl(var(--brand-2))",
@@ -36,12 +40,12 @@ const config: Config = {
         danger: "hsl(var(--danger))"
       },
       boxShadow: {
-        subtle: "0 1px 3px rgba(0,0,0,0.4)",
-        soft: "0 8px 28px -8px rgba(0,0,0,0.6)",
-        glass: "0 1px 0 rgba(255,255,255,0.06) inset, 0 18px 40px -22px rgba(2, 8, 24, 0.78)",
-        elevated: "0 20px 48px -16px rgba(0,0,0,0.8)",
-        glow: "0 8px 28px hsl(var(--accent) / 0.3)",
-        "glow-lg": "0 12px 40px hsl(var(--accent) / 0.4)",
+        subtle: "0 1px 3px hsl(var(--text) / var(--shadow-opacity))",
+        soft: "0 8px 28px -8px hsl(var(--text) / var(--shadow-opacity-md))",
+        glass: "0 1px 0 hsl(var(--surface-raised) / 0.06) inset, 0 18px 40px -22px hsl(var(--text) / var(--shadow-opacity-lg))",
+        elevated: "0 20px 48px -16px hsl(var(--text) / var(--shadow-opacity-lg))",
+        glow: "0 8px 28px hsl(var(--accent) / 0.25)",
+        "glow-lg": "0 12px 40px hsl(var(--accent) / 0.35)",
         focus: "0 0 0 3px hsl(var(--accent) / 0.35)"
       },
       backgroundImage: {

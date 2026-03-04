@@ -247,7 +247,7 @@ export function AccountPageContent() {
               <button
                 type="button"
                 onClick={() => setOpenPicker((prev) => !prev)}
-                className="flex h-11 w-full items-center justify-between rounded-[10px] border border-white/[0.07] bg-white/[0.035] px-3.5 text-left text-sm text-text"
+                className="flex h-11 w-full items-center justify-between rounded-[10px] border border-borderc bg-soft px-3.5 text-left text-sm text-text"
                 aria-expanded={openPicker}
               >
                 <span>{selectedUniversity?.name || "Select university"}</span>
@@ -255,7 +255,7 @@ export function AccountPageContent() {
               </button>
 
               {openPicker ? (
-                <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-white/[0.1] bg-[rgba(8,10,30,0.96)] shadow-elevated backdrop-blur-xl">
+                <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-border-bright bg-[rgba(8,10,30,0.96)] shadow-elevated backdrop-blur-xl">
                   <div className="p-2">
                     <Input
                       value={search}
@@ -277,7 +277,7 @@ export function AccountPageContent() {
                             successTitle: "University updated"
                           });
                         }}
-                        className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left text-sm text-text hover:bg-white/[0.06]"
+                        className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left text-sm text-text hover:bg-overlay"
                       >
                         <span>{item.name}</span>
                         <Check className={cn("h-4 w-4", selectedUniversityId === item.id ? "text-success" : "opacity-0")} />
@@ -494,7 +494,7 @@ export function AccountPageContent() {
                           "flex w-full items-center justify-between rounded-lg px-2 py-2 text-left text-sm",
                           selectedUniversityId === item.id
                             ? "bg-brand-2/15 text-text"
-                            : "text-muted hover:bg-white/[0.06] hover:text-text"
+                            : "text-muted hover:bg-overlay hover:text-text"
                         )}
                       >
                         <span>{item.name}</span>

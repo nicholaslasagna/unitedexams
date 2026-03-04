@@ -13,11 +13,8 @@ export function applyThemeCssVars(input: ThemeVarInput) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
 
-  const hue = clamp(
-    input.accentHue ?? THEME_DEFAULTS.accentHue,
-    ACCENT_RANGE.minHue,
-    ACCENT_RANGE.maxHue
-  );
+  const rawHue = input.accentHue ?? THEME_DEFAULTS.accentHue;
+  const hue = ((rawHue % 360) + 360) % 360; // normalize to 0-360
   const strength = clamp(
     input.accentStrength ?? THEME_DEFAULTS.accentStrength,
     ACCENT_RANGE.minStrength,
