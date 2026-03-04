@@ -1,18 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { PasswordStrength } from "@/components/auth/password-strength";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { validatePassword } from "@/lib/auth/password";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
 
   const [ready, setReady] = useState(false);
@@ -21,6 +22,7 @@ export default function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [linkError, setLinkError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!supabase) {
@@ -31,7 +33,63 @@ export default function ResetPasswordPage() {
 
     let mounted = true;
 
-    supabase.auth.getSession().then(async ({ data }) => {
+    const hydrateFromResetLink = async () => {
+      const url = new URL(window.location.href);
+      const code = searchParams.get("code") ?? url.searchParams.get("code");
+      const tokenHash = searchParams.get("token_hash") ?? url.searchParams.get("token_hash");
+      const type = searchParams.get("type") ?? url.searchParams.get("type");
+      const accessToken = searchParams.get("access_token");
+      const refreshToken = searchParams.get("refresh_token");
+
+      try {
+        // PKCE flow support (web/email links)
+        if (code) {
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeError) {
+            throw exchangeError;
+          }
+        } else if (tokenHash && type === "recovery") {
+          const { error: verifyError } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: "recovery"
+          });
+          if (verifyError) {
+            throw verifyError;
+          }
+        } else if (accessToken && refreshToken) {
+          // Deep-link compatibility for implicit token links
+          const { error: setSessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+          if (setSessionError) {
+            throw setSessionError;
+          }
+        } else if (url.hash.includes("access_token=")) {
+          // Handle hash-based auth links from older/mobile flows.
+          const hashParams = new URLSearchParams(url.hash.replace(/^#/, ""));
+          const hashAccess = hashParams.get("access_token");
+          const hashRefresh = hashParams.get("refresh_token");
+          if (hashAccess && hashRefresh) {
+            const { error: hashSessionError } = await supabase.auth.setSession({
+              access_token: hashAccess,
+              refresh_token: hashRefresh
+            });
+            if (hashSessionError) {
+              throw hashSessionError;
+            }
+          }
+          if (window.location.hash) {
+            window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+          }
+        }
+      } catch (linkErr) {
+        if (mounted) {
+          setLinkError((linkErr as Error).message);
+        }
+      }
+
+      const { data } = await supabase.auth.getSession();
       if (!mounted) return;
       const active = Boolean(data.session?.user);
       setHasSession(active);
@@ -43,6 +101,12 @@ export default function ResetPasswordPage() {
           .update({ reset_required: true })
           .eq("id", data.session?.user.id ?? "");
       }
+    };
+
+    hydrateFromResetLink().catch(() => {
+      if (!mounted) return;
+      setReady(true);
+      setHasSession(false);
     });
 
     const {
@@ -55,7 +119,7 @@ export default function ResetPasswordPage() {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [searchParams, supabase]);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -128,6 +192,7 @@ export default function ResetPasswordPage() {
       ) : !hasSession ? (
         <div className="space-y-3 rounded-xl border border-warn/35 bg-warn/10 p-4 text-sm text-white/80">
           <p>Your password reset link is invalid or expired.</p>
+          {linkError ? <p className="text-xs text-warn">Details: {linkError}</p> : null}
           <Button asChild className="w-full">
             <Link href="/forgot-password">Request new link</Link>
           </Button>
@@ -174,5 +239,13 @@ export default function ResetPasswordPage() {
         </form>
       )}
     </AuthShell>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#050510]" />}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
