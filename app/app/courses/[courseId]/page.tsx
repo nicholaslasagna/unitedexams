@@ -1,9 +1,10 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { useParams } from "next/navigation";
-import { CourseDetailContent } from "@/features/study/course-detail-page";
-
-export default function CourseDetailPage() {
-  const params = useParams<{ courseId: string }>();
-  return <CourseDetailContent courseId={params.courseId} routePrefix="/app" />;
+export default async function CourseDetailPage({
+  params
+}: {
+  params: Promise<{ courseId: string }>;
+}) {
+  const { courseId } = await params;
+  redirect(`/courses/${courseId}`);
 }

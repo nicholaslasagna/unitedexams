@@ -1,9 +1,10 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { useParams } from "next/navigation";
-import { QuizExperiencePageContent } from "@/features/study/quiz-experience-page";
-
-export default function QuizPage() {
-  const params = useParams<{ quizId: string }>();
-  return <QuizExperiencePageContent quizId={params.quizId} routePrefix="/app" />;
+export default async function QuizPage({
+  params
+}: {
+  params: Promise<{ quizId: string }>;
+}) {
+  const { quizId } = await params;
+  redirect(`/quiz/${quizId}`);
 }

@@ -14,7 +14,7 @@ export function isProfessorPath(pathname: string) {
 
 export function buildLoginRedirect(request: NextRequest) {
   const redirectUrl = request.nextUrl.clone();
-  const next = `${request.nextUrl.pathname}${request.nextUrl.search}`;
+  const next = canonicalizeRoute(`${request.nextUrl.pathname}${request.nextUrl.search}`);
   redirectUrl.pathname = "/login";
   redirectUrl.searchParams.set("next", next);
   return redirectUrl;
@@ -24,7 +24,14 @@ export function resolveNextAfterLogin(nextValue: string | null | undefined) {
   if (!nextValue) return "/app/dashboard";
   if (!nextValue.startsWith("/")) return "/app/dashboard";
   if (nextValue.startsWith("//")) return "/app/dashboard";
-  return nextValue;
+  return canonicalizeRoute(nextValue);
+}
+
+export function canonicalizeRoute(path: string) {
+  if (path === "/app/courses") return "/courses";
+  if (path.startsWith("/app/courses/")) return path.replace("/app/courses/", "/courses/");
+  if (path.startsWith("/app/quiz/")) return path.replace("/app/quiz/", "/quiz/");
+  return path;
 }
 
 export function shouldForceOnboarding(

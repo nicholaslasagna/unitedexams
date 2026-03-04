@@ -559,7 +559,14 @@ export function QuizExperiencePageContent({
       return;
     }
     if (result.score >= 85) {
-      setGuestSaveModalOpen(true);
+      const key = "ue.guest.high-score-modal.last-shown-at";
+      const now = Date.now();
+      const lastShown = Number(window.localStorage.getItem(key) ?? "0");
+      const oneDayMs = 24 * 60 * 60 * 1000;
+      if (!lastShown || now - lastShown >= oneDayMs) {
+        setGuestSaveModalOpen(true);
+        window.localStorage.setItem(key, String(now));
+      }
     }
   }, [isAuthenticated, result, stage]);
 
