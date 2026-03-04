@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
@@ -11,10 +11,19 @@ import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { resolveNextAfterLogin } from "@/lib/auth/guards";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAppData } from "@/lib/app-data-context";
-import {
-  isTurnstileClientEnabled,
-  verifyTurnstileClient
-} from "@/lib/security/turnstile-client";
+import { isTurnstileClientEnabled } from "@/lib/security/turnstile-client";
+
+function mapAuthError(message: string, captchaEnabled: boolean) {
+  if (!message) return "Unable to sign in.";
+  const normalized = message.toLowerCase();
+  if (
+    captchaEnabled &&
+    (normalized.includes("captcha") || normalized.includes("challenge") || normalized.includes("turnstile"))
+  ) {
+    return "Please complete the verification challenge and try again.";
+  }
+  return message;
+}
 
 export function LoginForm() {
   const router = useRouter();
@@ -29,11 +38,18 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [activeEmail, setActiveEmail] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [captchaRenderKey, setCaptchaRenderKey] = useState(0);
+  const errorRef = useRef<HTMLParagraphElement | null>(null);
 
   const next = resolveNextAfterLogin(searchParams.get("next"));
   const passwordUpdated = searchParams.get("passwordUpdated") === "1";
   const guestReturnPath = next.startsWith("/app/") ? "/courses" : next;
   const turnstileEnabled = isTurnstileClientEnabled();
+  const errorId = "login-form-error";
+
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   useEffect(() => {
     if (!supabase) return;
@@ -62,28 +78,30 @@ export function LoginForm() {
       return;
     }
 
-    if (turnstileEnabled) {
-      if (!turnstileToken) {
-        setError("Please complete the verification challenge.");
-        return;
-      }
-      try {
-        await verifyTurnstileClient({ token: turnstileToken, action: "login" });
-      } catch (turnstileError) {
-        setError((turnstileError as Error).message);
-        return;
-      }
+    if (turnstileEnabled && !turnstileToken) {
+      setError("Please complete the verification challenge.");
+      return;
     }
 
     setLoading(true);
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password
-    });
+    const { error: signInError } = await supabase.auth.signInWithPassword(
+      turnstileEnabled
+        ? {
+            email: email.trim(),
+            password,
+            options: { captchaToken: turnstileToken ?? "" }
+          }
+        : {
+            email: email.trim(),
+            password
+          }
+    );
+    setCaptchaRenderKey((value) => value + 1);
+    setTurnstileToken(null);
     setLoading(false);
 
     if (signInError) {
-      setError(signInError.message);
+      setError(mapAuthError(signInError.message, turnstileEnabled));
       return;
     }
 
@@ -183,10 +201,26 @@ export function LoginForm() {
           Remember me on this device
         </label>
 
-        {error ? <p className="rounded-lg border border-danger/35 bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p> : null}
+        {error ? (
+          <p
+            id={errorId}
+            ref={errorRef}
+            tabIndex={-1}
+            role="alert"
+            aria-live="assertive"
+            className="rounded-lg border border-danger/35 bg-danger/10 px-3 py-2 text-sm text-danger outline-none"
+          >
+            {error}
+          </p>
+        ) : null}
 
         {turnstileEnabled ? (
-          <TurnstileWidget action="login" onToken={setTurnstileToken} />
+          <TurnstileWidget
+            key={captchaRenderKey}
+            action="login"
+            onToken={setTurnstileToken}
+            describedBy={error ? errorId : undefined}
+          />
         ) : null}
 
         <Button type="submit" className="w-full" loading={loading}>

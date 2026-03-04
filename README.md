@@ -18,8 +18,8 @@ Premium-feeling college study platform built with **Next.js + TypeScript + Tailw
      - `NEXT_PUBLIC_SUPABASE_URL`
      - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
      - `NEXT_PUBLIC_SITE_URL` (for auth callback links, e.g. `https://unitedexams.com`)
-     - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (Cloudflare Turnstile)
-     - `TURNSTILE_SECRET_KEY` (server-side Turnstile verify secret)
+     - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (Cloudflare Turnstile site key)
+     - `TURNSTILE_SECRET_KEY` (optional; only needed for custom non-auth server verification such as exam start)
      - `IP_COOKIE_SIGNING_SECRET` (HMAC secret for trusted-device/IP cookies)
 3. Run development server
    - `npm run dev`
@@ -61,6 +61,13 @@ Premium-feeling college study platform built with **Next.js + TypeScript + Tailw
      - `https://unitedexams.com/reset-password`
      - `https://unitedexams.com/auth/callback`
      - `https://unitedexams.com/app/*`
+7. Supabase Auth CAPTCHA configuration (recommended):
+   - Auth → Bot and Abuse Protection → enable CAPTCHA
+   - Provider: Cloudflare Turnstile
+   - Configure site key + secret key in Supabase Dashboard
+   - The app sends `captchaToken` directly in auth calls (`signUp`, `signInWithPassword`, `resetPasswordForEmail`, `updateUser`).
+   - For auth CAPTCHA, Vercel runtime does not need Turnstile secret.
+   - Future provider switch (e.g. hCaptcha): keep the same `captchaToken` auth wiring and replace only the captcha widget/provider keys.
 
 ## Routes
 Public:
@@ -137,7 +144,7 @@ Public leaderboard:
   - `/login`
   - `/forgot-password`
   - `/reset-password`
-  with server-side verification at `/api/security/turnstile/verify`
+  via Supabase Auth `captchaToken` integration
 - Middleware protection for `/app/*` routes
 - Explicit guest mode for public study routes (`/courses`, `/quiz`)
 - `/login` and `/signup` now show signed-in state with dashboard/sign-out actions
@@ -288,6 +295,19 @@ Validate these before production:
 13. Profile persistence check:
   - edit display name / real name / university, refresh page, and confirm values persist.
   - leaderboard row reflects profile changes on next load.
+
+## Cloudflare WAF Recommendations
+- Add rate limits:
+  - `/login`: 10 requests / 5 minutes per IP
+  - `/signup`: 8 requests / 10 minutes per IP
+  - `/forgot-password`: 6 requests / 10 minutes per IP
+  - `/reset-password`: 10 requests / 10 minutes per IP
+- Add managed bot protections / JS challenge for high-risk traffic and suspicious user agents.
+- Protect auth APIs (if used) with additional rate limits:
+  - `/api/auth/*`
+  - `/api/security/*`
+  - `/api/contact/*`
+- Start in simulate/log mode before hard blocking, then tighten gradually.
 
 ## Add a Course or Quiz Set
 1. Add course object in `data/seed/courses.ts`.

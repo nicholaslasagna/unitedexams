@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
@@ -12,9 +12,20 @@ import { Input } from "@/components/ui/input";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { validatePassword } from "@/lib/auth/password";
 import {
-  isTurnstileClientEnabled,
-  verifyTurnstileClient
+  isTurnstileClientEnabled
 } from "@/lib/security/turnstile-client";
+
+function mapAuthError(message: string, captchaEnabled: boolean) {
+  if (!message) return "Failed to update password.";
+  const normalized = message.toLowerCase();
+  if (
+    captchaEnabled &&
+    (normalized.includes("captcha") || normalized.includes("challenge") || normalized.includes("turnstile"))
+  ) {
+    return "Please complete the verification challenge and try again.";
+  }
+  return message;
+}
 
 function ResetPasswordContent() {
   const router = useRouter();
@@ -29,7 +40,14 @@ function ResetPasswordContent() {
   const [error, setError] = useState<string | null>(null);
   const [linkError, setLinkError] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [captchaRenderKey, setCaptchaRenderKey] = useState(0);
   const turnstileEnabled = isTurnstileClientEnabled();
+  const errorRef = useRef<HTMLParagraphElement | null>(null);
+  const errorId = "reset-password-form-error";
+
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   useEffect(() => {
     if (!supabase) {
@@ -142,17 +160,9 @@ function ResetPasswordContent() {
       return;
     }
 
-    if (turnstileEnabled) {
-      if (!turnstileToken) {
-        setError("Please complete the verification challenge.");
-        return;
-      }
-      try {
-        await verifyTurnstileClient({ token: turnstileToken, action: "reset-password" });
-      } catch (turnstileError) {
-        setError((turnstileError as Error).message);
-        return;
-      }
+    if (turnstileEnabled && !turnstileToken) {
+      setError("Please complete the verification challenge.");
+      return;
     }
 
     if (newPassword !== confirmPassword) {
@@ -171,11 +181,16 @@ function ResetPasswordContent() {
     const {
       data: { user },
       error: updateError
-    } = await supabase.auth.updateUser({ password: newPassword });
+    } = await supabase.auth.updateUser(
+      { password: newPassword },
+      turnstileEnabled ? ({ captchaToken: turnstileToken ?? "" } as never) : undefined
+    );
+    setCaptchaRenderKey((value) => value + 1);
+    setTurnstileToken(null);
 
     if (updateError || !user) {
       setLoading(false);
-      setError(updateError?.message ?? "Failed to update password.");
+      setError(mapAuthError(updateError?.message ?? "Failed to update password.", turnstileEnabled));
       return;
     }
 
@@ -251,10 +266,26 @@ function ResetPasswordContent() {
 
           <PasswordStrength password={newPassword} />
 
-          {error ? <p className="rounded-lg border border-danger/35 bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p> : null}
+          {error ? (
+            <p
+              id={errorId}
+              ref={errorRef}
+              tabIndex={-1}
+              role="alert"
+              aria-live="assertive"
+              className="rounded-lg border border-danger/35 bg-danger/10 px-3 py-2 text-sm text-danger outline-none"
+            >
+              {error}
+            </p>
+          ) : null}
 
           {turnstileEnabled ? (
-            <TurnstileWidget action="reset-password" onToken={setTurnstileToken} />
+            <TurnstileWidget
+              key={captchaRenderKey}
+              action="reset-password"
+              onToken={setTurnstileToken}
+              describedBy={error ? errorId : undefined}
+            />
           ) : null}
 
           <Button type="submit" className="w-full" loading={loading}>
