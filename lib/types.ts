@@ -100,6 +100,7 @@ export interface UserProfile {
   universityId?: string;
   role?: "student" | "professor" | "admin";
   resetRequired?: boolean;
+  mfaEnabled?: boolean;
 }
 
 export interface AppPreferences {
@@ -110,6 +111,7 @@ export interface AppPreferences {
   accentStrength: number;
   palette: string;
   dashboardLayout: string;
+  extraSigninProtection: boolean;
 }
 
 export interface LeaderboardEntry {

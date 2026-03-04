@@ -32,5 +32,6 @@ export const defaultPreferences: AppPreferences = {
   accentHue: 265,
   accentStrength: 60,
   palette: "violet",
-  dashboardLayout: "default"
+  dashboardLayout: "default",
+  extraSigninProtection: false
 };

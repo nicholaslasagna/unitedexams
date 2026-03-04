@@ -8,6 +8,7 @@ export interface ProfileRecord {
   show_university: boolean;
   role: "student" | "professor" | "admin";
   reset_required: boolean;
+  mfa_enabled?: boolean;
 }
 
 export interface UserPreferenceRecord {
@@ -17,6 +18,7 @@ export interface UserPreferenceRecord {
   accent_strength: number;
   reduce_motion: boolean;
   dashboard_layout: string;
+  extra_signin_protection?: boolean;
 }
 
 export interface UniversityRecord {
