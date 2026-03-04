@@ -11,6 +11,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
 };
 
+function requireEnv(name: string) {
+  const value = Deno.env.get(name);
+  if (!value) {
+    throw new Error(`Missing required Edge Function secret: ${name}`);
+  }
+  return value;
+}
+
 function json(status: number, body: Record<string, unknown>) {
   return new Response(JSON.stringify(body), {
     status,
@@ -42,10 +50,13 @@ Deno.serve(async (request) => {
     return json(405, { error: "Method not allowed." });
   }
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!supabaseUrl || !serviceRoleKey) {
-    return json(500, { error: "Function environment is not configured." });
+  let supabaseUrl: string;
+  let serviceRoleKey: string;
+  try {
+    supabaseUrl = requireEnv("SUPABASE_URL");
+    serviceRoleKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+  } catch (error) {
+    return json(500, { error: (error as Error).message });
   }
 
   const payload = (await request.json().catch(() => ({}))) as ApprovalPayload;
