@@ -46,7 +46,7 @@ create policy user_courses_delete_own
 drop function if exists public.get_recommendations(integer) cascade;
 create function public.get_recommendations(limit_count int default 6)
 returns table (
-  quiz_set_id text,
+  quiz_set_id uuid,
   title text,
   course_id text,
   description text,
@@ -96,7 +96,7 @@ candidate as (
         (
           select count(*)::numeric
           from unnest(qs.tags) t
-          where t = any((select tags from weak_tag_list))
+          where t = any(wtl.tags)
         ),
         0
       ) * 25
@@ -108,7 +108,7 @@ candidate as (
         when (select present from has_mastery) then
           case
             when exists (
-              select 1 from unnest(qs.tags) t where t = any((select tags from weak_tag_list))
+              select 1 from unnest(qs.tags) t where t = any(wtl.tags)
             ) then
               'Targets weak topics: ' || coalesce(
                 (
@@ -116,7 +116,7 @@ candidate as (
                   from (
                     select distinct t
                     from unnest(qs.tags) t
-                    where t = any((select tags from weak_tag_list))
+                    where t = any(wtl.tags)
                     limit 2
                   ) x
                 ),
@@ -130,6 +130,7 @@ candidate as (
       end
     ) as reason
   from public.quiz_sets qs
+  cross join weak_tag_list wtl
   where qs.is_published = true
     and exists(select 1 from my_courses mc where mc.course_id = qs.course_id)
 )
@@ -374,6 +375,65 @@ create table if not exists public.class_sections (
   updated_at timestamptz not null default now()
 );
 
+alter table public.class_sections
+  add column if not exists id uuid,
+  add column if not exists course_id text,
+  add column if not exists name text,
+  add column if not exists term text,
+  add column if not exists join_code text,
+  add column if not exists created_by uuid,
+  add column if not exists created_at timestamptz default now(),
+  add column if not exists updated_at timestamptz default now();
+
+update public.class_sections
+set id = gen_random_uuid()
+where id is null;
+
+alter table public.class_sections
+  alter column id set default gen_random_uuid();
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'class_sections_pkey'
+      and conrelid = 'public.class_sections'::regclass
+  ) then
+    alter table public.class_sections
+      add constraint class_sections_pkey primary key (id);
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'class_sections_course_id_fkey'
+      and conrelid = 'public.class_sections'::regclass
+  ) then
+    alter table public.class_sections
+      add constraint class_sections_course_id_fkey
+      foreign key (course_id) references public.courses(id) on delete cascade;
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'class_sections_created_by_fkey'
+      and conrelid = 'public.class_sections'::regclass
+  ) then
+    alter table public.class_sections
+      add constraint class_sections_created_by_fkey
+      foreign key (created_by) references public.profiles(id) on delete cascade;
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'class_sections_join_code_key'
+      and conrelid = 'public.class_sections'::regclass
+  ) then
+    alter table public.class_sections
+      add constraint class_sections_join_code_key unique (join_code);
+  end if;
+end;
+$$;
+
 create table if not exists public.section_members (
   section_id uuid not null references public.class_sections(id) on delete cascade,
   user_id uuid not null references public.profiles(id) on delete cascade,
@@ -382,6 +442,54 @@ create table if not exists public.section_members (
   primary key (section_id, user_id),
   constraint section_members_role_check check (role in ('student', 'professor', 'ta'))
 );
+
+alter table public.section_members
+  add column if not exists section_id uuid,
+  add column if not exists user_id uuid,
+  add column if not exists role text default 'student',
+  add column if not exists joined_at timestamptz default now();
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'section_members_pkey'
+      and conrelid = 'public.section_members'::regclass
+  ) then
+    alter table public.section_members
+      add constraint section_members_pkey primary key (section_id, user_id);
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'section_members_section_id_fkey'
+      and conrelid = 'public.section_members'::regclass
+  ) then
+    alter table public.section_members
+      add constraint section_members_section_id_fkey
+      foreign key (section_id) references public.class_sections(id) on delete cascade;
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'section_members_user_id_fkey'
+      and conrelid = 'public.section_members'::regclass
+  ) then
+    alter table public.section_members
+      add constraint section_members_user_id_fkey
+      foreign key (user_id) references public.profiles(id) on delete cascade;
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'section_members_role_check'
+      and conrelid = 'public.section_members'::regclass
+  ) then
+    alter table public.section_members
+      add constraint section_members_role_check check (role in ('student', 'professor', 'ta'));
+  end if;
+end;
+$$;
 
 create table if not exists public.assignments (
   id uuid primary key default gen_random_uuid(),
@@ -393,14 +501,65 @@ create table if not exists public.assignments (
   updated_at timestamptz not null default now()
 );
 
+alter table public.assignments
+  add column if not exists id uuid,
+  add column if not exists section_id uuid,
+  add column if not exists quiz_set_id text,
+  add column if not exists due_at timestamptz,
+  add column if not exists created_by uuid,
+  add column if not exists created_at timestamptz default now(),
+  add column if not exists updated_at timestamptz default now();
+
+update public.assignments
+set id = gen_random_uuid()
+where id is null;
+
+alter table public.assignments
+  alter column id set default gen_random_uuid();
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'assignments_pkey'
+      and conrelid = 'public.assignments'::regclass
+  ) then
+    alter table public.assignments
+      add constraint assignments_pkey primary key (id);
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'assignments_section_id_fkey'
+      and conrelid = 'public.assignments'::regclass
+  ) then
+    alter table public.assignments
+      add constraint assignments_section_id_fkey
+      foreign key (section_id) references public.class_sections(id) on delete cascade;
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'assignments_created_by_fkey'
+      and conrelid = 'public.assignments'::regclass
+  ) then
+    alter table public.assignments
+      add constraint assignments_created_by_fkey
+      foreign key (created_by) references public.profiles(id) on delete cascade;
+  end if;
+end;
+$$;
+
 create index if not exists idx_class_sections_created_by on public.class_sections(created_by);
 create index if not exists idx_section_members_user on public.section_members(user_id);
 create index if not exists idx_assignments_section on public.assignments(section_id);
 
+drop trigger if exists trg_class_sections_updated_at on public.class_sections;
 create trigger trg_class_sections_updated_at
 before update on public.class_sections
 for each row execute procedure public.set_updated_at();
 
+drop trigger if exists trg_assignments_updated_at on public.assignments;
 create trigger trg_assignments_updated_at
 before update on public.assignments
 for each row execute procedure public.set_updated_at();
