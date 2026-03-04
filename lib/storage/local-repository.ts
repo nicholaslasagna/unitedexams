@@ -4,6 +4,12 @@ import {
   STORAGE_KEYS,
   type DataRepository
 } from "@/lib/storage/repository";
+import {
+  normalizeDisplayName,
+  normalizeRealName,
+  validateDisplayName,
+  validateRealName
+} from "@/lib/auth/display-name";
 import type { AppDataDump, AppPreferences, Attempt, UserProfile } from "@/lib/types";
 
 function parse<T>(raw: string | null, fallback: T): T {
@@ -51,7 +57,24 @@ export class LocalRepository implements DataRepository {
   async saveProfile(profile: UserProfile): Promise<void> {
     const store = storage();
     if (!store) return;
-    store.setItem(STORAGE_KEYS.profile, JSON.stringify(profile));
+    const normalizedName = normalizeDisplayName(profile.name || defaultProfile.name);
+    const nameCheck = validateDisplayName(normalizedName);
+    if (!nameCheck.valid) {
+      throw new Error(nameCheck.message || "Invalid display name.");
+    }
+    const normalizedRealName = normalizeRealName(profile.realName ?? "");
+    const realNameCheck = validateRealName(normalizedRealName);
+    if (!realNameCheck.valid) {
+      throw new Error(realNameCheck.message || "Invalid name.");
+    }
+    store.setItem(
+      STORAGE_KEYS.profile,
+      JSON.stringify({
+        ...profile,
+        name: normalizedName,
+        realName: normalizedRealName || undefined
+      })
+    );
   }
 
   async getPreferences(): Promise<AppPreferences> {

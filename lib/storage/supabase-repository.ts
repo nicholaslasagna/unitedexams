@@ -6,6 +6,8 @@ import {
 } from "@/lib/storage/repository";
 import {
   normalizeDisplayName,
+  normalizeRealName,
+  validateRealName,
   validateDisplayName
 } from "@/lib/auth/display-name";
 import { findClosestPalette } from "@/lib/theme/palettes";
@@ -286,12 +288,18 @@ export class SupabaseRepository implements DataRepository {
       throw new Error(validation.message || "Invalid display name.");
     }
 
+    const normalizedRealName = normalizeRealName(profile.realName ?? "");
+    const realNameValidation = validateRealName(normalizedRealName);
+    if (!realNameValidation.valid) {
+      throw new Error(realNameValidation.message || "Invalid name.");
+    }
+
     await this.client
       .from("profiles")
       .update({
         email: profile.email ?? this.user.email,
         display_name: normalizedName,
-        real_name: profile.realName ?? null,
+        real_name: normalizedRealName || null,
         show_real_name: Boolean(profile.showRealName),
         show_university: Boolean(profile.showUniversity),
         university_id: profile.universityId ?? null
