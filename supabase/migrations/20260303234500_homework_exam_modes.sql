@@ -71,8 +71,8 @@ set mode = 'exam',
     question_count_target = coalesce(question_count_target, 42)
 where mode = 'quiz'
   and (
-    lower(id) like '%exam%'
-    or lower(id) like '%test%'
+    lower(id::text) like '%exam%'
+    or lower(id::text) like '%test%'
     or lower(title) like '%exam%'
     or lower(title) like '%test review%'
     or exists (
@@ -89,7 +89,7 @@ set mode = 'homework',
     question_count_target = null
 where mode <> 'homework'
   and (
-    lower(id) like '%hw%'
+    lower(id::text) like '%hw%'
     or lower(title) like '%homework%'
     or exists (
       select 1

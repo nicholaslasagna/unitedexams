@@ -17,6 +17,7 @@ Premium-feeling college study platform built with **Next.js + TypeScript + Tailw
    - Set:
      - `NEXT_PUBLIC_SUPABASE_URL`
      - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+     - `NEXT_PUBLIC_SITE_URL` (for auth callback links, e.g. `https://unitedexams.com`)
 3. Run development server
    - `npm run dev`
 4. Open
@@ -35,6 +36,8 @@ Premium-feeling college study platform built with **Next.js + TypeScript + Tailw
    - `supabase/migrations/20260303200000_adaptive_onboarding_professor.sql`
    - `supabase/migrations/20260303223000_public_read_published_only.sql`
    - `supabase/migrations/20260303234500_homework_exam_modes.sql`
+   - `supabase/migrations/20260304002000_homework_mode_backfill.sql`
+   - `supabase/migrations/20260304021000_email_change_flow.sql`
 4. Optional content import (service role key required):
    - `npm run content:generate:se-exam`
    - `npm run content:import:supabase`
@@ -45,6 +48,7 @@ Premium-feeling college study platform built with **Next.js + TypeScript + Tailw
    - Site URL: `https://unitedexams.com`
    - Redirect URLs:
      - `https://unitedexams.com/reset-password`
+     - `https://unitedexams.com/auth/callback`
      - `https://unitedexams.com/app/*`
 
 ## Routes
@@ -101,6 +105,7 @@ Public leaderboard:
 - Reset-password page with strong password validation
 - Forced reset support via `profiles.reset_required`
 - Change password with current-password re-auth in settings
+- Change email flow with re-auth + inbox verification + pending/resend/cancel UX
 - 2FA TOTP enroll/verify/manage UI (uses Supabase MFA API when enabled)
 - Middleware protection for `/app/*` routes
 - Explicit guest mode for public study routes (`/courses`, `/quiz`)
@@ -160,6 +165,7 @@ Persisted entities include:
   - privacy toggles for real name/university leaderboard visibility
 - Settings page:
   - theme + accent + reduced-motion controls
+  - email change section with pending verification state + resend/cancel
   - password change with re-auth
   - 2FA TOTP enroll/verify/manage
   - export/import data

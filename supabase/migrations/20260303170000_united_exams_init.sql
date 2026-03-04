@@ -473,7 +473,8 @@ create trigger trg_attempts_apply_aggregates
 after insert on public.attempts
 for each row execute procedure public.apply_attempt_aggregates();
 
-create or replace function public.get_leaderboard(limit_count int default 25, offset_count int default 0)
+drop function if exists public.get_leaderboard(integer, integer) cascade;
+create function public.get_leaderboard(limit_count int default 25, offset_count int default 0)
 returns table (
   rank bigint,
   user_id uuid,
@@ -552,6 +553,32 @@ alter table public.mastery_by_topic enable row level security;
 alter table public.streaks enable row level security;
 alter table public.leaderboard_cache enable row level security;
 alter table public.contact_messages enable row level security;
+
+drop policy if exists universities_read_authenticated on public.universities;
+drop policy if exists universities_insert_authenticated on public.universities;
+drop policy if exists profiles_select_own on public.profiles;
+drop policy if exists profiles_insert_own on public.profiles;
+drop policy if exists profiles_update_own on public.profiles;
+drop policy if exists user_preferences_select_own on public.user_preferences;
+drop policy if exists user_preferences_insert_own on public.user_preferences;
+drop policy if exists user_preferences_update_own on public.user_preferences;
+drop policy if exists courses_read_all on public.courses;
+drop policy if exists quiz_sets_read_all on public.quiz_sets;
+drop policy if exists questions_read_all on public.questions;
+drop policy if exists attempts_select_own on public.attempts;
+drop policy if exists attempts_insert_own on public.attempts;
+drop policy if exists attempts_update_own on public.attempts;
+drop policy if exists attempt_answers_select_own on public.attempt_answers;
+drop policy if exists attempt_answers_insert_own on public.attempt_answers;
+drop policy if exists attempt_answers_update_own on public.attempt_answers;
+drop policy if exists mastery_by_topic_select_own on public.mastery_by_topic;
+drop policy if exists mastery_by_topic_insert_own on public.mastery_by_topic;
+drop policy if exists mastery_by_topic_update_own on public.mastery_by_topic;
+drop policy if exists streaks_select_own on public.streaks;
+drop policy if exists streaks_insert_own on public.streaks;
+drop policy if exists streaks_update_own on public.streaks;
+drop policy if exists leaderboard_cache_read_authenticated on public.leaderboard_cache;
+drop policy if exists contact_messages_insert_all on public.contact_messages;
 
 -- Universities
 create policy universities_read_authenticated

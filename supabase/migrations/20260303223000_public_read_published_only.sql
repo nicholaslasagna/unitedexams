@@ -2,6 +2,8 @@
 
 drop policy if exists quiz_sets_read_all on public.quiz_sets;
 drop policy if exists questions_read_all on public.questions;
+drop policy if exists quiz_sets_read_published on public.quiz_sets;
+drop policy if exists questions_read_published_quiz_set on public.questions;
 
 create policy quiz_sets_read_published
   on public.quiz_sets

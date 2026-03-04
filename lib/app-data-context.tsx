@@ -79,6 +79,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     if (supabase && user && repo instanceof SupabaseRepository) {
       try {
+        await supabase.rpc("sync_profile_email");
+      } catch {
+        // sync_profile_email may not exist in local dev before latest migration.
+      }
+
+      try {
         const migration = await migrateGuestAttemptsToAccount(user.id, {
           guestRepository: localRepo,
           accountRepository: repo
