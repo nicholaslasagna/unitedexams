@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { CheckCircle2, AlertTriangle, Info } from "lucide-react";
 import { ToastContext, type ToastMessage } from "@/lib/hooks/use-toast";
@@ -36,6 +36,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, [remove]);
 
   const value = useMemo(() => ({ push }), [push]);
+
+  useEffect(() => {
+    const onExternalToast = (event: Event) => {
+      const custom = event as CustomEvent<ToastMessage | undefined>;
+      if (!custom.detail?.title) return;
+      push(custom.detail);
+    };
+
+    window.addEventListener("ue:toast", onExternalToast);
+    return () => window.removeEventListener("ue:toast", onExternalToast);
+  }, [push]);
 
   return (
     <ToastContext.Provider value={value}>

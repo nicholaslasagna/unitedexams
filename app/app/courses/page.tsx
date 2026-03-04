@@ -1,5 +1,5 @@
-import { CoursesIndexContent } from "@/features/study/courses-index-page";
+import { redirect } from "next/navigation";
 
 export default function CoursesIndexPage() {
-  return <CoursesIndexContent routePrefix="/app" />;
+  redirect("/courses");
 }

@@ -8,17 +8,25 @@ import { Button } from "@/components/ui/button";
 import { useAppData } from "@/lib/app-data-context";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { href: "/", label: "Home" },
+const guestNavItems = [
   { href: "/courses", label: "Courses" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/contact", label: "Contact" }
+];
+
+const accountNavItems = [
+  { href: "/app/dashboard", label: "Dashboard" },
+  { href: "/courses", label: "Courses" },
+  { href: "/app/leaderboard", label: "Leaderboard" },
+  { href: "/app/account", label: "Account" },
+  { href: "/app/settings", label: "Settings" }
 ];
 
 export function PublicShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, profile, signOut } = useAppData();
+  const navItems = isAuthenticated ? accountNavItems : guestNavItems;
 
   return (
     <div className="min-h-screen bg-bg text-text">
@@ -52,13 +60,11 @@ export function PublicShell({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2">
             {isAuthenticated ? (
               <>
-                <Button variant="secondary" onClick={() => router.push("/app/dashboard")}>
-                  Dashboard
-                </Button>
                 <Button
                   variant="ghost"
                   onClick={async () => {
                     await signOut();
+                    router.push("/courses");
                     router.refresh();
                   }}
                 >

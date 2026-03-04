@@ -79,12 +79,33 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     if (supabase && user && repo instanceof SupabaseRepository) {
       try {
-        await migrateGuestAttemptsToAccount(user.id, {
+        const migration = await migrateGuestAttemptsToAccount(user.id, {
           guestRepository: localRepo,
           accountRepository: repo
         });
+        if (migration.failed && typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("ue:toast", {
+              detail: {
+                title: "Guest attempts not fully saved",
+                description: "We’ll try again next time.",
+                tone: "error"
+              }
+            })
+          );
+        }
       } catch {
-        // Non-blocking: app still loads even if migration fails.
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("ue:toast", {
+              detail: {
+                title: "Guest attempt sync failed",
+                description: "We’ll try again next time.",
+                tone: "error"
+              }
+            })
+          );
+        }
       }
     }
 
