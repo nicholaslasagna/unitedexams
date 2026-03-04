@@ -54,7 +54,7 @@ Deno.serve(async (request) => {
   let serviceRoleKey: string;
   try {
     supabaseUrl = requireEnv("SUPABASE_URL");
-    serviceRoleKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+    serviceRoleKey = requireEnv("SERVICE_ROLE_KEY");
   } catch (error) {
     return json(500, { error: (error as Error).message });
   }

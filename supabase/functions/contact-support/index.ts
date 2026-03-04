@@ -166,7 +166,7 @@ Deno.serve(async (request) => {
   try {
     supabaseUrl = requireEnv("SUPABASE_URL");
     supabaseAnonKey = requireEnv("SUPABASE_ANON_KEY");
-    supabaseServiceRoleKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+    supabaseServiceRoleKey = requireEnv("SERVICE_ROLE_KEY");
   } catch (error) {
     return json(500, { error: (error as Error).message });
   }
