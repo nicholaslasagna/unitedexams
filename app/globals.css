@@ -6,6 +6,8 @@
 
 :root {
   --accent-hue: 265;
+  --accent-sat: 72;
+  --accent-lit: 50;
   --accent-strength: 60;
 
   /* Surfaces */
@@ -25,15 +27,15 @@
   --faint: 220 8% 64%;
 
   /* Accent */
-  --accent: var(--accent-hue) 72% 50%;
-  --accent-dim: var(--accent-hue) 64% 46%;
-  --accent-subtle: var(--accent-hue) 50% 95%;
+  --accent: var(--accent-hue) var(--accent-sat)% var(--accent-lit)%;
+  --accent-dim: var(--accent-hue) calc((var(--accent-sat) - 8) * 1%) calc((var(--accent-lit) - 4) * 1%);
+  --accent-subtle: var(--accent-hue) calc((var(--accent-sat) - 24) * 1%) 94%;
   --accent-fg: 0 0% 100%;
 
   /* Brand gradient anchors */
-  --brand-1: calc(var(--accent-hue) - 28) 68% 48%;
-  --brand-2: var(--accent-hue) 66% 50%;
-  --brand-3: calc(var(--accent-hue) - 18) 74% 54%;
+  --brand-1: calc(var(--accent-hue) - 28) calc((var(--accent-sat) - 4) * 1%) calc((var(--accent-lit) - 2) * 1%);
+  --brand-2: var(--accent-hue) calc((var(--accent-sat) - 6) * 1%) calc(var(--accent-lit) * 1%);
+  --brand-3: calc(var(--accent-hue) - 18) calc((var(--accent-sat) + 4) * 1%) calc((var(--accent-lit) + 6) * 1%);
 
   /* Status */
   --success: 160 67% 38%;
@@ -69,15 +71,15 @@
   --faint: 230 8% 32%;
 
   /* Accent */
-  --accent: var(--accent-hue) calc(72% + (var(--accent-strength) * 0.2%)) calc(64% + (var(--accent-strength) * 0.08%));
-  --accent-dim: var(--accent-hue) calc(68% + (var(--accent-strength) * 0.16%)) calc(60% + (var(--accent-strength) * 0.06%));
-  --accent-subtle: var(--accent-hue) 40% 12%;
+  --accent: var(--accent-hue) calc((var(--accent-sat) + (var(--accent-strength) * 0.06)) * 1%) calc((var(--accent-lit) + (var(--accent-strength) * 0.05)) * 1%);
+  --accent-dim: var(--accent-hue) calc((var(--accent-sat) - 8) * 1%) calc((var(--accent-lit) - 4) * 1%);
+  --accent-subtle: var(--accent-hue) calc((var(--accent-sat) - 28) * 1%) 12%;
   --accent-fg: 0 0% 100%;
 
   /* Brand gradient anchors */
-  --brand-1: calc(var(--accent-hue) - 28) calc(70% + (var(--accent-strength) * 0.18%)) calc(58% + (var(--accent-strength) * 0.06%));
-  --brand-2: var(--accent-hue) calc(70% + (var(--accent-strength) * 0.17%)) calc(62% + (var(--accent-strength) * 0.07%));
-  --brand-3: calc(var(--accent-hue) - 16) calc(74% + (var(--accent-strength) * 0.2%)) calc(66% + (var(--accent-strength) * 0.07%));
+  --brand-1: calc(var(--accent-hue) - 28) calc((var(--accent-sat) + (var(--accent-strength) * 0.06)) * 1%) calc((var(--accent-lit) + (var(--accent-strength) * 0.04)) * 1%);
+  --brand-2: var(--accent-hue) calc((var(--accent-sat) + (var(--accent-strength) * 0.05)) * 1%) calc((var(--accent-lit) + (var(--accent-strength) * 0.05)) * 1%);
+  --brand-3: calc(var(--accent-hue) - 16) calc((var(--accent-sat) + 6) * 1%) calc((var(--accent-lit) + 8) * 1%);
 
   /* Status */
   --success: 160 67% 52%;

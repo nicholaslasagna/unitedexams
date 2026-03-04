@@ -1,8 +1,10 @@
 export const THEME_DEFAULTS = {
   mode: "dark" as const,
   accentHue: 265,
+  accentSaturation: 72,
+  accentLightness: 62,
   accentStrength: 60,
-  palette: "violet" as string
+  palette: "amethyst" as string
 };
 
 export const ACCENT_RANGE = {

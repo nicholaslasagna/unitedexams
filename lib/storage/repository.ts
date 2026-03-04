@@ -30,8 +30,11 @@ export const defaultPreferences: AppPreferences = {
   reducedMotion: false,
   confettiEnabled: true,
   accentHue: 265,
+  accentSaturation: 72,
+  accentLightness: 62,
   accentStrength: 60,
-  palette: "violet",
+  palette: "amethyst",
+  accentPreset: "amethyst",
   dashboardLayout: "default",
   extraSigninProtection: false
 };

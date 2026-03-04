@@ -10,7 +10,9 @@ import {
   NotebookTabs,
   Settings,
   UserRound,
-  GraduationCap
+  GraduationCap,
+  BookMarked,
+  ClipboardList
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppData } from "@/lib/app-data-context";
@@ -30,7 +32,15 @@ export function Sidebar() {
   const { profile } = useAppData();
   const showProfessor = profile.role === "professor" || profile.role === "admin";
   const items = showProfessor
-    ? [...baseItems.slice(0, 3), { href: "/app/sections", label: "Sections", icon: GraduationCap }, ...baseItems.slice(3)]
+    ? [
+        baseItems[0],
+        baseItems[1],
+        { href: "/app/sections", label: "Sections", icon: GraduationCap },
+        { href: "/app/sections/materials", label: "Materials", icon: BookMarked },
+        { href: "/app/sections/homework", label: "Homework", icon: ListChecks },
+        { href: "/app/sections/gradebook", label: "Gradebook", icon: ClipboardList },
+        ...baseItems.slice(3)
+      ]
     : baseItems;
 
   return (

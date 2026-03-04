@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ChevronsUpDown, Copy, X } from "lucide-react";
+import { Check, ChevronsUpDown, Copy, Eye, EyeOff, X } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +54,7 @@ export function AccountPageContent() {
   const [onboardingMode, setOnboardingMode] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [joinCode, setJoinCode] = useState("");
+  const [showUserId, setShowUserId] = useState(false);
 
   const selectedUniversity = useMemo(
     () => universities.find((item) => item.id === selectedUniversityId),
@@ -126,19 +127,22 @@ export function AccountPageContent() {
   }): Promise<boolean> => {
     setPrivacyError(null);
 
-    const displayNameCheck = validateDisplayName(nextDisplayName);
+    const safeDisplayName = hasLockedDisplayName ? profile.name : nextDisplayName;
+    const safeRealName = hasLockedRealName ? profile.realName || "" : nextRealName;
+
+    const displayNameCheck = validateDisplayName(safeDisplayName);
     if (!displayNameCheck.valid) {
       setPrivacyError(displayNameCheck.message);
       return false;
     }
 
-    const realNameCheck = validateRealName(nextRealName);
+    const realNameCheck = validateRealName(safeRealName);
     if (!realNameCheck.valid) {
       setPrivacyError(realNameCheck.message);
       return false;
     }
 
-    const normalizedRealName = normalizeRealName(nextRealName);
+    const normalizedRealName = normalizeRealName(safeRealName);
 
     if (nextShowRealName && !normalizedRealName) {
       setPrivacyError("Add a real name before enabling 'show real name'.");
@@ -154,7 +158,7 @@ export function AccountPageContent() {
     try {
       await saveProfile({
         ...profile,
-        name: nextDisplayName.trim() || "Student",
+        name: safeDisplayName.trim() || "Student",
         realName: normalizedRealName || undefined,
         showRealName: nextShowRealName,
         showUniversity: nextShowUniversity,
@@ -163,6 +167,9 @@ export function AccountPageContent() {
       push({ title: successTitle, tone: "success" });
       return true;
     } catch (error) {
+      if (process.env.NODE_ENV !== "production") {
+        console.error("[account] persistProfileChanges failed", error);
+      }
       push({ title: "Unable to update account", description: (error as Error).message, tone: "error" });
       return false;
     } finally {
@@ -204,10 +211,19 @@ export function AccountPageContent() {
   const themePreset = async (hue: number, strength: number) => {
     await savePreferences({
       ...preferences,
+      palette: "custom",
+      accentPreset: "custom",
       accentHue: hue,
+      accentSaturation: 72,
+      accentLightness: 62,
       accentStrength: strength
     });
   };
+
+  const hasLockedDisplayName = Boolean(profile.displayNameLocked);
+  const hasLockedRealName = Boolean(profile.realNameLocked);
+  const userIdValue = user?.id || profile.id || "";
+  const maskedUserId = userIdValue ? "••••••••-••••-••••-••••-••••••••••••" : "";
 
   if (!ready) {
     return (
@@ -237,8 +253,12 @@ export function AccountPageContent() {
               <Input
                 value={displayName}
                 maxLength={getDisplayNameMaxLength()}
+                disabled={hasLockedDisplayName}
                 onChange={(event) => setDisplayName(event.target.value)}
               />
+              {hasLockedDisplayName ? (
+                <p className="text-xs text-muted">Display name is locked. Contact support to change it.</p>
+              ) : null}
             </div>
 
             <div className="space-y-1.5">
@@ -246,9 +266,13 @@ export function AccountPageContent() {
               <Input
                 value={realName}
                 maxLength={getRealNameMaxLength()}
+                disabled={hasLockedRealName}
                 onChange={(event) => setRealName(event.target.value)}
                 placeholder="Your legal/full name"
               />
+              {hasLockedRealName ? (
+                <p className="text-xs text-muted">Real name is locked. Contact support to change it.</p>
+              ) : null}
             </div>
           </div>
 
@@ -280,13 +304,17 @@ export function AccountPageContent() {
                         key={item.id}
                         type="button"
                         onClick={async () => {
+                          const previousUniversityId = selectedUniversityId;
                           setSelectedUniversityId(item.id);
                           setSearch("");
                           setOpenPicker(false);
-                          await persistProfileChanges({
+                          const saved = await persistProfileChanges({
                             nextUniversityId: item.id,
                             successTitle: "University updated"
                           });
+                          if (!saved) {
+                            setSelectedUniversityId(previousUniversityId);
+                          }
                         }}
                         className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left text-sm text-text hover:bg-overlay"
                       >
@@ -427,11 +455,21 @@ export function AccountPageContent() {
           <div className="space-y-1.5">
             <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">User ID</label>
             <div className="flex gap-2">
-              <Input value={user?.id || profile.id || ""} readOnly className="opacity-85" />
+              <Input value={showUserId ? userIdValue : maskedUserId} readOnly className="opacity-85" />
               <Button
                 variant="secondary"
+                aria-label={showUserId ? "Hide user ID" : "Show user ID"}
+                disabled={!userIdValue}
+                onClick={() => setShowUserId((prev) => !prev)}
+              >
+                {showUserId ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+              <Button
+                variant="secondary"
+                aria-label="Copy full user ID"
+                disabled={!userIdValue}
                 onClick={() => {
-                  navigator.clipboard.writeText(user?.id || profile.id || "");
+                  navigator.clipboard.writeText(userIdValue);
                   push({ title: "User ID copied", tone: "success" });
                 }}
               >
@@ -462,9 +500,7 @@ export function AccountPageContent() {
                   const sectionId = await joinSectionByCode(supabase, joinCode.trim());
                   push({ title: "Joined section", tone: "success" });
                   setJoinCode("");
-                  if (profile.role === "professor" || profile.role === "admin") {
-                    router.push(`/app/sections/${sectionId}`);
-                  }
+                  router.push(`/app/sections/${sectionId}`);
                 } catch (error) {
                   push({ title: "Unable to join section", description: (error as Error).message, tone: "error" });
                 }

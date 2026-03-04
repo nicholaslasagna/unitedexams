@@ -6,18 +6,26 @@ import { useParams } from "next/navigation";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { quizSets } from "@/data/seed";
 import { useAppData } from "@/lib/app-data-context";
 import { useToast } from "@/lib/hooks/use-toast";
 import {
   createSectionAssignment,
   getSectionAnalytics,
-  listSectionAssignments,
   listProfessorSections,
+  listSectionAssignments,
+  listSectionMembers,
+  submitAssignment,
   type AssignmentRow,
   type SectionAnalytics,
+  type SectionMemberRow,
   type SectionSummary
 } from "@/features/professor/api";
+
+interface QuizSetOption {
+  id: string;
+  title: string;
+  est_minutes: number;
+}
 
 export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {}) {
   const params = useParams<{ id?: string; sectionId?: string }>();
@@ -29,62 +37,88 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
   const [section, setSection] = useState<SectionSummary | null>(null);
   const [assignments, setAssignments] = useState<AssignmentRow[]>([]);
   const [analytics, setAnalytics] = useState<SectionAnalytics | null>(null);
+  const [members, setMembers] = useState<SectionMemberRow[]>([]);
+  const [availableQuizSets, setAvailableQuizSets] = useState<QuizSetOption[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submittingAssignmentId, setSubmittingAssignmentId] = useState<string | null>(null);
 
   const [quizSetId, setQuizSetId] = useState("");
+  const [assignmentTitle, setAssignmentTitle] = useState("");
+  const [instructions, setInstructions] = useState("");
   const [dueAt, setDueAt] = useState("");
+  const [allowLate, setAllowLate] = useState(false);
+  const [maxAttempts, setMaxAttempts] = useState("");
+  const [gradingMode, setGradingMode] = useState<"auto" | "manual" | "mixed">("auto");
 
   const isProfessor = profile.role === "professor" || profile.role === "admin";
 
-  const sectionQuizSets = useMemo(() => {
-    if (!section) return [];
-    return quizSets.filter((set) => set.courseId === section.course_id);
-  }, [section]);
-
   const refresh = async () => {
-    if (!supabase) return;
+    if (!supabase || !resolvedSectionId) return;
+    setLoading(true);
+    try {
+      const [allSections, sectionAssignments, sectionAnalytics, sectionMembers] = await Promise.all([
+        listProfessorSections(supabase),
+        listSectionAssignments(supabase, resolvedSectionId),
+        getSectionAnalytics(supabase, resolvedSectionId),
+        listSectionMembers(supabase, resolvedSectionId)
+      ]);
 
-    const [allSections, sectionAssignments, sectionAnalytics] = await Promise.all([
-      listProfessorSections(supabase),
-      listSectionAssignments(supabase, resolvedSectionId),
-      getSectionAnalytics(supabase, resolvedSectionId)
-    ]);
+      const foundSection = allSections.find((row) => row.id === resolvedSectionId) ?? null;
+      setSection(foundSection);
+      setAssignments(sectionAssignments);
+      setAnalytics(sectionAnalytics);
+      setMembers(sectionMembers);
 
-    setSection(allSections.find((row) => row.id === resolvedSectionId) ?? null);
-    setAssignments(sectionAssignments);
-    setAnalytics(sectionAnalytics);
+      if (foundSection) {
+        const { data: setRows, error } = await supabase
+          .from("quiz_sets")
+          .select("id, title, est_minutes")
+          .eq("course_id", foundSection.course_id)
+          .eq("is_published", true)
+          .order("created_at", { ascending: false });
 
-    if (!quizSetId && section) {
-      const first = quizSets.find((set) => set.courseId === section.course_id);
-      setQuizSetId(first?.id ?? "");
+        if (!error && setRows) {
+          const mapped = (setRows as QuizSetOption[]).map((row) => ({
+            id: String(row.id),
+            title: row.title,
+            est_minutes: row.est_minutes
+          }));
+          setAvailableQuizSets(mapped);
+          if (!quizSetId && mapped[0]) {
+            setQuizSetId(mapped[0].id);
+          }
+        } else {
+          setAvailableQuizSets([]);
+        }
+      } else {
+        setAvailableQuizSets([]);
+      }
+    } catch {
+      setSection(null);
+      setAssignments([]);
+      setAnalytics(null);
+      setMembers([]);
+      setAvailableQuizSets([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (!isProfessor) return;
-    if (!resolvedSectionId) return;
-    refresh().catch(() => undefined);
+    if (!supabase || !resolvedSectionId) {
+      setLoading(false);
+      return;
+    }
+    void refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isProfessor, resolvedSectionId, supabase]);
+  }, [resolvedSectionId, supabase]);
 
-  useEffect(() => {
-    if (!section) return;
-    if (quizSetId) return;
-    const first = quizSets.find((set) => set.courseId === section.course_id);
-    setQuizSetId(first?.id ?? "");
-  }, [section, quizSetId]);
+  const studentCount = useMemo(
+    () => members.filter((member) => member.role === "student").length,
+    [members]
+  );
 
-  if (!isProfessor) {
-    return (
-      <Card>
-        <CardBody className="space-y-3 p-8 text-center">
-          <h1 className="font-display text-3xl font-semibold">403</h1>
-          <p className="text-sm text-muted">Professor access is required for this section.</p>
-        </CardBody>
-      </Card>
-    );
-  }
-
-  if (!section) {
+  if (loading) {
     return (
       <Card>
         <CardBody className="p-8 text-sm text-muted">Loading section…</CardBody>
@@ -92,9 +126,20 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
     );
   }
 
+  if (!section) {
+    return (
+      <Card>
+        <CardBody className="space-y-3 p-8 text-center">
+          <h1 className="font-display text-3xl font-semibold">Section Not Found</h1>
+          <p className="text-sm text-muted">This section is unavailable or you no longer have access.</p>
+        </CardBody>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <section className="grid gap-4 lg:grid-cols-3">
+      <section className="grid gap-4 lg:grid-cols-4">
         <Card>
           <CardBody className="p-5">
             <p className="text-xs uppercase tracking-[0.14em] text-muted">Average score</p>
@@ -105,6 +150,12 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
           <CardBody className="p-5">
             <p className="text-xs uppercase tracking-[0.14em] text-muted">Completions</p>
             <p className="mt-2 font-mono text-3xl font-bold text-text">{analytics?.completion_count ?? 0}</p>
+          </CardBody>
+        </Card>
+        <Card>
+          <CardBody className="p-5">
+            <p className="text-xs uppercase tracking-[0.14em] text-muted">Students</p>
+            <p className="mt-2 font-mono text-3xl font-bold text-text">{studentCount}</p>
           </CardBody>
         </Card>
         <Card>
@@ -122,47 +173,138 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
             {section.course_id}
             {section.term ? ` · ${section.term}` : ""}
           </p>
-          <div className="pt-2">
+          <div className="flex flex-wrap gap-2 pt-2">
             <Button variant="secondary" asChild>
-              <Link href={`/app/sections/${section.id}/analytics`}>Open full analytics</Link>
+              <Link href={`/app/sections/${section.id}/analytics`}>Analytics</Link>
+            </Button>
+            <Button variant="secondary" asChild>
+              <Link href={`/app/sections/${section.id}/materials`}>Materials</Link>
+            </Button>
+            <Button variant="secondary" asChild>
+              <Link href={`/app/sections/${section.id}/gradebook`}>Gradebook</Link>
             </Button>
           </div>
         </CardHeader>
         <CardBody className="space-y-4">
-          <div className="grid gap-3 md:grid-cols-[1fr_220px_160px]">
-            <select
-              className="h-11 rounded-[10px] border border-borderc bg-soft px-3 text-sm text-text"
-              value={quizSetId}
-              onChange={(event) => setQuizSetId(event.target.value)}
-            >
-              {sectionQuizSets.map((set) => (
-                <option key={set.id} value={set.id}>
-                  {set.title}
-                </option>
-              ))}
-            </select>
-            <Input type="datetime-local" value={dueAt} onChange={(event) => setDueAt(event.target.value)} />
-            <Button
-              onClick={async () => {
-                if (!supabase || !user || !quizSetId) return;
-                try {
-                  await createSectionAssignment(supabase, {
-                    sectionId: resolvedSectionId,
-                    quizSetId,
-                    dueAt: dueAt ? new Date(dueAt).toISOString() : null,
-                    createdBy: user.id
-                  });
-                  push({ title: "Assignment created", tone: "success" });
-                  setDueAt("");
-                  refresh();
-                } catch (error) {
-                  push({ title: "Unable to create assignment", description: (error as Error).message, tone: "error" });
-                }
-              }}
-            >
-              Assign
-            </Button>
-          </div>
+          {isProfessor ? (
+            <div className="space-y-3 rounded-xl border border-borderc bg-soft p-4">
+              <h2 className="font-display text-2xl font-semibold">Create assignment</h2>
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Title</label>
+                  <Input
+                    value={assignmentTitle}
+                    onChange={(event) => setAssignmentTitle(event.target.value)}
+                    placeholder="Homework 3 · Linear systems"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Quiz set</label>
+                  <select
+                    className="h-11 w-full rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
+                    value={quizSetId}
+                    onChange={(event) => setQuizSetId(event.target.value)}
+                  >
+                    {availableQuizSets.map((set) => (
+                      <option key={set.id} value={set.id}>
+                        {set.title} ({set.est_minutes}m)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Instructions (markdown)</label>
+                <textarea
+                  value={instructions}
+                  onChange={(event) => setInstructions(event.target.value)}
+                  className="min-h-24 w-full rounded-[10px] border border-borderc bg-surface px-3 py-2 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
+                  placeholder="Show your work and explain each step."
+                />
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Due date</label>
+                  <Input type="datetime-local" value={dueAt} onChange={(event) => setDueAt(event.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Max attempts</label>
+                  <Input
+                    value={maxAttempts}
+                    onChange={(event) => setMaxAttempts(event.target.value.replace(/[^0-9]/g, ""))}
+                    placeholder="Unlimited"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Grading mode</label>
+                  <select
+                    className="h-11 w-full rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
+                    value={gradingMode}
+                    onChange={(event) => setGradingMode(event.target.value as typeof gradingMode)}
+                  >
+                    <option value="auto">Auto</option>
+                    <option value="mixed">Mixed</option>
+                    <option value="manual">Manual</option>
+                  </select>
+                </div>
+              </div>
+
+              <label className="flex items-center gap-2 text-sm text-muted">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-[hsl(var(--brand-2))]"
+                  checked={allowLate}
+                  onChange={(event) => setAllowLate(event.target.checked)}
+                />
+                Allow late submissions
+              </label>
+
+              <Button
+                onClick={async () => {
+                  if (!supabase || !user) return;
+                  if (!quizSetId) {
+                    push({ title: "Select a quiz set", tone: "error" });
+                    return;
+                  }
+                  if (!assignmentTitle.trim()) {
+                    push({ title: "Assignment title is required", tone: "error" });
+                    return;
+                  }
+                  try {
+                    await createSectionAssignment(supabase, {
+                      sectionId: resolvedSectionId,
+                      quizSetId,
+                      title: assignmentTitle.trim(),
+                      instructionsMd: instructions.trim(),
+                      dueAt: dueAt ? new Date(dueAt).toISOString() : null,
+                      allowLate,
+                      maxAttempts: maxAttempts ? Number(maxAttempts) : null,
+                      gradingMode,
+                      createdBy: user.id
+                    });
+                    push({ title: "Assignment created", tone: "success" });
+                    setAssignmentTitle("");
+                    setInstructions("");
+                    setDueAt("");
+                    setAllowLate(false);
+                    setMaxAttempts("");
+                    setGradingMode("auto");
+                    await refresh();
+                  } catch (error) {
+                    push({ title: "Unable to create assignment", description: (error as Error).message, tone: "error" });
+                  }
+                }}
+              >
+                Create assignment
+              </Button>
+            </div>
+          ) : (
+            <p className="rounded-xl border border-borderc bg-soft px-4 py-3 text-sm text-muted">
+              Complete assigned quizzes and submit attempts here. Auto-gradable question types are scored instantly.
+            </p>
+          )}
 
           <div className="space-y-2">
             <p className="text-sm font-semibold text-text">Assignments</p>
@@ -173,34 +315,48 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
             ) : (
               assignments.map((assignment) => (
                 <div key={assignment.id} className="rounded-xl border border-borderc bg-soft px-4 py-3 text-sm">
-                  <p className="font-semibold text-text">{assignment.quiz_set_id}</p>
-                  <p className="text-xs text-muted">Due: {assignment.due_at ? new Date(assignment.due_at).toLocaleString() : "No due date"}</p>
+                  <p className="font-semibold text-text">{assignment.title || assignment.quiz_set_id}</p>
+                  <p className="mt-1 text-xs text-muted">
+                    Due: {assignment.due_at ? new Date(assignment.due_at).toLocaleString() : "No due date"} · Grading:{" "}
+                    {assignment.grading_mode}
+                  </p>
+                  {assignment.instructions_md ? (
+                    <p className="mt-2 whitespace-pre-wrap text-xs text-muted">{assignment.instructions_md}</p>
+                  ) : null}
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button asChild variant="secondary">
+                      <Link href={`/quiz/${assignment.quiz_set_id}`}>Open assigned set</Link>
+                    </Button>
+                    {!isProfessor ? (
+                      <Button
+                        onClick={async () => {
+                          if (!supabase) return;
+                          setSubmittingAssignmentId(assignment.id);
+                          try {
+                            const result = await submitAssignment(supabase, { assignmentId: assignment.id });
+                            push({
+                              title:
+                                result.status === "graded"
+                                  ? `Submitted · ${result.score ?? 0}%`
+                                  : "Submitted for review",
+                              tone: "success"
+                            });
+                          } catch (error) {
+                            push({ title: "Unable to submit assignment", description: (error as Error).message, tone: "error" });
+                          } finally {
+                            setSubmittingAssignmentId(null);
+                          }
+                        }}
+                        loading={submittingAssignmentId === assignment.id}
+                      >
+                        Submit latest attempt
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
               ))
             )}
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="rounded-xl border border-borderc bg-soft p-3">
-              <p className="text-sm font-semibold text-text">Score distribution</p>
-              <div className="mt-2 space-y-1 text-xs text-muted">
-                <p>90+: {analytics?.score_buckets?.["90_plus"] ?? 0}</p>
-                <p>80–89: {analytics?.score_buckets?.["80_89"] ?? 0}</p>
-                <p>60–79: {analytics?.score_buckets?.["60_79"] ?? 0}</p>
-                <p>&lt;60: {analytics?.score_buckets?.["below_60"] ?? 0}</p>
-              </div>
-            </div>
-            <div className="rounded-xl border border-borderc bg-soft p-3">
-              <p className="text-sm font-semibold text-text">Weak tags</p>
-              <div className="mt-2 space-y-1 text-xs text-muted">
-                {(analytics?.weak_tags ?? []).slice(0, 6).map((tag) => (
-                  <p key={tag.tag}>
-                    {tag.tag}: {tag.misses} misses
-                  </p>
-                ))}
-                {(analytics?.weak_tags ?? []).length === 0 ? <p>No weak-tag data yet.</p> : null}
-              </div>
-            </div>
           </div>
         </CardBody>
       </Card>

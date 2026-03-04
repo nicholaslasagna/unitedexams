@@ -17,6 +17,7 @@ import {
   shouldRequireIpApproval,
   type UserRole
 } from "@/lib/auth/ip-protection";
+import { isLegalAcceptanceComplete } from "@/lib/auth/legal";
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -30,10 +31,10 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(buildLoginRedirect(request));
     }
 
-    const [{ data: profile }, { data: prefs }] = await Promise.all([
+    const [profileResult, prefsResult] = await Promise.all([
       supabase
         .from("profiles")
-        .select("reset_required, university_id, role, mfa_enabled")
+        .select("reset_required, university_id, role, mfa_enabled, privacy_version_accepted, terms_version_accepted")
         .eq("id", user.id)
         .maybeSingle(),
       supabase
@@ -42,11 +43,33 @@ export async function middleware(request: NextRequest) {
         .eq("user_id", user.id)
         .maybeSingle()
     ]);
+    const profile = profileResult.data;
+    const prefs = prefsResult.data;
 
     if (profile?.reset_required && !pathname.startsWith("/reset-password")) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/reset-password";
       redirectUrl.search = "";
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    const missingLegalColumns =
+      Boolean(profileResult.error) &&
+      /privacy_version_accepted|terms_version_accepted/i.test(profileResult.error?.message || "");
+    const legalAccepted = missingLegalColumns
+      ? true
+      : isLegalAcceptanceComplete({
+          privacyVersionAccepted: profile?.privacy_version_accepted,
+          termsVersionAccepted: profile?.terms_version_accepted
+        });
+    if (!legalAccepted) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/legal/accept";
+      redirectUrl.search = "";
+      redirectUrl.searchParams.set(
+        "next",
+        canonicalizeRoute(`${request.nextUrl.pathname}${request.nextUrl.search}`)
+      );
       return NextResponse.redirect(redirectUrl);
     }
 

@@ -13,8 +13,56 @@ export interface AssignmentRow {
   id: string;
   section_id: string;
   quiz_set_id: string;
+  title: string | null;
+  instructions_md: string | null;
   due_at: string | null;
+  allow_late: boolean;
+  max_attempts: number | null;
+  grading_mode: "auto" | "manual" | "mixed";
   created_at: string;
+}
+
+export interface SectionMemberRow {
+  user_id: string;
+  role: "student" | "professor" | "ta";
+  joined_at: string;
+  profiles?: {
+    display_name: string;
+    email: string | null;
+  }[] | null;
+}
+
+export interface SectionMaterialRow {
+  id: string;
+  section_id: string;
+  title: string;
+  body_md: string;
+  attachments: string[];
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AssignmentSubmissionRow {
+  id: string;
+  assignment_id: string;
+  user_id: string;
+  attempt_id: string | null;
+  status: "submitted" | "graded" | "needs_review";
+  score: number | null;
+  feedback_md: string | null;
+  graded_at: string | null;
+  created_at: string;
+}
+
+export interface SectionGradebookRow {
+  assignment_id: string;
+  assignment_title: string;
+  student_id: string;
+  display_name: string;
+  latest_status: string | null;
+  latest_score: number | null;
+  submitted_at: string | null;
 }
 
 export interface SectionAnalytics {
@@ -62,17 +110,22 @@ export async function regenerateJoinCode(client: SupabaseClient, sectionId: stri
 }
 
 export async function joinSectionByCode(client: SupabaseClient, joinCode: string) {
-  const { data, error } = await client.rpc("join_section_by_code", {
-    join_code_input: joinCode.trim().toUpperCase()
-  });
-  if (error) throw error;
-  return data as string;
+  const normalized = joinCode.trim().toUpperCase();
+  const first = await client.rpc("join_section_by_code", { join_code_input: normalized });
+  if (!first.error) {
+    return first.data as string;
+  }
+
+  // Backward compatibility for older function signatures.
+  const second = await client.rpc("join_section_by_code", { code: normalized });
+  if (second.error) throw second.error;
+  return second.data as string;
 }
 
 export async function listSectionAssignments(client: SupabaseClient, sectionId: string) {
   const { data, error } = await client
     .from("assignments")
-    .select("id, section_id, quiz_set_id, due_at, created_at")
+    .select("id, section_id, quiz_set_id, title, instructions_md, due_at, allow_late, max_attempts, grading_mode, created_at")
     .eq("section_id", sectionId)
     .order("created_at", { ascending: false });
 
@@ -82,21 +135,135 @@ export async function listSectionAssignments(client: SupabaseClient, sectionId: 
 
 export async function createSectionAssignment(
   client: SupabaseClient,
-  payload: { sectionId: string; quizSetId: string; dueAt?: string | null; createdBy: string }
+  payload: {
+    sectionId: string;
+    quizSetId: string;
+    title: string;
+    instructionsMd?: string;
+    dueAt?: string | null;
+    allowLate?: boolean;
+    maxAttempts?: number | null;
+    gradingMode?: "auto" | "manual" | "mixed";
+    createdBy: string;
+  }
 ) {
   const { data, error } = await client
     .from("assignments")
     .insert({
       section_id: payload.sectionId,
       quiz_set_id: payload.quizSetId,
+      title: payload.title,
+      instructions_md: payload.instructionsMd ?? "",
       due_at: payload.dueAt ?? null,
+      allow_late: Boolean(payload.allowLate),
+      max_attempts: payload.maxAttempts ?? null,
+      grading_mode: payload.gradingMode ?? "auto",
       created_by: payload.createdBy
     })
-    .select("id, section_id, quiz_set_id, due_at, created_at")
+    .select("id, section_id, quiz_set_id, title, instructions_md, due_at, allow_late, max_attempts, grading_mode, created_at")
     .single();
 
   if (error) throw error;
   return data as AssignmentRow;
+}
+
+export async function listSectionMembers(client: SupabaseClient, sectionId: string) {
+  const { data, error } = await client
+    .from("section_members")
+    .select("user_id, role, joined_at, profiles(display_name, email)")
+    .eq("section_id", sectionId)
+    .order("joined_at", { ascending: true });
+
+  if (error) throw error;
+  return (data ?? []) as SectionMemberRow[];
+}
+
+export async function listSectionMaterials(client: SupabaseClient, sectionId: string) {
+  const { data, error } = await client
+    .from("section_materials")
+    .select("id, section_id, title, body_md, attachments, created_by, created_at, updated_at")
+    .eq("section_id", sectionId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return ((data ?? []) as Array<Omit<SectionMaterialRow, "attachments"> & { attachments: unknown }>).map((row) => ({
+    ...row,
+    attachments: Array.isArray(row.attachments) ? row.attachments.map((item) => String(item)) : []
+  }));
+}
+
+export async function createSectionMaterial(
+  client: SupabaseClient,
+  payload: {
+    sectionId: string;
+    title: string;
+    bodyMd: string;
+    attachments?: string[];
+    createdBy: string;
+  }
+) {
+  const { data, error } = await client
+    .from("section_materials")
+    .insert({
+      section_id: payload.sectionId,
+      title: payload.title,
+      body_md: payload.bodyMd,
+      attachments: payload.attachments ?? [],
+      created_by: payload.createdBy
+    })
+    .select("id, section_id, title, body_md, attachments, created_by, created_at, updated_at")
+    .single();
+
+  if (error) throw error;
+  const row = data as Omit<SectionMaterialRow, "attachments"> & { attachments: unknown };
+  return {
+    ...row,
+    attachments: Array.isArray(row.attachments) ? row.attachments.map((item) => String(item)) : []
+  } satisfies SectionMaterialRow;
+}
+
+export async function deleteSectionMaterial(client: SupabaseClient, materialId: string) {
+  const { error } = await client.from("section_materials").delete().eq("id", materialId);
+  if (error) throw error;
+}
+
+export async function listAssignmentSubmissions(client: SupabaseClient, assignmentId: string) {
+  const { data, error } = await client
+    .from("assignment_submissions")
+    .select("id, assignment_id, user_id, attempt_id, status, score, feedback_md, graded_at, created_at")
+    .eq("assignment_id", assignmentId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []) as AssignmentSubmissionRow[];
+}
+
+export async function submitAssignment(
+  client: SupabaseClient,
+  payload: { assignmentId: string; attemptId?: string | null }
+) {
+  const { data, error } = await client.rpc("submit_assignment", {
+    assignment_id_input: payload.assignmentId,
+    attempt_id_input: payload.attemptId ?? null
+  });
+  if (error) throw error;
+
+  const first = (Array.isArray(data) ? data[0] : data) as
+    | { submission_id?: string; status?: string; score?: number | null }
+    | null;
+  return {
+    submissionId: first?.submission_id ?? "",
+    status: first?.status ?? "submitted",
+    score: first?.score ?? null
+  };
+}
+
+export async function getSectionGradebook(client: SupabaseClient, sectionId: string) {
+  const { data, error } = await client.rpc("get_section_gradebook", {
+    section_id_input: sectionId
+  });
+  if (error) throw error;
+  return (data ?? []) as SectionGradebookRow[];
 }
 
 export async function getSectionAnalytics(client: SupabaseClient, sectionId: string) {

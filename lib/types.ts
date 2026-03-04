@@ -95,6 +95,8 @@ export interface UserProfile {
   name: string;
   school?: string;
   realName?: string;
+  displayNameLocked?: boolean;
+  realNameLocked?: boolean;
   showRealName?: boolean;
   showUniversity?: boolean;
   universityId?: string;
@@ -108,8 +110,11 @@ export interface AppPreferences {
   reducedMotion: boolean;
   confettiEnabled: boolean;
   accentHue: number;
+  accentSaturation: number;
+  accentLightness: number;
   accentStrength: number;
   palette: string;
+  accentPreset: string;
   dashboardLayout: string;
   extraSigninProtection: boolean;
 }
