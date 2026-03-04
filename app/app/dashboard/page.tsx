@@ -29,6 +29,13 @@ import { getRecommendations } from "@/features/recommendations/api";
 import { RecommendationsPanel } from "@/features/recommendations/components/recommendations-panel";
 import type { RecommendationItem } from "@/features/recommendations/scoring";
 
+interface HomeworkDraftRow {
+  id: string;
+  quiz_set_id: string;
+  created_at: string;
+  settings: Record<string, unknown> | null;
+}
+
 function buildHeatmap(attempts: { date: string }[]) {
   const today = new Date();
   const cells: { key: string; date: string; count: number; label: string }[] = [];
@@ -49,6 +56,7 @@ export default function DashboardPage() {
   const [userCourseIds, setUserCourseIds] = useState<string[]>([]);
   const [recommendations, setRecommendations] = useState<RecommendationItem[]>([]);
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
+  const [homeworkDraft, setHomeworkDraft] = useState<HomeworkDraftRow | null>(null);
 
   const streak = useMemo(() => getStreak(attempts), [attempts]);
   const points = useMemo(() => leaderboardPoints(attempts), [attempts]);
@@ -106,6 +114,10 @@ export default function DashboardPage() {
   const recent = useMemo(() => recentAttempts(attempts, 6), [attempts]);
 
   const onboardingIncomplete = Boolean(user) && userCourseIds.length === 0;
+  const homeworkDraftSet = useMemo(() => {
+    if (!homeworkDraft) return null;
+    return quizSets.find((set) => set.id === homeworkDraft.quiz_set_id) ?? null;
+  }, [homeworkDraft]);
 
   useEffect(() => {
     if (!supabase || !user) {
@@ -116,6 +128,32 @@ export default function DashboardPage() {
     fetchUserCourses(supabase, user.id)
       .then((ids) => setUserCourseIds(ids))
       .catch(() => setUserCourseIds([]));
+  }, [supabase, user]);
+
+  useEffect(() => {
+    if (!supabase || !user) {
+      setHomeworkDraft(null);
+      return;
+    }
+
+    const run = async () => {
+      try {
+        const { data } = await supabase
+          .from("attempts")
+          .select("id, quiz_set_id, created_at, settings")
+          .eq("user_id", user.id)
+          .is("completed_at", null)
+          .eq("settings->>mode", "homework")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        setHomeworkDraft((data as HomeworkDraftRow | null) ?? null);
+      } catch {
+        setHomeworkDraft(null);
+      }
+    };
+
+    run();
   }, [supabase, user]);
 
   useEffect(() => {
@@ -190,7 +228,7 @@ export default function DashboardPage() {
                     {recentCompletedQuizzes.slice(1).map((set) => (
                       <Link
                         key={set.id}
-                        href={`/app/quiz/${set.id}`}
+                        href={`/quiz/${set.id}`}
                         className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm text-text hover:bg-white/[0.06]"
                       >
                         {set.title}
@@ -201,15 +239,31 @@ export default function DashboardPage() {
 
                 <div className="mt-5 flex flex-wrap gap-3">
                   <Button asChild className="px-7">
-                    <Link href={`/app/quiz/${continueQuiz.id}`}>
+                    <Link href={`/quiz/${continueQuiz.id}`}>
                       Start quiz
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
                   <Button variant="secondary" asChild>
-                    <Link href={`/app/courses/${continueQuiz.courseId}`}>View course</Link>
+                    <Link href={`/courses/${continueQuiz.courseId}`}>View course</Link>
                   </Button>
                 </div>
+              </div>
+            ) : null}
+
+            {homeworkDraftSet ? (
+              <div className="rounded-[14px] border border-success/30 bg-success/10 p-4">
+                <p className="text-[10px] font-bold tracking-[1.5px] text-success uppercase">Resume homework</p>
+                <p className="mt-2 text-sm font-semibold text-text">{homeworkDraftSet.title}</p>
+                <p className="mt-1 text-xs text-muted">
+                  Draft started {formatRelativeDate(homeworkDraft?.created_at ?? new Date().toISOString())}
+                </p>
+                <Button asChild className="mt-3">
+                  <Link href={`/homework/${homeworkDraftSet.id}`}>
+                    Resume now
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
               </div>
             ) : null}
           </CardBody>
@@ -264,7 +318,7 @@ export default function DashboardPage() {
                 {studiedToday ? "Goal complete. Keep momentum with review mode." : "Finish one 20-minute quiz sprint."}
               </p>
               <Button asChild variant={studiedToday ? "secondary" : "primary"} className="mt-4 w-full">
-                <Link href={continueQuiz ? `/app/quiz/${continueQuiz.id}` : "/app/courses"}>
+                <Link href={continueQuiz ? `/quiz/${continueQuiz.id}` : "/courses"}>
                   {studiedToday ? "Run a quick review" : "Start today's sprint"}
                 </Link>
               </Button>
@@ -288,7 +342,7 @@ export default function DashboardPage() {
           return (
             <Link
               key={course.id}
-              href={`/app/courses/${course.id}`}
+              href={`/courses/${course.id}`}
               className="group rounded-[20px] border border-white/[0.07] bg-white/[0.035] shadow-subtle backdrop-blur-xl transition duration-200 hover:-translate-y-[2px] hover:border-white/[0.12] hover:bg-white/[0.065] hover:shadow-soft"
             >
               <div className="space-y-4 p-5">
@@ -337,7 +391,7 @@ export default function DashboardPage() {
                 <p className="text-[16px] font-bold text-white">Start your first quiz to build momentum.</p>
                 <p className="mt-2 text-[14px] text-white/[0.55]">Your latest attempts and topic signals will appear here.</p>
                 <Button className="mt-5" asChild>
-                  <Link href="/app/courses">Explore courses</Link>
+                  <Link href="/courses">Explore courses</Link>
                 </Button>
               </div>
             ) : (
@@ -397,7 +451,7 @@ export default function DashboardPage() {
               {focusCourses.map((course) => (
                 <Link
                   key={course.id}
-                  href={`/app/courses/${course.id}`}
+                  href={`/courses/${course.id}`}
                   className="flex items-center justify-between rounded-[10px] border border-white/[0.07] bg-white/[0.025] px-4 py-3 text-[14px] transition-all hover:border-white/[0.12] hover:bg-white/[0.05]"
                 >
                   <span className="inline-flex items-center gap-2">

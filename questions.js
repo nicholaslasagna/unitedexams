@@ -1024,5 +1024,9 @@ const REINFORCEMENT_BANK = [
     answer:[1],explanation:"Using COTS often means adapting requirements to fit available components rather than building the ideal solution."},
 ];
 
-window.QUESTION_BANK = QUESTION_BANK;
-window.REINFORCEMENT_BANK = REINFORCEMENT_BANK;
+if (typeof module !== "undefined") {
+  module.exports = {
+    QUESTION_BANK,
+    REINFORCEMENT_BANK
+  };
+}

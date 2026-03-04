@@ -1,6 +1,6 @@
 import type { QuizSet } from "@/lib/types";
 
-export const computerArchitectureQuizSets: QuizSet[] = [
+const computerArchitectureQuizSetsRaw: QuizSet[] = [
   {
     id: "ca-fundamentals",
     courseId: "computer-architecture",
@@ -538,3 +538,8 @@ export const computerArchitectureQuizSets: QuizSet[] = [
     ]
   }
 ];
+
+export const computerArchitectureQuizSets: QuizSet[] = computerArchitectureQuizSetsRaw.map((set) => ({
+  ...set,
+  mode: set.mode ?? "quiz"
+}));

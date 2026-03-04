@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAppData } from "@/lib/app-data-context";
 import { courseProgress } from "@/features/progress/metrics";
+import { resolveQuizSetMode } from "@/lib/study/set-mode";
 
 function withPrefix(routePrefix: string, path: string) {
   return `${routePrefix}${path}`;
@@ -88,7 +89,10 @@ export function CoursesIndexContent({
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {filtered.map((course) => {
           const progress = courseProgress(attempts, course.id);
-          const setCount = quizSets.filter((quiz) => quiz.courseId === course.id).length;
+          const courseSets = quizSets.filter((quiz) => quiz.courseId === course.id);
+          const quizCount = courseSets.filter((set) => resolveQuizSetMode(set) === "quiz").length;
+          const examCount = courseSets.filter((set) => resolveQuizSetMode(set) === "exam").length;
+          const homeworkCount = courseSets.filter((set) => resolveQuizSetMode(set) === "homework").length;
           return (
             <Card key={course.id} className="group overflow-hidden hover:-translate-y-0.5 hover:shadow-glass">
               <CardBody className="space-y-4">
@@ -106,7 +110,9 @@ export function CoursesIndexContent({
 
                 <div className="flex flex-wrap gap-2">
                   <Badge tone={course.difficulty === "Advanced" ? "warn" : "default"}>{course.difficulty}</Badge>
-                  <Badge tone="brand">{setCount} quiz sets</Badge>
+                  <Badge tone="brand">
+                    {quizCount} quiz • {examCount} exam • {homeworkCount} hw
+                  </Badge>
                   <Badge tone="success">{progress}% mastery</Badge>
                 </div>
 

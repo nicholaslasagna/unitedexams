@@ -5,5 +5,6 @@ export const defaultQuizSettings = (timerMinutes = 20): QuizSettings => ({
   timerMinutes,
   randomizeQuestions: true,
   explanationMode: "afterEach",
-  questionCount: "all"
+  questionCount: "all",
+  includeFreeResponse: true
 });

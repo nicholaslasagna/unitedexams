@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ProgressRing, ProgressBar } from "@/components/ui/progress";
 import { Markdown } from "@/components/ui/markdown";
 import { useAppData } from "@/lib/app-data-context";
+import { modeLabel, resolveQuestionCountTarget, resolveQuizSetMode } from "@/lib/study/set-mode";
 import {
   attemptsForCourse,
   bestScoreForQuiz,
@@ -21,7 +22,9 @@ import {
 } from "@/features/progress/metrics";
 
 const tabDefs = [
-  { id: "quiz", label: "Quiz Sets" },
+  { id: "quizzes", label: "Quizzes" },
+  { id: "exams", label: "Exams" },
+  { id: "homework", label: "Homework" },
   { id: "notes", label: "Study Notes" },
   { id: "cheats", label: "Cheat Sheets" },
   { id: "resources", label: "Resources" }
@@ -42,7 +45,7 @@ export function CourseDetailContent({
   const content = getCourseContent(courseId);
 
   const { attempts } = useAppData();
-  const [tab, setTab] = useState("quiz");
+  const [tab, setTab] = useState("quizzes");
   const [query, setQuery] = useState("");
   const [difficulty, setDifficulty] = useState("all");
 
@@ -52,7 +55,13 @@ export function CourseDetailContent({
   const mastery = course ? topicMasteryForCourse(attempts, course.id).slice(0, 8) : [];
 
   const filteredSets = useMemo(() => {
+    const activeMode =
+      tab === "exams" ? "exam" : tab === "homework" ? "homework" : tab === "quizzes" ? "quiz" : null;
+
     return sets.filter((set) => {
+      if (activeMode && resolveQuizSetMode(set) !== activeMode) {
+        return false;
+      }
       const q = query.toLowerCase();
       const searchMatch =
         q.length === 0 ||
@@ -60,7 +69,7 @@ export function CourseDetailContent({
       const diffMatch = difficulty === "all" || set.difficulty === difficulty;
       return searchMatch && diffMatch;
     });
-  }, [sets, query, difficulty]);
+  }, [sets, query, difficulty, tab]);
 
   if (!course || !content) {
     return (
@@ -128,8 +137,8 @@ export function CourseDetailContent({
 
       <Tabs tabs={tabDefs} value={tab} onChange={setTab} />
 
-      {tab === "quiz" ? (
-        <section className="space-y-4" id="panel-quiz">
+      {tab === "quizzes" || tab === "exams" || tab === "homework" ? (
+        <section className="space-y-4" id={`panel-${tab}`}>
           <Card>
             <CardBody className="grid gap-3 p-4 md:grid-cols-[1fr_auto_auto] md:items-center">
               <div className="relative">
@@ -166,7 +175,16 @@ export function CourseDetailContent({
           </Card>
 
           <div className="grid gap-4">
+            {filteredSets.length === 0 ? (
+              <Card>
+                <CardBody className="p-6 text-sm text-muted">
+                  No sets match this filter. Try resetting search or switching tabs.
+                </CardBody>
+              </Card>
+            ) : null}
             {filteredSets.map((set) => {
+              const setMode = resolveQuizSetMode(set);
+              const targetCount = resolveQuestionCountTarget(set);
               const latest = latestAttemptForQuiz(attempts, set.id);
               const best = bestScoreForQuiz(attempts, set.id);
               return (
@@ -177,8 +195,12 @@ export function CourseDetailContent({
                       <p className="mt-1 text-sm text-muted">{set.description}</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
+                      <Badge tone={setMode === "homework" ? "success" : setMode === "exam" ? "warn" : "brand"}>
+                        {modeLabel(setMode)}
+                      </Badge>
                       <Badge>{set.difficulty}</Badge>
                       <Badge tone="brand">{set.questions.length} questions</Badge>
+                      {targetCount ? <Badge tone="warn">Target {targetCount}</Badge> : null}
                       <Badge tone="success">Best {best}%</Badge>
                     </div>
                   </CardHeader>
@@ -201,15 +223,45 @@ export function CourseDetailContent({
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                      <Button asChild>
-                        <Link href={withPrefix(routePrefix, `/quiz/${set.id}`)}>Start Quiz</Link>
-                      </Button>
-                      <Button asChild variant="secondary">
-                        <Link href={withPrefix(routePrefix, `/quiz/${set.id}?mode=study`)}>Study Mode</Link>
-                      </Button>
-                      <Button asChild variant="ghost">
-                        <Link href={withPrefix(routePrefix, `/quiz/${set.id}?mode=timed`)}>Timed Mode</Link>
-                      </Button>
+                      {setMode === "homework" ? (
+                        <>
+                          <Button asChild>
+                            <Link href={withPrefix(routePrefix, `/homework/${set.id}`)}>Start Homework</Link>
+                          </Button>
+                          <Button asChild variant="secondary">
+                            <Link href={withPrefix(routePrefix, `/homework/${set.id}?review=1`)}>
+                              Review flagged
+                            </Link>
+                          </Button>
+                        </>
+                      ) : setMode === "exam" ? (
+                        <>
+                          <Button asChild>
+                            <Link href={withPrefix(routePrefix, `/quiz/${set.id}?mode=exam`)}>
+                              Start Exam Simulation
+                            </Link>
+                          </Button>
+                          <Button asChild variant="secondary">
+                            <Link href={withPrefix(routePrefix, `/quiz/${set.id}`)}>Practice this bank</Link>
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button asChild>
+                            <Link href={withPrefix(routePrefix, `/quiz/${set.id}`)}>Start Quiz</Link>
+                          </Button>
+                          <Button asChild variant="secondary">
+                            <Link href={withPrefix(routePrefix, `/quiz/${set.id}?mode=study`)}>
+                              Study Mode
+                            </Link>
+                          </Button>
+                          <Button asChild variant="ghost">
+                            <Link href={withPrefix(routePrefix, `/quiz/${set.id}?mode=timed`)}>
+                              Timed Mode
+                            </Link>
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </CardBody>
                 </Card>

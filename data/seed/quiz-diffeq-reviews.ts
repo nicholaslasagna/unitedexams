@@ -1,6 +1,6 @@
 import type { QuizSet } from "@/lib/types";
 
-export const differentialEquationReviewReplacements: QuizSet[] = [
+const differentialEquationReviewReplacementsRaw: QuizSet[] = [
   {
     id: "de-hw1",
     courseId: "differential-equations",
@@ -658,3 +658,10 @@ export const differentialEquationReviewReplacements: QuizSet[] = [
     ]
   }
 ];
+
+export const differentialEquationReviewReplacements: QuizSet[] = differentialEquationReviewReplacementsRaw.map(
+  (set) => ({
+    ...set,
+    mode: "homework"
+  }),
+);

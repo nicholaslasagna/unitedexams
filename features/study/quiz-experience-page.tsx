@@ -13,6 +13,7 @@ import {
   Settings2
 } from "lucide-react";
 import { getCourse, getQuizSet } from "@/data/seed";
+import { fetchPublishedStudySet } from "@/features/study/study-set-source";
 import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,94 +30,17 @@ import { fireConfetti } from "@/features/quiz/confetti";
 import { bestScoreForQuiz, latestAttemptForQuiz } from "@/features/progress/metrics";
 import { useAppData } from "@/lib/app-data-context";
 import { useToast } from "@/lib/hooks/use-toast";
+import { resolveQuestionCountTarget, resolveQuizSetMode } from "@/lib/study/set-mode";
 import { minutesSeconds, percentile, shuffle } from "@/lib/utils";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Attempt, QuizSet, QuizSettings } from "@/lib/types";
 
 type Stage = "overview" | "quiz" | "results" | "review";
-type AttemptMode = "test" | "study" | "timed";
+type AttemptMode = "test" | "study" | "timed" | "exam";
 
 const keyMap = ["a", "b", "c", "d", "e", "f"];
 
-interface QuizSetRow {
-  id: string;
-  course_id: string;
-  title: string;
-  description: string;
-  difficulty: "intro" | "medium" | "hard";
-  est_minutes: number;
-  tags: string[];
-  is_published: boolean;
-}
-
-interface QuestionRow {
-  id: string;
-  quiz_set_id: string;
-  type: "single" | "multi" | "free";
-  prompt_md: string;
-  options: string[] | null;
-  correct: number[] | null;
-  explanation_md: string;
-  walkthrough_steps: string[] | null;
-  references_data: string[] | null;
-}
-
 function withPrefix(routePrefix: string, path: string) {
   return `${routePrefix}${path}`;
-}
-
-function mapDifficulty(value: QuizSetRow["difficulty"]): QuizSet["difficulty"] {
-  if (value === "intro") return "Beginner";
-  if (value === "medium") return "Intermediate";
-  return "Advanced";
-}
-
-function toQuizSet(row: QuizSetRow, questions: QuestionRow[]): QuizSet {
-  return {
-    id: row.id,
-    courseId: row.course_id,
-    title: row.title,
-    description: row.description,
-    difficulty: mapDifficulty(row.difficulty),
-    estMinutes: row.est_minutes,
-    tags: row.tags ?? [],
-    timerDefaultMinutes: row.est_minutes,
-    questions: questions.map((question) => ({
-      id: question.id,
-      type: question.type,
-      prompt: question.prompt_md,
-      options: question.options ?? undefined,
-      correct: question.correct ?? undefined,
-      explanation: question.explanation_md,
-      walkthroughSteps: question.walkthrough_steps ?? undefined,
-      references: question.references_data ?? undefined,
-      tags: row.tags ?? []
-    }))
-  };
-}
-
-async function fetchPublishedQuizSet(quizId: string): Promise<QuizSet | null> {
-  const client = getSupabaseBrowserClient();
-  if (!client) return null;
-
-  const { data: quizRow, error: quizError } = await client
-    .from("quiz_sets")
-    .select("id, course_id, title, description, difficulty, est_minutes, tags, is_published")
-    .eq("id", quizId)
-    .eq("is_published", true)
-    .maybeSingle();
-
-  if (quizError || !quizRow) return null;
-
-  const { data: questionRows, error: questionsError } = await client
-    .from("questions")
-    .select("id, quiz_set_id, type, prompt_md, options, correct, explanation_md, walkthrough_steps, references_data")
-    .eq("quiz_set_id", quizId)
-    .order("created_at", { ascending: true });
-
-  if (questionsError || !questionRows || questionRows.length === 0) return null;
-
-  return toQuizSet(quizRow as QuizSetRow, questionRows as QuestionRow[]);
 }
 
 export function QuizExperiencePageContent({
@@ -161,7 +85,7 @@ export function QuizExperiencePageContent({
     let active = true;
     setQuizLoading(true);
 
-    fetchPublishedQuizSet(quizId)
+    fetchPublishedStudySet(quizId)
       .then((remoteQuiz) => {
         if (!active) return;
         setQuiz(remoteQuiz ?? fallbackQuiz);
@@ -202,7 +126,8 @@ export function QuizExperiencePageContent({
         timerMinutes: quiz.timerDefaultMinutes,
         randomizeQuestions: false,
         explanationMode: "afterEach",
-        questionCount: "all"
+        questionCount: "all",
+        includeFreeResponse: true
       });
     }
 
@@ -213,7 +138,20 @@ export function QuizExperiencePageContent({
         timerMinutes: quiz.timerDefaultMinutes,
         randomizeQuestions: true,
         explanationMode: "end",
-        questionCount: "all"
+        questionCount: "all",
+        includeFreeResponse: true
+      });
+    }
+
+    if (mode === "exam") {
+      setAttemptMode("exam");
+      setSettings({
+        timed: true,
+        timerMinutes: quiz.timerDefaultMinutes,
+        randomizeQuestions: true,
+        explanationMode: "end",
+        questionCount: "all",
+        includeFreeResponse: false
       });
     }
   }, [searchParams, quiz]);
@@ -243,6 +181,8 @@ export function QuizExperiencePageContent({
   }, [stage, settings.timed]);
 
   const course = quiz ? getCourse(quiz.courseId) : null;
+  const setMode = quiz ? resolveQuizSetMode(quiz) : "quiz";
+  const examQuestionTarget = quiz ? resolveQuestionCountTarget(quiz) : null;
 
   const latestAttempt = useMemo(() => {
     if (!quiz) return null;
@@ -300,16 +240,41 @@ export function QuizExperiencePageContent({
   const startQuiz = (override?: Partial<QuizSettings>, mode: AttemptMode = attemptMode) => {
     if (!quiz) return;
     const effective = { ...settings, ...(override ?? {}) };
-    const ids = quiz.questions.map((q) => q.id);
-    const orderedIds = effective.randomizeQuestions ? shuffle(ids) : ids;
-    const maxQuestions = ids.length;
-    const requestedCount =
-      effective.questionCount === "all"
-        ? maxQuestions
-        : Math.min(maxQuestions, Math.max(1, Number(effective.questionCount || maxQuestions)));
-    const nextOrder = orderedIds.slice(0, requestedCount);
+    const includeFreeResponse = effective.includeFreeResponse !== false;
 
-    setOrder(nextOrder);
+    let selectedQuestionIds = quiz.questions
+      .filter((question) => includeFreeResponse || question.type !== "free")
+      .map((question) => question.id);
+
+    if (setMode === "exam") {
+      const targetCount = Math.min(
+        selectedQuestionIds.length,
+        Math.max(1, examQuestionTarget ?? selectedQuestionIds.length)
+      );
+      const professorPriority = quiz.questions
+        .filter((question) => question.fromProfessor)
+        .map((question) => question.id)
+        .filter((id) => selectedQuestionIds.includes(id));
+
+      const uniquePriority = [...new Set(professorPriority)];
+      const remainingPool = selectedQuestionIds.filter((id) => !uniquePriority.includes(id));
+      const sampledRest = shuffle(remainingPool).slice(0, Math.max(0, targetCount - uniquePriority.length));
+      selectedQuestionIds = [...uniquePriority, ...sampledRest].slice(0, targetCount);
+
+      if (effective.randomizeQuestions) {
+        selectedQuestionIds = shuffle(selectedQuestionIds);
+      }
+    } else {
+      const orderedIds = effective.randomizeQuestions ? shuffle(selectedQuestionIds) : selectedQuestionIds;
+      const maxQuestions = orderedIds.length;
+      const requestedCount =
+        effective.questionCount === "all"
+          ? maxQuestions
+          : Math.min(maxQuestions, Math.max(1, Number(effective.questionCount || maxQuestions)));
+      selectedQuestionIds = orderedIds.slice(0, requestedCount);
+    }
+
+    setOrder(selectedQuestionIds);
     setCurrentIndex(0);
     setSelectedByQuestion({});
     setResponseByQuestion({});
@@ -333,7 +298,8 @@ export function QuizExperiencePageContent({
         timed: false,
         randomizeQuestions: false,
         explanationMode: "afterEach",
-        questionCount: settings.questionCount
+        questionCount: settings.questionCount,
+        includeFreeResponse: true
       },
       "study"
     );
@@ -345,7 +311,8 @@ export function QuizExperiencePageContent({
         timed: false,
         randomizeQuestions: true,
         explanationMode: "end",
-        questionCount: settings.questionCount
+        questionCount: settings.questionCount,
+        includeFreeResponse: true
       },
       "test"
     );
@@ -357,9 +324,24 @@ export function QuizExperiencePageContent({
         timed: true,
         randomizeQuestions: true,
         explanationMode: "end",
-        questionCount: settings.questionCount
+        questionCount: settings.questionCount,
+        includeFreeResponse: true
       },
       "timed"
+    );
+  };
+
+  const startExamMode = () => {
+    startQuiz(
+      {
+        timed: true,
+        timerMinutes: quiz?.timerDefaultMinutes ?? settings.timerMinutes,
+        randomizeQuestions: true,
+        explanationMode: "end",
+        questionCount: "all",
+        includeFreeResponse: settings.includeFreeResponse ?? false
+      },
+      "exam"
     );
   };
 
@@ -475,6 +457,8 @@ export function QuizExperiencePageContent({
       order,
       timeSpentSeconds: timeSpent
     });
+    attempt.mode = setMode === "exam" ? "exam" : "quiz";
+    attempt.status = "completed";
 
     await saveAttempt(attempt);
     setResult(attempt);
@@ -615,6 +599,13 @@ export function QuizExperiencePageContent({
             <h1 className="font-display text-4xl font-semibold tracking-tight md:text-5xl">{quiz.title}</h1>
             <p className="max-w-3xl text-sm leading-relaxed text-muted">{quiz.description}</p>
 
+            <div className="flex flex-wrap gap-2">
+              <Badge tone={setMode === "exam" ? "warn" : setMode === "homework" ? "success" : "brand"}>
+                {setMode === "exam" ? "Exam Simulation" : setMode === "homework" ? "Homework" : "Practice Quiz"}
+              </Badge>
+              {examQuestionTarget ? <Badge tone="warn">Target {examQuestionTarget} questions</Badge> : null}
+            </div>
+
             {!isAuthenticated ? (
               <div className="rounded-xl border border-brand-2/35 bg-brand-2/10 px-4 py-3 text-sm text-text">
                 Create a free account to save your progress, streak, and mastery insights.
@@ -641,31 +632,72 @@ export function QuizExperiencePageContent({
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Button onClick={startTestMode}>Start Test Mode</Button>
-              <Button variant="secondary" onClick={startStudyMode}>
-                Start Study Walkthrough
-              </Button>
-              <Button variant="ghost" onClick={startTimedMode}>
-                Start Timed Exam
-              </Button>
-              <Button variant="ghost" onClick={() => setSettingsOpen(true)}>
-                <Settings2 className="h-4 w-4" />
-                Quiz Settings
-              </Button>
-            </div>
+            {setMode === "homework" ? (
+              <div className="rounded-xl border border-success/30 bg-success/10 p-4 text-sm text-text">
+                This set is configured for one-by-one Homework Mode.
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button asChild>
+                    <Link href={withPrefix(routePrefix, `/homework/${quiz.id}`)}>Open Homework Mode</Link>
+                  </Button>
+                  <Button variant="ghost" asChild>
+                    <Link href={withPrefix(routePrefix, `/homework/${quiz.id}?review=1`)}>
+                      Resume flagged review
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {setMode === "exam" ? (
+                  <>
+                    <Button onClick={startExamMode}>Start Exam Simulation</Button>
+                    <Button variant="secondary" onClick={startTestMode}>
+                      Practice This Bank
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button onClick={startTestMode}>Start Test Mode</Button>
+                    <Button variant="secondary" onClick={startStudyMode}>
+                      Start Study Walkthrough
+                    </Button>
+                    <Button variant="ghost" onClick={startTimedMode}>
+                      Start Timed Exam
+                    </Button>
+                  </>
+                )}
+                <Button variant="ghost" onClick={() => setSettingsOpen(true)}>
+                  <Settings2 className="h-4 w-4" />
+                  Quiz Settings
+                </Button>
+              </div>
+            )}
 
-            <div className="grid gap-2 md:grid-cols-3">
-              <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
-                <span className="font-semibold text-text">Test Mode:</span> answer-first flow, graded accuracy, and explanations on demand.
+            {setMode === "exam" ? (
+              <div className="grid gap-2 md:grid-cols-3">
+                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
+                  <span className="font-semibold text-text">Rule 1:</span> one question at a time with exam pacing.
+                </div>
+                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
+                  <span className="font-semibold text-text">Rule 2:</span> explanations default to end-of-exam review.
+                </div>
+                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
+                  <span className="font-semibold text-text">Rule 3:</span> professor-priority items are always included.
+                </div>
               </div>
-              <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
-                <span className="font-semibold text-text">Study Walkthrough:</span> guided hints + full step-by-step solution shown after each submit.
+            ) : (
+              <div className="grid gap-2 md:grid-cols-3">
+                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
+                  <span className="font-semibold text-text">Test Mode:</span> answer-first flow, graded accuracy, and explanations on demand.
+                </div>
+                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
+                  <span className="font-semibold text-text">Study Walkthrough:</span> guided hints + full step-by-step solution shown after each submit.
+                </div>
+                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
+                  <span className="font-semibold text-text">Timed Exam:</span> strict clock with randomized order and end-of-quiz review.
+                </div>
               </div>
-              <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
-                <span className="font-semibold text-text">Timed Exam:</span> strict clock with randomized order and end-of-quiz review.
-              </div>
-            </div>
+            )}
 
             <p className="text-xs text-muted">
               Current attempt length:{" "}
@@ -686,6 +718,7 @@ export function QuizExperiencePageContent({
           onClose={() => setSettingsOpen(false)}
           initial={settings}
           maxQuestions={quiz.questions.length}
+          setMode={setMode}
           onConfirm={setSettings}
         />
       </div>
@@ -717,7 +750,7 @@ export function QuizExperiencePageContent({
                 </Button>
                 <Button variant="secondary" onClick={() => startQuiz()}>
                   <RotateCcw className="h-4 w-4" />
-                  Retake Quiz
+                  {setMode === "exam" ? "Retake Exam" : "Retake Quiz"}
                 </Button>
                 <Button variant="ghost" onClick={() => router.push(coursePath)}>
                   Back to Course
@@ -882,6 +915,10 @@ export function QuizExperiencePageContent({
           <Clock3 className="h-3.5 w-3.5" />
           {attemptMode === "study"
             ? `Study walkthrough • ${minutesSeconds(timeSpent)} elapsed`
+            : attemptMode === "exam"
+              ? settings.timed
+                ? `Exam simulation • ${minutesSeconds(timeLeft)} left`
+                : `Exam simulation • ${minutesSeconds(timeSpent)} elapsed`
             : settings.timed
               ? `Timed exam • ${minutesSeconds(timeLeft)} left`
               : `Test mode • ${minutesSeconds(timeSpent)} elapsed`}

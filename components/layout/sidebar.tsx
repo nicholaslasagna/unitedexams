@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   LibraryBig,
+  ListChecks,
   Trophy,
   NotebookTabs,
   Settings,
@@ -17,6 +18,7 @@ import { useAppData } from "@/lib/app-data-context";
 const baseItems = [
   { href: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/app/courses", label: "Courses", icon: LibraryBig },
+  { href: "/homework", label: "Homework", icon: ListChecks },
   { href: "/app/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/app/notes/software-engineering", label: "Notes", icon: NotebookTabs },
   { href: "/app/account", label: "Account", icon: UserRound },

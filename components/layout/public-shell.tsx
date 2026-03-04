@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 
 const guestNavItems = [
   { href: "/courses", label: "Courses" },
+  { href: "/homework", label: "Homework" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/contact", label: "Contact" }
 ];
@@ -17,6 +18,7 @@ const guestNavItems = [
 const accountNavItems = [
   { href: "/app/dashboard", label: "Dashboard" },
   { href: "/courses", label: "Courses" },
+  { href: "/homework", label: "Homework" },
   { href: "/app/leaderboard", label: "Leaderboard" },
   { href: "/app/account", label: "Account" },
   { href: "/app/settings", label: "Settings" }
