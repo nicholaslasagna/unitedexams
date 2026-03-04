@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { Download, ShieldCheck, Smartphone, Trash2, Upload } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
@@ -46,6 +46,12 @@ interface MfaApi {
   unenroll?: (params: { factorId: string }) => Promise<MfaVerifyResult>;
 }
 
+interface PendingEmailChange {
+  new_email: string;
+  requested_at: string;
+  status: "pending" | "confirmed" | "cancelled";
+}
+
 export default function SettingsPage() {
   const {
     ready,
@@ -64,6 +70,11 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [confirmNewEmail, setConfirmNewEmail] = useState("");
+  const [emailPassword, setEmailPassword] = useState("");
+  const [emailBusy, setEmailBusy] = useState(false);
+  const [pendingEmailChange, setPendingEmailChange] = useState<PendingEmailChange | null>(null);
 
   const [factors, setFactors] = useState<MfaFactor[]>([]);
   const [mfaCode, setMfaCode] = useState("");
@@ -78,6 +89,22 @@ export default function SettingsPage() {
     const authWithMfa = supabase.auth as unknown as { mfa?: MfaApi };
     return authWithMfa.mfa;
   }, [supabase]);
+
+  const currentEmail = user?.email || profile.email || "";
+
+  const loadPendingEmailChange = useCallback(async () => {
+    if (!supabase || !user) {
+      setPendingEmailChange(null);
+      return;
+    }
+    const { data } = await supabase
+      .from("email_change_requests")
+      .select("new_email, requested_at, status")
+      .eq("user_id", user.id)
+      .eq("status", "pending")
+      .maybeSingle();
+    setPendingEmailChange((data as PendingEmailChange | null) ?? null);
+  }, [supabase, user]);
 
   const refreshMfa = async () => {
     if (!mfaApi || typeof mfaApi.listFactors !== "function") return;
@@ -94,6 +121,10 @@ export default function SettingsPage() {
     refreshMfa();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mfaApi]);
+
+  useEffect(() => {
+    void loadPendingEmailChange();
+  }, [loadPendingEmailChange]);
 
   const updatePreferences = async (
     updater: (prev: typeof preferences) => typeof preferences,
@@ -232,6 +263,130 @@ export default function SettingsPage() {
     setNewPassword("");
     setConfirmPassword("");
     push({ title: "Password updated", tone: "success" });
+  };
+
+  const requestEmailChange = async () => {
+    if (!supabase || !user) {
+      push({ title: "You must be signed in to change email.", tone: "error" });
+      return;
+    }
+
+    const nextEmail = newEmail.trim().toLowerCase();
+    const confirmEmailValue = confirmNewEmail.trim().toLowerCase();
+
+    if (!nextEmail || !confirmEmailValue) {
+      push({ title: "Enter and confirm your new email.", tone: "error" });
+      return;
+    }
+    if (nextEmail !== confirmEmailValue) {
+      push({ title: "New email entries do not match.", tone: "error" });
+      return;
+    }
+    if (nextEmail === currentEmail.trim().toLowerCase()) {
+      push({ title: "New email must differ from your current email.", tone: "error" });
+      return;
+    }
+    if (!emailPassword.trim()) {
+      push({ title: "Enter your current password to continue.", tone: "error" });
+      return;
+    }
+
+    setEmailBusy(true);
+    try {
+      const response = await fetch("/auth/change-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "request",
+          newEmail: nextEmail,
+          confirmEmail: confirmEmailValue,
+          currentPassword: emailPassword
+        })
+      });
+      const payload = (await response.json()) as {
+        ok?: boolean;
+        error?: string;
+        message?: string;
+        pendingEmail?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(payload.error || "Unable to request email change.");
+      }
+
+      setPendingEmailChange({
+        new_email: payload.pendingEmail || nextEmail,
+        requested_at: new Date().toISOString(),
+        status: "pending"
+      });
+      setEmailPassword("");
+      push({
+        title: "Verification email sent",
+        description: payload.message || "Check your inbox to confirm the new email.",
+        tone: "success"
+      });
+    } catch (error) {
+      push({ title: "Unable to change email", description: (error as Error).message, tone: "error" });
+    } finally {
+      setEmailBusy(false);
+    }
+  };
+
+  const resendEmailChange = async () => {
+    setEmailBusy(true);
+    try {
+      const response = await fetch("/auth/change-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "resend" })
+      });
+      const payload = (await response.json()) as {
+        ok?: boolean;
+        error?: string;
+        message?: string;
+        pendingEmail?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(payload.error || "Unable to resend verification.");
+      }
+
+      await loadPendingEmailChange();
+      push({
+        title: "Verification sent",
+        description: payload.message || "If possible, we sent another verification email.",
+        tone: "success"
+      });
+    } catch (error) {
+      push({ title: "Unable to resend", description: (error as Error).message, tone: "error" });
+    } finally {
+      setEmailBusy(false);
+    }
+  };
+
+  const cancelEmailChange = async () => {
+    setEmailBusy(true);
+    try {
+      const response = await fetch("/auth/change-email", { method: "DELETE" });
+      const payload = (await response.json()) as {
+        ok?: boolean;
+        error?: string;
+        message?: string;
+      };
+      if (!response.ok) {
+        throw new Error(payload.error || "Unable to cancel email change.");
+      }
+      setPendingEmailChange(null);
+      push({
+        title: "Pending change cancelled",
+        description: payload.message || "Email change request has been cancelled.",
+        tone: "success"
+      });
+    } catch (error) {
+      push({ title: "Unable to cancel", description: (error as Error).message, tone: "error" });
+    } finally {
+      setEmailBusy(false);
+    }
   };
 
   const enrollMfa = async () => {
@@ -479,6 +634,73 @@ export default function SettingsPage() {
             <h2 className="font-display text-2xl font-semibold">Security</h2>
           </CardHeader>
           <CardBody className="space-y-4">
+            <div className="rounded-xl border border-borderc bg-soft p-3">
+              <p className="text-sm font-semibold text-text">Email</p>
+              <p className="mt-1 text-xs text-muted">
+                Change your login email safely. You&apos;ll keep access with your current email until the new one is verified.
+              </p>
+
+              <div className="mt-3 space-y-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Current email</label>
+                  <Input value={currentEmail} readOnly className="opacity-85" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">New email</label>
+                  <Input
+                    type="email"
+                    value={newEmail}
+                    onChange={(event) => setNewEmail(event.target.value)}
+                    placeholder="you@new-university.edu"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Confirm new email</label>
+                  <Input
+                    type="email"
+                    value={confirmNewEmail}
+                    onChange={(event) => setConfirmNewEmail(event.target.value)}
+                    placeholder="Repeat your new email"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Current password</label>
+                  <Input
+                    type="password"
+                    value={emailPassword}
+                    onChange={(event) => setEmailPassword(event.target.value)}
+                    placeholder="Re-authenticate to change email"
+                  />
+                </div>
+              </div>
+
+              <p className="mt-2 text-xs text-muted">You&apos;ll need to confirm from your inbox.</p>
+
+              <Button className="mt-3" onClick={requestEmailChange} loading={emailBusy}>
+                Send verification to new email
+              </Button>
+
+              {pendingEmailChange ? (
+                <div className="mt-3 rounded-lg border border-brand-2/35 bg-brand-2/10 p-3">
+                  <p className="text-sm font-semibold text-text">
+                    Email change pending confirmation for:{" "}
+                    <span className="font-mono text-brand-2">{pendingEmailChange.new_email}</span>
+                  </p>
+                  <p className="mt-1 text-xs text-muted">
+                    Requested {new Date(pendingEmailChange.requested_at).toLocaleString()}.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button variant="secondary" onClick={resendEmailChange} disabled={emailBusy}>
+                      Resend confirmation
+                    </Button>
+                    <Button variant="ghost" onClick={cancelEmailChange} disabled={emailBusy}>
+                      Cancel change
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
             <div className="rounded-xl border border-borderc bg-soft p-3">
               <p className="text-sm font-semibold text-text">Change password</p>
               <p className="mt-1 text-xs text-muted">Re-auth with your current password before saving a new one.</p>

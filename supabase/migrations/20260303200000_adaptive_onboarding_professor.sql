@@ -17,6 +17,10 @@ create index if not exists idx_user_courses_course_id on public.user_courses(cou
 
 alter table public.user_courses enable row level security;
 
+drop policy if exists user_courses_select_own on public.user_courses;
+drop policy if exists user_courses_insert_own on public.user_courses;
+drop policy if exists user_courses_delete_own on public.user_courses;
+
 create policy user_courses_select_own
   on public.user_courses
   for select
@@ -39,7 +43,8 @@ create policy user_courses_delete_own
 -- Recommendation RPC
 -- =====================================================
 
-create or replace function public.get_recommendations(limit_count int default 6)
+drop function if exists public.get_recommendations(integer) cascade;
+create function public.get_recommendations(limit_count int default 6)
 returns table (
   quiz_set_id text,
   title text,
@@ -404,6 +409,18 @@ alter table public.class_sections enable row level security;
 alter table public.section_members enable row level security;
 alter table public.assignments enable row level security;
 
+drop policy if exists class_sections_select_member_or_owner on public.class_sections;
+drop policy if exists class_sections_insert_professor on public.class_sections;
+drop policy if exists class_sections_update_owner on public.class_sections;
+drop policy if exists class_sections_delete_owner on public.class_sections;
+drop policy if exists section_members_select_member_or_owner on public.section_members;
+drop policy if exists section_members_insert_own on public.section_members;
+drop policy if exists section_members_delete_self_or_owner on public.section_members;
+drop policy if exists assignments_select_member_or_owner on public.assignments;
+drop policy if exists assignments_insert_owner on public.assignments;
+drop policy if exists assignments_update_owner on public.assignments;
+drop policy if exists assignments_delete_owner on public.assignments;
+
 create or replace function public.user_is_professor(uid uuid)
 returns boolean
 language sql
@@ -645,7 +662,8 @@ $$;
 
 grant execute on function public.regenerate_section_join_code(uuid) to authenticated;
 
-create or replace function public.get_section_analytics(section_id_input uuid)
+drop function if exists public.get_section_analytics(uuid) cascade;
+create function public.get_section_analytics(section_id_input uuid)
 returns table (
   avg_score numeric,
   completion_count bigint,

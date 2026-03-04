@@ -6,7 +6,7 @@ set
   question_count_target = null
 where
   (
-    lower(id) like 'de-hw%'
+    lower(id::text) like 'de-hw%'
     or lower(title) like '%homework%'
     or lower(title) like '%free response%'
     or lower(tags::text) like '%free-response%'
