@@ -7,8 +7,13 @@ import {
   shouldForceOnboarding
 } from "@/lib/auth/guards";
 import {
-  extractClientIpFromHeaders,
+  createSignedApprovedIpCookieValue,
+  getApprovedIpCookieName,
+  getClientIp,
+  getTrustDeviceCookieName,
   hashIpForStorage,
+  isValidApprovedIpCookie,
+  isValidTrustDeviceCookie,
   shouldRequireIpApproval,
   type UserRole
 } from "@/lib/auth/ip-protection";
@@ -56,23 +61,23 @@ export async function middleware(request: NextRequest) {
     });
 
     if (requiresIpApproval) {
-      const ipAddress = extractClientIpFromHeaders(request.headers);
+      const trustedDeviceCookie = request.cookies.get(getTrustDeviceCookieName())?.value;
+      const trustDeviceValid = await isValidTrustDeviceCookie(trustedDeviceCookie, user.id);
+      if (trustDeviceValid) {
+        return response;
+      }
+
+      const ipAddress = getClientIp(request.headers);
       if (!ipAddress) {
-        const approvalUrl = request.nextUrl.clone();
-        approvalUrl.pathname = "/auth/approval-required";
-        approvalUrl.search = "";
-        approvalUrl.searchParams.set(
-          "next",
-          canonicalizeRoute(`${request.nextUrl.pathname}${request.nextUrl.search}`)
-        );
-        approvalUrl.searchParams.set("reason", "ip");
-        return NextResponse.redirect(approvalUrl);
+        // If IP cannot be determined, skip IP gating entirely.
+        return response;
       }
 
       const ipHash = await hashIpForStorage(ipAddress);
-      const trustedHash = request.cookies.get("ue_ip_ok")?.value;
+      const approvedIpCookie = request.cookies.get(getApprovedIpCookieName())?.value;
+      const approvedIpCookieValid = await isValidApprovedIpCookie(approvedIpCookie, ipHash);
 
-      if (trustedHash !== ipHash) {
+      if (!approvedIpCookieValid) {
         const { data: trustedIp } = await supabase
           .from("login_ip_allowlist")
           .select("approved")
@@ -91,7 +96,7 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(approvalUrl);
         }
 
-        response.cookies.set("ue_ip_ok", ipHash, {
+        response.cookies.set(getApprovedIpCookieName(), await createSignedApprovedIpCookieValue(ipHash), {
           path: "/",
           maxAge: 60 * 60 * 24,
           sameSite: "lax",
@@ -99,8 +104,6 @@ export async function middleware(request: NextRequest) {
           httpOnly: true
         });
       }
-    } else {
-      response.cookies.delete("ue_ip_ok");
     }
 
     const { count } = await supabase

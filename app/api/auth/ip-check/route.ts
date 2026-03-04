@@ -1,8 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
-  extractClientIpFromHeaders,
+  createSignedApprovedIpCookieValue,
+  getApprovedIpCookieName,
+  getClientIp,
+  getTrustDeviceCookieName,
   hashIpForStorage,
+  isValidApprovedIpCookie,
+  isValidTrustDeviceCookie,
   shouldRequireIpApproval,
   type UserRole
 } from "@/lib/auth/ip-protection";
@@ -46,26 +51,44 @@ export async function GET(request: NextRequest) {
   });
 
   if (!requiresApproval) {
-    const response = NextResponse.json({
+    return NextResponse.json({
       ok: true,
       requiresApproval: false,
       approved: true
     });
-    response.cookies.delete("ue_ip_ok");
-    return response;
   }
 
-  const ipAddress = extractClientIpFromHeaders(request.headers);
+  const trustedDevice = request.cookies.get(getTrustDeviceCookieName())?.value;
+  if (await isValidTrustDeviceCookie(trustedDevice, user.id)) {
+    return NextResponse.json({
+      ok: true,
+      requiresApproval: true,
+      approved: true,
+      via: "trusted_device"
+    });
+  }
+
+  const ipAddress = getClientIp(request.headers);
   if (!ipAddress) {
     return NextResponse.json({
       ok: true,
       requiresApproval: true,
-      approved: false,
-      reason: "ip_unavailable"
+      approved: true,
+      reason: "ip_unavailable_skip"
     });
   }
 
   const ipHash = await hashIpForStorage(ipAddress);
+  const approvedIpCookie = request.cookies.get(getApprovedIpCookieName())?.value;
+  if (await isValidApprovedIpCookie(approvedIpCookie, ipHash)) {
+    return NextResponse.json({
+      ok: true,
+      requiresApproval: true,
+      approved: true,
+      via: "approved_ip_cookie"
+    });
+  }
+
   const { data: row } = await supabase
     .from("login_ip_allowlist")
     .select("approved")
@@ -81,7 +104,7 @@ export async function GET(request: NextRequest) {
   });
 
   if (approved) {
-    response.cookies.set("ue_ip_ok", ipHash, {
+    response.cookies.set(getApprovedIpCookieName(), await createSignedApprovedIpCookieValue(ipHash), {
       path: "/",
       maxAge: 60 * 60 * 24,
       sameSite: "lax",
@@ -92,4 +115,3 @@ export async function GET(request: NextRequest) {
 
   return response;
 }
-
