@@ -193,7 +193,7 @@ language sql
 immutable
 set search_path = public
 as $$
-  select encode(digest(lower(trim(coalesce(code_input, ''))), 'sha256'), 'hex');
+  select encode(extensions.digest(lower(trim(coalesce(code_input, ''))), 'sha256'::text), 'hex');
 $$;
 
 create or replace function public.jsonb_to_sorted_int_array(value_input jsonb)
