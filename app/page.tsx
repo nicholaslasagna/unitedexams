@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, BookOpenCheck, ChartNoAxesCombined, Orbit, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpenCheck, ChartNoAxesCombined, Orbit } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/card";
+import { PublicShell } from "@/components/layout/public-shell";
 import { courses, quizSets } from "@/data/seed";
 
 const features = [
@@ -28,30 +29,7 @@ export default function LandingPage() {
   const totalQuestions = quizSets.reduce((sum, set) => sum + set.questions.length, 0);
 
   return (
-    <div className="min-h-screen bg-bg text-text">
-      <header className="mx-auto flex w-full max-w-[1240px] items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-gradient text-accent-fg shadow-soft">
-            <Sparkles className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="font-display text-base font-bold leading-tight">United Exams</p>
-            <p className="text-[11px] tracking-[0.16em] text-muted">UNITEDEXAMS.COM</p>
-          </div>
-        </Link>
-        <div className="flex items-center gap-2">
-          <Link href="/contact" className="rounded-xl border border-borderc px-4 py-2 text-sm font-semibold text-text hover:bg-soft">
-            Contact
-          </Link>
-          <Link href="/courses" className="rounded-xl bg-brand-gradient px-4 py-2 text-sm font-semibold text-accent-fg shadow-soft">
-            Start Studying
-          </Link>
-          <Link href="/login" className="rounded-xl border border-borderc px-4 py-2 text-sm font-semibold text-text hover:bg-soft">
-            Sign in
-          </Link>
-        </div>
-      </header>
-
+    <PublicShell>
       <section className="mesh-hero mx-auto w-full max-w-[1240px] px-6 pb-16 pt-8">
         <div className="glass grid gap-10 rounded-[2rem] px-8 py-12 md:grid-cols-[1.3fr_0.9fr] md:px-12 md:py-16">
           <div>
@@ -66,7 +44,7 @@ export default function LandingPage() {
               topic mastery analytics, and clean course notes in one focused experience.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/app/dashboard" className="inline-flex items-center gap-2 rounded-xl bg-brand-gradient px-5 py-3 text-sm font-semibold text-accent-fg shadow-soft">
+              <Link href="/courses" className="inline-flex items-center gap-2 rounded-xl bg-brand-gradient px-5 py-3 text-sm font-semibold text-accent-fg shadow-soft">
                 Open Dashboard
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -126,7 +104,7 @@ export default function LandingPage() {
       <section className="mx-auto w-full max-w-[1240px] px-6 pb-14">
         <div className="mb-4 flex items-end justify-between">
           <h2 className="font-display text-3xl font-semibold">Course previews</h2>
-          <Link href="/app/courses" className="text-sm font-semibold text-brand-2">
+          <Link href="/courses" className="text-sm font-semibold text-brand-2">
             View all courses
           </Link>
         </div>
@@ -149,29 +127,6 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
-
-      <footer className="border-t border-borderc/70 bg-surface/60">
-        <div className="mx-auto flex w-full max-w-[1240px] flex-wrap items-center justify-between gap-3 px-6 py-6 text-sm text-muted">
-          <p>
-            © {new Date().getFullYear()}{" "}
-            <a
-              href="https://imagicaststudios.com"
-              target="_blank"
-              rel="noreferrer"
-              className="font-semibold text-accent hover:text-text"
-            >
-              Imagicast Studios
-            </a>
-          </p>
-          <div className="flex gap-4">
-            <Link href="/contact">Contact</Link>
-            <Link href="/login">Login</Link>
-            <Link href="/app/settings">Settings</Link>
-            <Link href="/courses">Courses</Link>
-            <Link href="/leaderboard">Leaderboard</Link>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </PublicShell>
   );
 }

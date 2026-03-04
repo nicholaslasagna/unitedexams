@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ChevronsUpDown, Copy, Plus, X } from "lucide-react";
+import { Check, ChevronsUpDown, Copy, X } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,13 +12,13 @@ import { useToast } from "@/lib/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { courses } from "@/data/seed";
 import {
-  addUniversity,
   fetchUniversities,
   fetchUserCourses,
   saveUserCourses
 } from "@/features/account/api";
 import { joinSectionByCode } from "@/features/professor/api";
 import type { UniversityRecord } from "@/lib/supabase/types";
+import { getDisplayNameMaxLength, validateDisplayName } from "@/lib/auth/display-name";
 
 function parseOnboardingParam() {
   if (typeof window === "undefined") return false;
@@ -103,24 +103,6 @@ export function AccountPageContent() {
     }
   };
 
-  const addUniversityFlow = async () => {
-    if (!supabase) return;
-
-    try {
-      const result = await addUniversity(supabase, search);
-      setUniversities((prev) => [...prev, result].sort((a, b) => a.name.localeCompare(b.name)));
-      setSelectedUniversityId(result.id);
-      setSearch("");
-      setOpenPicker(false);
-      await persistProfileChanges({
-        nextUniversityId: result.id,
-        successTitle: "University added"
-      });
-    } catch (error) {
-      push({ title: "Could not add university", description: (error as Error).message, tone: "error" });
-    }
-  };
-
   const persistProfileChanges = async ({
     nextDisplayName = displayName,
     nextRealName = realName,
@@ -137,6 +119,12 @@ export function AccountPageContent() {
     successTitle?: string;
   }): Promise<boolean> => {
     setPrivacyError(null);
+
+    const displayNameCheck = validateDisplayName(nextDisplayName);
+    if (!displayNameCheck.valid) {
+      setPrivacyError(displayNameCheck.message);
+      return false;
+    }
 
     if (nextShowRealName && !nextRealName.trim()) {
       setPrivacyError("Add a real name before enabling 'show real name'.");
@@ -232,7 +220,11 @@ export function AccountPageContent() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Display name</label>
-              <Input value={displayName} onChange={(event) => setDisplayName(event.target.value)} />
+              <Input
+                value={displayName}
+                maxLength={getDisplayNameMaxLength()}
+                onChange={(event) => setDisplayName(event.target.value)}
+              />
             </div>
 
             <div className="space-y-1.5">
@@ -283,21 +275,18 @@ export function AccountPageContent() {
                         <Check className={cn("h-4 w-4", selectedUniversityId === item.id ? "text-success" : "opacity-0")} />
                       </button>
                     ))}
-
-                    {search.trim().length > 1 && !universities.some((item) => item.name.toLowerCase() === search.trim().toLowerCase()) ? (
-                      <button
-                        type="button"
-                        onClick={addUniversityFlow}
-                        className="mt-1 flex w-full items-center gap-2 rounded-lg border border-brand-2/35 bg-brand-2/10 px-2 py-2 text-left text-sm font-semibold text-brand-2 hover:bg-brand-2/15"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Add &quot;{search.trim()}&quot;
-                      </button>
+                    {search.trim().length > 1 && filteredUniversities.length === 0 ? (
+                      <p className="rounded-lg border border-borderc bg-soft px-2 py-2 text-xs text-muted">
+                        No matches found. Contact support if your accredited university is missing.
+                      </p>
                     ) : null}
                   </div>
                 </div>
               ) : null}
             </div>
+            <p className="text-xs text-muted">
+              Pick from the accredited university list. Custom entries are disabled.
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -507,10 +496,9 @@ export function AccountPageContent() {
                   </div>
                   {search.trim().length > 1 &&
                   !universities.some((item) => item.name.toLowerCase() === search.trim().toLowerCase()) ? (
-                    <Button variant="secondary" onClick={addUniversityFlow}>
-                      <Plus className="h-4 w-4" />
-                      Add &quot;{search.trim()}&quot;
-                    </Button>
+                    <p className="rounded-lg border border-borderc bg-soft px-3 py-2 text-xs text-muted">
+                      No matches found. Contact support if your accredited university is missing.
+                    </p>
                   ) : null}
                 </div>
               ) : null}

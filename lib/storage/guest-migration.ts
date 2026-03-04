@@ -60,7 +60,7 @@ export async function migrateGuestAttemptsToAccount(
   }
 
   let migratedCount = 0;
-  let failed = false;
+  let failedCount = 0;
 
   for (const attempt of pendingAttempts.reverse()) {
     try {
@@ -69,21 +69,20 @@ export async function migrateGuestAttemptsToAccount(
       migratedIds.add(attempt.id);
       writeMigratedAttemptIds(migratedIds);
     } catch {
-      failed = true;
-      break;
+      // Mark failed legacy attempts as processed so users are not
+      // blocked by the same incompatible payload forever.
+      failedCount += 1;
+      migratedIds.add(attempt.id);
+      writeMigratedAttemptIds(migratedIds);
     }
   }
 
-  if (!failed) {
+  if (migratedCount > 0 || failedCount > 0) {
     await guestRepository.clearAttempts();
   }
 
   if (typeof window !== "undefined") {
-    if (!failed) {
-      window.sessionStorage.setItem(guardKey, "1");
-    } else {
-      window.sessionStorage.removeItem(guardKey);
-    }
+    window.sessionStorage.setItem(guardKey, "1");
   }
-  return { migratedCount, failed };
+  return { migratedCount, failed: failedCount > 0 };
 }
