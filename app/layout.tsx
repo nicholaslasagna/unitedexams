@@ -58,11 +58,21 @@ const themeBootScript = `
   }
 })();`;
 
+const captchaBootScript = `
+(function () {
+  window.__UE_TURNSTILE_SITE_KEY = ${JSON.stringify(
+    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ||
+      process.env.TURNSTILE_SITE_KEY ||
+      ""
+  )};
+})();`;
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${outfit.variable} ${firaCode.variable} font-sans`}>
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+        <script dangerouslySetInnerHTML={{ __html: captchaBootScript }} />
         <SkipLink />
         <Providers>{children}</Providers>
       </body>

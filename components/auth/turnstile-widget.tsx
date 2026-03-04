@@ -2,11 +2,13 @@
 
 import Script from "next/script";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { getTurnstileSiteKeyClient } from "@/lib/security/turnstile-client";
 
 type TurnstileTheme = "light" | "dark" | "auto";
 
 declare global {
   interface Window {
+    __UE_TURNSTILE_SITE_KEY?: string;
     turnstile?: {
       render: (
         element: string | HTMLElement,
@@ -43,7 +45,7 @@ export function TurnstileWidget({
   onToken,
   describedBy
 }: TurnstileWidgetProps) {
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const siteKey = getTurnstileSiteKeyClient();
   const containerId = useId().replace(/:/g, "");
   const helperId = `${containerId}-helper`;
   const labelId = `${containerId}-label`;

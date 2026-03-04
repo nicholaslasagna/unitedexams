@@ -1,5 +1,18 @@
+declare global {
+  interface Window {
+    __UE_TURNSTILE_SITE_KEY?: string;
+  }
+}
+
+export function getTurnstileSiteKeyClient() {
+  const fromBuild = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || "";
+  if (fromBuild) return fromBuild;
+  if (typeof window === "undefined") return "";
+  return (window.__UE_TURNSTILE_SITE_KEY || "").trim();
+}
+
 export function isTurnstileClientEnabled() {
-  return Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+  return Boolean(getTurnstileSiteKeyClient());
 }
 
 interface VerifyTurnstileClientInput {

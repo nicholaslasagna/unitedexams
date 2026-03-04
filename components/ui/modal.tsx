@@ -48,23 +48,53 @@ export function Modal({ open, onClose, title, description, size = "md", children
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 animate-[fadeIn_150ms_ease-out]" role="dialog" aria-modal="true" aria-label={title} aria-describedby={descId}>
-      <button type="button" className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} aria-label="Close modal" />
-      <div className={cn("relative z-[71] w-full rounded-2xl border border-borderc bg-surface shadow-elevated animate-[scaleIn_150ms_ease-out]", sizeClasses[size], className)}>
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center p-4 animate-fade-in"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      aria-describedby={descId}
+    >
+      {/* Backdrop */}
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+        aria-label="Close modal"
+      />
+
+      {/* Panel */}
+      <div
+        className={cn(
+          "relative z-[71] w-full rounded-2xl border border-borderc bg-surface shadow-elevated animate-scale-spring",
+          sizeClasses[size],
+          className
+        )}
+      >
+        {/* Header */}
         <div className="flex items-center justify-between border-b border-borderc px-5 py-4">
           <div>
             <h2 className="text-lg font-bold text-text">{title}</h2>
-            {description ? <p id={descId} className="mt-0.5 text-sm text-muted">{description}</p> : null}
+            {description ? (
+              <p id={descId} className="mt-0.5 text-sm text-muted">{description}</p>
+            ) : null}
           </div>
           <button
             type="button"
-            className="rounded-lg border border-borderc bg-soft p-2 text-muted hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/65"
+            className={cn(
+              "rounded-lg border border-borderc bg-soft p-2 text-muted",
+              "hover:text-text hover:bg-overlay",
+              "transition-colors duration-150",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+            )}
             onClick={onClose}
             aria-label="Close"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
+
+        {/* Body */}
         <div className="max-h-[70vh] overflow-y-auto p-5">{children}</div>
       </div>
     </div>

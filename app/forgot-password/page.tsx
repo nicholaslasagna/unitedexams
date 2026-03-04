@@ -132,7 +132,11 @@ export default function ForgotPasswordPage() {
               onToken={setTurnstileToken}
               describedBy={error ? errorId : undefined}
             />
-          ) : null}
+          ) : (
+            <p className="rounded-lg border border-warn/35 bg-warn/10 px-3 py-2 text-xs text-warn">
+              Human verification is not configured. Set `NEXT_PUBLIC_TURNSTILE_SITE_KEY` in Vercel and redeploy.
+            </p>
+          )}
 
           <Button type="submit" className="w-full" loading={loading}>
             Send reset link

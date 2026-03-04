@@ -31,9 +31,15 @@ export function Topbar() {
   }, [query]);
 
   const toggleTheme = async () => {
+    // Add transition class for smooth theme switch
+    document.documentElement.classList.add("theme-transitioning");
     const next = preferences.theme === "dark" ? "light" : "dark";
     await savePreferences({ ...preferences, theme: next });
     push({ title: `${next === "dark" ? "Dark" : "Light"} theme enabled` });
+    // Remove transition class after animation
+    window.setTimeout(() => {
+      document.documentElement.classList.remove("theme-transitioning");
+    }, 350);
   };
 
   const initials = (profile.name || "S").slice(0, 1).toUpperCase();
@@ -41,11 +47,12 @@ export function Topbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-borderc bg-surface/90 backdrop-blur-xl">
       <div className="flex items-center justify-between gap-4 px-5 py-3 md:px-8">
+        {/* Search */}
         <div className="relative w-full max-w-[620px]">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-faint" />
           <Input
             aria-label="Search courses and quiz sets"
-            className="h-10 rounded-xl border-borderc bg-soft pl-9 pr-20 placeholder:text-faint focus:border-accent/50 focus:ring-2 focus:ring-accent/20 transition-all"
+            className="h-10 rounded-xl border-borderc bg-soft pl-9 pr-20 placeholder:text-faint"
             placeholder="Search courses, quiz sets, or topics..."
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -54,13 +61,15 @@ export function Topbar() {
             <Command className="h-3 w-3" />
             K
           </span>
+
+          {/* Search results dropdown */}
           {suggestions.length > 0 ? (
-            <div className="absolute left-0 right-0 top-[46px] overflow-hidden rounded-xl border border-borderc bg-surface shadow-elevated backdrop-blur-xl">
+            <div className="absolute left-0 right-0 top-[46px] overflow-hidden rounded-xl border border-borderc bg-surface shadow-elevated backdrop-blur-xl animate-fade-rise">
               {suggestions.map((item) => (
                 <button
                   type="button"
                   key={item.key}
-                  className="flex w-full items-center justify-between px-3 py-2.5 text-left text-sm text-text hover:bg-soft"
+                  className="flex w-full items-center justify-between px-3 py-2.5 text-left text-sm text-text transition-colors duration-100 hover:bg-soft"
                   onClick={() => {
                     router.push(item.href);
                     setQuery("");
@@ -74,45 +83,47 @@ export function Topbar() {
           ) : null}
         </div>
 
+        {/* Actions */}
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="hidden h-9 w-9 items-center justify-center rounded-lg text-faint transition-colors hover:bg-soft hover:text-muted md:inline-flex"
+            className="hidden h-9 w-9 items-center justify-center rounded-lg text-faint transition-colors duration-150 hover:bg-soft hover:text-muted md:inline-flex"
             onClick={toggleTheme}
             aria-label="Toggle theme"
           >
             <SunMoon className="h-4 w-4" />
           </button>
+
           {user ? (
             <details className="relative">
-              <summary className="flex list-none cursor-pointer items-center gap-2 rounded-xl py-1.5 pl-1.5 pr-3 text-sm font-semibold text-text transition-colors hover:bg-soft marker:content-['']">
+              <summary className="flex list-none cursor-pointer items-center gap-2 rounded-xl py-1.5 pl-1.5 pr-3 text-sm font-semibold text-text transition-colors duration-150 hover:bg-soft marker:content-['']">
                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-subtle text-xs font-bold text-accent">
                   {initials}
                 </span>
                 <span className="hidden md:inline">{profile.name || "Student"}</span>
               </summary>
-              <div className="absolute right-0 mt-2 w-60 rounded-xl border border-borderc bg-surface p-3 shadow-elevated backdrop-blur-xl">
-                <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-faint">Account</p>
+              <div className="absolute right-0 mt-2 w-60 rounded-xl border border-borderc bg-surface p-3 shadow-elevated backdrop-blur-xl animate-fade-rise">
+                <p className="text-caption font-bold uppercase tracking-[1.5px] text-faint">Account</p>
                 <p className="mt-1 text-sm font-semibold text-text">{profile.name || "Student"}</p>
                 <p className="text-xs text-faint">{user.email || profile.email || "No email"}</p>
-                <div className="mt-3 border-t border-borderc pt-2">
+                <div className="mt-3 border-t border-borderc pt-2 space-y-0.5">
                   <button
                     type="button"
-                    className="w-full rounded-lg px-2 py-2 text-left text-sm text-muted hover:bg-soft hover:text-text"
+                    className="w-full rounded-lg px-2 py-2 text-left text-sm text-muted transition-colors duration-100 hover:bg-soft hover:text-text"
                     onClick={() => router.push("/app/account")}
                   >
                     Account
                   </button>
                   <button
                     type="button"
-                    className="w-full rounded-lg px-2 py-2 text-left text-sm text-muted hover:bg-soft hover:text-text"
+                    className="w-full rounded-lg px-2 py-2 text-left text-sm text-muted transition-colors duration-100 hover:bg-soft hover:text-text"
                     onClick={() => router.push("/app/settings")}
                   >
                     Settings
                   </button>
                   <button
                     type="button"
-                    className="w-full rounded-lg px-2 py-2 text-left text-sm text-danger hover:bg-danger/10"
+                    className="w-full rounded-lg px-2 py-2 text-left text-sm text-danger transition-colors duration-100 hover:bg-danger/10"
                     onClick={async () => {
                       await signOut();
                       router.replace("/login");
@@ -127,7 +138,7 @@ export function Topbar() {
           ) : (
             <button
               type="button"
-              className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm font-semibold text-text hover:bg-overlay"
+              className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm font-semibold text-text transition-colors duration-150 hover:bg-overlay"
               onClick={() => router.push(`/login?next=${encodeURIComponent(pathname || "/courses")}`)}
             >
               Sign in

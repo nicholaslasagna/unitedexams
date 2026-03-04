@@ -9,8 +9,12 @@ export function Card({ className, interactive, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        "rounded-2xl border border-borderc bg-surface shadow-subtle transition-colors duration-200",
-        interactive && "cursor-pointer hover:bg-surface-raised hover:shadow-soft hover:border-border-bright",
+        "rounded-2xl border border-borderc bg-surface shadow-subtle",
+        interactive && [
+          "cursor-pointer",
+          "transition-[box-shadow,border-color] duration-[250ms] ease-out-expo",
+          "hover:shadow-card-hover hover:border-border-accent"
+        ],
         className
       )}
       {...props}

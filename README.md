@@ -19,6 +19,7 @@ Premium-feeling college study platform built with **Next.js + TypeScript + Tailw
      - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
      - `NEXT_PUBLIC_SITE_URL` (for auth callback links, e.g. `https://unitedexams.com`)
      - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (Cloudflare Turnstile site key)
+     - optional fallback: `TURNSTILE_SITE_KEY` (if you prefer server-injected runtime key bridge)
      - `TURNSTILE_SECRET_KEY` (optional; only needed for custom non-auth server verification such as exam start)
      - `IP_COOKIE_SIGNING_SECRET` (HMAC secret for trusted-device/IP cookies)
 3. Run development server
