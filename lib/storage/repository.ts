@@ -31,5 +31,6 @@ export const defaultPreferences: AppPreferences = {
   confettiEnabled: true,
   accentHue: 265,
   accentStrength: 60,
+  palette: "violet",
   dashboardLayout: "default"
 };
