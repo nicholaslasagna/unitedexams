@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
 
-const sourcePath = process.argv[2] ?? "/Users/Nicholas/Downloads/questions.js";
+const sourcePath = process.argv[2] ?? path.resolve(process.cwd(), "questions.js");
 const outputPath =
   process.argv[3] ??
   path.resolve(process.cwd(), "content/software-engineering/se-exam1-full-practice.json");

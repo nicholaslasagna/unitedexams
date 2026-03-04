@@ -165,7 +165,7 @@ function SignupPageContent() {
                 required
                 value={displayName}
                 onChange={(event) => setDisplayName(event.target.value)}
-                placeholder="Nicholas"
+                placeholder="StudyPilot"
               />
             </div>
 
@@ -177,7 +177,7 @@ function SignupPageContent() {
                 id="real-name"
                 value={realName}
                 onChange={(event) => setRealName(event.target.value)}
-                placeholder="Nicholas Lasagna"
+                placeholder="Alex Student"
               />
             </div>
           </div>

@@ -757,7 +757,7 @@ on conflict (id) do nothing;
 
 insert into public.universities (name, country)
 values
-  ('Texas Tech University', 'US'),
+  ('Westbridge University', 'US'),
   ('University of Texas at Austin', 'US'),
   ('Texas A&M University', 'US'),
   ('University of California, Berkeley', 'US'),
