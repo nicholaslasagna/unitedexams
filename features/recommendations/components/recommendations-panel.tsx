@@ -16,7 +16,7 @@ export function RecommendationsPanel({
       <CardHeader>
         <h2 className="inline-flex items-center gap-2 font-display text-lg font-bold text-white">
           <Sparkles className="h-5 w-5 text-accent" />
-          Recommended next
+          Recommended For You
         </h2>
       </CardHeader>
       <CardBody className="space-y-3">
@@ -37,7 +37,7 @@ export function RecommendationsPanel({
           items.map((item) => (
             <Link
               key={item.quizId}
-              href={`/app/quiz/${item.quizId}`}
+              href={`/quiz/${item.quizId}`}
               className="block rounded-xl border border-borderc bg-soft px-4 py-3 transition hover:border-white/[0.14] hover:bg-white/[0.05]"
             >
               <div className="flex items-center justify-between gap-2">

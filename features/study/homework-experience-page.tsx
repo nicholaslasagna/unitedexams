@@ -26,6 +26,7 @@ interface HomeworkProgressSnapshot {
   correctByQuestion: Record<string, boolean>;
   flaggedIds: string[];
   revealedHintCount: Record<string, number>;
+  revealedWalkthroughCount: Record<string, number>;
   showFullSolutionByQuestion: Record<string, boolean>;
   timeSpent: number;
   startedAt: string;
@@ -207,6 +208,7 @@ export function HomeworkExperiencePageContent({
   const [correctByQuestion, setCorrectByQuestion] = useState<Record<string, boolean>>({});
   const [flaggedIds, setFlaggedIds] = useState<string[]>([]);
   const [revealedHintCount, setRevealedHintCount] = useState<Record<string, number>>({});
+  const [revealedWalkthroughCount, setRevealedWalkthroughCount] = useState<Record<string, number>>({});
   const [showFullSolutionByQuestion, setShowFullSolutionByQuestion] = useState<Record<string, boolean>>({});
   const [timeSpent, setTimeSpent] = useState(0);
   const [startedAt, setStartedAt] = useState(() => new Date().toISOString());
@@ -270,6 +272,7 @@ export function HomeworkExperiencePageContent({
             setCorrectByQuestion(state.correctByQuestion ?? {});
             setFlaggedIds(state.flaggedIds ?? []);
             setRevealedHintCount(state.revealedHintCount ?? {});
+            setRevealedWalkthroughCount(state.revealedWalkthroughCount ?? {});
             setShowFullSolutionByQuestion(state.showFullSolutionByQuestion ?? {});
             setTimeSpent(Number(state.timeSpent ?? draft.time_spent_seconds ?? 0));
             setStartedAt(state.startedAt ?? new Date().toISOString());
@@ -289,6 +292,7 @@ export function HomeworkExperiencePageContent({
         setCorrectByQuestion(guestState.correctByQuestion ?? {});
         setFlaggedIds(guestState.flaggedIds ?? []);
         setRevealedHintCount(guestState.revealedHintCount ?? {});
+        setRevealedWalkthroughCount(guestState.revealedWalkthroughCount ?? {});
         setShowFullSolutionByQuestion(guestState.showFullSolutionByQuestion ?? {});
         setTimeSpent(guestState.timeSpent ?? 0);
         setStartedAt(guestState.startedAt ?? new Date().toISOString());
@@ -321,6 +325,7 @@ export function HomeworkExperiencePageContent({
       correctByQuestion,
       flaggedIds,
       revealedHintCount,
+      revealedWalkthroughCount,
       showFullSolutionByQuestion,
       timeSpent,
       startedAt
@@ -358,6 +363,7 @@ export function HomeworkExperiencePageContent({
     responseByQuestion,
     result,
     revealedHintCount,
+    revealedWalkthroughCount,
     selectedByQuestion,
     selfMarkedByQuestion,
     setId,
@@ -427,6 +433,16 @@ export function HomeworkExperiencePageContent({
     setRevealedHintCount((prev) => ({
       ...prev,
       [currentQuestion.id]: Math.min(hints.length, (prev[currentQuestion.id] ?? 0) + 1)
+    }));
+  };
+
+  const revealWalkthroughStep = () => {
+    if (!currentQuestion) return;
+    const steps = currentQuestion.walkthroughSteps ?? [];
+    if (steps.length === 0) return;
+    setRevealedWalkthroughCount((prev) => ({
+      ...prev,
+      [currentQuestion.id]: Math.min(steps.length, (prev[currentQuestion.id] ?? 0) + 1)
     }));
   };
 
@@ -518,6 +534,7 @@ export function HomeworkExperiencePageContent({
                 setCorrectByQuestion({});
                 setFlaggedIds([]);
                 setRevealedHintCount({});
+                setRevealedWalkthroughCount({});
                 setShowFullSolutionByQuestion({});
                 setTimeSpent(0);
                 setStartedAt(new Date().toISOString());
@@ -581,6 +598,9 @@ export function HomeworkExperiencePageContent({
   const hints = currentQuestion?.hintSteps ?? currentQuestion?.walkthroughSteps ?? [];
   const shownHints = currentQuestion ? (revealedHintCount[currentQuestion.id] ?? 0) : 0;
   const displayedHints = hints.slice(0, shownHints);
+  const walkthroughSteps = currentQuestion?.walkthroughSteps ?? [];
+  const shownWalkthroughSteps = currentQuestion ? (revealedWalkthroughCount[currentQuestion.id] ?? 0) : 0;
+  const displayedWalkthroughSteps = walkthroughSteps.slice(0, shownWalkthroughSteps);
   const showFullSolution = currentQuestion ? Boolean(showFullSolutionByQuestion[currentQuestion.id]) : false;
   const questionSubmitted = currentQuestion ? Boolean(submittedByQuestion[currentQuestion.id]) : false;
   const pendingSelfMark =
@@ -742,6 +762,17 @@ export function HomeworkExperiencePageContent({
                       {hints.length === 0 ? "No hints" : shownHints >= hints.length ? "All hints shown" : "Show hint"}
                     </Button>
                     <Button
+                      variant="secondary"
+                      onClick={revealWalkthroughStep}
+                      disabled={shownWalkthroughSteps >= walkthroughSteps.length || walkthroughSteps.length === 0}
+                    >
+                      {walkthroughSteps.length === 0
+                        ? "No walkthrough"
+                        : shownWalkthroughSteps >= walkthroughSteps.length
+                          ? "All steps shown"
+                          : "Show walkthrough step"}
+                    </Button>
+                    <Button
                       variant="ghost"
                       onClick={() =>
                         setShowFullSolutionByQuestion((prev) => ({
@@ -769,6 +800,21 @@ export function HomeworkExperiencePageContent({
                         {displayedHints.map((hint, idx) => (
                           <li key={`${currentQuestion.id}-hint-${idx}`} className="text-sm text-text">
                             <Markdown content={hint} promoteMathInInlineCode />
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  ) : null}
+
+                  {displayedWalkthroughSteps.length > 0 ? (
+                    <div className="space-y-2 rounded-xl border border-borderc bg-soft p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                        Walkthrough steps ({shownWalkthroughSteps}/{walkthroughSteps.length})
+                      </p>
+                      <ol className="space-y-2">
+                        {displayedWalkthroughSteps.map((step, idx) => (
+                          <li key={`${currentQuestion.id}-walk-${idx}`} className="text-sm text-text">
+                            <Markdown content={step} promoteMathInInlineCode />
                           </li>
                         ))}
                       </ol>

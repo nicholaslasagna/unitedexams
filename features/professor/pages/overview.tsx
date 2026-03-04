@@ -142,7 +142,7 @@ export function ProfessorOverviewPage() {
                 try {
                   const sectionId = await joinSectionByCode(supabase, joinCode);
                   push({ title: "Joined section", tone: "success" });
-                  router.push(`/app/professor/sections/${sectionId}`);
+                  router.push(`/app/sections/${sectionId}`);
                 } catch (error) {
                   push({ title: "Unable to join", description: (error as Error).message, tone: "error" });
                 }

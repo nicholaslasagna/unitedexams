@@ -1,5 +1,5 @@
-import { ProfessorOverviewPage } from "@/features/professor/pages/overview";
+import { redirect } from "next/navigation";
 
 export default function ProfessorPage() {
-  return <ProfessorOverviewPage />;
+  redirect("/app/sections");
 }

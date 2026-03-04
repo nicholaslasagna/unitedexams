@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
@@ -18,9 +19,9 @@ import {
   type SectionSummary
 } from "@/features/professor/api";
 
-export function ProfessorSectionPage() {
-  const params = useParams<{ id: string }>();
-  const sectionId = params.id;
+export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {}) {
+  const params = useParams<{ id?: string; sectionId?: string }>();
+  const resolvedSectionId = sectionId ?? params.sectionId ?? params.id ?? "";
 
   const { profile, supabase, user } = useAppData();
   const { push } = useToast();
@@ -44,11 +45,11 @@ export function ProfessorSectionPage() {
 
     const [allSections, sectionAssignments, sectionAnalytics] = await Promise.all([
       listProfessorSections(supabase),
-      listSectionAssignments(supabase, sectionId),
-      getSectionAnalytics(supabase, sectionId)
+      listSectionAssignments(supabase, resolvedSectionId),
+      getSectionAnalytics(supabase, resolvedSectionId)
     ]);
 
-    setSection(allSections.find((row) => row.id === sectionId) ?? null);
+    setSection(allSections.find((row) => row.id === resolvedSectionId) ?? null);
     setAssignments(sectionAssignments);
     setAnalytics(sectionAnalytics);
 
@@ -60,9 +61,10 @@ export function ProfessorSectionPage() {
 
   useEffect(() => {
     if (!isProfessor) return;
+    if (!resolvedSectionId) return;
     refresh().catch(() => undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isProfessor, sectionId, supabase]);
+  }, [isProfessor, resolvedSectionId, supabase]);
 
   useEffect(() => {
     if (!section) return;
@@ -120,6 +122,11 @@ export function ProfessorSectionPage() {
             {section.course_id}
             {section.term ? ` · ${section.term}` : ""}
           </p>
+          <div className="pt-2">
+            <Button variant="secondary" asChild>
+              <Link href={`/app/sections/${section.id}/analytics`}>Open full analytics</Link>
+            </Button>
+          </div>
         </CardHeader>
         <CardBody className="space-y-4">
           <div className="grid gap-3 md:grid-cols-[1fr_220px_160px]">
@@ -140,7 +147,7 @@ export function ProfessorSectionPage() {
                 if (!supabase || !user || !quizSetId) return;
                 try {
                   await createSectionAssignment(supabase, {
-                    sectionId,
+                    sectionId: resolvedSectionId,
                     quizSetId,
                     dueAt: dueAt ? new Date(dueAt).toISOString() : null,
                     createdBy: user.id

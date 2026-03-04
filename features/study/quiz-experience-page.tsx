@@ -334,7 +334,7 @@ export function QuizExperiencePageContent({
   const startExamMode = () => {
     startQuiz(
       {
-        timed: true,
+        timed: settings.timed,
         timerMinutes: quiz?.timerDefaultMinutes ?? settings.timerMinutes,
         randomizeQuestions: true,
         explanationMode: "end",
@@ -500,7 +500,11 @@ export function QuizExperiencePageContent({
         if (!submittedByQuestion[currentQuestion.id]) {
           submitCurrentQuestion();
         } else {
-          if (currentQuestion.type === "free" && selfMarkedByQuestion[currentQuestion.id] === undefined) {
+          if (
+            attemptMode !== "exam" &&
+            currentQuestion.type === "free" &&
+            selfMarkedByQuestion[currentQuestion.id] === undefined
+          ) {
             push({
               title: "Mark your self-check first",
               description: "Choose 'I got this' or 'Need review' before moving on."
@@ -513,6 +517,7 @@ export function QuizExperiencePageContent({
 
       if (key === "arrowright") {
         if (
+          attemptMode !== "exam" &&
           currentQuestion.type === "free" &&
           submittedByQuestion[currentQuestion.id] &&
           selfMarkedByQuestion[currentQuestion.id] === undefined
@@ -535,7 +540,7 @@ export function QuizExperiencePageContent({
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [stage, currentQuestion, submittedByQuestion, selfMarkedByQuestion, push]);
+  }, [stage, currentQuestion, submittedByQuestion, selfMarkedByQuestion, push, attemptMode]);
 
   useEffect(() => {
     if (stage !== "results" || !result || isAuthenticated) {
@@ -888,7 +893,7 @@ export function QuizExperiencePageContent({
   const questionSubmitted = currentQuestion ? submittedByQuestion[currentQuestion.id] : false;
   const pendingSelfMark =
     currentQuestion?.type === "free" && questionSubmitted
-      ? selfMarkedByQuestion[currentQuestion.id] === undefined
+      ? attemptMode !== "exam" && selfMarkedByQuestion[currentQuestion.id] === undefined
       : false;
   const canMoveForward =
     currentQuestion?.type === "free"
@@ -931,7 +936,7 @@ export function QuizExperiencePageContent({
           currentIndex={currentIndex}
           ids={order}
           answered={answeredSet}
-          correctness={new Map(Object.entries(correctByQuestion))}
+          correctness={attemptMode === "exam" ? new Map() : new Map(Object.entries(correctByQuestion))}
           onJump={setCurrentIndex}
         />
 
@@ -957,9 +962,11 @@ export function QuizExperiencePageContent({
               selfMarked={selfMarkedByQuestion[currentQuestion.id]}
               onSelfMark={markCurrentFreeQuestion}
               lockInteraction={Boolean(submittedByQuestion[currentQuestion.id])}
+              disableSelfMark={attemptMode === "exam"}
               studyMode={attemptMode === "study"}
               showHintsBeforeSubmit={attemptMode === "study"}
               showExplanation={attemptMode === "study" ? true : Boolean(showExplanation[currentQuestion.id])}
+              revealCorrectness={attemptMode !== "exam"}
               onToggleExplanation={() =>
                 setShowExplanation((prev) => ({
                   ...prev,
@@ -994,7 +1001,7 @@ export function QuizExperiencePageContent({
           answeredCount={answeredCount}
           timerEnabled={settings.timed}
           timeLeft={timeLeft}
-          scorePreview={scorePreview}
+          scorePreview={attemptMode === "exam" ? undefined : scorePreview}
         />
       </div>
     </div>

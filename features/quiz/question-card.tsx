@@ -28,6 +28,7 @@ interface QuestionCardProps {
   onToggleExplanation: () => void;
   studyMode?: boolean;
   showHintsBeforeSubmit?: boolean;
+  revealCorrectness?: boolean;
 }
 
 const optionKeys = ["A", "B", "C", "D", "E", "F"];
@@ -50,7 +51,8 @@ export function QuestionCard({
   showExplanation,
   onToggleExplanation,
   studyMode = false,
-  showHintsBeforeSubmit = true
+  showHintsBeforeSubmit = true,
+  revealCorrectness = true
 }: QuestionCardProps) {
   const [showWalkthrough, setShowWalkthrough] = useState(false);
   const [revealedSteps, setRevealedSteps] = useState(0);
@@ -199,13 +201,17 @@ export function QuestionCard({
               const checked = selected.includes(index);
               const isCorrectOption = correctSet.has(index);
               const optionState = submitted
-                ? checked && isCorrectOption
-                  ? "ok"
-                  : checked && !isCorrectOption
-                    ? "bad"
-                    : !checked && isCorrectOption
-                      ? "missed"
-                      : "default"
+                ? revealCorrectness
+                  ? checked && isCorrectOption
+                    ? "ok"
+                    : checked && !isCorrectOption
+                      ? "bad"
+                      : !checked && isCorrectOption
+                        ? "missed"
+                        : "default"
+                  : checked
+                    ? "selected"
+                    : "default"
                 : checked
                   ? "selected"
                   : "default";
@@ -275,13 +281,16 @@ export function QuestionCard({
           <div
             className={cn(
               "rounded-xl border p-4",
-              isCorrect === null && "border-brand-2/35 bg-brand-2/10",
-              isCorrect === true && "border-success/40 bg-success/10",
-              isCorrect === false && "border-danger/40 bg-danger/10"
+              !revealCorrectness && "border-brand-2/35 bg-brand-2/10",
+              revealCorrectness && isCorrect === null && "border-brand-2/35 bg-brand-2/10",
+              revealCorrectness && isCorrect === true && "border-success/40 bg-success/10",
+              revealCorrectness && isCorrect === false && "border-danger/40 bg-danger/10"
             )}
           >
             <div className="flex items-start gap-3">
-              {isCorrect === true ? (
+              {!revealCorrectness ? (
+                <GraduationCap className="mt-0.5 h-5 w-5 shrink-0 text-brand-2" />
+              ) : isCorrect === true ? (
                 <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" />
               ) : isCorrect === false ? (
                 <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-danger" />
@@ -290,13 +299,15 @@ export function QuestionCard({
               )}
               <div className="flex-1">
                 <p className="text-sm font-semibold text-text">
-                  {isCorrect === null
-                    ? "Response submitted — now review the solution step by step."
-                    : isCorrect
-                      ? "Correct! Well done."
-                      : "Not quite. Study the walkthrough below to understand why."}
+                  {!revealCorrectness
+                    ? "Answer recorded. Correctness and full explanation will be shown at the end."
+                    : isCorrect === null
+                      ? "Response submitted — now review the solution step by step."
+                      : isCorrect
+                        ? "Correct! Well done."
+                        : "Not quite. Study the walkthrough below to understand why."}
                 </p>
-                {isCorrect === false && !isFreeResponse ? (
+                {revealCorrectness && isCorrect === false && !isFreeResponse ? (
                   <p className="mt-1 text-xs text-muted">
                     Your answer is highlighted in red. The correct answer is highlighted in yellow.
                   </p>
@@ -304,27 +315,29 @@ export function QuestionCard({
               </div>
             </div>
 
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Button variant="secondary" onClick={onToggleExplanation}>
-                <BookCheck className="h-4 w-4" />
-                {showExplanation ? "Hide explanation" : "Show explanation"}
-              </Button>
-              {walkthroughSteps.length > 0 && !studyMode ? (
-                <Button variant="ghost" onClick={() => {
-                  setShowWalkthrough((prev) => !prev);
-                  if (!showWalkthrough && revealedSteps === 0) setRevealedSteps(1);
-                }}>
-                  <GraduationCap className="h-4 w-4" />
-                  {showWalkthrough ? "Hide walkthrough" : "Step-by-step walkthrough"}
+            {revealCorrectness ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button variant="secondary" onClick={onToggleExplanation}>
+                  <BookCheck className="h-4 w-4" />
+                  {showExplanation ? "Hide explanation" : "Show explanation"}
                 </Button>
-              ) : null}
-              {walkthroughSteps.length > 0 && studyMode ? (
-                <span className="inline-flex items-center gap-2 rounded-lg border border-brand-2/35 bg-brand-2/10 px-3 py-1.5 text-xs font-semibold text-brand-2">
-                  <GraduationCap className="h-3.5 w-3.5" />
-                  Guided walkthrough enabled
-                </span>
-              ) : null}
-            </div>
+                {walkthroughSteps.length > 0 && !studyMode ? (
+                  <Button variant="ghost" onClick={() => {
+                    setShowWalkthrough((prev) => !prev);
+                    if (!showWalkthrough && revealedSteps === 0) setRevealedSteps(1);
+                  }}>
+                    <GraduationCap className="h-4 w-4" />
+                    {showWalkthrough ? "Hide walkthrough" : "Step-by-step walkthrough"}
+                  </Button>
+                ) : null}
+                {walkthroughSteps.length > 0 && studyMode ? (
+                  <span className="inline-flex items-center gap-2 rounded-lg border border-brand-2/35 bg-brand-2/10 px-3 py-1.5 text-xs font-semibold text-brand-2">
+                    <GraduationCap className="h-3.5 w-3.5" />
+                    Guided walkthrough enabled
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
 
             {/* Self-check for free response */}
             {isFreeResponse && !disableSelfMark ? (

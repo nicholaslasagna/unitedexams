@@ -24,7 +24,7 @@ export function SectionCard({
               {section.term ? ` · ${section.term}` : ""}
             </p>
           </div>
-          <Link href={`/app/professor/sections/${section.id}`} className="text-sm font-semibold text-accent hover:text-text">
+          <Link href={`/app/sections/${section.id}`} className="text-sm font-semibold text-accent hover:text-text">
             Open section
           </Link>
         </div>

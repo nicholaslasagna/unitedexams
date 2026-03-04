@@ -21,11 +21,11 @@ export function Topbar() {
     const matches = [
       ...courses
         .filter((course) => course.name.toLowerCase().includes(q) || course.code.toLowerCase().includes(q))
-        .map((course) => ({ key: course.id, label: `${course.code} • ${course.name}`, href: `/app/courses/${course.id}` })),
+        .map((course) => ({ key: course.id, label: `${course.code} • ${course.name}`, href: `/courses/${course.id}` })),
       ...quizSets
         .filter((quiz) => quiz.title.toLowerCase().includes(q) || quiz.tags.join(" ").toLowerCase().includes(q))
         .slice(0, 4)
-        .map((quiz) => ({ key: quiz.id, label: `Quiz: ${quiz.title}`, href: `/app/quiz/${quiz.id}` }))
+        .map((quiz) => ({ key: quiz.id, label: `Quiz: ${quiz.title}`, href: `/quiz/${quiz.id}` }))
     ];
     return matches.slice(0, 6);
   }, [query]);
