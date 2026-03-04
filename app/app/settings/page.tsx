@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { Download, ShieldCheck, Smartphone, Upload } from "lucide-react";
+import { Download, ShieldCheck, Smartphone, Trash2, Upload } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAppData } from "@/lib/app-data-context";
 import { useToast } from "@/lib/hooks/use-toast";
 import { validatePassword } from "@/lib/auth/password";
@@ -46,6 +48,7 @@ interface MfaApi {
 
 export default function SettingsPage() {
   const {
+    ready,
     preferences,
     savePreferences,
     exportData,
@@ -67,6 +70,8 @@ export default function SettingsPage() {
   const [pendingFactorId, setPendingFactorId] = useState<string | null>(null);
   const [pendingQrSvg, setPendingQrSvg] = useState<string | null>(null);
   const [mfaBusy, setMfaBusy] = useState(false);
+  const [deletePhrase, setDeletePhrase] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const mfaApi = useMemo<MfaApi | undefined>(() => {
     if (!supabase) return undefined;
@@ -90,9 +95,61 @@ export default function SettingsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mfaApi]);
 
+  const updatePreferences = async (
+    updater: (prev: typeof preferences) => typeof preferences,
+    successTitle?: string
+  ) => {
+    const next = updater(preferences);
+    await savePreferences(next);
+    if (successTitle) {
+      push({ title: successTitle, tone: "success" });
+    }
+  };
+
   const onExport = async () => {
-    const data = await exportData();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const localData = await exportData();
+    let exportPayload: unknown = localData;
+
+    if (supabase && user?.id) {
+      const [profileRow, prefRow, userCoursesRows, attemptsRows, masteryRows] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id, email, display_name, real_name, show_real_name, show_university, university_id, role, created_at, updated_at")
+          .eq("id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("user_preferences")
+          .select("theme_mode, accent_hue, accent_strength, reduce_motion, dashboard_layout, created_at, updated_at")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("user_courses")
+          .select("course_id, created_at")
+          .eq("user_id", user.id),
+        supabase
+          .from("attempts")
+          .select("id, quiz_set_id, score, correct_count, total_count, time_spent_seconds, completed_at, created_at, points_earned")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("mastery_by_topic")
+          .select("course_id, tag, mastery, attempts_count, correct_count, updated_at")
+          .eq("user_id", user.id)
+      ]);
+
+      exportPayload = {
+        ...localData,
+        supabase: {
+          profile: profileRow.data ?? null,
+          preferences: prefRow.data ?? null,
+          user_courses: userCoursesRows.data ?? [],
+          attempts_summary: attemptsRows.data ?? [],
+          mastery: masteryRows.data ?? []
+        }
+      };
+    }
+
+    const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: "application/json" });
     const href = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = href;
@@ -257,6 +314,41 @@ export default function SettingsPage() {
     refreshMfa();
   };
 
+  const deleteAccount = async () => {
+    if (!supabase || !user) return;
+    if (deletePhrase.trim() !== "DELETE") {
+      push({ title: "Type DELETE to confirm account deletion", tone: "error" });
+      return;
+    }
+
+    setDeletingAccount(true);
+    try {
+      const { error } = await supabase.rpc("delete_my_account", {
+        confirmation_text: deletePhrase.trim()
+      });
+      if (error) {
+        throw error;
+      }
+      await supabase.auth.signOut();
+      push({ title: "Account deleted", tone: "success" });
+      window.location.href = "/signup";
+    } catch (error) {
+      push({ title: "Unable to delete account", description: (error as Error).message, tone: "error" });
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
+
+  if (!ready) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-52" />
+        <Skeleton className="h-72" />
+        <Skeleton className="h-52" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <section>
@@ -282,7 +374,9 @@ export default function SettingsPage() {
                         ? "border-brand-2/55 bg-brand-2/10 text-text"
                         : "border-borderc text-muted"
                     }`}
-                    onClick={() => savePreferences({ ...preferences, theme })}
+                    onClick={() =>
+                      updatePreferences((prev) => ({ ...prev, theme }), "Theme updated")
+                    }
                   >
                     {theme}
                   </button>
@@ -301,7 +395,9 @@ export default function SettingsPage() {
                 max={295}
                 value={preferences.accentHue}
                 onChange={(event) =>
-                  savePreferences({ ...preferences, accentHue: Number(event.target.value) })
+                  void updatePreferences(
+                    (prev) => ({ ...prev, accentHue: Number(event.target.value) })
+                  )
                 }
                 className="w-full accent-[hsl(var(--brand-2))]"
               />
@@ -316,7 +412,9 @@ export default function SettingsPage() {
                 max={100}
                 value={preferences.accentStrength}
                 onChange={(event) =>
-                  savePreferences({ ...preferences, accentStrength: Number(event.target.value) })
+                  void updatePreferences(
+                    (prev) => ({ ...prev, accentStrength: Number(event.target.value) })
+                  )
                 }
                 className="w-full accent-[hsl(var(--brand-2))]"
               />
@@ -331,7 +429,12 @@ export default function SettingsPage() {
                 type="checkbox"
                 className="h-4 w-4 accent-[hsl(var(--brand-2))]"
                 checked={preferences.reducedMotion}
-                onChange={(event) => savePreferences({ ...preferences, reducedMotion: event.target.checked })}
+                onChange={(event) =>
+                  void updatePreferences(
+                    (prev) => ({ ...prev, reducedMotion: event.target.checked }),
+                    "Motion preference saved"
+                  )
+                }
               />
             </label>
 
@@ -344,9 +447,30 @@ export default function SettingsPage() {
                 type="checkbox"
                 className="h-4 w-4 accent-[hsl(var(--brand-2))]"
                 checked={preferences.confettiEnabled}
-                onChange={(event) => savePreferences({ ...preferences, confettiEnabled: event.target.checked })}
+                onChange={(event) =>
+                  void updatePreferences(
+                    (prev) => ({ ...prev, confettiEnabled: event.target.checked }),
+                    "Celebration setting saved"
+                  )
+                }
               />
             </label>
+
+            <div className="rounded-xl border border-borderc bg-soft p-3">
+              <p className="text-sm font-semibold text-text">Live preview</p>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <Button>Primary</Button>
+                <Button variant="secondary">
+                  Secondary
+                </Button>
+                <Button variant="ghost">
+                  Ghost
+                </Button>
+                <span className="rounded-full border border-borderc bg-surface px-2 py-1 text-xs text-text">
+                  Accent badge
+                </span>
+              </div>
+            </div>
           </CardBody>
         </Card>
 
@@ -384,12 +508,29 @@ export default function SettingsPage() {
                 <ShieldCheck className="h-4 w-4" />
                 Update password
               </Button>
+              <p className="mt-3 text-xs text-muted">
+                Need a reset link instead?{" "}
+                <Link href="/forgot-password" className="font-semibold text-accent hover:text-text">
+                  Forgot password
+                </Link>
+              </p>
             </div>
 
             <div className="rounded-xl border border-borderc bg-soft p-3">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold text-text">2FA (Authenticator app)</p>
-                <Smartphone className="h-4 w-4 text-brand-2" />
+                <div className="inline-flex items-center gap-2">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${
+                      factors.length > 0
+                        ? "bg-success/15 text-success"
+                        : "bg-warn/15 text-warn"
+                    }`}
+                  >
+                    {factors.length > 0 ? "Enabled" : "Not enabled"}
+                  </span>
+                  <Smartphone className="h-4 w-4 text-brand-2" />
+                </div>
               </div>
 
               {factors.length === 0 ? (
@@ -438,9 +579,9 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <h2 className="font-display text-2xl font-semibold">Data portability</h2>
+          <h2 className="font-display text-2xl font-semibold">Data</h2>
         </CardHeader>
-        <CardBody className="space-y-3">
+        <CardBody className="space-y-5">
           <p className="text-sm text-muted">
             Export your progress as JSON or import it from a previous backup.
           </p>
@@ -454,6 +595,24 @@ export default function SettingsPage() {
               Import data
             </Button>
             <input ref={fileRef} type="file" accept="application/json" onChange={onImportFile} className="hidden" />
+          </div>
+
+          <div className="rounded-xl border border-danger/30 bg-danger/10 p-4">
+            <p className="text-sm font-semibold text-danger">Danger Zone</p>
+            <p className="mt-1 text-xs text-muted">
+              This permanently deletes your account and all connected data.
+            </p>
+            <div className="mt-3 grid gap-2 md:grid-cols-[1fr_auto]">
+              <Input
+                value={deletePhrase}
+                onChange={(event) => setDeletePhrase(event.target.value)}
+                placeholder='Type "DELETE" to confirm'
+              />
+              <Button variant="ghost" onClick={deleteAccount} loading={deletingAccount}>
+                <Trash2 className="h-4 w-4" />
+                Delete account
+              </Button>
+            </div>
           </div>
         </CardBody>
       </Card>

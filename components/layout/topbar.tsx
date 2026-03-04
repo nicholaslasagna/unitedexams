@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Search, SunMoon, Sparkles, Command } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { courses, quizSets } from "@/data/seed";
@@ -10,6 +10,7 @@ import { useToast } from "@/lib/hooks/use-toast";
 
 export function Topbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const { profile, preferences, savePreferences, signOut, user } = useAppData();
   const { push } = useToast();
   const [query, setQuery] = useState("");
@@ -82,46 +83,56 @@ export function Topbar() {
           >
             <SunMoon className="h-4 w-4" />
           </button>
-          <details className="relative">
-            <summary className="flex list-none cursor-pointer items-center gap-2 rounded-xl py-1.5 pl-1.5 pr-3 text-sm font-semibold text-text transition-colors hover:bg-white/[0.05] marker:content-['']">
-              <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-accent/[0.15] text-xs font-bold text-accent">
-                {initials}
-              </span>
-              <span className="hidden md:inline">{profile.name || "Student"}</span>
-            </summary>
-            <div className="absolute right-0 mt-2 w-60 rounded-[14px] border border-white/[0.07] bg-[rgba(5,5,16,0.95)] p-3 shadow-elevated backdrop-blur-xl">
-              <p className="text-[10px] font-bold tracking-[1.5px] text-white/[0.3] uppercase">Account</p>
-              <p className="mt-1 text-sm font-semibold text-white">{profile.name || "Student"}</p>
-              <p className="text-xs text-white/[0.3]">{user?.email || profile.email || "No email"}</p>
-              <div className="mt-3 border-t border-white/[0.07] pt-2">
-                <button
-                  type="button"
-                  className="w-full rounded-lg px-2 py-2 text-left text-sm text-white/[0.55] hover:bg-white/[0.05] hover:text-text"
-                  onClick={() => router.push("/app/account")}
-                >
-                  Account
-                </button>
-                <button
-                  type="button"
-                  className="w-full rounded-lg px-2 py-2 text-left text-sm text-white/[0.55] hover:bg-white/[0.05] hover:text-text"
-                  onClick={() => router.push("/app/settings")}
-                >
-                  Settings
-                </button>
-                <button
-                  type="button"
-                  className="w-full rounded-lg px-2 py-2 text-left text-sm text-danger hover:bg-danger/10"
-                  onClick={async () => {
-                    await signOut();
-                    router.replace("/login");
-                    router.refresh();
-                  }}
-                >
-                  Sign out
-                </button>
+          {user ? (
+            <details className="relative">
+              <summary className="flex list-none cursor-pointer items-center gap-2 rounded-xl py-1.5 pl-1.5 pr-3 text-sm font-semibold text-text transition-colors hover:bg-white/[0.05] marker:content-['']">
+                <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-accent/[0.15] text-xs font-bold text-accent">
+                  {initials}
+                </span>
+                <span className="hidden md:inline">{profile.name || "Student"}</span>
+              </summary>
+              <div className="absolute right-0 mt-2 w-60 rounded-[14px] border border-white/[0.07] bg-[rgba(5,5,16,0.95)] p-3 shadow-elevated backdrop-blur-xl">
+                <p className="text-[10px] font-bold tracking-[1.5px] text-white/[0.3] uppercase">Account</p>
+                <p className="mt-1 text-sm font-semibold text-white">{profile.name || "Student"}</p>
+                <p className="text-xs text-white/[0.3]">{user.email || profile.email || "No email"}</p>
+                <div className="mt-3 border-t border-white/[0.07] pt-2">
+                  <button
+                    type="button"
+                    className="w-full rounded-lg px-2 py-2 text-left text-sm text-white/[0.55] hover:bg-white/[0.05] hover:text-text"
+                    onClick={() => router.push("/app/account")}
+                  >
+                    Account
+                  </button>
+                  <button
+                    type="button"
+                    className="w-full rounded-lg px-2 py-2 text-left text-sm text-white/[0.55] hover:bg-white/[0.05] hover:text-text"
+                    onClick={() => router.push("/app/settings")}
+                  >
+                    Settings
+                  </button>
+                  <button
+                    type="button"
+                    className="w-full rounded-lg px-2 py-2 text-left text-sm text-danger hover:bg-danger/10"
+                    onClick={async () => {
+                      await signOut();
+                      router.replace("/login");
+                      router.refresh();
+                    }}
+                  >
+                    Sign out
+                  </button>
+                </div>
               </div>
-            </div>
-          </details>
+            </details>
+          ) : (
+            <button
+              type="button"
+              className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm font-semibold text-text hover:bg-white/[0.08]"
+              onClick={() => router.push(`/login?next=${encodeURIComponent(pathname || "/courses")}`)}
+            >
+              Sign in
+            </button>
+          )}
         </div>
       </div>
     </header>

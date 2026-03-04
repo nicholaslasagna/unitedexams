@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   Clock3,
   Flame,
-  Sparkles,
   Target,
   TrendingUp,
   Trophy
@@ -25,8 +24,11 @@ import {
   recentAttempts
 } from "@/features/progress/metrics";
 import { formatRelativeDate } from "@/lib/utils";
+import { fetchUserCourses } from "@/features/account/api";
+import { getRecommendations } from "@/features/recommendations/api";
+import { RecommendationsPanel } from "@/features/recommendations/components/recommendations-panel";
+import type { RecommendationItem } from "@/features/recommendations/scoring";
 
-/* ── 28-day heatmap helper ── */
 function buildHeatmap(attempts: { date: string }[]) {
   const today = new Date();
   const cells: { key: string; date: string; count: number; label: string }[] = [];
@@ -42,16 +44,36 @@ function buildHeatmap(attempts: { date: string }[]) {
 }
 
 export default function DashboardPage() {
-  const { ready, attempts } = useAppData();
+  const { ready, attempts, supabase, user } = useAppData();
+
+  const [userCourseIds, setUserCourseIds] = useState<string[]>([]);
+  const [recommendations, setRecommendations] = useState<RecommendationItem[]>([]);
+  const [recommendationsLoading, setRecommendationsLoading] = useState(false);
 
   const streak = useMemo(() => getStreak(attempts), [attempts]);
   const points = useMemo(() => leaderboardPoints(attempts), [attempts]);
   const heatmap = useMemo(() => buildHeatmap(attempts), [attempts]);
 
-  const continueQuiz = useMemo(() => {
-    const latest = [...attempts].sort((a, b) => +new Date(b.date) - +new Date(a.date))[0];
-    return latest ? quizSets.find((quiz) => quiz.id === latest.quizId) : quizSets[0];
+  const recentCompletedQuizzes = useMemo(() => {
+    const sorted = [...attempts].sort((a, b) => +new Date(b.date) - +new Date(a.date));
+    const seen = new Set<string>();
+    const result: typeof quizSets = [];
+
+    for (const attempt of sorted) {
+      if (seen.has(attempt.quizId)) continue;
+      const found = quizSets.find((quiz) => quiz.id === attempt.quizId);
+      if (found) {
+        seen.add(found.id);
+        result.push(found);
+      }
+      if (result.length >= 3) break;
+    }
+
+    if (result.length === 0 && quizSets[0]) result.push(quizSets[0]);
+    return result;
   }, [attempts]);
+
+  const continueQuiz = recentCompletedQuizzes[0];
 
   const continueQuizBest = useMemo(() => {
     if (!continueQuiz) return 0;
@@ -83,6 +105,37 @@ export default function DashboardPage() {
 
   const recent = useMemo(() => recentAttempts(attempts, 6), [attempts]);
 
+  const onboardingIncomplete = Boolean(user) && userCourseIds.length === 0;
+
+  useEffect(() => {
+    if (!supabase || !user) {
+      setUserCourseIds([]);
+      return;
+    }
+
+    fetchUserCourses(supabase, user.id)
+      .then((ids) => setUserCourseIds(ids))
+      .catch(() => setUserCourseIds([]));
+  }, [supabase, user]);
+
+  useEffect(() => {
+    if (!ready) return;
+    if (!user || userCourseIds.length === 0) {
+      setRecommendations([]);
+      return;
+    }
+
+    setRecommendationsLoading(true);
+    getRecommendations(supabase, {
+      limit: 6,
+      attempts,
+      userCourseIds
+    })
+      .then((items) => setRecommendations(items))
+      .catch(() => setRecommendations([]))
+      .finally(() => setRecommendationsLoading(false));
+  }, [ready, attempts, userCourseIds, supabase, user]);
+
   if (!ready) {
     return (
       <div className="space-y-4">
@@ -95,9 +148,7 @@ export default function DashboardPage() {
 
   return (
     <div className="animate-rise space-y-8">
-      {/* ── HERO ROW ── */}
       <section className="grid gap-5 xl:grid-cols-[1.2fr_1fr]">
-        {/* Continue studying */}
         <Card className="mesh-hero overflow-hidden">
           <CardBody className="space-y-5 p-7 md:p-8">
             <div className="inline-flex items-center gap-2">
@@ -109,9 +160,10 @@ export default function DashboardPage() {
             <p className="max-w-xl text-[15px] leading-relaxed text-white/[0.55]">
               Pick up where you left off. One quality attempt keeps momentum alive.
             </p>
+
             {continueQuiz ? (
               <div className="rounded-[14px] border border-white/[0.07] bg-white/[0.025] p-5 backdrop-blur-sm">
-                <p className="text-[10px] font-bold tracking-[1.5px] text-white/[0.3] uppercase">Next recommendation</p>
+                <p className="text-[10px] font-bold tracking-[1.5px] text-white/[0.3] uppercase">Continue with</p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-xl font-bold text-white">{continueQuiz.title}</p>
@@ -121,16 +173,32 @@ export default function DashboardPage() {
                     </p>
                   </div>
                   <div className="grid grid-cols-2 gap-3 text-right">
-                    <div className="rounded-[10px] bg-white/[0.025] border border-white/[0.07] px-4 py-3">
+                    <div className="rounded-[10px] border border-white/[0.07] bg-white/[0.025] px-4 py-3">
                       <p className="text-[10px] font-bold tracking-[1.5px] text-white/[0.3] uppercase">Best</p>
                       <p className="font-mono text-2xl font-bold text-accent">{continueQuizBest}%</p>
                     </div>
-                    <div className="rounded-[10px] bg-white/[0.025] border border-white/[0.07] px-4 py-3">
+                    <div className="rounded-[10px] border border-white/[0.07] bg-white/[0.025] px-4 py-3">
                       <p className="text-[10px] font-bold tracking-[1.5px] text-white/[0.3] uppercase">Est</p>
                       <p className="font-mono text-2xl font-bold text-text">{continueQuiz.estMinutes}m</p>
                     </div>
                   </div>
                 </div>
+
+                {recentCompletedQuizzes.length > 1 ? (
+                  <div className="mt-4 grid gap-2">
+                    <p className="text-[10px] font-bold tracking-[1.5px] text-white/[0.3] uppercase">Also continue</p>
+                    {recentCompletedQuizzes.slice(1).map((set) => (
+                      <Link
+                        key={set.id}
+                        href={`/app/quiz/${set.id}`}
+                        className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm text-text hover:bg-white/[0.06]"
+                      >
+                        {set.title}
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
+
                 <div className="mt-5 flex flex-wrap gap-3">
                   <Button asChild className="px-7">
                     <Link href={`/app/quiz/${continueQuiz.id}`}>
@@ -147,7 +215,6 @@ export default function DashboardPage() {
           </CardBody>
         </Card>
 
-        {/* Study streak */}
         <Card>
           <CardBody className="space-y-5 p-6">
             <div className="flex items-center justify-between">
@@ -169,7 +236,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* 28-day heatmap calendar */}
             <div className="rounded-[14px] border border-white/[0.07] bg-white/[0.025] p-4">
               <p className="text-[10px] font-bold tracking-[1.5px] text-white/[0.3] uppercase">Last 28 days</p>
               <div className="mt-3 grid grid-cols-7 gap-[6px]">
@@ -190,36 +256,13 @@ export default function DashboardPage() {
                   />
                 ))}
               </div>
-              <div className="mt-3 flex items-center justify-end gap-1.5 text-[10px] text-white/[0.3]">
-                <span>Less</span>
-                <span className="h-[10px] w-[10px] rounded-[2px] bg-white/[0.06]" />
-                <span className="h-[10px] w-[10px] rounded-[2px] bg-accent/30" />
-                <span className="h-[10px] w-[10px] rounded-[2px] bg-accent/60" />
-                <span className="h-[10px] w-[10px] rounded-[2px] bg-accent/90" />
-                <span>More</span>
-              </div>
             </div>
 
-            {/* Today's goal */}
             <div className="rounded-[14px] border border-white/[0.07] bg-white/[0.025] p-4">
-              <div className="flex items-center justify-between">
-                <p className="text-[10px] font-bold tracking-[1.5px] text-white/[0.3] uppercase">Today&apos;s goal</p>
-                {studiedToday ? (
-                  <span className="rounded-full bg-success/[0.12] px-2 py-0.5 text-[10px] font-bold text-success">Complete</span>
-                ) : null}
-              </div>
+              <p className="text-[10px] font-bold tracking-[1.5px] text-white/[0.3] uppercase">Today&apos;s goal</p>
               <p className="mt-2 text-[14px] font-medium text-text">
                 {studiedToday ? "Goal complete. Keep momentum with review mode." : "Finish one 20-minute quiz sprint."}
               </p>
-              {studiedToday ? (
-                <div className="mt-3 h-[4px] w-full overflow-hidden rounded-full bg-white/[0.06]">
-                  <div className="h-full w-full rounded-full bg-success/70" />
-                </div>
-              ) : (
-                <div className="mt-3 h-[4px] w-full overflow-hidden rounded-full bg-white/[0.06]">
-                  <div className="h-full w-0 rounded-full bg-accent-gradient" />
-                </div>
-              )}
               <Button asChild variant={studiedToday ? "secondary" : "primary"} className="mt-4 w-full">
                 <Link href={continueQuiz ? `/app/quiz/${continueQuiz.id}` : "/app/courses"}>
                   {studiedToday ? "Run a quick review" : "Start today's sprint"}
@@ -230,7 +273,6 @@ export default function DashboardPage() {
         </Card>
       </section>
 
-      {/* ── COURSE CARDS ── */}
       <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {courses.map((course) => {
           const progress = courseProgress(attempts, course.id);
@@ -247,9 +289,9 @@ export default function DashboardPage() {
             <Link
               key={course.id}
               href={`/app/courses/${course.id}`}
-              className="group rounded-[20px] border border-white/[0.07] bg-white/[0.035] backdrop-blur-xl shadow-subtle transition duration-200 hover:bg-white/[0.065] hover:shadow-soft hover:border-white/[0.12] hover:-translate-y-[2px]"
+              className="group rounded-[20px] border border-white/[0.07] bg-white/[0.035] shadow-subtle backdrop-blur-xl transition duration-200 hover:-translate-y-[2px] hover:border-white/[0.12] hover:bg-white/[0.065] hover:shadow-soft"
             >
-              <div className="p-5 space-y-4">
+              <div className="space-y-4 p-5">
                 <div>
                   <span className="text-[10px] font-bold tracking-[1.5px] text-accent uppercase">{course.code}</span>
                   <h2 className="mt-1 font-display text-[16px] font-bold text-white">{course.name}</h2>
@@ -274,15 +316,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-1.5">
-                  {course.tags.slice(0, 2).map((tag) => (
-                    <span key={tag} className="rounded-full bg-accent/[0.1] px-2.5 py-0.5 text-[10px] font-semibold text-accent">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="flex items-center justify-between text-[13px] font-semibold text-white/[0.3] group-hover:text-white/[0.55] transition-colors">
+                <div className="flex items-center justify-between text-[13px] font-semibold text-white/[0.3] transition-colors group-hover:text-white/[0.55]">
                   <span>Open course</span>
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -292,9 +326,7 @@ export default function DashboardPage() {
         })}
       </section>
 
-      {/* ── BOTTOM ROW ── */}
       <section className="grid gap-5 xl:grid-cols-[1.4fr_1fr]">
-        {/* Recent attempts */}
         <Card>
           <CardHeader>
             <h2 className="font-display text-lg font-bold text-white">Recent attempts</h2>
@@ -333,51 +365,51 @@ export default function DashboardPage() {
           </CardBody>
         </Card>
 
-        {/* Focus lane */}
-        <Card>
-          <CardHeader>
-            <h2 className="inline-flex items-center gap-2 font-display text-lg font-bold text-white">
-              <TrendingUp className="h-5 w-5 text-accent" />
-              Focus lane
-            </h2>
-          </CardHeader>
-          <CardBody className="space-y-3">
-            <p className="text-[14px] text-white/[0.55]">
-              Choose one course below for a 20-minute high-focus sprint.
-            </p>
-            <div className="grid gap-2">
-              <div className="flex items-center justify-between rounded-[10px] border border-white/[0.07] bg-white/[0.025] px-4 py-3">
-                <span className="inline-flex items-center gap-2 text-[14px] text-text">
-                  <Trophy className="h-4 w-4 text-accent" />
-                  Personal best
-                </span>
-                <span className="font-mono text-sm font-bold text-accent">{continueQuizBest}%</span>
+        <div className="space-y-5">
+          <RecommendationsPanel items={recommendations} blockedByOnboarding={onboardingIncomplete} />
+
+          <Card>
+            <CardHeader>
+              <h2 className="inline-flex items-center gap-2 font-display text-lg font-bold text-white">
+                <TrendingUp className="h-5 w-5 text-accent" />
+                Focus lane
+              </h2>
+            </CardHeader>
+            <CardBody className="space-y-3">
+              <div className="grid gap-2">
+                <div className="flex items-center justify-between rounded-[10px] border border-white/[0.07] bg-white/[0.025] px-4 py-3">
+                  <span className="inline-flex items-center gap-2 text-[14px] text-text">
+                    <Trophy className="h-4 w-4 text-accent" />
+                    Personal best
+                  </span>
+                  <span className="font-mono text-sm font-bold text-accent">{continueQuizBest}%</span>
+                </div>
+                <div className="flex items-center justify-between rounded-[10px] border border-white/[0.07] bg-white/[0.025] px-4 py-3">
+                  <span className="inline-flex items-center gap-2 text-[14px] text-text">
+                    <Target className="h-4 w-4 text-brand-2" />
+                    Recommendation status
+                  </span>
+                  <span className="text-[13px] font-semibold text-white/[0.7]">
+                    {recommendationsLoading ? "Loading" : onboardingIncomplete ? "Needs onboarding" : "Ready"}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center justify-between rounded-[10px] border border-white/[0.07] bg-white/[0.025] px-4 py-3">
-                <span className="inline-flex items-center gap-2 text-[14px] text-text">
-                  <Sparkles className="h-4 w-4 text-brand-2" />
-                  Today&apos;s momentum
-                </span>
-                <span className={`text-[13px] font-semibold ${studiedToday ? "text-success" : "text-white/[0.3]"}`}>
-                  {studiedToday ? "Active" : "Not started"}
-                </span>
-              </div>
-            </div>
-            {focusCourses.map((course) => (
-              <Link
-                key={course.id}
-                href={`/app/courses/${course.id}`}
-                className="flex items-center justify-between rounded-[10px] border border-white/[0.07] bg-white/[0.025] px-4 py-3 text-[14px] transition-all hover:bg-white/[0.05] hover:border-white/[0.12]"
-              >
-                <span className="inline-flex items-center gap-2">
-                  <Target className="h-4 w-4 text-warn" />
-                  {course.name}
-                </span>
-                <ArrowRight className="h-4 w-4 text-white/[0.3]" />
-              </Link>
-            ))}
-          </CardBody>
-        </Card>
+              {focusCourses.map((course) => (
+                <Link
+                  key={course.id}
+                  href={`/app/courses/${course.id}`}
+                  className="flex items-center justify-between rounded-[10px] border border-white/[0.07] bg-white/[0.025] px-4 py-3 text-[14px] transition-all hover:border-white/[0.12] hover:bg-white/[0.05]"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <Target className="h-4 w-4 text-warn" />
+                    {course.name}
+                  </span>
+                  <ArrowRight className="h-4 w-4 text-white/[0.3]" />
+                </Link>
+              ))}
+            </CardBody>
+          </Card>
+        </div>
       </section>
     </div>
   );

@@ -13,7 +13,9 @@ import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { getLocalRepository } from "@/lib/storage/local-repository";
 import { SupabaseRepository } from "@/lib/storage/supabase-repository";
 import { defaultPreferences, defaultProfile, type DataRepository } from "@/lib/storage/repository";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { migrateGuestAttemptsToAccount } from "@/lib/storage/guest-migration";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { applyThemeCssVars } from "@/lib/theme/css-vars";
 import type { AppDataDump, AppPreferences, Attempt, UserProfile } from "@/lib/types";
 
 interface AppDataContextValue {
@@ -35,10 +37,6 @@ interface AppDataContextValue {
 }
 
 const AppDataContext = createContext<AppDataContextValue | null>(null);
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value));
-}
 
 function resolveTheme(theme: AppPreferences["theme"]) {
   if (theme === "system") {
@@ -75,11 +73,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     root.classList.toggle("dark", resolved === "dark");
     root.style.colorScheme = resolved;
     root.dataset.reduceMotion = prefs.reducedMotion ? "on" : "off";
-    root.style.setProperty("--accent-hue", String(clamp(prefs.accentHue, 220, 295)));
-    root.style.setProperty("--accent-strength", String(clamp(prefs.accentStrength, 0, 100)));
+    applyThemeCssVars({ accentHue: prefs.accentHue, accentStrength: prefs.accentStrength });
   }, []);
 
   const refresh = useCallback(async () => {
+    if (supabase && user && repo instanceof SupabaseRepository) {
+      try {
+        await migrateGuestAttemptsToAccount(user.id, {
+          guestRepository: localRepo,
+          accountRepository: repo
+        });
+      } catch {
+        // Non-blocking: app still loads even if migration fails.
+      }
+    }
+
     const [nextAttempts, nextProfile, nextPrefs] = await Promise.all([
       repo.getAttempts(),
       repo.getProfile(),
@@ -95,7 +103,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       window.localStorage.setItem("ue.profile.v1", JSON.stringify(nextProfile));
     }
     setReady(true);
-  }, [repo, applyPreferences]);
+  }, [supabase, user, repo, localRepo, applyPreferences]);
 
   useEffect(() => {
     if (!supabase) {
@@ -199,6 +207,11 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     if (!supabase) return;
+    try {
+      await fetch("/auth/signout", { method: "POST" });
+    } catch {
+      // Ignore API route failures and still sign out client-side.
+    }
     await supabase.auth.signOut();
     sessionStorage.removeItem("ue.activeSession");
     localStorage.removeItem("ue.rememberSession");

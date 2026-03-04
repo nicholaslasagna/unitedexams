@@ -6,7 +6,7 @@ import type { FormEvent } from "react";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export default function ForgotPasswordPage() {
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);

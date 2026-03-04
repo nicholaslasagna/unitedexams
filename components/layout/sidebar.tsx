@@ -12,8 +12,9 @@ import {
   GraduationCap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAppData } from "@/lib/app-data-context";
 
-const items = [
+const baseItems = [
   { href: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/app/courses", label: "Courses", icon: LibraryBig },
   { href: "/app/leaderboard", label: "Leaderboard", icon: Trophy },
@@ -24,6 +25,11 @@ const items = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { profile } = useAppData();
+  const showProfessor = profile.role === "professor" || profile.role === "admin";
+  const items = showProfessor
+    ? [...baseItems.slice(0, 3), { href: "/app/professor", label: "Professor", icon: GraduationCap }, ...baseItems.slice(3)]
+    : baseItems;
 
   return (
     <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 border-r border-white/[0.07] bg-[rgba(5,5,16,0.88)] px-4 pb-5 pt-5 backdrop-blur-xl lg:block">

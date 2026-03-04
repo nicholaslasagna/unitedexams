@@ -7,7 +7,7 @@ import { Mail, Send } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export default function ContactPage() {
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);

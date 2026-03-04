@@ -43,8 +43,11 @@ export default function LandingPage() {
           <Link href="/contact" className="rounded-xl border border-borderc px-4 py-2 text-sm font-semibold text-text hover:bg-soft">
             Contact
           </Link>
-          <Link href="/app/dashboard" className="rounded-xl bg-brand-gradient px-4 py-2 text-sm font-semibold text-white shadow-soft">
-            Get Started
+          <Link href="/courses" className="rounded-xl bg-brand-gradient px-4 py-2 text-sm font-semibold text-white shadow-soft">
+            Start Studying
+          </Link>
+          <Link href="/login" className="rounded-xl border border-borderc px-4 py-2 text-sm font-semibold text-text hover:bg-soft">
+            Sign in
           </Link>
         </div>
       </header>
@@ -67,7 +70,7 @@ export default function LandingPage() {
                 Open Dashboard
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link href="/app/courses" className="inline-flex items-center rounded-xl border border-borderc px-5 py-3 text-sm font-semibold text-text hover:bg-soft">
+              <Link href="/courses" className="inline-flex items-center rounded-xl border border-borderc px-5 py-3 text-sm font-semibold text-text hover:bg-soft">
                 Explore Course Catalog
               </Link>
             </div>
@@ -164,8 +167,8 @@ export default function LandingPage() {
             <Link href="/contact">Contact</Link>
             <Link href="/login">Login</Link>
             <Link href="/app/settings">Settings</Link>
-            <Link href="/app/courses">Courses</Link>
-            <Link href="/app/leaderboard">Leaderboard</Link>
+            <Link href="/courses">Courses</Link>
+            <Link href="/leaderboard">Leaderboard</Link>
           </div>
         </div>
       </footer>

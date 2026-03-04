@@ -2,26 +2,49 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { resolveNextAfterLogin } from "@/lib/auth/guards";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useAppData } from "@/lib/app-data-context";
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+  const { signOut } = useAppData();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeEmail, setActiveEmail] = useState<string | null>(null);
 
-  const next = searchParams.get("next") || "/app/dashboard";
+  const next = resolveNextAfterLogin(searchParams.get("next"));
   const passwordUpdated = searchParams.get("passwordUpdated") === "1";
+  const guestReturnPath = next.startsWith("/app/") ? "/courses" : next;
+
+  useEffect(() => {
+    if (!supabase) return;
+    let mounted = true;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!mounted) return;
+      setActiveEmail(data.user?.email ?? null);
+    });
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setActiveEmail(session?.user?.email ?? null);
+    });
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -61,9 +84,33 @@ export function LoginForm() {
           <Link href="/signup" className="font-semibold text-accent hover:text-white">
             Create an account
           </Link>
+          {" · "}
+          <Link href={guestReturnPath} className="font-semibold text-accent hover:text-white">
+            Continue as guest
+          </Link>
         </p>
       }
     >
+      {activeEmail ? (
+        <div className="space-y-3 rounded-xl border border-brand-2/35 bg-brand-2/10 p-4">
+          <p className="text-sm text-white/85">
+            You&apos;re already signed in as <span className="font-semibold text-white">{activeEmail}</span>.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => router.push("/app/dashboard")}>Go to dashboard</Button>
+            <Button
+              variant="secondary"
+              onClick={async () => {
+                await signOut();
+                setActiveEmail(null);
+                router.refresh();
+              }}
+            >
+              Sign out
+            </Button>
+          </div>
+        </div>
+      ) : (
       <form className="space-y-4" onSubmit={onSubmit}>
         {passwordUpdated ? (
           <p className="rounded-lg border border-success/35 bg-success/10 px-3 py-2 text-sm text-success">
@@ -122,6 +169,7 @@ export function LoginForm() {
           Sign in
         </Button>
       </form>
+      )}
     </AuthShell>
   );
 }
