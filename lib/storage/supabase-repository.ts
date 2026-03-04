@@ -23,6 +23,7 @@ interface ProfileRow {
   show_university: boolean;
   role: "student" | "professor" | "admin";
   reset_required: boolean;
+  mfa_enabled?: boolean;
   universities?: { name: string }[] | null;
 }
 
@@ -33,6 +34,7 @@ interface PreferencesRow {
   accent_strength: number;
   reduce_motion: boolean;
   dashboard_layout: string;
+  extra_signin_protection: boolean | null;
 }
 
 interface AttemptRow {
@@ -109,7 +111,8 @@ export class SupabaseRepository implements DataRepository {
       accent_hue: defaultPreferences.accentHue,
       accent_strength: defaultPreferences.accentStrength,
       reduce_motion: defaultPreferences.reducedMotion,
-      dashboard_layout: defaultPreferences.dashboardLayout
+      dashboard_layout: defaultPreferences.dashboardLayout,
+      extra_signin_protection: defaultPreferences.extraSigninProtection
     });
 
     this.ensured = true;
@@ -237,7 +240,7 @@ export class SupabaseRepository implements DataRepository {
     const { data, error } = await this.client
       .from("profiles")
       .select(
-        "id, email, display_name, real_name, show_real_name, university_id, show_university, role, reset_required, universities(name)"
+        "id, email, display_name, real_name, show_real_name, university_id, show_university, role, reset_required, mfa_enabled, universities(name)"
       )
       .eq("id", this.user.id)
       .single();
@@ -262,7 +265,8 @@ export class SupabaseRepository implements DataRepository {
       showUniversity: row.show_university,
       universityId: row.university_id ?? undefined,
       role: row.role,
-      resetRequired: row.reset_required
+      resetRequired: row.reset_required,
+      mfaEnabled: Boolean(row.mfa_enabled)
     };
   }
 
@@ -287,7 +291,9 @@ export class SupabaseRepository implements DataRepository {
 
     const { data, error } = await this.client
       .from("user_preferences")
-      .select("user_id, theme_mode, accent_hue, accent_strength, reduce_motion, dashboard_layout")
+      .select(
+        "user_id, theme_mode, accent_hue, accent_strength, reduce_motion, dashboard_layout, extra_signin_protection"
+      )
       .eq("user_id", this.user.id)
       .single();
 
@@ -301,7 +307,8 @@ export class SupabaseRepository implements DataRepository {
       accentHue: row.accent_hue,
       accentStrength: row.accent_strength,
       palette: findClosestPalette(row.accent_hue, row.accent_strength),
-      dashboardLayout: row.dashboard_layout
+      dashboardLayout: row.dashboard_layout,
+      extraSigninProtection: Boolean(row.extra_signin_protection)
     };
   }
 
@@ -314,7 +321,8 @@ export class SupabaseRepository implements DataRepository {
       accent_hue: preferences.accentHue,
       accent_strength: preferences.accentStrength,
       reduce_motion: preferences.reducedMotion,
-      dashboard_layout: preferences.dashboardLayout
+      dashboard_layout: preferences.dashboardLayout,
+      extra_signin_protection: preferences.extraSigninProtection
     });
   }
 

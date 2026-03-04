@@ -52,6 +52,15 @@ interface PendingEmailChange {
   status: "pending" | "confirmed" | "cancelled";
 }
 
+interface TrustedIpEntry {
+  ipHash: string;
+  maskedIp: string;
+  approved: boolean;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  approvedAt: string | null;
+}
+
 export default function SettingsPage() {
   const {
     ready,
@@ -75,6 +84,9 @@ export default function SettingsPage() {
   const [emailPassword, setEmailPassword] = useState("");
   const [emailBusy, setEmailBusy] = useState(false);
   const [pendingEmailChange, setPendingEmailChange] = useState<PendingEmailChange | null>(null);
+  const [trustedIps, setTrustedIps] = useState<TrustedIpEntry[]>([]);
+  const [trustedIpsLoading, setTrustedIpsLoading] = useState(false);
+  const [trustedIpsBusy, setTrustedIpsBusy] = useState<string | null>(null);
 
   const [factors, setFactors] = useState<MfaFactor[]>([]);
   const [mfaCode, setMfaCode] = useState("");
@@ -115,7 +127,48 @@ export default function SettingsPage() {
     if (result.error) return;
     const next = result.data?.all ?? result.data?.totp ?? [];
     setFactors(next);
+
+    if (supabase && user) {
+      await supabase
+        .from("profiles")
+        .update({ mfa_enabled: next.length > 0 })
+        .eq("id", user.id);
+    }
   };
+
+  const loadTrustedIps = useCallback(async () => {
+    if (!user) {
+      setTrustedIps([]);
+      return;
+    }
+
+    setTrustedIpsLoading(true);
+    try {
+      const response = await fetch("/api/auth/trusted-ips", {
+        method: "GET",
+        cache: "no-store"
+      });
+      const payload = (await response.json()) as {
+        items?: TrustedIpEntry[];
+        error?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(payload.error || "Unable to load trusted networks.");
+      }
+
+      setTrustedIps(payload.items ?? []);
+    } catch (error) {
+      setTrustedIps([]);
+      push({
+        title: "Unable to load trusted networks",
+        description: (error as Error).message,
+        tone: "error"
+      });
+    } finally {
+      setTrustedIpsLoading(false);
+    }
+  }, [push, user]);
 
   useEffect(() => {
     refreshMfa();
@@ -125,6 +178,10 @@ export default function SettingsPage() {
   useEffect(() => {
     void loadPendingEmailChange();
   }, [loadPendingEmailChange]);
+
+  useEffect(() => {
+    void loadTrustedIps();
+  }, [loadTrustedIps]);
 
   const updatePreferences = async (
     updater: (prev: typeof preferences) => typeof preferences,
@@ -386,6 +443,31 @@ export default function SettingsPage() {
       push({ title: "Unable to cancel", description: (error as Error).message, tone: "error" });
     } finally {
       setEmailBusy(false);
+    }
+  };
+
+  const revokeTrustedIp = async (ipHash: string) => {
+    setTrustedIpsBusy(ipHash);
+    try {
+      const response = await fetch("/api/auth/trusted-ips", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ipHash })
+      });
+      const payload = (await response.json()) as { ok?: boolean; error?: string };
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error || "Unable to revoke trusted network.");
+      }
+      await loadTrustedIps();
+      push({ title: "Trusted network revoked", tone: "success" });
+    } catch (error) {
+      push({
+        title: "Unable to revoke trusted network",
+        description: (error as Error).message,
+        tone: "error"
+      });
+    } finally {
+      setTrustedIpsBusy(null);
     }
   };
 
@@ -736,6 +818,73 @@ export default function SettingsPage() {
                   Forgot password
                 </Link>
               </p>
+            </div>
+
+            <div className="rounded-xl border border-borderc bg-soft p-3">
+              <label className="flex items-center justify-between gap-3">
+                <span>
+                  <span className="block text-sm font-semibold text-text">Extra sign-in protection</span>
+                  <span className="mt-0.5 block text-xs text-muted">
+                    Require email approval for new networks. Professor/admin accounts are always protected; if 2FA is off, we strongly recommend enabling this.
+                  </span>
+                </span>
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-[hsl(var(--brand-2))]"
+                  checked={Boolean(preferences.extraSigninProtection)}
+                  onChange={(event) =>
+                    void updatePreferences(
+                      (prev) => ({
+                        ...prev,
+                        extraSigninProtection: event.target.checked
+                      }),
+                      "Sign-in protection updated"
+                    )
+                  }
+                />
+              </label>
+
+              <div className="mt-4 rounded-lg border border-borderc bg-surface p-3">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                    Trusted networks
+                  </p>
+                  <Button variant="ghost" onClick={() => void loadTrustedIps()}>
+                    Refresh
+                  </Button>
+                </div>
+
+                {trustedIpsLoading ? (
+                  <p className="text-xs text-muted">Loading trusted networks…</p>
+                ) : trustedIps.length === 0 ? (
+                  <p className="text-xs text-muted">
+                    No approved network entries yet. New networks will require email approval.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {trustedIps.map((entry) => (
+                      <div
+                        key={entry.ipHash}
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-borderc bg-soft px-3 py-2"
+                      >
+                        <div className="space-y-0.5">
+                          <p className="font-mono text-xs text-text">{entry.maskedIp}</p>
+                          <p className="text-[11px] text-muted">
+                            Last seen {new Date(entry.lastSeenAt).toLocaleString()}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          onClick={() => revokeTrustedIp(entry.ipHash)}
+                          loading={trustedIpsBusy === entry.ipHash}
+                        >
+                          Revoke
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="rounded-xl border border-borderc bg-soft p-3">
