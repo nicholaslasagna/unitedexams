@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="United Exams">
+  <defs>
+    <linearGradient id="ue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6d5efc" />
+      <stop offset="100%" stop-color="#24c6ff" />
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="52" fill="#0b1023" />
+  <rect x="16" y="16" width="224" height="224" rx="44" fill="none" stroke="url(#ue-grad)" stroke-width="6" />
+  <text
+    x="128"
+    y="147"
+    text-anchor="middle"
+    font-family="Outfit, Segoe UI, Arial, sans-serif"
+    font-size="92"
+    font-weight="700"
+    letter-spacing="-3"
+    fill="#f4f7ff"
+  >
+    UE
+  </text>
+</svg>
