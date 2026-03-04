@@ -141,6 +141,7 @@ Deno.serve(async (request) => {
 
   return json(200, {
     ok: true,
-    ipHash: challenge.ip_hash
+    ipHash: challenge.ip_hash,
+    userId: challenge.user_id
   });
 });
