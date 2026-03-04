@@ -3,6 +3,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { LEGAL_VERSION } from "@/lib/auth/legal";
 import { getClientIp, hashIpForStorage, userAgentSnippet } from "@/lib/auth/ip-protection";
 
+export const runtime = "nodejs";
+
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
   if (!supabase) {
