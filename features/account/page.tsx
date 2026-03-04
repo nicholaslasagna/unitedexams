@@ -18,7 +18,13 @@ import {
 } from "@/features/account/api";
 import { joinSectionByCode } from "@/features/professor/api";
 import type { UniversityRecord } from "@/lib/supabase/types";
-import { getDisplayNameMaxLength, validateDisplayName } from "@/lib/auth/display-name";
+import {
+  getDisplayNameMaxLength,
+  getRealNameMaxLength,
+  normalizeRealName,
+  validateDisplayName,
+  validateRealName
+} from "@/lib/auth/display-name";
 
 function parseOnboardingParam() {
   if (typeof window === "undefined") return false;
@@ -126,7 +132,15 @@ export function AccountPageContent() {
       return false;
     }
 
-    if (nextShowRealName && !nextRealName.trim()) {
+    const realNameCheck = validateRealName(nextRealName);
+    if (!realNameCheck.valid) {
+      setPrivacyError(realNameCheck.message);
+      return false;
+    }
+
+    const normalizedRealName = normalizeRealName(nextRealName);
+
+    if (nextShowRealName && !normalizedRealName) {
       setPrivacyError("Add a real name before enabling 'show real name'.");
       return false;
     }
@@ -141,7 +155,7 @@ export function AccountPageContent() {
       await saveProfile({
         ...profile,
         name: nextDisplayName.trim() || "Student",
-        realName: nextRealName.trim() || undefined,
+        realName: normalizedRealName || undefined,
         showRealName: nextShowRealName,
         showUniversity: nextShowUniversity,
         universityId: nextUniversityId
@@ -229,7 +243,12 @@ export function AccountPageContent() {
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Real name (optional)</label>
-              <Input value={realName} onChange={(event) => setRealName(event.target.value)} placeholder="Your legal/full name" />
+              <Input
+                value={realName}
+                maxLength={getRealNameMaxLength()}
+                onChange={(event) => setRealName(event.target.value)}
+                placeholder="Your legal/full name"
+              />
             </div>
           </div>
 

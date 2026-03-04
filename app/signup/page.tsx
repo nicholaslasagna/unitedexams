@@ -14,7 +14,10 @@ import { useAppData } from "@/lib/app-data-context";
 import { validatePassword } from "@/lib/auth/password";
 import {
   getDisplayNameMaxLength,
+  getRealNameMaxLength,
   normalizeDisplayName,
+  normalizeRealName,
+  validateRealName,
   validateDisplayName
 } from "@/lib/auth/display-name";
 
@@ -81,8 +84,14 @@ function SignupPageContent() {
       setError(displayNameCheck.message);
       return;
     }
+    const realNameCheck = validateRealName(realName);
+    if (!realNameCheck.valid) {
+      setError(realNameCheck.message);
+      return;
+    }
 
     const normalizedDisplayName = normalizeDisplayName(displayName);
+    const normalizedRealName = normalizeRealName(realName);
 
     setLoading(true);
     const redirectTo = `${window.location.origin}/login`;
@@ -94,7 +103,7 @@ function SignupPageContent() {
         emailRedirectTo: redirectTo,
         data: {
           display_name: normalizedDisplayName,
-          real_name: realName.trim() || null,
+          real_name: normalizedRealName || null,
           show_real_name: showRealName
         }
       }
@@ -112,7 +121,7 @@ function SignupPageContent() {
         id: data.user.id,
         email: email.trim(),
         display_name: normalizedDisplayName,
-        real_name: realName.trim() || null,
+        real_name: normalizedRealName || null,
         show_real_name: showRealName
       });
     }
@@ -190,6 +199,7 @@ function SignupPageContent() {
               <Input
                 id="real-name"
                 value={realName}
+                maxLength={getRealNameMaxLength()}
                 onChange={(event) => setRealName(event.target.value)}
                 placeholder="Alex Student"
               />
