@@ -4,98 +4,129 @@
 
 @import "katex/dist/katex.min.css";
 
+/* ══════════════════════════════════════════════
+   United Exams — Design Tokens
+   "Night sky + ink + ultraviolet + soft glass"
+   ══════════════════════════════════════════════ */
+
 :root {
+  /* ── Dynamic accent (user-customizable) ── */
   --accent-hue: 265;
   --accent-sat: 72;
   --accent-lit: 50;
   --accent-strength: 60;
 
-  /* Surfaces */
-  --bg: 220 16% 96%;
-  --surface: 0 0% 100%;
-  --surface-raised: 220 14% 98%;
-  --soft: 220 16% 95%;
-  --overlay: 220 14% 91%;
+  /* ── Surfaces — warm paper ── */
+  --bg:             228 20% 97%;
+  --bg-inset:       228 18% 95%;
+  --surface:        0 0% 100%;
+  --surface-raised: 228 16% 99%;
+  --soft:           228 18% 94%;
+  --overlay:        228 14% 90%;
 
-  /* Borders */
-  --border: 220 13% 86%;
-  --border-bright: 220 14% 74%;
+  /* ── Borders ── */
+  --border:         228 14% 88%;
+  --border-bright:  228 12% 76%;
+  --border-accent:  var(--accent-hue) 40% 82%;
 
-  /* Text */
-  --text: 220 30% 10%;
-  --muted: 220 10% 44%;
-  --faint: 220 8% 64%;
+  /* ── Text ── */
+  --text:           228 35% 11%;
+  --text-secondary: 228 12% 40%;
+  --muted:          228 10% 50%;
+  --faint:          228 8% 66%;
 
-  /* Accent */
-  --accent: var(--accent-hue) var(--accent-sat)% var(--accent-lit)%;
-  --accent-dim: var(--accent-hue) calc((var(--accent-sat) - 8) * 1%) calc((var(--accent-lit) - 4) * 1%);
+  /* ── Accent (computed) ── */
+  --accent:        var(--accent-hue) var(--accent-sat)% var(--accent-lit)%;
+  --accent-dim:    var(--accent-hue) calc((var(--accent-sat) - 8) * 1%) calc((var(--accent-lit) - 4) * 1%);
   --accent-subtle: var(--accent-hue) calc((var(--accent-sat) - 24) * 1%) 94%;
-  --accent-fg: 0 0% 100%;
+  --accent-fg:     0 0% 100%;
+  --accent-wash:   var(--accent-hue) 30% 97%;
 
-  /* Brand gradient anchors */
+  /* ── Brand gradient anchors ── */
   --brand-1: calc(var(--accent-hue) - 28) calc((var(--accent-sat) - 4) * 1%) calc((var(--accent-lit) - 2) * 1%);
   --brand-2: var(--accent-hue) calc((var(--accent-sat) - 6) * 1%) calc(var(--accent-lit) * 1%);
   --brand-3: calc(var(--accent-hue) - 18) calc((var(--accent-sat) + 4) * 1%) calc((var(--accent-lit) + 6) * 1%);
 
-  /* Status */
+  /* ── Status ── */
   --success: 160 67% 38%;
-  --warn: 43 96% 44%;
-  --danger: 351 80% 52%;
+  --warn:    43 96% 44%;
+  --danger:  351 80% 52%;
+  --info:    210 70% 50%;
 
-  /* Layers */
-  --layer-0: 220 16% 94%;
-  --layer-1: 220 14% 90%;
-  --layer-2: 220 12% 86%;
+  /* ── Layers ── */
+  --layer-0: 228 18% 95%;
+  --layer-1: 228 14% 91%;
+  --layer-2: 228 12% 87%;
 
-  /* Shadow base (light: subtle, dark: stronger) */
-  --shadow-opacity: 0.06;
-  --shadow-opacity-md: 0.1;
-  --shadow-opacity-lg: 0.14;
+  /* ── Shadow intensity ── */
+  --shadow-opacity:    0.05;
+  --shadow-opacity-md: 0.08;
+  --shadow-opacity-lg: 0.12;
+
+  /* ── Motion tokens ── */
+  --duration-instant: 100ms;
+  --duration-fast:    150ms;
+  --duration-normal:  250ms;
+  --duration-slow:    400ms;
+  --duration-enter:   300ms;
+  --duration-exit:    200ms;
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 :root.dark {
-  /* Surfaces */
-  --bg: 240 50% 3%;
-  --surface: 240 30% 6%;
-  --surface-raised: 240 25% 9%;
-  --soft: 240 22% 11%;
-  --overlay: 240 20% 14%;
+  /* ── Surfaces — deep ink ── */
+  --bg:             235 45% 4%;
+  --bg-inset:       235 40% 3%;
+  --surface:        235 32% 7%;
+  --surface-raised: 235 28% 10%;
+  --soft:           235 24% 12%;
+  --overlay:        235 20% 15%;
 
-  /* Borders */
-  --border: 240 18% 16%;
-  --border-bright: 240 15% 25%;
+  /* ── Borders ── */
+  --border:         235 20% 15%;
+  --border-bright:  235 16% 24%;
+  --border-accent:  var(--accent-hue) 30% 25%;
 
-  /* Text */
-  --text: 230 20% 94%;
-  --muted: 230 10% 55%;
-  --faint: 230 8% 32%;
+  /* ── Text ── */
+  --text:           230 20% 94%;
+  --text-secondary: 230 12% 68%;
+  --muted:          230 10% 52%;
+  --faint:          230 8% 30%;
 
-  /* Accent */
-  --accent: var(--accent-hue) calc((var(--accent-sat) + (var(--accent-strength) * 0.06)) * 1%) calc((var(--accent-lit) + (var(--accent-strength) * 0.05)) * 1%);
-  --accent-dim: var(--accent-hue) calc((var(--accent-sat) - 8) * 1%) calc((var(--accent-lit) - 4) * 1%);
+  /* ── Accent ── */
+  --accent:        var(--accent-hue) calc((var(--accent-sat) + (var(--accent-strength) * 0.06)) * 1%) calc((var(--accent-lit) + (var(--accent-strength) * 0.05)) * 1%);
+  --accent-dim:    var(--accent-hue) calc((var(--accent-sat) - 8) * 1%) calc((var(--accent-lit) - 4) * 1%);
   --accent-subtle: var(--accent-hue) calc((var(--accent-sat) - 28) * 1%) 12%;
-  --accent-fg: 0 0% 100%;
+  --accent-fg:     0 0% 100%;
+  --accent-wash:   var(--accent-hue) 25% 7%;
 
-  /* Brand gradient anchors */
+  /* ── Brand gradient anchors ── */
   --brand-1: calc(var(--accent-hue) - 28) calc((var(--accent-sat) + (var(--accent-strength) * 0.06)) * 1%) calc((var(--accent-lit) + (var(--accent-strength) * 0.04)) * 1%);
   --brand-2: var(--accent-hue) calc((var(--accent-sat) + (var(--accent-strength) * 0.05)) * 1%) calc((var(--accent-lit) + (var(--accent-strength) * 0.05)) * 1%);
   --brand-3: calc(var(--accent-hue) - 16) calc((var(--accent-sat) + 6) * 1%) calc((var(--accent-lit) + 8) * 1%);
 
-  /* Status */
+  /* ── Status ── */
   --success: 160 67% 52%;
-  --warn: 43 96% 56%;
-  --danger: 351 90% 71%;
+  --warn:    43 96% 56%;
+  --danger:  351 90% 71%;
+  --info:    210 70% 64%;
 
-  /* Layers */
-  --layer-0: 240 50% 3%;
-  --layer-1: 240 40% 5%;
-  --layer-2: 240 30% 8%;
+  /* ── Layers ── */
+  --layer-0: 235 45% 3%;
+  --layer-1: 235 38% 5%;
+  --layer-2: 235 30% 8%;
 
-  /* Shadows */
-  --shadow-opacity: 0.25;
-  --shadow-opacity-md: 0.4;
-  --shadow-opacity-lg: 0.55;
+  /* ── Shadows ── */
+  --shadow-opacity:    0.3;
+  --shadow-opacity-md: 0.45;
+  --shadow-opacity-lg: 0.6;
 }
+
+/* ══════════════════════════════════════════════
+   Base Resets
+   ══════════════════════════════════════════════ */
 
 html,
 body {
@@ -134,6 +165,10 @@ textarea {
   outline-offset: 2px;
 }
 
+/* ══════════════════════════════════════════════
+   Reduced Motion
+   ══════════════════════════════════════════════ */
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -154,7 +189,10 @@ html[data-reduce-motion="on"] *::after {
   scroll-behavior: auto !important;
 }
 
-/* ── Ambient glow — quiz-style atmospheric background ── */
+/* ══════════════════════════════════════════════
+   Ambient Glow — atmospheric background
+   ══════════════════════════════════════════════ */
+
 .ambient-glow {
   position: fixed;
   inset: 0;
@@ -175,7 +213,10 @@ html[data-reduce-motion="on"] *::after {
     radial-gradient(ellipse 50% 40% at 85% 90%, hsl(var(--brand-2) / 0.03), transparent 55%);
 }
 
-/* ── Mesh hero — animated gradient card background ── */
+/* ══════════════════════════════════════════════
+   Mesh Hero — animated gradient card background
+   ══════════════════════════════════════════════ */
+
 .mesh-hero {
   position: relative;
   overflow: hidden;
@@ -231,10 +272,14 @@ html[data-reduce-motion="on"] .mesh-hero::after {
   animation: none;
 }
 
-/* ── Glass utility ── */
+/* ══════════════════════════════════════════════
+   Glass Utility
+   ══════════════════════════════════════════════ */
+
 .glass {
   background: linear-gradient(150deg, hsl(var(--surface) / 0.84), hsl(var(--surface) / 0.72));
   backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid hsl(var(--border));
   box-shadow: 0 14px 38px rgba(2, 8, 24, 0.12);
 }
@@ -243,7 +288,10 @@ html[data-reduce-motion="on"] .mesh-hero::after {
   box-shadow: 0 14px 38px rgba(2, 8, 24, 0.36);
 }
 
-/* ── Markdown ── */
+/* ══════════════════════════════════════════════
+   Markdown
+   ══════════════════════════════════════════════ */
+
 .markdown {
   @apply text-[15px] leading-7 text-text;
 }
@@ -347,7 +395,10 @@ html[data-reduce-motion="on"] .mesh-hero::after {
   @apply border border-borderc px-3 py-2 text-left text-sm;
 }
 
-/* ── Skeleton ── */
+/* ══════════════════════════════════════════════
+   Skeleton — shimmer loading
+   ══════════════════════════════════════════════ */
+
 .skeleton {
   position: relative;
   overflow: hidden;
@@ -363,6 +414,14 @@ html[data-reduce-motion="on"] .mesh-hero::after {
   background: linear-gradient(90deg, transparent, hsl(var(--surface) / 0.6), transparent);
   animation: shimmer 1.4s infinite;
 }
+
+html[data-reduce-motion="on"] .skeleton::after {
+  animation: none;
+}
+
+/* ══════════════════════════════════════════════
+   Keyframe Animations
+   ══════════════════════════════════════════════ */
 
 @keyframes shimmer {
   100% {
@@ -380,11 +439,125 @@ html[data-reduce-motion="on"] .mesh-hero::after {
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-html[data-reduce-motion="on"] .skeleton::after {
-  animation: none;
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
-/* ── Scrollbar ── */
+@keyframes slideOutRight {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(100%); }
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+@keyframes fadeRise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+@keyframes draw-in {
+  from { stroke-dashoffset: var(--circumference, 283); }
+  to { stroke-dashoffset: var(--target-offset, 0); }
+}
+
+@keyframes scale-spring {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ══════════════════════════════════════════════
+   Utility Animations
+   ══════════════════════════════════════════════ */
+
+.animate-fade-in {
+  animation: fadeIn var(--duration-enter) var(--ease-out) both;
+}
+
+.animate-fade-rise {
+  animation: fadeRise var(--duration-enter) var(--ease-out) both;
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--duration-enter) var(--ease-spring) both;
+}
+
+.animate-scale-spring {
+  animation: scale-spring var(--duration-normal) var(--ease-spring) both;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight var(--duration-enter) var(--ease-out) both;
+}
+
+.animate-slide-out-right {
+  animation: slideOutRight var(--duration-exit) ease-in both;
+}
+
+.animate-slide-in-down {
+  animation: slideInDown var(--duration-enter) var(--ease-out) both;
+}
+
+.animate-shake {
+  animation: shake 0.3s ease-in-out;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 3s ease-in-out infinite;
+}
+
+/* Stagger delay utilities */
+.stagger-1 { animation-delay: 50ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 200ms; }
+.stagger-5 { animation-delay: 250ms; }
+.stagger-6 { animation-delay: 300ms; }
+.stagger-7 { animation-delay: 350ms; }
+.stagger-8 { animation-delay: 400ms; }
+
+/* ══════════════════════════════════════════════
+   Theme transition (applied temporarily during switch)
+   ══════════════════════════════════════════════ */
+
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: background-color 300ms ease, color 300ms ease, border-color 300ms ease, box-shadow 300ms ease !important;
+}
+
+/* ══════════════════════════════════════════════
+   Gradient text utility
+   ══════════════════════════════════════════════ */
+
+.text-gradient {
+  background: linear-gradient(135deg, hsl(var(--brand-1)), hsl(var(--brand-3)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ══════════════════════════════════════════════
+   Scrollbar
+   ══════════════════════════════════════════════ */
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;

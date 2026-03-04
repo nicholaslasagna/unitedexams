@@ -94,7 +94,8 @@ export function ThemePalettePicker({
         <p className="mt-0.5 text-xs text-muted">Choose a palette or pick a custom color.</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+      {/* Swatch grid — 4 columns on desktop, 3 on mobile */}
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
         {THEME_PALETTES.map((p) => {
           const isActive = palette === p.id;
           return (
@@ -106,24 +107,38 @@ export function ThemePalettePicker({
                 setShowCustom(false);
               }}
               className={cn(
-                "flex flex-col items-center gap-1.5 rounded-xl border p-3 transition-colors duration-150",
+                "group relative flex flex-col items-center gap-2 rounded-xl border p-3",
+                "transition-all duration-150 ease-out-expo",
                 isActive
-                  ? "border-accent bg-accent-subtle"
-                  : "border-borderc bg-soft hover:bg-overlay"
+                  ? "border-accent bg-accent-subtle shadow-glow"
+                  : "border-borderc bg-soft hover:bg-overlay hover:border-border-bright hover:shadow-subtle"
               )}
+              aria-pressed={isActive}
+              aria-label={`${p.label} theme`}
             >
               <span
-                className="flex h-8 w-8 items-center justify-center rounded-full shadow-subtle"
-                style={{ background: `hsl(${p.hue}, ${p.saturation}%, ${p.lightness}%)` }}
+                className={cn(
+                  "flex h-10 w-10 items-center justify-center rounded-full shadow-subtle",
+                  "transition-transform duration-150",
+                  "group-hover:scale-105",
+                  isActive && "ring-2 ring-white/30 ring-offset-2 ring-offset-bg"
+                )}
+                style={{ background: `hsl(${p.hue}, ${p.saturation}%, ${isDark ? Math.min(p.lightness + 10, 75) : p.lightness}%)` }}
               >
-                {isActive ? <Check className="h-4 w-4 text-white" /> : null}
+                {isActive ? <Check className="h-4 w-4 text-white drop-shadow-sm" /> : null}
               </span>
-              <span className="text-[11px] font-medium text-muted">{p.label}</span>
+              <span className={cn(
+                "text-[11px] font-medium",
+                isActive ? "text-accent" : "text-muted"
+              )}>
+                {p.label}
+              </span>
             </button>
           );
         })}
       </div>
 
+      {/* Custom toggle */}
       <button
         type="button"
         onClick={() => {
@@ -132,14 +147,30 @@ export function ThemePalettePicker({
             onPaletteChange("custom");
           }
         }}
-        className="flex w-full items-center justify-between rounded-xl border border-borderc bg-soft px-4 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-overlay hover:text-text"
+        className={cn(
+          "flex w-full items-center justify-between rounded-xl border px-4 py-2.5 text-sm font-medium",
+          "transition-all duration-150",
+          palette === "custom"
+            ? "border-accent/30 bg-accent-subtle text-text"
+            : "border-borderc bg-soft text-muted hover:bg-overlay hover:text-text"
+        )}
       >
-        <span>Custom color</span>
+        <span className="flex items-center gap-2">
+          {palette === "custom" ? (
+            <span
+              className="h-4 w-4 rounded-full shadow-subtle"
+              style={{ background: `hsl(${customHue}, ${customSaturation}%, ${customLightness}%)` }}
+            />
+          ) : null}
+          Custom color
+        </span>
         <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", showCustom && "rotate-180")} />
       </button>
 
+      {/* Custom panel */}
       {showCustom ? (
-        <div className="space-y-3 rounded-xl border border-borderc bg-soft p-4">
+        <div className="space-y-3 rounded-xl border border-borderc bg-soft p-4 animate-fade-rise">
+          {/* Color picker */}
           <div className="flex items-center justify-between rounded-lg border border-borderc bg-surface px-3 py-2">
             <label htmlFor="custom-color" className="text-xs font-semibold text-text">
               Color picker
@@ -161,6 +192,7 @@ export function ThemePalettePicker({
             />
           </div>
 
+          {/* Hue slider */}
           <div>
             <div className="mb-2 flex items-center justify-between">
               <label htmlFor="custom-hue" className="text-xs font-semibold text-text">Hue</label>
@@ -187,6 +219,7 @@ export function ThemePalettePicker({
             />
           </div>
 
+          {/* Saturation slider */}
           <div>
             <div className="mb-2 flex items-center justify-between">
               <label htmlFor="custom-saturation" className="text-xs font-semibold text-text">Saturation</label>
@@ -195,8 +228,8 @@ export function ThemePalettePicker({
             <input
               id="custom-saturation"
               type="range"
-              min={38}
-              max={88}
+              min={20}
+              max={95}
               value={customSaturation}
               onChange={(e) =>
                 onCustomChange({
@@ -210,6 +243,7 @@ export function ThemePalettePicker({
             />
           </div>
 
+          {/* Lightness slider */}
           <div>
             <div className="mb-2 flex items-center justify-between">
               <label htmlFor="custom-lightness" className="text-xs font-semibold text-text">Lightness</label>
@@ -218,8 +252,8 @@ export function ThemePalettePicker({
             <input
               id="custom-lightness"
               type="range"
-              min={38}
-              max={76}
+              min={30}
+              max={78}
               value={customLightness}
               onChange={(e) =>
                 onCustomChange({
@@ -233,6 +267,7 @@ export function ThemePalettePicker({
             />
           </div>
 
+          {/* Intensity slider */}
           <div>
             <div className="mb-2 flex items-center justify-between">
               <label htmlFor="custom-strength" className="text-xs font-semibold text-text">Intensity</label>
@@ -256,6 +291,7 @@ export function ThemePalettePicker({
             />
           </div>
 
+          {/* Contrast warning */}
           {contrastCheck && !contrastCheck.passes ? (
             <div className="flex items-center gap-2 rounded-lg border border-warn/30 bg-warn/10 px-3 py-2">
               <AlertTriangle className="h-4 w-4 shrink-0 text-warn" />
@@ -265,6 +301,7 @@ export function ThemePalettePicker({
             </div>
           ) : null}
 
+          {/* Preview */}
           <div className="rounded-xl border border-borderc bg-surface p-3">
             <p className="mb-2 text-xs font-semibold text-muted">Preview</p>
             <div className="flex flex-wrap items-center gap-2">

@@ -1,5 +1,5 @@
 /**
- * Minimal contrast utilities for ensuring accent colors remain accessible.
+ * Contrast utilities for ensuring accent colors remain accessible.
  * Targets WCAG AA (3:1 for UI components, 4.5:1 for text).
  */
 
@@ -47,7 +47,7 @@ export function ensureAccessibleLightness(
   minRatio = 3
 ): number {
   const surfaceBg = isDark
-    ? { h: 240, s: 30, l: 6 }
+    ? { h: 235, s: 32, l: 7 }
     : { h: 0, s: 0, l: 100 };
 
   let l = lightness;
@@ -65,6 +65,31 @@ export function ensureAccessibleLightness(
 }
 
 /**
+ * Ensures an accent color meets accessibility thresholds.
+ * In dark mode: accent must be light enough (min lightness 52%).
+ * In light mode: accent must be dark enough (max lightness 55%).
+ * Also enforces minimum saturation.
+ */
+export function ensureAccessibleAccent(
+  hue: number,
+  sat: number,
+  lit: number,
+  isDark: boolean
+): { sat: number; lit: number } {
+  if (isDark) {
+    return {
+      sat: Math.max(sat, 40),
+      lit: Math.max(lit, 52)
+    };
+  } else {
+    return {
+      sat: Math.max(sat, 35),
+      lit: Math.min(lit, 55)
+    };
+  }
+}
+
+/**
  * Checks if a given accent color meets contrast requirements.
  */
 export function checkAccentContrast(
@@ -74,7 +99,7 @@ export function checkAccentContrast(
   isDark: boolean
 ): { passes: boolean; ratio: number } {
   const surfaceBg = isDark
-    ? { h: 240, s: 30, l: 6 }
+    ? { h: 235, s: 32, l: 7 }
     : { h: 0, s: 0, l: 100 };
 
   const ratio = getContrastRatio({ h: hue, s: saturation, l: lightness }, surfaceBg);

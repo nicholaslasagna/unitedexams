@@ -185,14 +185,14 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="animate-rise space-y-8">
+    <div className="animate-fade-rise space-y-8 md:space-y-10">
       <section className="grid gap-5 xl:grid-cols-[1.2fr_1fr]">
         <Card className="mesh-hero overflow-hidden">
           <CardBody className="space-y-5 p-7 md:p-8">
             <div className="inline-flex items-center gap-2">
               <span className="text-[11px] font-bold tracking-[5px] text-accent uppercase">Continue studying</span>
             </div>
-            <h1 className="max-w-[22ch] font-display text-[30px] leading-[1.12] font-extrabold tracking-tight text-accent-fg md:text-[36px]">
+            <h1 className="max-w-[22ch] text-display-lg font-display font-extrabold tracking-tight text-accent-fg">
               Build mastery with one focused sprint.
             </h1>
             <p className="max-w-xl text-[15px] leading-relaxed text-muted">

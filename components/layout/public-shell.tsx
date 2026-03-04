@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConstellationPattern } from "@/components/ui/constellation-pattern";
 import { useAppData } from "@/lib/app-data-context";
 import { cn } from "@/lib/utils";
 
@@ -33,30 +34,36 @@ export function PublicShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-bg text-text">
       <div className="ambient-glow" />
+      <ConstellationPattern className="fixed" opacity={0.02} variant="sparse" />
+
+      {/* Header */}
       <header className="sticky top-0 z-40 border-b border-borderc bg-surface/90 backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-[1240px] items-center justify-between gap-4 px-5 py-3 md:px-6">
-          <Link href="/" className="inline-flex items-center gap-3">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-accent-gradient text-accent-fg shadow-soft">
+        <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between gap-4 px-5 py-3 md:px-8">
+          <Link href="/" className="inline-flex items-center gap-3 transition-opacity duration-150 hover:opacity-80">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-gradient text-accent-fg shadow-soft">
               <GraduationCap className="h-4.5 w-4.5" />
             </span>
             <span className="font-display text-lg font-semibold text-text">United Exams</span>
           </Link>
 
           <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
-                  pathname === item.href || pathname.startsWith(`${item.href}/`)
-                    ? "bg-accent-subtle text-text"
-                    : "text-muted hover:bg-soft hover:text-text"
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "relative rounded-lg px-3 py-2 text-sm font-semibold transition-colors duration-150",
+                    active
+                      ? "bg-accent-subtle text-text"
+                      : "text-muted hover:bg-soft hover:text-text"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
 
           <div className="flex items-center gap-2">
@@ -94,14 +101,19 @@ export function PublicShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main id="main" className="relative z-[1] mx-auto w-full max-w-[1240px] px-5 py-8 md:px-6">{children}</main>
-      <footer className="mx-auto w-full max-w-[1240px] border-t border-borderc px-5 py-4 text-sm text-muted md:px-6">
+      {/* Main */}
+      <main id="main" className="relative z-[1] mx-auto w-full max-w-[1200px] px-5 py-8 md:px-8 lg:px-10">
+        <div className="animate-fade-rise">{children}</div>
+      </main>
+
+      {/* Footer */}
+      <footer className="mx-auto w-full max-w-[1200px] border-t border-borderc px-5 py-4 text-sm text-muted md:px-8">
         © {new Date().getFullYear()}{" "}
         <a
           href="https://imagicaststudios.com"
           target="_blank"
           rel="noreferrer"
-          className="font-semibold text-accent hover:text-text"
+          className="font-semibold text-accent transition-colors duration-150 hover:text-text"
         >
           Imagicast Studios
         </a>

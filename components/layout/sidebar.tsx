@@ -47,8 +47,9 @@ export function Sidebar() {
 
   return (
     <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 border-r border-borderc bg-surface/90 px-4 pb-5 pt-5 backdrop-blur-xl lg:block">
-      <Link href="/" className="mb-10 flex items-center gap-3 rounded-xl px-2 py-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-gradient text-lg text-accent-fg shadow-glow">
+      {/* Logo */}
+      <Link href="/" className="mb-10 flex items-center gap-3 rounded-xl px-2 py-2 transition-colors duration-150 hover:bg-soft">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-gradient text-lg text-accent-fg shadow-glow">
           <GraduationCap className="h-[18px] w-[18px]" />
         </div>
         <div>
@@ -57,7 +58,8 @@ export function Sidebar() {
         </div>
       </Link>
 
-      <nav aria-label="Main" className="space-y-1">
+      {/* Navigation */}
+      <nav aria-label="Main" className="space-y-0.5">
         {items.map((item) => {
           const Icon = item.icon;
           const active = pathname.startsWith(item.href);
@@ -67,21 +69,35 @@ export function Sidebar() {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium transition-colors duration-150",
+                "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium",
+                "transition-all duration-150 ease-out-expo",
                 active
                   ? "bg-accent-subtle text-text"
                   : "text-faint hover:bg-soft hover:text-muted"
               )}
             >
-              <Icon className={cn("h-[17px] w-[17px]", active ? "text-accent" : "text-faint group-hover:text-muted")} />
+              {/* Active glow dot */}
+              {active ? (
+                <span
+                  className="absolute left-0 top-1/2 h-1.5 w-1.5 -translate-x-0.5 -translate-y-1/2 rounded-full bg-accent shadow-[0_0_8px_hsl(var(--accent)/0.4)]"
+                  aria-hidden
+                />
+              ) : null}
+              <Icon
+                className={cn(
+                  "h-[17px] w-[17px] transition-colors duration-150",
+                  active ? "text-accent" : "text-faint group-hover:text-muted"
+                )}
+              />
               <span>{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-10 rounded-xl border border-borderc bg-soft p-5">
-        <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-accent">Today&apos;s goal</p>
+      {/* Daily goal card */}
+      <div className="mt-10 rounded-xl border border-borderc bg-soft p-5 transition-colors duration-150 hover:border-border-bright">
+        <p className="text-caption font-bold uppercase tracking-[1.5px] text-accent">Today&apos;s goal</p>
         <p className="mt-2 text-[14px] font-medium text-text">Complete one quiz set in 20 minutes.</p>
         <p className="mt-1 text-[13px] text-faint">Low friction. Keep streak momentum.</p>
       </div>

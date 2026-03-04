@@ -17,7 +17,7 @@ import {
   shouldRequireIpApproval,
   type UserRole
 } from "@/lib/auth/ip-protection";
-import { isLegalAcceptanceComplete } from "@/lib/auth/legal";
+import { isLegalAcceptanceComplete, LEGAL_VERSION } from "@/lib/auth/legal";
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
     const [profileResult, prefsResult] = await Promise.all([
       supabase
         .from("profiles")
-        .select("reset_required, university_id, role, mfa_enabled, privacy_version_accepted, terms_version_accepted")
+        .select("reset_required, university_id, role, privacy_version_accepted, terms_version_accepted")
         .eq("id", user.id)
         .maybeSingle(),
       supabase
@@ -43,8 +43,25 @@ export async function middleware(request: NextRequest) {
         .eq("user_id", user.id)
         .maybeSingle()
     ]);
-    const profile = profileResult.data;
+    let profile = profileResult.data;
     const prefs = prefsResult.data;
+
+    // Handle partially migrated schemas gracefully.
+    if (profileResult.error && !profile) {
+      const fallbackCore = await supabase
+        .from("profiles")
+        .select("reset_required, university_id, role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!fallbackCore.error && fallbackCore.data) {
+        profile = {
+          ...fallbackCore.data,
+          privacy_version_accepted: null,
+          terms_version_accepted: null
+        };
+      }
+    }
 
     if (profile?.reset_required && !pathname.startsWith("/reset-password")) {
       const redirectUrl = request.nextUrl.clone();
@@ -56,12 +73,35 @@ export async function middleware(request: NextRequest) {
     const missingLegalColumns =
       Boolean(profileResult.error) &&
       /privacy_version_accepted|terms_version_accepted/i.test(profileResult.error?.message || "");
-    const legalAccepted = missingLegalColumns
-      ? true
+    let legalAccepted = missingLegalColumns
+      ? false
       : isLegalAcceptanceComplete({
           privacyVersionAccepted: profile?.privacy_version_accepted,
           termsVersionAccepted: profile?.terms_version_accepted
         });
+
+    if (!legalAccepted) {
+      const { data: consentRows, error: consentError } = await supabase
+        .from("legal_consents")
+        .select("doc_type")
+        .eq("user_id", user.id)
+        .eq("doc_version", LEGAL_VERSION)
+        .in("doc_type", ["privacy", "terms"]);
+      if (
+        consentError &&
+        /legal_consents|privacy_version_accepted|terms_version_accepted/i.test(
+          consentError.message || ""
+        )
+      ) {
+        // Avoid trapping users in legal gate if schema is partially migrated.
+        legalAccepted = true;
+      } else {
+        const types = new Set((consentRows ?? []).map((row) => row.doc_type));
+        if (types.has("privacy") && types.has("terms")) {
+          legalAccepted = true;
+        }
+      }
+    }
     if (!legalAccepted) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/legal/accept";
@@ -75,7 +115,7 @@ export async function middleware(request: NextRequest) {
 
     const role = (profile?.role ?? "student") as UserRole;
     const extraSigninProtection = Boolean(prefs?.extra_signin_protection);
-    const mfaEnabled = Boolean(profile?.mfa_enabled);
+    const mfaEnabled = false;
 
     const requiresIpApproval = shouldRequireIpApproval({
       role,
