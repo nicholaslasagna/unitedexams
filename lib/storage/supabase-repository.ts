@@ -4,6 +4,7 @@ import {
   defaultProfile,
   type DataRepository
 } from "@/lib/storage/repository";
+import { findClosestPalette } from "@/lib/theme/palettes";
 import type {
   AppDataDump,
   AppPreferences,
@@ -299,6 +300,7 @@ export class SupabaseRepository implements DataRepository {
       confettiEnabled: true,
       accentHue: row.accent_hue,
       accentStrength: row.accent_strength,
+      palette: findClosestPalette(row.accent_hue, row.accent_strength),
       dashboardLayout: row.dashboard_layout
     };
   }

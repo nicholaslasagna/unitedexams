@@ -28,7 +28,6 @@ export function ThemePalettePicker({
   const [showCustom, setShowCustom] = useState(palette === "custom");
 
   const activeHue = palette === "custom" ? customHue : (THEME_PALETTES.find((p) => p.id === palette)?.hue ?? 265);
-  const activeStrength = palette === "custom" ? customStrength : (THEME_PALETTES.find((p) => p.id === palette)?.strength ?? 60);
 
   const contrastCheck = palette === "custom"
     ? checkAccentContrast(customHue, isDark ? 72 + customStrength * 0.2 : 72, isDark ? 64 + customStrength * 0.08 : 50, isDark)
