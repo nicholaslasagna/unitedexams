@@ -121,6 +121,7 @@ export class SupabaseRepository implements DataRepository {
       .from("attempts")
       .select("id, quiz_set_id, completed_at, created_at, score, correct_count, total_count, time_spent_seconds, settings")
       .eq("user_id", this.user.id)
+      .not("completed_at", "is", null)
       .order("created_at", { ascending: false })
       .limit(750);
 
@@ -132,6 +133,10 @@ export class SupabaseRepository implements DataRepository {
         id: row.id,
         quizId: row.quiz_set_id,
         courseId: String((settings.course_id as string | undefined) ?? ""),
+        mode:
+          settings.mode === "exam" || settings.mode === "homework" || settings.mode === "quiz"
+            ? settings.mode
+            : "quiz",
         date: row.completed_at ?? row.created_at,
         score: Number(row.score ?? 0),
         correctCount: Number(row.correct_count ?? 0),
@@ -157,6 +162,7 @@ export class SupabaseRepository implements DataRepository {
         .select("score")
         .eq("user_id", this.user.id)
         .eq("quiz_set_id", attempt.quizId)
+        .not("completed_at", "is", null)
         .order("score", { ascending: false })
         .limit(1),
       this.client
@@ -175,6 +181,7 @@ export class SupabaseRepository implements DataRepository {
       Math.round(attempt.score) + (isPersonalBest ? 10 : 0) + (streakDayMaintained ? 5 : 0);
 
     const settings = {
+      mode: attempt.mode ?? "quiz",
       course_id: attempt.courseId,
       topic_breakdown: attempt.topicBreakdown,
       per_question_results: attempt.perQuestionResults,

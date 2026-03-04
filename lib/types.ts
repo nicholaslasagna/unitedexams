@@ -1,4 +1,5 @@
 export type QuestionType = "single" | "multi" | "free";
+export type StudySetMode = "quiz" | "exam" | "homework";
 
 export interface Course {
   id: string;
@@ -14,27 +15,36 @@ export interface Course {
 
 export interface Question {
   id: string;
+  externalId?: string;
   type: QuestionType;
   prompt: string;
   options?: string[];
   correct?: number[];
   explanation: string;
+  solutionMd?: string;
   walkthroughSteps?: string[];
   hintSteps?: string[];
   sampleAnswer?: string;
   references?: string[];
+  difficulty?: "easy" | "med" | "hard";
+  homeworkFormat?: "short" | "multi-step" | "proof" | "calc";
+  fromProfessor?: boolean;
   tags: string[];
   imageUrl?: string;
 }
 
 export interface QuizSet {
   id: string;
+  externalId?: string;
   courseId: string;
   title: string;
   description: string;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
   estMinutes: number;
   tags: string[];
+  mode?: StudySetMode;
+  questionCountTarget?: number | null;
+  isExamSimulation?: boolean;
   timerDefaultMinutes: number;
   questions: Question[];
 }
@@ -54,6 +64,7 @@ export interface Attempt {
   id: string;
   quizId: string;
   courseId: string;
+  mode?: StudySetMode;
   date: string;
   score: number;
   correctCount: number;
@@ -61,6 +72,12 @@ export interface Attempt {
   timeSpent: number;
   perQuestionResults: PerQuestionResult[];
   topicBreakdown: Record<string, { correct: number; total: number }>;
+  status?: "in_progress" | "completed";
+  homeworkProgress?: {
+    currentIndex: number;
+    answeredIds: string[];
+    flaggedIds: string[];
+  };
 }
 
 export interface QuizSettings {
@@ -69,6 +86,7 @@ export interface QuizSettings {
   randomizeQuestions: boolean;
   explanationMode: "afterEach" | "end";
   questionCount: number | "all";
+  includeFreeResponse?: boolean;
 }
 
 export interface UserProfile {

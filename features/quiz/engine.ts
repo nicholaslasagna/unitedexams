@@ -72,13 +72,15 @@ export function summarizeAttempt({
     id: uid("attempt"),
     quizId: quiz.id,
     courseId: quiz.courseId,
+    mode: quiz.mode ?? "quiz",
     date: new Date().toISOString(),
     score,
     correctCount,
     totalCount,
     timeSpent: timeSpentSeconds,
     perQuestionResults,
-    topicBreakdown
+    topicBreakdown,
+    status: "completed"
   };
 }
 

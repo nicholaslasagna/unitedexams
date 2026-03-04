@@ -34,10 +34,14 @@ Premium-feeling college study platform built with **Next.js + TypeScript + Tailw
    - `supabase/migrations/20260303170000_united_exams_init.sql`
    - `supabase/migrations/20260303200000_adaptive_onboarding_professor.sql`
    - `supabase/migrations/20260303223000_public_read_published_only.sql`
-4. Configure email templates using:
+   - `supabase/migrations/20260303234500_homework_exam_modes.sql`
+4. Optional content import (service role key required):
+   - `npm run content:generate:se-exam`
+   - `npm run content:import:supabase`
+5. Configure email templates using:
    - `supabase/email-templates/confirm-signup.html`
    - `supabase/email-templates/reset-password.html`
-5. Auth URL configuration:
+6. Auth URL configuration:
    - Site URL: `https://unitedexams.com`
    - Redirect URLs:
      - `https://unitedexams.com/reset-password`
@@ -49,6 +53,8 @@ Public:
 - `/courses`
 - `/courses/[courseId]`
 - `/quiz/[quizSetId]`
+- `/homework`
+- `/homework/[setId]`
 - `/leaderboard` (public top 5 + locked preview)
 - `/contact`
 - `/login`
@@ -58,9 +64,11 @@ Public:
 
 Protected (`/app/*`, middleware guarded):
 - `/app/dashboard`
-- `/app/courses`
-- `/app/courses/[courseId]`
-- `/app/quiz/[quizId]`
+- `/app/courses` (canonical redirect to `/courses`)
+- `/app/courses/[courseId]` (canonical redirect to `/courses/[courseId]`)
+- `/app/quiz/[quizId]` (canonical redirect to `/quiz/[quizSetId]`)
+- `/app/homework` (canonical redirect to `/homework`)
+- `/app/homework/[setId]` (canonical redirect to `/homework/[setId]`)
 - `/app/notes/[courseId]`
 - `/app/leaderboard`
 - `/app/account`
@@ -165,6 +173,21 @@ Seeded content lives in `data/seed/` and powers UI immediately:
 - Theory of Automata
 
 Differential equations sets support free-response + guided hints + walkthrough structure.
+
+## Homework + Exam Modes
+- `quiz_sets.mode` supports `quiz | exam | homework`.
+- Course page tabs now separate Quizzes, Exams, and Homework.
+- Homework runs one question at a time with hints, full solution reveal, flagging, and resume support.
+- Exam simulation supports full-length banks with target count (e.g. 42), one-by-one flow, and optional free-response inclusion.
+
+## Content Pipeline
+- Source JSON files can live in `content/{courseId}/{setId}.json`.
+- Software Engineering full exam source is included at:
+  - `content/software-engineering/se-exam1-full-practice.json`
+- Importer script upserts `quiz_sets` and `questions` by stable IDs:
+  - `npm run content:import:supabase`
+- Question stability:
+  - `questions.external_id` is used for idempotent upserts and duplicate prevention.
 
 ## Supabase Email Templates
 Use the provided HTML templates in `supabase/email-templates/`:

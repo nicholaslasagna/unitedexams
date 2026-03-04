@@ -1,7 +1,7 @@
 import type { QuizSet } from "@/lib/types";
 import { differentialEquationReviewReplacements } from "./quiz-diffeq-reviews";
 
-export const testReviewQuizSetReplacements: QuizSet[] = [
+const testReviewQuizSetReplacementsRaw: QuizSet[] = [
   ...differentialEquationReviewReplacements,
   {
     id: "ta-core-legacy",
@@ -814,3 +814,8 @@ export const testReviewQuizSetReplacements: QuizSet[] = [
     ]
   }
 ];
+
+export const testReviewQuizSetReplacements: QuizSet[] = testReviewQuizSetReplacementsRaw.map((set) => ({
+  ...set,
+  mode: set.mode ?? (set.questions.some((question) => question.type === "free") ? "homework" : "quiz")
+}));

@@ -1,6 +1,6 @@
 import type { QuizSet } from "@/lib/types";
 
-export const automataQuizSets: QuizSet[] = [
+const automataQuizSetsRaw: QuizSet[] = [
   {
     id: "automata-sets-relations",
     courseId: "theory-of-automata",
@@ -385,3 +385,8 @@ export const automataQuizSets: QuizSet[] = [
     ]
   }
 ];
+
+export const automataQuizSets: QuizSet[] = automataQuizSetsRaw.map((set) => ({
+  ...set,
+  mode: set.mode ?? "quiz"
+}));

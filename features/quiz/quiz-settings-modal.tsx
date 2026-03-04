@@ -9,11 +9,19 @@ interface QuizSettingsModalProps {
   open: boolean;
   initial: QuizSettings;
   maxQuestions: number;
+  setMode?: "quiz" | "exam" | "homework";
   onClose: () => void;
   onConfirm: (settings: QuizSettings) => void;
 }
 
-export function QuizSettingsModal({ open, initial, maxQuestions, onClose, onConfirm }: QuizSettingsModalProps) {
+export function QuizSettingsModal({
+  open,
+  initial,
+  maxQuestions,
+  setMode = "quiz",
+  onClose,
+  onConfirm
+}: QuizSettingsModalProps) {
   const [settings, setSettings] = useState<QuizSettings>(initial);
   const countOptions = useMemo(() => {
     const stepped = [5, 10, 15, 20].filter((count) => count < maxQuestions);
@@ -109,6 +117,30 @@ export function QuizSettingsModal({ open, initial, maxQuestions, onClose, onConf
             </select>
           </div>
         </div>
+
+        {setMode === "exam" ? (
+          <div className="rounded-xl border border-borderc bg-soft p-4">
+            <label className="flex items-center justify-between gap-3">
+              <span>
+                <span className="block text-sm font-semibold text-text">Include free response</span>
+                <span className="text-xs text-muted">
+                  Toggle short-answer items in full exam simulation.
+                </span>
+              </span>
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-[hsl(var(--brand-2))]"
+                checked={settings.includeFreeResponse !== false}
+                onChange={(event) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    includeFreeResponse: event.target.checked
+                  }))
+                }
+              />
+            </label>
+          </div>
+        ) : null}
 
         <div className="rounded-xl border border-borderc bg-soft p-4">
           <p className="text-sm font-semibold text-text">Explanation timing</p>
