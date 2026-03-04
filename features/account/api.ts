@@ -2,13 +2,31 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { UniversityRecord } from "@/lib/supabase/types";
 
 export async function fetchUniversities(client: SupabaseClient) {
-  const { data, error } = await client
-    .from("universities")
-    .select("id, name")
-    .order("name", { ascending: true });
+  const pageSize = 1000;
+  let from = 0;
+  const all: UniversityRecord[] = [];
 
-  if (error) throw error;
-  return (data ?? []) as UniversityRecord[];
+  while (true) {
+    const to = from + pageSize - 1;
+    const { data, error } = await client
+      .from("universities")
+      .select("id, name")
+      .order("name", { ascending: true })
+      .range(from, to);
+
+    if (error) throw error;
+
+    const rows = (data ?? []) as UniversityRecord[];
+    all.push(...rows);
+
+    if (rows.length < pageSize) break;
+    from += pageSize;
+
+    // Safety guard in case a misconfigured backend keeps returning full pages.
+    if (from >= 50000) break;
+  }
+
+  return all;
 }
 
 export async function fetchUserCourses(client: SupabaseClient, userId: string) {

@@ -63,8 +63,8 @@ export function AccountPageContent() {
 
   const filteredUniversities = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return universities.slice(0, 12);
-    return universities.filter((item) => item.name.toLowerCase().includes(q)).slice(0, 12);
+    if (!q) return universities.slice(0, 80);
+    return universities.filter((item) => item.name.toLowerCase().includes(q));
   }, [universities, search]);
 
   useEffect(() => {
@@ -128,12 +128,14 @@ export function AccountPageContent() {
     setPrivacyError(null);
 
     const safeDisplayName = hasLockedDisplayName ? profile.name : nextDisplayName;
-    const safeRealName = hasLockedRealName ? profile.realName || "" : nextRealName;
+    const safeRealName = nextRealName;
 
-    const displayNameCheck = validateDisplayName(safeDisplayName);
-    if (!displayNameCheck.valid) {
-      setPrivacyError(displayNameCheck.message);
-      return false;
+    if (!hasLockedDisplayName) {
+      const displayNameCheck = validateDisplayName(safeDisplayName);
+      if (!displayNameCheck.valid) {
+        setPrivacyError(displayNameCheck.message);
+        return false;
+      }
     }
 
     const realNameCheck = validateRealName(safeRealName);
@@ -221,7 +223,6 @@ export function AccountPageContent() {
   };
 
   const hasLockedDisplayName = Boolean(profile.displayNameLocked);
-  const hasLockedRealName = Boolean(profile.realNameLocked);
   const userIdValue = user?.id || profile.id || "";
   const maskedUserId = userIdValue ? "••••••••-••••-••••-••••-••••••••••••" : "";
 
@@ -266,13 +267,9 @@ export function AccountPageContent() {
               <Input
                 value={realName}
                 maxLength={getRealNameMaxLength()}
-                disabled={hasLockedRealName}
                 onChange={(event) => setRealName(event.target.value)}
                 placeholder="Your legal/full name"
               />
-              {hasLockedRealName ? (
-                <p className="text-xs text-muted">Real name is locked. Contact support to change it.</p>
-              ) : null}
             </div>
           </div>
 

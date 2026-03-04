@@ -345,27 +345,32 @@ export class SupabaseRepository implements DataRepository {
   async saveProfile(profile: UserProfile): Promise<void> {
     await this.ensureBaseRows();
 
-    const normalizedName = normalizeDisplayName(profile.name || defaultProfile.name);
-    const validation = validateDisplayName(normalizedName);
-    if (!validation.valid) {
-      throw new Error(validation.message || "Invalid display name.");
-    }
-
     const normalizedRealName = normalizeRealName(profile.realName ?? "");
     const realNameValidation = validateRealName(normalizedRealName);
     if (!realNameValidation.valid) {
       throw new Error(realNameValidation.message || "Invalid name.");
     }
 
+    const updates: Record<string, unknown> = {
+      real_name: normalizedRealName || null,
+      show_real_name: Boolean(profile.showRealName),
+      show_university: Boolean(profile.showUniversity),
+      university_id: profile.universityId ?? null
+    };
+
+    // Allow real name / university updates even when display name is locked.
+    if (!profile.displayNameLocked) {
+      const normalizedName = normalizeDisplayName(profile.name || defaultProfile.name);
+      const validation = validateDisplayName(normalizedName);
+      if (!validation.valid) {
+        throw new Error(validation.message || "Invalid display name.");
+      }
+      updates.display_name = normalizedName;
+    }
+
     const { error } = await this.client
       .from("profiles")
-      .update({
-        display_name: normalizedName,
-        real_name: normalizedRealName || null,
-        show_real_name: Boolean(profile.showRealName),
-        show_university: Boolean(profile.showUniversity),
-        university_id: profile.universityId ?? null
-      })
+      .update(updates)
       .eq("id", this.user.id);
 
     if (error) {

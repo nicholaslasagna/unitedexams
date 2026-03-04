@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Clock3, Search } from "lucide-react";
 import { courses, quizSets } from "@/data/seed";
 import { fetchPublishedSetsByMode } from "@/features/study/study-set-source";
@@ -25,6 +25,7 @@ export function HomeworkIndexContent({
   title?: string;
   subtitle?: string;
 }) {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [sets, setSets] = useState<QuizSet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,12 +118,15 @@ export function HomeworkIndexContent({
                     ))}
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <Button asChild>
-                      <Link href={withPrefix(routePrefix, `/homework/${set.id}`)}>Start Homework</Link>
+                    <Button onClick={() => router.push(withPrefix(routePrefix, `/homework/${set.id}`))}>
+                      Start Homework
                     </Button>
                     {course ? (
-                      <Button asChild variant="secondary">
-                        <Link href={withPrefix(routePrefix, `/courses/${course.id}`)}>Open course hub</Link>
+                      <Button
+                        variant="secondary"
+                        onClick={() => router.push(withPrefix(routePrefix, `/courses/${course.id}`))}
+                      >
+                        Open course hub
                       </Button>
                     ) : null}
                   </div>
