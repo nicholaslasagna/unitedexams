@@ -78,6 +78,22 @@ function toQuizSet(row: QuizSetRow, questions: QuestionRow[]): QuizSet {
   };
 }
 
+async function loadQuestionCounts(client: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>, setIds: string[]) {
+  if (setIds.length === 0) return {} as Record<string, number>;
+
+  const { data, error } = await client
+    .from("questions")
+    .select("quiz_set_id")
+    .in("quiz_set_id", setIds);
+
+  if (error || !data) return {} as Record<string, number>;
+
+  return (data as Array<{ quiz_set_id: string }>).reduce<Record<string, number>>((acc, row) => {
+    acc[row.quiz_set_id] = (acc[row.quiz_set_id] ?? 0) + 1;
+    return acc;
+  }, {});
+}
+
 export async function fetchPublishedStudySet(setId: string): Promise<QuizSet | null> {
   const client = getSupabaseBrowserClient();
   if (!client) return null;
@@ -121,6 +137,7 @@ export async function fetchPublishedSetsByMode(mode: "quiz" | "exam" | "homework
     .order("created_at", { ascending: false });
 
   if (error || !data) return [];
+  const counts = await loadQuestionCounts(client, (data as QuizSetRow[]).map((row) => row.id));
 
   return (data as QuizSetRow[]).map((row) => ({
     id: row.id,
@@ -131,7 +148,39 @@ export async function fetchPublishedSetsByMode(mode: "quiz" | "exam" | "homework
     estMinutes: row.est_minutes,
     tags: row.tags ?? [],
     mode: row.mode ?? mode,
-    questionCountTarget: row.question_count_target ?? undefined,
+    questionCountTarget: row.question_count_target ?? counts[row.id] ?? undefined,
+    isExamSimulation: Boolean(row.is_exam_simulation),
+    timerDefaultMinutes: row.est_minutes,
+    questions: []
+  }));
+}
+
+export async function fetchPublishedSetsByCourse(courseId: string): Promise<QuizSet[]> {
+  const client = getSupabaseBrowserClient();
+  if (!client) return [];
+
+  const { data, error } = await client
+    .from("quiz_sets")
+    .select(
+      "id, course_id, title, description, difficulty, est_minutes, tags, is_published, mode, question_count_target, is_exam_simulation"
+    )
+    .eq("is_published", true)
+    .eq("course_id", courseId)
+    .order("created_at", { ascending: false });
+
+  if (error || !data) return [];
+  const counts = await loadQuestionCounts(client, (data as QuizSetRow[]).map((row) => row.id));
+
+  return (data as QuizSetRow[]).map((row) => ({
+    id: row.id,
+    courseId: row.course_id,
+    title: row.title,
+    description: row.description,
+    difficulty: mapDifficulty(row.difficulty),
+    estMinutes: row.est_minutes,
+    tags: row.tags ?? [],
+    mode: row.mode ?? "quiz",
+    questionCountTarget: row.question_count_target ?? counts[row.id] ?? undefined,
     isExamSimulation: Boolean(row.is_exam_simulation),
     timerDefaultMinutes: row.est_minutes,
     questions: []

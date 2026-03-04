@@ -17,7 +17,7 @@ import { useAppData } from "@/lib/app-data-context";
 
 const baseItems = [
   { href: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/app/courses", label: "Courses", icon: LibraryBig },
+  { href: "/courses", label: "Courses", icon: LibraryBig },
   { href: "/homework", label: "Homework", icon: ListChecks },
   { href: "/app/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/app/notes/software-engineering", label: "Notes", icon: NotebookTabs },
@@ -30,7 +30,7 @@ export function Sidebar() {
   const { profile } = useAppData();
   const showProfessor = profile.role === "professor" || profile.role === "admin";
   const items = showProfessor
-    ? [...baseItems.slice(0, 3), { href: "/app/professor", label: "Professor", icon: GraduationCap }, ...baseItems.slice(3)]
+    ? [...baseItems.slice(0, 3), { href: "/app/sections", label: "Sections", icon: GraduationCap }, ...baseItems.slice(3)]
     : baseItems;
 
   return (

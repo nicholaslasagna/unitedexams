@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Clock3, FileText, Search } from "lucide-react";
 import { getCourse, getCourseContent, getCourseQuizSets } from "@/data/seed";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import { ProgressRing, ProgressBar } from "@/components/ui/progress";
 import { Markdown } from "@/components/ui/markdown";
 import { useAppData } from "@/lib/app-data-context";
 import { modeLabel, resolveQuestionCountTarget, resolveQuizSetMode } from "@/lib/study/set-mode";
+import { fetchPublishedSetsByCourse } from "@/features/study/study-set-source";
 import {
   attemptsForCourse,
   bestScoreForQuiz,
@@ -20,6 +21,7 @@ import {
   latestAttemptForQuiz,
   topicMasteryForCourse
 } from "@/features/progress/metrics";
+import type { QuizSet } from "@/lib/types";
 
 const tabDefs = [
   { id: "quizzes", label: "Quizzes" },
@@ -48,8 +50,32 @@ export function CourseDetailContent({
   const [tab, setTab] = useState("quizzes");
   const [query, setQuery] = useState("");
   const [difficulty, setDifficulty] = useState("all");
+  const [sets, setSets] = useState<QuizSet[]>(() => (course ? getCourseQuizSets(course.id) : []));
 
-  const sets = useMemo(() => (course ? getCourseQuizSets(course.id) : []), [course]);
+  useEffect(() => {
+    if (!course) {
+      setSets([]);
+      return;
+    }
+
+    let active = true;
+    setSets(getCourseQuizSets(course.id));
+    fetchPublishedSetsByCourse(course.id)
+      .then((remoteSets) => {
+        if (!active) return;
+        if (remoteSets.length > 0) {
+          setSets(remoteSets);
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        setSets(getCourseQuizSets(course.id));
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [course]);
   const progress = course ? courseProgress(attempts, course.id) : 0;
   const attemptCount = course ? attemptsForCourse(attempts, course.id).length : 0;
   const mastery = course ? topicMasteryForCourse(attempts, course.id).slice(0, 8) : [];
@@ -185,6 +211,7 @@ export function CourseDetailContent({
             {filteredSets.map((set) => {
               const setMode = resolveQuizSetMode(set);
               const targetCount = resolveQuestionCountTarget(set);
+              const questionCount = set.questions.length || targetCount || 0;
               const latest = latestAttemptForQuiz(attempts, set.id);
               const best = bestScoreForQuiz(attempts, set.id);
               return (
@@ -199,7 +226,7 @@ export function CourseDetailContent({
                         {modeLabel(setMode)}
                       </Badge>
                       <Badge>{set.difficulty}</Badge>
-                      <Badge tone="brand">{set.questions.length} questions</Badge>
+                      <Badge tone="brand">{questionCount} questions</Badge>
                       {targetCount ? <Badge tone="warn">Target {targetCount}</Badge> : null}
                       <Badge tone="success">Best {best}%</Badge>
                     </div>
