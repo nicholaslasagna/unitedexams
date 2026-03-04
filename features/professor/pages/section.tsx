@@ -20,6 +20,7 @@ import {
   type SectionMemberRow,
   type SectionSummary
 } from "@/features/professor/api";
+import { listSectionExams, type ExamRow } from "@/features/exams/api";
 
 interface QuizSetOption {
   id: string;
@@ -38,6 +39,7 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
   const [assignments, setAssignments] = useState<AssignmentRow[]>([]);
   const [analytics, setAnalytics] = useState<SectionAnalytics | null>(null);
   const [members, setMembers] = useState<SectionMemberRow[]>([]);
+  const [sectionExams, setSectionExams] = useState<ExamRow[]>([]);
   const [availableQuizSets, setAvailableQuizSets] = useState<QuizSetOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [submittingAssignmentId, setSubmittingAssignmentId] = useState<string | null>(null);
@@ -56,11 +58,12 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
     if (!supabase || !resolvedSectionId) return;
     setLoading(true);
     try {
-      const [allSections, sectionAssignments, sectionAnalytics, sectionMembers] = await Promise.all([
+      const [allSections, sectionAssignments, sectionAnalytics, sectionMembers, sectionExamRows] = await Promise.all([
         listProfessorSections(supabase),
         listSectionAssignments(supabase, resolvedSectionId),
         getSectionAnalytics(supabase, resolvedSectionId),
-        listSectionMembers(supabase, resolvedSectionId)
+        listSectionMembers(supabase, resolvedSectionId),
+        listSectionExams(supabase, resolvedSectionId)
       ]);
 
       const foundSection = allSections.find((row) => row.id === resolvedSectionId) ?? null;
@@ -68,6 +71,7 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
       setAssignments(sectionAssignments);
       setAnalytics(sectionAnalytics);
       setMembers(sectionMembers);
+      setSectionExams(sectionExamRows);
 
       if (foundSection) {
         const { data: setRows, error } = await supabase
@@ -98,6 +102,7 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
       setAssignments([]);
       setAnalytics(null);
       setMembers([]);
+      setSectionExams([]);
       setAvailableQuizSets([]);
     } finally {
       setLoading(false);
@@ -183,6 +188,11 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
             <Button variant="secondary" asChild>
               <Link href={`/app/sections/${section.id}/gradebook`}>Gradebook</Link>
             </Button>
+            {isProfessor ? (
+              <Button variant="secondary" asChild>
+                <Link href={`/app/professor/sections/${section.id}/exams`}>Exams</Link>
+              </Button>
+            ) : null}
           </div>
         </CardHeader>
         <CardBody className="space-y-4">
@@ -352,6 +362,51 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
                       >
                         Submit latest attempt
                       </Button>
+                    ) : null}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold text-text">Timed exams</p>
+              {isProfessor ? (
+                <Button size="sm" variant="secondary" asChild>
+                  <Link href={`/app/professor/sections/${resolvedSectionId}/exams`}>Manage exams</Link>
+                </Button>
+              ) : null}
+            </div>
+            {sectionExams.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-borderc bg-soft px-4 py-3 text-sm text-muted">
+                No exams scheduled yet.
+              </p>
+            ) : (
+              sectionExams.map((exam) => (
+                <div key={exam.id} className="rounded-xl border border-borderc bg-soft px-4 py-3 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-semibold text-text">{exam.title}</p>
+                    <span className="text-xs text-muted">
+                      {exam.published ? "Published" : "Draft"} • {exam.duration_minutes}m
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted">
+                    {new Date(exam.starts_at).toLocaleString()} → {new Date(exam.ends_at).toLocaleString()}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Button size="sm" asChild>
+                      <Link href={`/app/exams/${exam.id}`}>Open exam</Link>
+                    </Button>
+                    {isProfessor ? (
+                      <>
+                        <Button size="sm" variant="secondary" asChild>
+                          <Link href={`/app/professor/exams/${exam.id}/edit`}>Edit</Link>
+                        </Button>
+                        <Button size="sm" variant="secondary" asChild>
+                          <Link href={`/app/professor/exams/${exam.id}/monitor`}>Monitor</Link>
+                        </Button>
+                      </>
                     ) : null}
                   </div>
                 </div>

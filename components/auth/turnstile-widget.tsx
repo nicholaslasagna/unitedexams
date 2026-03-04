@@ -26,7 +26,12 @@ declare global {
 }
 
 interface TurnstileWidgetProps {
-  action: "signup" | "login" | "forgot-password" | "reset-password";
+  action:
+    | "signup"
+    | "login"
+    | "forgot-password"
+    | "reset-password"
+    | "exam-start";
   theme?: TurnstileTheme;
   onToken: (token: string | null) => void;
 }
