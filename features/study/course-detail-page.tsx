@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Clock3, FileText, Search } from "lucide-react";
 import { getCourse, getCourseContent, getCourseQuizSets } from "@/data/seed";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
@@ -43,6 +44,7 @@ export function CourseDetailContent({
   courseId: string;
   routePrefix: string;
 }) {
+  const router = useRouter();
   const course = getCourse(courseId);
   const content = getCourseContent(courseId);
 
@@ -252,40 +254,44 @@ export function CourseDetailContent({
                     <div className="flex flex-wrap gap-2">
                       {setMode === "homework" ? (
                         <>
-                          <Button asChild>
-                            <Link href={withPrefix(routePrefix, `/homework/${set.id}`)}>Start Homework</Link>
+                          <Button onClick={() => router.push(withPrefix(routePrefix, `/homework/${set.id}`))}>
+                            Start Homework
                           </Button>
-                          <Button asChild variant="secondary">
-                            <Link href={withPrefix(routePrefix, `/homework/${set.id}?review=1`)}>
-                              Review flagged
-                            </Link>
+                          <Button
+                            variant="secondary"
+                            onClick={() => router.push(withPrefix(routePrefix, `/homework/${set.id}?review=1`))}
+                          >
+                            Review flagged
                           </Button>
                         </>
                       ) : setMode === "exam" ? (
                         <>
-                          <Button asChild>
-                            <Link href={withPrefix(routePrefix, `/quiz/${set.id}?mode=exam`)}>
-                              Start Exam Simulation
-                            </Link>
+                          <Button onClick={() => router.push(withPrefix(routePrefix, `/quiz/${set.id}?mode=exam`))}>
+                            Start Exam Simulation
                           </Button>
-                          <Button asChild variant="secondary">
-                            <Link href={withPrefix(routePrefix, `/quiz/${set.id}`)}>Practice this bank</Link>
+                          <Button
+                            variant="secondary"
+                            onClick={() => router.push(withPrefix(routePrefix, `/quiz/${set.id}`))}
+                          >
+                            Practice this bank
                           </Button>
                         </>
                       ) : (
                         <>
-                          <Button asChild>
-                            <Link href={withPrefix(routePrefix, `/quiz/${set.id}`)}>Start Quiz</Link>
+                          <Button onClick={() => router.push(withPrefix(routePrefix, `/quiz/${set.id}`))}>
+                            Start Quiz
                           </Button>
-                          <Button asChild variant="secondary">
-                            <Link href={withPrefix(routePrefix, `/quiz/${set.id}?mode=study`)}>
-                              Study Mode
-                            </Link>
+                          <Button
+                            variant="secondary"
+                            onClick={() => router.push(withPrefix(routePrefix, `/quiz/${set.id}?mode=study`))}
+                          >
+                            Study Mode
                           </Button>
-                          <Button asChild variant="ghost">
-                            <Link href={withPrefix(routePrefix, `/quiz/${set.id}?mode=timed`)}>
-                              Timed Mode
-                            </Link>
+                          <Button
+                            variant="ghost"
+                            onClick={() => router.push(withPrefix(routePrefix, `/quiz/${set.id}?mode=timed`))}
+                          >
+                            Timed Mode
                           </Button>
                         </>
                       )}
