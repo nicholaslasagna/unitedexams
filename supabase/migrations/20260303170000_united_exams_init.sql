@@ -537,6 +537,9 @@ select
 from public.profiles p
 left join public.universities u on u.id = p.university_id;
 
+alter view public.public_profiles_for_leaderboard
+set (security_invoker = true);
+
 -- =====================================
 -- RLS + grants
 -- =====================================
