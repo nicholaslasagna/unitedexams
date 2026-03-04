@@ -4,38 +4,11 @@ import type { UniversityRecord } from "@/lib/supabase/types";
 export async function fetchUniversities(client: SupabaseClient) {
   const { data, error } = await client
     .from("universities")
-    .select("id, name, country, state")
+    .select("id, name")
     .order("name", { ascending: true });
 
   if (error) throw error;
   return (data ?? []) as UniversityRecord[];
-}
-
-export async function addUniversity(client: SupabaseClient, name: string) {
-  const trimmed = name.trim();
-  if (!trimmed) {
-    throw new Error("University name is required.");
-  }
-
-  const { data, error } = await client
-    .from("universities")
-    .insert({ name: trimmed })
-    .select("id, name, country, state")
-    .single();
-
-  if (error) {
-    if (error.code === "23505") {
-      const existing = await client
-        .from("universities")
-        .select("id, name, country, state")
-        .ilike("name", trimmed)
-        .maybeSingle();
-      if (existing.data) return existing.data as UniversityRecord;
-    }
-    throw error;
-  }
-
-  return data as UniversityRecord;
 }
 
 export async function fetchUserCourses(client: SupabaseClient, userId: string) {

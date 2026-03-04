@@ -27,7 +27,7 @@ const accountNavItems = [
 export function PublicShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated, profile, signOut } = useAppData();
+  const { authReady, isAuthenticated, profile, signOut } = useAppData();
   const navItems = isAuthenticated ? accountNavItems : guestNavItems;
 
   return (
@@ -60,7 +60,11 @@ export function PublicShell({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="flex items-center gap-2">
-            {isAuthenticated ? (
+            {!authReady ? (
+              <span className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm text-muted">
+                Checking session...
+              </span>
+            ) : isAuthenticated ? (
               <>
                 <Button
                   variant="ghost"

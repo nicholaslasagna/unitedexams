@@ -12,6 +12,11 @@ import { resolveNextAfterLogin } from "@/lib/auth/guards";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAppData } from "@/lib/app-data-context";
 import { validatePassword } from "@/lib/auth/password";
+import {
+  getDisplayNameMaxLength,
+  normalizeDisplayName,
+  validateDisplayName
+} from "@/lib/auth/display-name";
 
 function SignupPageContent() {
   const router = useRouter();
@@ -71,6 +76,14 @@ function SignupPageContent() {
       return;
     }
 
+    const displayNameCheck = validateDisplayName(displayName);
+    if (!displayNameCheck.valid) {
+      setError(displayNameCheck.message);
+      return;
+    }
+
+    const normalizedDisplayName = normalizeDisplayName(displayName);
+
     setLoading(true);
     const redirectTo = `${window.location.origin}/login`;
 
@@ -80,7 +93,7 @@ function SignupPageContent() {
       options: {
         emailRedirectTo: redirectTo,
         data: {
-          display_name: displayName.trim(),
+          display_name: normalizedDisplayName,
           real_name: realName.trim() || null,
           show_real_name: showRealName
         }
@@ -98,7 +111,7 @@ function SignupPageContent() {
       await supabase.from("profiles").upsert({
         id: data.user.id,
         email: email.trim(),
-        display_name: displayName.trim(),
+        display_name: normalizedDisplayName,
         real_name: realName.trim() || null,
         show_real_name: showRealName
       });
@@ -164,6 +177,7 @@ function SignupPageContent() {
                 id="display-name"
                 required
                 value={displayName}
+                maxLength={getDisplayNameMaxLength()}
                 onChange={(event) => setDisplayName(event.target.value)}
                 placeholder="StudyPilot"
               />

@@ -4,6 +4,10 @@ import {
   defaultProfile,
   type DataRepository
 } from "@/lib/storage/repository";
+import {
+  normalizeDisplayName,
+  validateDisplayName
+} from "@/lib/auth/display-name";
 import { findClosestPalette } from "@/lib/theme/palettes";
 import type {
   AppDataDump,
@@ -98,11 +102,14 @@ export class SupabaseRepository implements DataRepository {
       this.user.user_metadata?.display_name ??
       this.user.email?.split("@")[0] ??
       defaultProfile.name;
+    const normalizedFallbackName = normalizeDisplayName(fallbackName || defaultProfile.name);
+    const fallbackValidation = validateDisplayName(normalizedFallbackName);
+    const safeFallbackName = fallbackValidation.valid ? normalizedFallbackName : defaultProfile.name;
 
     await this.client.from("profiles").upsert({
       id: this.user.id,
       email: this.user.email,
-      display_name: fallbackName
+      display_name: safeFallbackName
     });
 
     await this.client.from("user_preferences").upsert({
@@ -273,11 +280,17 @@ export class SupabaseRepository implements DataRepository {
   async saveProfile(profile: UserProfile): Promise<void> {
     await this.ensureBaseRows();
 
+    const normalizedName = normalizeDisplayName(profile.name || defaultProfile.name);
+    const validation = validateDisplayName(normalizedName);
+    if (!validation.valid) {
+      throw new Error(validation.message || "Invalid display name.");
+    }
+
     await this.client
       .from("profiles")
       .update({
         email: profile.email ?? this.user.email,
-        display_name: profile.name || defaultProfile.name,
+        display_name: normalizedName,
         real_name: profile.realName ?? null,
         show_real_name: Boolean(profile.showRealName),
         show_university: Boolean(profile.showUniversity),
