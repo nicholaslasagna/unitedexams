@@ -222,13 +222,13 @@ const QUESTION_BANK = [
   question:"Which of the following is the BEST example of a customized (bespoke) software product?",
   options:[
     "Microsoft Excel, a spreadsheet program sold to millions of customers.",
-    "A traffic control system built specifically for the city of Lubbock, Texas.",
+    "A traffic control system built specifically for one city government.",
     "Adobe Photoshop, available for purchase on the Adobe website.",
     "The Google Chrome web browser, freely available for download.",
     "A mobile game app distributed through the Apple App Store.",
     "The Linux operating system, available as open source software.",
   ],answer:[1],
-  explanation:"A system built specifically for one client (Lubbock's traffic control) is customized/bespoke."},
+  explanation:"A system built specifically for one client is customized/bespoke."},
 
 // ╔════════════════════════════════════════════╗
 // ║  CHAPTER 2 — SOFTWARE PROCESSES             ║
