@@ -168,14 +168,17 @@ begin
 end;
 $$;
 
+drop trigger if exists trg_universities_updated_at on public.universities;
 create trigger trg_universities_updated_at
 before update on public.universities
 for each row execute procedure public.set_updated_at();
 
+drop trigger if exists trg_profiles_updated_at on public.profiles;
 create trigger trg_profiles_updated_at
 before update on public.profiles
 for each row execute procedure public.set_updated_at();
 
+drop trigger if exists trg_user_preferences_updated_at on public.user_preferences;
 create trigger trg_user_preferences_updated_at
 before update on public.user_preferences
 for each row execute procedure public.set_updated_at();
@@ -225,6 +228,7 @@ begin
 end;
 $$;
 
+drop trigger if exists trg_profiles_sync_leaderboard on public.profiles;
 create trigger trg_profiles_sync_leaderboard
 after insert or update of display_name, real_name, show_real_name, show_university, university_id
 on public.profiles
@@ -248,6 +252,7 @@ begin
 end;
 $$;
 
+drop trigger if exists trg_university_sync_leaderboard on public.universities;
 create trigger trg_university_sync_leaderboard
 after update of name on public.universities
 for each row execute procedure public.sync_leaderboard_university_name();
@@ -469,6 +474,7 @@ begin
 end;
 $$;
 
+drop trigger if exists trg_attempts_apply_aggregates on public.attempts;
 create trigger trg_attempts_apply_aggregates
 after insert on public.attempts
 for each row execute procedure public.apply_attempt_aggregates();
