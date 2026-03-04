@@ -48,6 +48,7 @@ Premium-feeling college study platform built with **Next.js + TypeScript + Tailw
    - `supabase/migrations/20260304052000_university_picker_lock_and_name_guardrails.sql`
    - `supabase/migrations/20260304090000_expand_university_catalog_and_name_rules.sql`
    - `supabase/migrations/20260304103000_profile_locks_professor_expansion.sql`
+   - `supabase/migrations/20260304133000_professor_timed_exams_proctoring.sql`
 4. Optional content import (service role key required):
    - `npm run content:generate:se-exam`
    - `npm run content:import:supabase`
@@ -88,6 +89,15 @@ Protected (`/app/*`, middleware guarded):
 - `/app/account`
 - `/app/settings`
 - `/app/professor`
+- `/app/exams`
+- `/app/exams/[examId]`
+- `/app/professor/sections`
+- `/app/professor/sections/[sectionId]`
+- `/app/professor/sections/[sectionId]/analytics`
+- `/app/professor/sections/[sectionId]/exams`
+- `/app/professor/exams/[examId]/edit`
+- `/app/professor/exams/[examId]/monitor`
+- `/app/professor/exams/[examId]/results`
 - `/app/professor/sections/[id]`
 - `/app/sections`
 - `/app/sections/[sectionId]`
@@ -182,9 +192,20 @@ Persisted entities include:
   - assignment submission + autograding bridge (`submit_assignment`)
   - gradebook RPC (`get_section_gradebook`)
   - analytics summary via `rpc('get_section_analytics')`
+  - professor-hosted timed exams with proctoring:
+    - window-gated start/end + server-side duration enforcement
+    - proctor code verification
+    - optional same-network allowlist (hashed IP matching)
+    - suspicion-event monitoring (`tab_blur`, `visibility_hidden`, `copy`, `paste`, `multiple_sessions`, `ip_changed`, `devtools_suspected`)
+    - live monitor + attempt flags + CSV export
 - Students can join sections using join codes.
 - Role mapping:
   - UI label `Teacher` is stored as `profiles.role = 'professor'`.
+
+## Proctoring Limitations
+- Network/IP checks are best-effort only. Shared campus NAT, VPNs, and mobile carrier switching can produce false positives.
+- Suspicion events are review signals, not automatic proof of misconduct.
+- Keep proctor code + network lock enabled together for stronger in-person exam control.
 
 ## Account + Settings Highlights
 - Account page:
