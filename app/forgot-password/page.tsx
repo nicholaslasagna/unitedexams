@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
@@ -9,9 +9,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
-  isTurnstileClientEnabled,
-  verifyTurnstileClient
+  isTurnstileClientEnabled
 } from "@/lib/security/turnstile-client";
+
+function mapAuthError(message: string, captchaEnabled: boolean) {
+  if (!message) return "Unable to send reset link.";
+  const normalized = message.toLowerCase();
+  if (
+    captchaEnabled &&
+    (normalized.includes("captcha") || normalized.includes("challenge") || normalized.includes("turnstile"))
+  ) {
+    return "Please complete the verification challenge and try again.";
+  }
+  return message;
+}
 
 export default function ForgotPasswordPage() {
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
@@ -21,7 +32,14 @@ export default function ForgotPasswordPage() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [captchaRenderKey, setCaptchaRenderKey] = useState(0);
   const turnstileEnabled = isTurnstileClientEnabled();
+  const errorRef = useRef<HTMLParagraphElement | null>(null);
+  const errorId = "forgot-password-form-error";
+
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -32,23 +50,26 @@ export default function ForgotPasswordPage() {
       return;
     }
 
-    if (turnstileEnabled) {
-      if (!turnstileToken) {
-        setError("Please complete the verification challenge.");
-        return;
-      }
-      try {
-        await verifyTurnstileClient({ token: turnstileToken, action: "forgot-password" });
-      } catch (turnstileError) {
-        setError((turnstileError as Error).message);
-        return;
-      }
+    if (turnstileEnabled && !turnstileToken) {
+      setError("Please complete the verification challenge.");
+      return;
     }
 
     setLoading(true);
 
     const redirectTo = `${window.location.origin}/reset-password`;
-    await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo });
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo,
+      captchaToken: turnstileEnabled ? (turnstileToken ?? "") : undefined
+    });
+    setCaptchaRenderKey((value) => value + 1);
+    setTurnstileToken(null);
+
+    if (resetError) {
+      setError(mapAuthError(resetError.message, turnstileEnabled));
+      setLoading(false);
+      return;
+    }
 
     // Mark reset-required flag without revealing if account exists.
     await supabase.rpc("request_password_reset", { target_email: email.trim() });
@@ -91,10 +112,26 @@ export default function ForgotPasswordPage() {
             />
           </div>
 
-          {error ? <p className="rounded-lg border border-danger/35 bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p> : null}
+          {error ? (
+            <p
+              id={errorId}
+              ref={errorRef}
+              tabIndex={-1}
+              role="alert"
+              aria-live="assertive"
+              className="rounded-lg border border-danger/35 bg-danger/10 px-3 py-2 text-sm text-danger outline-none"
+            >
+              {error}
+            </p>
+          ) : null}
 
           {turnstileEnabled ? (
-            <TurnstileWidget action="forgot-password" onToken={setTurnstileToken} />
+            <TurnstileWidget
+              key={captchaRenderKey}
+              action="forgot-password"
+              onToken={setTurnstileToken}
+              describedBy={error ? errorId : undefined}
+            />
           ) : null}
 
           <Button type="submit" className="w-full" loading={loading}>

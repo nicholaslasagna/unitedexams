@@ -5,6 +5,12 @@ import { getClientIp, hashIpForStorage, userAgentSnippet } from "@/lib/auth/ip-p
 
 export const runtime = "nodejs";
 
+function deriveDisplayName(email: string | null | undefined, fallback: string) {
+  const base = (email ?? "").split("@")[0]?.trim();
+  if (base) return base.slice(0, 16);
+  return fallback.slice(0, 16);
+}
+
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
   if (!supabase) {
@@ -23,16 +29,41 @@ export async function POST(request: NextRequest) {
   const ipHash = ipRaw ? await hashIpForStorage(ipRaw) : null;
   const userAgent = userAgentSnippet(request.headers.get("user-agent"));
 
+  // Ensure profile row exists before recording legal acceptance.
+  const { error: ensureProfileError } = await supabase.from("profiles").upsert(
+    {
+      id: user.id,
+      email: user.email ?? null,
+      display_name: deriveDisplayName(user.email, "Student"),
+      privacy_version_accepted: LEGAL_VERSION,
+      terms_version_accepted: LEGAL_VERSION
+    },
+    { onConflict: "id", ignoreDuplicates: true }
+  );
+
+  if (ensureProfileError) {
+    return NextResponse.json(
+      { error: `Unable to ensure profile: ${ensureProfileError.message}` },
+      { status: 400 }
+    );
+  }
+
   const { error: profileError } = await supabase
     .from("profiles")
     .update({
       privacy_version_accepted: LEGAL_VERSION,
-      terms_version_accepted: LEGAL_VERSION
+      terms_version_accepted: LEGAL_VERSION,
+      email: user.email ?? null
     })
-    .eq("id", user.id);
+    .eq("id", user.id)
+    .select("id")
+    .single();
 
   if (profileError) {
-    return NextResponse.json({ error: profileError.message }, { status: 400 });
+    return NextResponse.json(
+      { error: `Unable to save legal acceptance on profile: ${profileError.message}` },
+      { status: 400 }
+    );
   }
 
   const { error: consentError } = await supabase.from("legal_consents").upsert(
@@ -59,7 +90,10 @@ export async function POST(request: NextRequest) {
   );
 
   if (consentError) {
-    return NextResponse.json({ error: consentError.message }, { status: 400 });
+    return NextResponse.json(
+      { error: `Unable to save immutable consent records: ${consentError.message}` },
+      { status: 400 }
+    );
   }
 
   return NextResponse.json({ ok: true, version: LEGAL_VERSION });

@@ -34,15 +34,19 @@ interface TurnstileWidgetProps {
     | "exam-start";
   theme?: TurnstileTheme;
   onToken: (token: string | null) => void;
+  describedBy?: string;
 }
 
 export function TurnstileWidget({
   action,
   theme = "dark",
-  onToken
+  onToken,
+  describedBy
 }: TurnstileWidgetProps) {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const containerId = useId().replace(/:/g, "");
+  const helperId = `${containerId}-helper`;
+  const labelId = `${containerId}-label`;
   const widgetIdRef = useRef<string | null>(null);
   const [ready, setReady] = useState(false);
 
@@ -76,18 +80,27 @@ export function TurnstileWidget({
   if (!enabled) return null;
 
   return (
-    <div className="space-y-2">
+    <div
+      className="space-y-2"
+      role="group"
+      aria-labelledby={labelId}
+      aria-describedby={describedBy ? `${helperId} ${describedBy}` : helperId}
+      data-captcha-provider="turnstile"
+    >
       <Script
         src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
         strategy="afterInteractive"
         onLoad={() => setReady(true)}
       />
+      <p id={labelId} className="sr-only">
+        Human verification challenge
+      </p>
       <div
         id={containerId}
-        className="min-h-[64px] rounded-xl border border-borderc bg-soft px-2 py-2"
+        className="min-h-[64px] rounded-xl border border-borderc bg-soft px-2 py-2 focus-within:ring-2 focus-within:ring-accent/60"
         aria-label="Human verification"
       />
-      <p className="text-xs text-muted">
+      <p id={helperId} className="text-xs text-muted">
         Protected by Cloudflare Turnstile.
       </p>
     </div>

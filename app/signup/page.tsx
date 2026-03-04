@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
@@ -22,9 +22,20 @@ import {
   validateDisplayName
 } from "@/lib/auth/display-name";
 import {
-  isTurnstileClientEnabled,
-  verifyTurnstileClient
+  isTurnstileClientEnabled
 } from "@/lib/security/turnstile-client";
+
+function mapAuthError(message: string, captchaEnabled: boolean) {
+  if (!message) return "Unable to create account.";
+  const normalized = message.toLowerCase();
+  if (
+    captchaEnabled &&
+    (normalized.includes("captcha") || normalized.includes("challenge") || normalized.includes("turnstile"))
+  ) {
+    return "Please complete the verification challenge and try again.";
+  }
+  return message;
+}
 
 function SignupPageContent() {
   const router = useRouter();
@@ -45,10 +56,17 @@ function SignupPageContent() {
   const [checkInbox, setCheckInbox] = useState(false);
   const [activeEmail, setActiveEmail] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [captchaRenderKey, setCaptchaRenderKey] = useState(0);
+  const errorRef = useRef<HTMLParagraphElement | null>(null);
 
   const next = resolveNextAfterLogin(searchParams.get("next"));
   const guestReturnPath = next.startsWith("/app/") ? "/courses" : next;
   const turnstileEnabled = isTurnstileClientEnabled();
+  const errorId = "signup-form-error";
+
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   useEffect(() => {
     if (!supabase) return;
@@ -77,17 +95,9 @@ function SignupPageContent() {
       return;
     }
 
-    if (turnstileEnabled) {
-      if (!turnstileToken) {
-        setError("Please complete the verification challenge.");
-        return;
-      }
-      try {
-        await verifyTurnstileClient({ token: turnstileToken, action: "signup" });
-      } catch (turnstileError) {
-        setError((turnstileError as Error).message);
-        return;
-      }
+    if (turnstileEnabled && !turnstileToken) {
+      setError("Please complete the verification challenge.");
+      return;
     }
 
     if (!acceptLegal) {
@@ -127,6 +137,7 @@ function SignupPageContent() {
       email: email.trim(),
       password,
       options: {
+        captchaToken: turnstileEnabled ? (turnstileToken ?? "") : undefined,
         emailRedirectTo: redirectTo,
         data: {
           display_name: normalizedDisplayName,
@@ -136,11 +147,13 @@ function SignupPageContent() {
         }
       }
     });
+    setCaptchaRenderKey((value) => value + 1);
+    setTurnstileToken(null);
 
     setLoading(false);
 
     if (signUpError) {
-      setError(signUpError.message);
+      setError(mapAuthError(signUpError.message, turnstileEnabled));
       return;
     }
 
@@ -366,10 +379,26 @@ function SignupPageContent() {
             </span>
           </label>
 
-          {error ? <p className="rounded-lg border border-danger/35 bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p> : null}
+          {error ? (
+            <p
+              id={errorId}
+              ref={errorRef}
+              tabIndex={-1}
+              role="alert"
+              aria-live="assertive"
+              className="rounded-lg border border-danger/35 bg-danger/10 px-3 py-2 text-sm text-danger outline-none"
+            >
+              {error}
+            </p>
+          ) : null}
 
           {turnstileEnabled ? (
-            <TurnstileWidget action="signup" onToken={setTurnstileToken} />
+            <TurnstileWidget
+              key={captchaRenderKey}
+              action="signup"
+              onToken={setTurnstileToken}
+              describedBy={error ? errorId : undefined}
+            />
           ) : null}
 
           <Button type="submit" className="w-full" loading={loading} disabled={!acceptLegal}>
