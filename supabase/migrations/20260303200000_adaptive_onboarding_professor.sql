@@ -761,7 +761,8 @@ create policy assignments_delete_owner
     )
   );
 
-create or replace function public.join_section_by_code(join_code_input text)
+drop function if exists public.join_section_by_code(text);
+create function public.join_section_by_code(join_code_input text)
 returns uuid
 language plpgsql
 security definer
@@ -788,7 +789,8 @@ $$;
 
 grant execute on function public.join_section_by_code(text) to authenticated;
 
-create or replace function public.regenerate_section_join_code(section_id_input uuid)
+drop function if exists public.regenerate_section_join_code(uuid);
+create function public.regenerate_section_join_code(section_id_input uuid)
 returns text
 language plpgsql
 security definer
