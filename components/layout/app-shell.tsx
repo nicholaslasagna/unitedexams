@@ -4,20 +4,20 @@ import { Topbar } from "@/components/layout/topbar";
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-[#050510]">
-      {/* Ambient glow — atmospheric background from quiz */}
+    <div className="flex min-h-screen bg-bg">
+      {/* Ambient glow — atmospheric background */}
       <div className="ambient-glow" />
       <Sidebar />
       <div className="relative z-[1] flex min-w-0 flex-1 flex-col">
         <Topbar />
-        <main className="mx-auto w-full max-w-[1360px] flex-1 px-5 py-8 md:px-8">{children}</main>
-        <footer className="mx-auto w-full max-w-[1360px] border-t border-white/[0.08] px-5 py-4 text-sm text-white/[0.55] md:px-8">
+        <main id="main" className="mx-auto w-full max-w-[1360px] flex-1 px-5 py-8 md:px-8">{children}</main>
+        <footer className="mx-auto w-full max-w-[1360px] border-t border-borderc px-5 py-4 text-sm text-muted md:px-8">
           © {new Date().getFullYear()}{" "}
           <a
             href="https://imagicaststudios.com"
             target="_blank"
             rel="noreferrer"
-            className="font-semibold text-accent hover:text-white"
+            className="font-semibold text-accent hover:text-text"
           >
             Imagicast Studios
           </a>

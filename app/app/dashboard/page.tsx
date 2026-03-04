@@ -192,31 +192,31 @@ export default function DashboardPage() {
             <div className="inline-flex items-center gap-2">
               <span className="text-[11px] font-bold tracking-[5px] text-accent uppercase">Continue studying</span>
             </div>
-            <h1 className="max-w-[22ch] font-display text-[30px] leading-[1.12] font-extrabold tracking-tight text-white md:text-[36px]">
+            <h1 className="max-w-[22ch] font-display text-[30px] leading-[1.12] font-extrabold tracking-tight text-accent-fg md:text-[36px]">
               Build mastery with one focused sprint.
             </h1>
-            <p className="max-w-xl text-[15px] leading-relaxed text-white/[0.55]">
+            <p className="max-w-xl text-[15px] leading-relaxed text-muted">
               Pick up where you left off. One quality attempt keeps momentum alive.
             </p>
 
             {continueQuiz ? (
-              <div className="rounded-[14px] border border-white/[0.07] bg-white/[0.025] p-5 backdrop-blur-sm">
-                <p className="text-[10px] font-bold tracking-[1.5px] text-white/[0.3] uppercase">Continue with</p>
+              <div className="rounded-[14px] border border-borderc bg-soft p-5 backdrop-blur-sm">
+                <p className="text-[10px] font-bold tracking-[1.5px] text-faint uppercase">Continue with</p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-xl font-bold text-white">{continueQuiz.title}</p>
-                    <p className="mt-1 text-[14px] text-white/[0.55]">{continueQuiz.description}</p>
-                    <p className="mt-1 text-xs text-white/[0.3]">
+                    <p className="text-xl font-bold text-accent-fg">{continueQuiz.title}</p>
+                    <p className="mt-1 text-[14px] text-muted">{continueQuiz.description}</p>
+                    <p className="mt-1 text-xs text-faint">
                       Last attempt: {continueQuizLast ? formatRelativeDate(continueQuizLast.date) : "No attempts yet"}
                     </p>
                   </div>
                   <div className="grid grid-cols-2 gap-3 text-right">
-                    <div className="rounded-[10px] border border-white/[0.07] bg-white/[0.025] px-4 py-3">
-                      <p className="text-[10px] font-bold tracking-[1.5px] text-white/[0.3] uppercase">Best</p>
+                    <div className="rounded-[10px] border border-borderc bg-soft px-4 py-3">
+                      <p className="text-[10px] font-bold tracking-[1.5px] text-faint uppercase">Best</p>
                       <p className="font-mono text-2xl font-bold text-accent">{continueQuizBest}%</p>
                     </div>
-                    <div className="rounded-[10px] border border-white/[0.07] bg-white/[0.025] px-4 py-3">
-                      <p className="text-[10px] font-bold tracking-[1.5px] text-white/[0.3] uppercase">Est</p>
+                    <div className="rounded-[10px] border border-borderc bg-soft px-4 py-3">
+                      <p className="text-[10px] font-bold tracking-[1.5px] text-faint uppercase">Est</p>
                       <p className="font-mono text-2xl font-bold text-text">{continueQuiz.estMinutes}m</p>
                     </div>
                   </div>
@@ -224,12 +224,12 @@ export default function DashboardPage() {
 
                 {recentCompletedQuizzes.length > 1 ? (
                   <div className="mt-4 grid gap-2">
-                    <p className="text-[10px] font-bold tracking-[1.5px] text-white/[0.3] uppercase">Also continue</p>
+                    <p className="text-[10px] font-bold tracking-[1.5px] text-faint uppercase">Also continue</p>
                     {recentCompletedQuizzes.slice(1).map((set) => (
                       <Link
                         key={set.id}
                         href={`/quiz/${set.id}`}
-                        className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm text-text hover:bg-white/[0.06]"
+                        className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm text-text hover:bg-overlay"
                       >
                         {set.title}
                       </Link>
@@ -273,7 +273,7 @@ export default function DashboardPage() {
           <CardBody className="space-y-5 p-6">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold tracking-[5px] text-accent uppercase">Study streak</span>
-              <span className="rounded-full bg-accent/[0.15] px-3 py-1 text-[11px] font-bold text-accent">
+              <span className="rounded-full bg-accent-subtle px-3 py-1 text-[11px] font-bold text-accent">
                 {points} pts
               </span>
             </div>
@@ -283,15 +283,15 @@ export default function DashboardPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <Flame className="h-5 w-5 text-warn" />
-                  <span className="font-mono text-4xl font-bold text-white">{streak.current}</span>
-                  <span className="text-sm text-white/[0.55]">days</span>
+                  <span className="font-mono text-4xl font-bold text-text">{streak.current}</span>
+                  <span className="text-sm text-muted">days</span>
                 </div>
-                <p className="mt-1 text-sm text-white/[0.3]">Best streak: {streak.best} days</p>
+                <p className="mt-1 text-sm text-faint">Best streak: {streak.best} days</p>
               </div>
             </div>
 
-            <div className="rounded-[14px] border border-white/[0.07] bg-white/[0.025] p-4">
-              <p className="text-[10px] font-bold tracking-[1.5px] text-white/[0.3] uppercase">Last 28 days</p>
+            <div className="rounded-[14px] border border-borderc bg-soft p-4">
+              <p className="text-[10px] font-bold tracking-[1.5px] text-faint uppercase">Last 28 days</p>
               <div className="mt-3 grid grid-cols-7 gap-[6px]">
                 {heatmap.map((cell) => (
                   <span
@@ -304,7 +304,7 @@ export default function DashboardPage() {
                           ? "bg-accent/60"
                           : cell.count === 1
                             ? "bg-accent/30"
-                            : "bg-white/[0.06]"
+                            : "bg-overlay"
                     }`}
                     aria-hidden
                   />
@@ -312,8 +312,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="rounded-[14px] border border-white/[0.07] bg-white/[0.025] p-4">
-              <p className="text-[10px] font-bold tracking-[1.5px] text-white/[0.3] uppercase">Today&apos;s goal</p>
+            <div className="rounded-[14px] border border-borderc bg-soft p-4">
+              <p className="text-[10px] font-bold tracking-[1.5px] text-faint uppercase">Today&apos;s goal</p>
               <p className="mt-2 text-[14px] font-medium text-text">
                 {studiedToday ? "Goal complete. Keep momentum with review mode." : "Finish one 20-minute quiz sprint."}
               </p>
@@ -343,17 +343,17 @@ export default function DashboardPage() {
             <Link
               key={course.id}
               href={`/courses/${course.id}`}
-              className="group rounded-[20px] border border-white/[0.07] bg-white/[0.035] shadow-subtle backdrop-blur-xl transition duration-200 hover:-translate-y-[2px] hover:border-white/[0.12] hover:bg-white/[0.065] hover:shadow-soft"
+              className="group rounded-[20px] border border-borderc bg-soft shadow-subtle backdrop-blur-xl transition duration-200 hover:-translate-y-[2px] hover:border-border-bright hover:bg-overlay hover:shadow-soft"
             >
               <div className="space-y-4 p-5">
                 <div>
                   <span className="text-[10px] font-bold tracking-[1.5px] text-accent uppercase">{course.code}</span>
-                  <h2 className="mt-1 font-display text-[16px] font-bold text-white">{course.name}</h2>
+                  <h2 className="mt-1 font-display text-[16px] font-bold text-text">{course.name}</h2>
                 </div>
 
                 <div>
                   <div className="mb-2 flex items-center justify-between text-xs">
-                    <span className="text-white/[0.3]">Mastery</span>
+                    <span className="text-faint">Mastery</span>
                     <span className="font-mono font-bold text-accent">{progress}%</span>
                   </div>
                   <ProgressBar value={progress} />
@@ -361,16 +361,16 @@ export default function DashboardPage() {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-[13px]">
-                    <span className="text-white/[0.3]">Last score</span>
+                    <span className="text-faint">Last score</span>
                     <span className="font-mono font-bold text-text">{latest ? `${latest.score}%` : "—"}</span>
                   </div>
                   <div className="flex items-center justify-between text-[13px]">
-                    <span className="text-white/[0.3]">Avg best</span>
+                    <span className="text-faint">Avg best</span>
                     <span className="font-mono font-bold text-text">{avgBest}%</span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[13px] font-semibold text-white/[0.3] transition-colors group-hover:text-white/[0.55]">
+                <div className="flex items-center justify-between text-[13px] font-semibold text-faint transition-colors group-hover:text-muted">
                   <span>Open course</span>
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -383,13 +383,13 @@ export default function DashboardPage() {
       <section className="grid gap-5 xl:grid-cols-[1.4fr_1fr]">
         <Card>
           <CardHeader>
-            <h2 className="font-display text-lg font-bold text-white">Recent attempts</h2>
+            <h2 className="font-display text-lg font-bold text-text">Recent attempts</h2>
           </CardHeader>
           <CardBody>
             {recent.length === 0 ? (
-              <div className="rounded-[14px] border border-white/[0.07] bg-white/[0.025] p-8 text-center">
-                <p className="text-[16px] font-bold text-white">Start your first quiz to build momentum.</p>
-                <p className="mt-2 text-[14px] text-white/[0.55]">Your latest attempts and topic signals will appear here.</p>
+              <div className="rounded-[14px] border border-borderc bg-soft p-8 text-center">
+                <p className="text-[16px] font-bold text-text">Start your first quiz to build momentum.</p>
+                <p className="mt-2 text-[14px] text-muted">Your latest attempts and topic signals will appear here.</p>
                 <Button className="mt-5" asChild>
                   <Link href="/courses">Explore courses</Link>
                 </Button>
@@ -399,15 +399,15 @@ export default function DashboardPage() {
                 {recent.map((attempt) => (
                   <div
                     key={attempt.id}
-                    className="flex items-center justify-between rounded-[10px] border border-white/[0.07] bg-white/[0.025] px-4 py-3"
+                    className="flex items-center justify-between rounded-[10px] border border-borderc bg-soft px-4 py-3"
                   >
                     <div>
                       <p className="text-[14px] font-semibold text-text">{attempt.quizTitle}</p>
-                      <p className="text-xs text-white/[0.3]">{formatRelativeDate(attempt.date)}</p>
+                      <p className="text-xs text-faint">{formatRelativeDate(attempt.date)}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-mono text-xl font-bold text-text">{attempt.score}%</p>
-                      <p className="inline-flex items-center gap-1 text-xs text-white/[0.3]">
+                      <p className="inline-flex items-center gap-1 text-xs text-faint">
                         <Clock3 className="h-3 w-3" />
                         {Math.round(attempt.timeSpent / 60)} min
                       </p>
@@ -424,26 +424,26 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <h2 className="inline-flex items-center gap-2 font-display text-lg font-bold text-white">
+              <h2 className="inline-flex items-center gap-2 font-display text-lg font-bold text-text">
                 <TrendingUp className="h-5 w-5 text-accent" />
                 Focus lane
               </h2>
             </CardHeader>
             <CardBody className="space-y-3">
               <div className="grid gap-2">
-                <div className="flex items-center justify-between rounded-[10px] border border-white/[0.07] bg-white/[0.025] px-4 py-3">
+                <div className="flex items-center justify-between rounded-[10px] border border-borderc bg-soft px-4 py-3">
                   <span className="inline-flex items-center gap-2 text-[14px] text-text">
                     <Trophy className="h-4 w-4 text-accent" />
                     Personal best
                   </span>
                   <span className="font-mono text-sm font-bold text-accent">{continueQuizBest}%</span>
                 </div>
-                <div className="flex items-center justify-between rounded-[10px] border border-white/[0.07] bg-white/[0.025] px-4 py-3">
+                <div className="flex items-center justify-between rounded-[10px] border border-borderc bg-soft px-4 py-3">
                   <span className="inline-flex items-center gap-2 text-[14px] text-text">
                     <Target className="h-4 w-4 text-brand-2" />
                     Recommendation status
                   </span>
-                  <span className="text-[13px] font-semibold text-white/[0.7]">
+                  <span className="text-[13px] font-semibold text-muted">
                     {recommendationsLoading ? "Loading" : onboardingIncomplete ? "Needs onboarding" : "Ready"}
                   </span>
                 </div>
@@ -452,13 +452,13 @@ export default function DashboardPage() {
                 <Link
                   key={course.id}
                   href={`/courses/${course.id}`}
-                  className="flex items-center justify-between rounded-[10px] border border-white/[0.07] bg-white/[0.025] px-4 py-3 text-[14px] transition-all hover:border-white/[0.12] hover:bg-white/[0.05]"
+                  className="flex items-center justify-between rounded-[10px] border border-borderc bg-soft px-4 py-3 text-[14px] transition-all hover:border-border-bright hover:bg-soft"
                 >
                   <span className="inline-flex items-center gap-2">
                     <Target className="h-4 w-4 text-warn" />
                     {course.name}
                   </span>
-                  <ArrowRight className="h-4 w-4 text-white/[0.3]" />
+                  <ArrowRight className="h-4 w-4 text-faint" />
                 </Link>
               ))}
             </CardBody>

@@ -14,7 +14,7 @@ export function RecommendationsPanel({
   return (
     <Card>
       <CardHeader>
-        <h2 className="inline-flex items-center gap-2 font-display text-lg font-bold text-white">
+        <h2 className="inline-flex items-center gap-2 font-display text-lg font-bold text-text">
           <Sparkles className="h-5 w-5 text-accent" />
           Recommended For You
         </h2>
@@ -38,7 +38,7 @@ export function RecommendationsPanel({
             <Link
               key={item.quizId}
               href={`/quiz/${item.quizId}`}
-              className="block rounded-xl border border-borderc bg-soft px-4 py-3 transition hover:border-white/[0.14] hover:bg-white/[0.05]"
+              className="block rounded-xl border border-borderc bg-soft px-4 py-3 transition hover:border-border-bright hover:bg-overlay"
             >
               <div className="flex items-center justify-between gap-2">
                 <p className="text-sm font-semibold text-text">{item.title}</p>

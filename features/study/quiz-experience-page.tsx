@@ -905,7 +905,7 @@ export function QuizExperiencePageContent({
       {!isAuthenticated ? (
         <div className="rounded-xl border border-brand-2/35 bg-brand-2/10 px-4 py-3 text-xs text-text">
           Guest mode: your run is stored only on this device.{" "}
-          <Link href={signUpPath} className="font-semibold text-accent hover:text-white">
+          <Link href={signUpPath} className="font-semibold text-accent hover:text-text">
             Save progress
           </Link>
         </div>

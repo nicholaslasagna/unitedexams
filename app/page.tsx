@@ -31,7 +31,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-bg text-text">
       <header className="mx-auto flex w-full max-w-[1240px] items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-gradient text-white shadow-soft">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-gradient text-accent-fg shadow-soft">
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
@@ -43,7 +43,7 @@ export default function LandingPage() {
           <Link href="/contact" className="rounded-xl border border-borderc px-4 py-2 text-sm font-semibold text-text hover:bg-soft">
             Contact
           </Link>
-          <Link href="/courses" className="rounded-xl bg-brand-gradient px-4 py-2 text-sm font-semibold text-white shadow-soft">
+          <Link href="/courses" className="rounded-xl bg-brand-gradient px-4 py-2 text-sm font-semibold text-accent-fg shadow-soft">
             Start Studying
           </Link>
           <Link href="/login" className="rounded-xl border border-borderc px-4 py-2 text-sm font-semibold text-text hover:bg-soft">
@@ -66,7 +66,7 @@ export default function LandingPage() {
               topic mastery analytics, and clean course notes in one focused experience.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/app/dashboard" className="inline-flex items-center gap-2 rounded-xl bg-brand-gradient px-5 py-3 text-sm font-semibold text-white shadow-soft">
+              <Link href="/app/dashboard" className="inline-flex items-center gap-2 rounded-xl bg-brand-gradient px-5 py-3 text-sm font-semibold text-accent-fg shadow-soft">
                 Open Dashboard
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -75,7 +75,7 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
-          <Card className="overflow-hidden border-white/20 bg-surface/70">
+          <Card className="overflow-hidden border-borderc bg-surface/70">
             <CardBody className="space-y-5">
               <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted">Live Highlights</p>
               <div className="grid grid-cols-2 gap-3">
@@ -111,7 +111,7 @@ export default function LandingPage() {
             return (
               <Card key={feature.title} className="hover:-translate-y-0.5 hover:shadow-glass">
                 <CardBody>
-                  <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-gradient text-white">
+                  <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-gradient text-accent-fg">
                     <Icon className="h-5 w-5" />
                   </div>
                   <h2 className="font-display text-xl font-semibold">{feature.title}</h2>

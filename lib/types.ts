@@ -108,6 +108,7 @@ export interface AppPreferences {
   confettiEnabled: boolean;
   accentHue: number;
   accentStrength: number;
+  palette: string;
   dashboardLayout: string;
 }
 

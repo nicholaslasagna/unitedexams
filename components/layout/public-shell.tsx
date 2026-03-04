@@ -33,25 +33,25 @@ export function PublicShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-bg text-text">
       <div className="ambient-glow" />
-      <header className="sticky top-0 z-40 border-b border-white/[0.08] bg-[rgba(5,5,16,0.9)] backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-borderc bg-surface/90 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-[1240px] items-center justify-between gap-4 px-5 py-3 md:px-6">
           <Link href="/" className="inline-flex items-center gap-3">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-accent-gradient text-white shadow-soft">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-accent-gradient text-accent-fg shadow-soft">
               <GraduationCap className="h-4.5 w-4.5" />
             </span>
-            <span className="font-display text-lg font-semibold text-white">United Exams</span>
+            <span className="font-display text-lg font-semibold text-text">United Exams</span>
           </Link>
 
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "rounded-lg px-3 py-2 text-sm font-semibold transition",
+                  "rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
                   pathname === item.href || pathname.startsWith(`${item.href}/`)
-                    ? "bg-white/[0.06] text-white"
-                    : "text-white/[0.65] hover:bg-white/[0.05] hover:text-white"
+                    ? "bg-accent-subtle text-text"
+                    : "text-muted hover:bg-soft hover:text-text"
                 )}
               >
                 {item.label}
@@ -72,7 +72,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
                 >
                   Sign out
                 </Button>
-                <span className="hidden rounded-lg border border-white/[0.14] bg-white/[0.04] px-2 py-1 text-xs text-white/80 lg:inline">
+                <span className="hidden rounded-lg border border-borderc bg-soft px-2 py-1 text-xs text-muted lg:inline">
                   {profile.name || "Account"}
                 </span>
               </>
@@ -90,14 +90,14 @@ export function PublicShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="relative z-[1] mx-auto w-full max-w-[1240px] px-5 py-8 md:px-6">{children}</main>
-      <footer className="mx-auto w-full max-w-[1240px] border-t border-white/[0.08] px-5 py-4 text-sm text-white/[0.55] md:px-6">
+      <main id="main" className="relative z-[1] mx-auto w-full max-w-[1240px] px-5 py-8 md:px-6">{children}</main>
+      <footer className="mx-auto w-full max-w-[1240px] border-t border-borderc px-5 py-4 text-sm text-muted md:px-6">
         © {new Date().getFullYear()}{" "}
         <a
           href="https://imagicaststudios.com"
           target="_blank"
           rel="noreferrer"
-          className="font-semibold text-accent hover:text-white"
+          className="font-semibold text-accent hover:text-text"
         >
           Imagicast Studios
         </a>

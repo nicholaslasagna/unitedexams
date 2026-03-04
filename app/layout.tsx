@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Outfit, Fira_Code } from "next/font/google";
 import { Providers } from "@/app/providers";
+import { SkipLink } from "@/components/ui/skip-link";
 import "@/app/globals.css";
 
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
@@ -32,12 +33,13 @@ const themeBootScript = `
     var prefs = raw ? JSON.parse(raw) : null;
     var theme = prefs && prefs.theme ? prefs.theme : 'system';
     var reduced = !!(prefs && prefs.reducedMotion);
-    var accentHue = prefs && typeof prefs.accentHue === 'number' ? Math.max(220, Math.min(295, prefs.accentHue)) : 265;
+    var accentHue = prefs && typeof prefs.accentHue === 'number' ? ((prefs.accentHue % 360) + 360) % 360 : 265;
     var accentStrength = prefs && typeof prefs.accentStrength === 'number' ? Math.max(0, Math.min(100, prefs.accentStrength)) : 60;
     var resolved = theme === 'system'
       ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
       : theme;
     if (resolved === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
     document.documentElement.style.colorScheme = resolved;
     document.documentElement.dataset.reduceMotion = reduced ? 'on' : 'off';
     document.documentElement.style.setProperty('--accent-hue', String(accentHue));
@@ -52,6 +54,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <body className={`${outfit.variable} ${firaCode.variable} font-sans`}>
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+        <SkipLink />
         <Providers>{children}</Providers>
       </body>
     </html>

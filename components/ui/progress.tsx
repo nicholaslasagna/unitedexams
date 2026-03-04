@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 export function ProgressBar({ value, className }: { value: number; className?: string }) {
   const pct = Math.max(0, Math.min(100, value));
   return (
-    <div className={cn("h-[5px] w-full overflow-hidden rounded-full bg-white/[0.06]", className)} aria-hidden>
+    <div className={cn("h-[5px] w-full overflow-hidden rounded-full bg-borderc", className)} role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
       <div
         className="h-full rounded-full bg-accent-gradient shadow-[0_0_14px_hsl(var(--accent)/0.4)] transition-all duration-700"
         style={{ width: `${pct}%` }}
@@ -31,7 +31,7 @@ export function ProgressRing({
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90" aria-hidden>
-        <circle cx={size / 2} cy={size / 2} r={radius} stroke="currentColor" strokeWidth={stroke} className="text-white/[0.06]" fill="none" />
+        <circle cx={size / 2} cy={size / 2} r={radius} stroke="currentColor" strokeWidth={stroke} className="text-borderc" fill="none" />
         <circle
           cx={size / 2}
           cy={size / 2}
