@@ -4,9 +4,14 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { AuthShell } from "@/components/auth/auth-shell";
+import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import {
+  isTurnstileClientEnabled,
+  verifyTurnstileClient
+} from "@/lib/security/turnstile-client";
 
 export default function ForgotPasswordPage() {
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
@@ -15,6 +20,8 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileEnabled = isTurnstileClientEnabled();
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -23,6 +30,19 @@ export default function ForgotPasswordPage() {
     if (!supabase) {
       setError("Supabase is not configured. Add environment variables first.");
       return;
+    }
+
+    if (turnstileEnabled) {
+      if (!turnstileToken) {
+        setError("Please complete the verification challenge.");
+        return;
+      }
+      try {
+        await verifyTurnstileClient({ token: turnstileToken, action: "forgot-password" });
+      } catch (turnstileError) {
+        setError((turnstileError as Error).message);
+        return;
+      }
     }
 
     setLoading(true);
@@ -72,6 +92,10 @@ export default function ForgotPasswordPage() {
           </div>
 
           {error ? <p className="rounded-lg border border-danger/35 bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p> : null}
+
+          {turnstileEnabled ? (
+            <TurnstileWidget action="forgot-password" onToken={setTurnstileToken} />
+          ) : null}
 
           <Button type="submit" className="w-full" loading={loading}>
             Send reset link

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
@@ -74,6 +75,17 @@ export function ProfessorOverviewPage() {
       <section>
         <h1 className="font-display text-4xl font-semibold tracking-tight">Professor Dashboard</h1>
         <p className="mt-2 text-sm text-muted">Create sections, share join codes, and monitor class progress signals.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button variant="secondary" asChild>
+            <Link href="/app/sections/materials">Materials</Link>
+          </Button>
+          <Button variant="secondary" asChild>
+            <Link href="/app/sections/homework">Homework</Link>
+          </Button>
+          <Button variant="secondary" asChild>
+            <Link href="/app/sections/gradebook">Gradebook</Link>
+          </Button>
+        </div>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">

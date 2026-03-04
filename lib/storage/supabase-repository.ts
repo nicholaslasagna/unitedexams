@@ -23,7 +23,9 @@ interface ProfileRow {
   id: string;
   email: string | null;
   display_name: string;
+  display_name_locked: boolean | null;
   real_name: string | null;
+  real_name_locked: boolean | null;
   show_real_name: boolean;
   university_id: string | null;
   show_university: boolean;
@@ -36,7 +38,10 @@ interface ProfileRow {
 interface PreferencesRow {
   user_id: string;
   theme_mode: "dark" | "light" | "system";
+  accent_preset: string | null;
   accent_hue: number;
+  accent_saturation: number | null;
+  accent_lightness: number | null;
   accent_strength: number;
   reduce_motion: boolean;
   dashboard_layout: string;
@@ -108,21 +113,74 @@ export class SupabaseRepository implements DataRepository {
     const fallbackValidation = validateDisplayName(normalizedFallbackName);
     const safeFallbackName = fallbackValidation.valid ? normalizedFallbackName : defaultProfile.name;
 
-    await this.client.from("profiles").upsert({
-      id: this.user.id,
-      email: this.user.email,
-      display_name: safeFallbackName
-    });
+    const { data: existingProfile, error: profileLookupError } = await this.client
+      .from("profiles")
+      .select("id")
+      .eq("id", this.user.id)
+      .maybeSingle();
 
-    await this.client.from("user_preferences").upsert({
-      user_id: this.user.id,
-      theme_mode: defaultPreferences.theme,
-      accent_hue: defaultPreferences.accentHue,
-      accent_strength: defaultPreferences.accentStrength,
-      reduce_motion: defaultPreferences.reducedMotion,
-      dashboard_layout: defaultPreferences.dashboardLayout,
-      extra_signin_protection: defaultPreferences.extraSigninProtection
-    });
+    if (profileLookupError) {
+      throw new Error(profileLookupError.message);
+    }
+
+    if (!existingProfile) {
+      const { error: insertProfileError } = await this.client.from("profiles").insert({
+        id: this.user.id,
+        email: this.user.email,
+        display_name: safeFallbackName
+      });
+      if (insertProfileError) {
+        throw new Error(insertProfileError.message);
+      }
+    }
+
+    const { data: existingPrefs, error: prefsLookupError } = await this.client
+      .from("user_preferences")
+      .select("user_id")
+      .eq("user_id", this.user.id)
+      .maybeSingle();
+
+    if (prefsLookupError) {
+      throw new Error(prefsLookupError.message);
+    }
+
+    if (!existingPrefs) {
+      let insertPrefsError = (
+        await this.client.from("user_preferences").insert({
+          user_id: this.user.id,
+          theme_mode: defaultPreferences.theme,
+          accent_preset: defaultPreferences.accentPreset,
+          accent_hue: defaultPreferences.accentHue,
+          accent_saturation: defaultPreferences.accentSaturation,
+          accent_lightness: defaultPreferences.accentLightness,
+          accent_strength: defaultPreferences.accentStrength,
+          reduce_motion: defaultPreferences.reducedMotion,
+          dashboard_layout: defaultPreferences.dashboardLayout,
+          extra_signin_protection: defaultPreferences.extraSigninProtection
+        })
+      ).error;
+
+      if (
+        insertPrefsError &&
+        /accent_preset|accent_saturation|accent_lightness/i.test(insertPrefsError.message || "")
+      ) {
+        insertPrefsError = (
+          await this.client.from("user_preferences").insert({
+            user_id: this.user.id,
+            theme_mode: defaultPreferences.theme,
+            accent_hue: defaultPreferences.accentHue,
+            accent_strength: defaultPreferences.accentStrength,
+            reduce_motion: defaultPreferences.reducedMotion,
+            dashboard_layout: defaultPreferences.dashboardLayout,
+            extra_signin_protection: defaultPreferences.extraSigninProtection
+          })
+        ).error;
+      }
+
+      if (insertPrefsError) {
+        throw new Error(insertPrefsError.message);
+      }
+    }
 
     this.ensured = true;
   }
@@ -234,7 +292,10 @@ export class SupabaseRepository implements DataRepository {
     }));
 
     if (answerRows.length > 0) {
-      await this.client.from("attempt_answers").insert(answerRows);
+      const { error: answersError } = await this.client.from("attempt_answers").insert(answerRows);
+      if (answersError) {
+        throw new Error(answersError.message);
+      }
     }
   }
 
@@ -249,7 +310,7 @@ export class SupabaseRepository implements DataRepository {
     const { data, error } = await this.client
       .from("profiles")
       .select(
-        "id, email, display_name, real_name, show_real_name, university_id, show_university, role, reset_required, mfa_enabled, universities(name)"
+        "id, email, display_name, display_name_locked, real_name, real_name_locked, show_real_name, university_id, show_university, role, reset_required, mfa_enabled, universities(name)"
       )
       .eq("id", this.user.id)
       .single();
@@ -268,8 +329,10 @@ export class SupabaseRepository implements DataRepository {
       id: row.id,
       email: row.email ?? this.user.email ?? undefined,
       name: row.display_name,
+      displayNameLocked: Boolean(row.display_name_locked),
       school: row.universities?.[0]?.name,
       realName: row.real_name ?? undefined,
+      realNameLocked: Boolean(row.real_name_locked),
       showRealName: row.show_real_name,
       showUniversity: row.show_university,
       universityId: row.university_id ?? undefined,
@@ -294,10 +357,9 @@ export class SupabaseRepository implements DataRepository {
       throw new Error(realNameValidation.message || "Invalid name.");
     }
 
-    await this.client
+    const { error } = await this.client
       .from("profiles")
       .update({
-        email: profile.email ?? this.user.email,
         display_name: normalizedName,
         real_name: normalizedRealName || null,
         show_real_name: Boolean(profile.showRealName),
@@ -305,18 +367,37 @@ export class SupabaseRepository implements DataRepository {
         university_id: profile.universityId ?? null
       })
       .eq("id", this.user.id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
   }
 
   async getPreferences(): Promise<AppPreferences> {
     await this.ensureBaseRows();
 
-    const { data, error } = await this.client
+    let { data, error } = await this.client
       .from("user_preferences")
       .select(
-        "user_id, theme_mode, accent_hue, accent_strength, reduce_motion, dashboard_layout, extra_signin_protection"
+        "user_id, theme_mode, accent_preset, accent_hue, accent_saturation, accent_lightness, accent_strength, reduce_motion, dashboard_layout, extra_signin_protection"
       )
       .eq("user_id", this.user.id)
       .single();
+
+    if (
+      error &&
+      /accent_preset|accent_saturation|accent_lightness/i.test(error.message || "")
+    ) {
+      const fallback = await this.client
+        .from("user_preferences")
+        .select(
+          "user_id, theme_mode, accent_hue, accent_strength, reduce_motion, dashboard_layout, extra_signin_protection"
+        )
+        .eq("user_id", this.user.id)
+        .single();
+      data = (fallback.data as unknown as PreferencesRow | null) ?? null;
+      error = fallback.error;
+    }
 
     if (error || !data) return defaultPreferences;
 
@@ -325,9 +406,12 @@ export class SupabaseRepository implements DataRepository {
       theme: row.theme_mode,
       reducedMotion: row.reduce_motion,
       confettiEnabled: true,
+      accentPreset: row.accent_preset ?? findClosestPalette(row.accent_hue, row.accent_strength),
       accentHue: row.accent_hue,
+      accentSaturation: Number(row.accent_saturation ?? defaultPreferences.accentSaturation),
+      accentLightness: Number(row.accent_lightness ?? defaultPreferences.accentLightness),
       accentStrength: row.accent_strength,
-      palette: findClosestPalette(row.accent_hue, row.accent_strength),
+      palette: row.accent_preset ?? findClosestPalette(row.accent_hue, row.accent_strength),
       dashboardLayout: row.dashboard_layout,
       extraSigninProtection: Boolean(row.extra_signin_protection)
     };
@@ -336,15 +420,39 @@ export class SupabaseRepository implements DataRepository {
   async savePreferences(preferences: AppPreferences): Promise<void> {
     await this.ensureBaseRows();
 
-    await this.client.from("user_preferences").upsert({
+    let { error } = await this.client.from("user_preferences").upsert({
       user_id: this.user.id,
       theme_mode: preferences.theme,
+      accent_preset: preferences.accentPreset,
       accent_hue: preferences.accentHue,
+      accent_saturation: preferences.accentSaturation,
+      accent_lightness: preferences.accentLightness,
       accent_strength: preferences.accentStrength,
       reduce_motion: preferences.reducedMotion,
       dashboard_layout: preferences.dashboardLayout,
       extra_signin_protection: preferences.extraSigninProtection
     });
+
+    if (
+      error &&
+      /accent_preset|accent_saturation|accent_lightness/i.test(error.message || "")
+    ) {
+      error = (
+        await this.client.from("user_preferences").upsert({
+          user_id: this.user.id,
+          theme_mode: preferences.theme,
+          accent_hue: preferences.accentHue,
+          accent_strength: preferences.accentStrength,
+          reduce_motion: preferences.reducedMotion,
+          dashboard_layout: preferences.dashboardLayout,
+          extra_signin_protection: preferences.extraSigninProtection
+        })
+      ).error;
+    }
+
+    if (error) {
+      throw new Error(error.message);
+    }
   }
 
   async exportData(): Promise<AppDataDump> {

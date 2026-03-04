@@ -7,10 +7,14 @@ import { Download, ShieldCheck, Smartphone, Trash2, Upload } from "lucide-react"
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { ProgressBar } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ThemePalettePicker } from "@/components/ui/theme-palette-picker";
 import { useAppData } from "@/lib/app-data-context";
 import { useToast } from "@/lib/hooks/use-toast";
 import { validatePassword } from "@/lib/auth/password";
+import { getPaletteById } from "@/lib/theme/palettes";
 
 interface MfaFactor {
   id: string;
@@ -103,6 +107,12 @@ export default function SettingsPage() {
   }, [supabase]);
 
   const currentEmail = user?.email || profile.email || "";
+  const isDarkPreview = useMemo(() => {
+    if (preferences.theme === "dark") return true;
+    if (preferences.theme === "light") return false;
+    if (typeof window === "undefined") return true;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }, [preferences.theme]);
 
   const loadPendingEmailChange = useCallback(async () => {
     if (!supabase || !user) {
@@ -187,11 +197,53 @@ export default function SettingsPage() {
     updater: (prev: typeof preferences) => typeof preferences,
     successTitle?: string
   ) => {
-    const next = updater(preferences);
-    await savePreferences(next);
-    if (successTitle) {
-      push({ title: successTitle, tone: "success" });
+    try {
+      const next = updater(preferences);
+      await savePreferences(next);
+      if (successTitle) {
+        push({ title: successTitle, tone: "success" });
+      }
+    } catch (error) {
+      push({
+        title: "Unable to update appearance settings",
+        description: (error as Error).message,
+        tone: "error"
+      });
     }
+  };
+
+  const applyPalettePreset = async (presetId: string) => {
+    const preset = getPaletteById(presetId);
+    if (!preset) return;
+    await updatePreferences(
+      (prev) => ({
+        ...prev,
+        palette: preset.id,
+        accentPreset: preset.id,
+        accentHue: preset.hue,
+        accentSaturation: preset.saturation,
+        accentLightness: preset.lightness,
+        accentStrength: preset.strength
+      }),
+      "Accent palette updated"
+    );
+  };
+
+  const applyCustomAccent = async (next: {
+    hue: number;
+    saturation: number;
+    lightness: number;
+    strength: number;
+  }) => {
+    await updatePreferences((prev) => ({
+      ...prev,
+      palette: "custom",
+      accentPreset: "custom",
+      accentHue: next.hue,
+      accentSaturation: next.saturation,
+      accentLightness: next.lightness,
+      accentStrength: next.strength
+    }));
   };
 
   const onExport = async () => {
@@ -207,7 +259,7 @@ export default function SettingsPage() {
           .maybeSingle(),
         supabase
           .from("user_preferences")
-          .select("theme_mode, accent_hue, accent_strength, reduce_motion, dashboard_layout, created_at, updated_at")
+          .select("theme_mode, accent_preset, accent_hue, accent_saturation, accent_lightness, accent_strength, reduce_motion, dashboard_layout, created_at, updated_at")
           .eq("user_id", user.id)
           .maybeSingle(),
         supabase
@@ -611,9 +663,7 @@ export default function SettingsPage() {
                         ? "border-brand-2/55 bg-brand-2/10 text-text"
                         : "border-borderc text-muted"
                     }`}
-                    onClick={() =>
-                      updatePreferences((prev) => ({ ...prev, theme }), "Theme updated")
-                    }
+                    onClick={() => void updatePreferences((prev) => ({ ...prev, theme }), "Theme updated")}
                   >
                     {theme}
                   </button>
@@ -622,38 +672,28 @@ export default function SettingsPage() {
             </div>
 
             <div className="rounded-xl border border-borderc bg-soft p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <p className="text-sm font-semibold text-text">Accent hue</p>
-                <span className="font-mono text-xs text-muted">{preferences.accentHue}</span>
-              </div>
-              <input
-                type="range"
-                min={220}
-                max={295}
-                value={preferences.accentHue}
-                onChange={(event) =>
-                  void updatePreferences(
-                    (prev) => ({ ...prev, accentHue: Number(event.target.value) })
-                  )
-                }
-                className="w-full accent-[hsl(var(--brand-2))]"
-              />
-
-              <div className="mb-2 mt-4 flex items-center justify-between">
-                <p className="text-sm font-semibold text-text">Accent strength</p>
-                <span className="font-mono text-xs text-muted">{preferences.accentStrength}%</span>
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={preferences.accentStrength}
-                onChange={(event) =>
-                  void updatePreferences(
-                    (prev) => ({ ...prev, accentStrength: Number(event.target.value) })
-                  )
-                }
-                className="w-full accent-[hsl(var(--brand-2))]"
+              <ThemePalettePicker
+                palette={preferences.palette}
+                customHue={preferences.accentHue}
+                customSaturation={preferences.accentSaturation}
+                customLightness={preferences.accentLightness}
+                customStrength={preferences.accentStrength}
+                isDark={isDarkPreview}
+                onPaletteChange={(paletteId) => {
+                  if (paletteId === "custom") {
+                    void applyCustomAccent({
+                      hue: preferences.accentHue,
+                      saturation: preferences.accentSaturation,
+                      lightness: preferences.accentLightness,
+                      strength: preferences.accentStrength
+                    });
+                    return;
+                  }
+                  void applyPalettePreset(paletteId);
+                }}
+                onCustomChange={(next) => {
+                  void applyCustomAccent(next);
+                }}
               />
             </div>
 
@@ -695,17 +735,44 @@ export default function SettingsPage() {
 
             <div className="rounded-xl border border-borderc bg-soft p-3">
               <p className="text-sm font-semibold text-text">Live preview</p>
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                <Button>Primary</Button>
-                <Button variant="secondary">
-                  Secondary
-                </Button>
-                <Button variant="ghost">
-                  Ghost
-                </Button>
-                <span className="rounded-full border border-borderc bg-surface px-2 py-1 text-xs text-text">
-                  Accent badge
-                </span>
+              <p className="mt-1 text-xs text-muted">Buttons, chips, focus ring, progress, and card depth update instantly.</p>
+
+              <div className="mt-3 space-y-3 rounded-xl border border-borderc bg-surface p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button size="sm">Primary</Button>
+                  <Button variant="secondary" size="sm">
+                    Secondary
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    Ghost
+                  </Button>
+                  <Badge tone="accent">Accent tag</Badge>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Progress</p>
+                  <ProgressBar value={72} />
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Input + focus state</p>
+                  <Input
+                    value="Focus me with Tab"
+                    readOnly
+                    className="focus-visible:ring-2 focus-visible:ring-accent/65"
+                    aria-label="Appearance preview focus input"
+                  />
+                </div>
+
+                <div className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm">
+                  <p className="font-semibold text-text">Preview card title</p>
+                  <p className="text-xs text-muted">
+                    <a href="#0" className="font-semibold text-accent underline-offset-2 hover:underline">
+                      Accent link
+                    </a>{" "}
+                    remains readable in both themes.
+                  </p>
+                </div>
               </div>
             </div>
           </CardBody>

@@ -69,9 +69,16 @@ export async function migrateGuestAttemptsToAccount(
       migratedIds.add(attempt.id);
       writeMigratedAttemptIds(migratedIds);
     } catch {
-      // Mark failed legacy attempts as processed so users are not
-      // blocked by the same incompatible payload forever.
-      failedCount += 1;
+      try {
+        await accountRepository.saveAttempt({
+          ...attempt,
+          perQuestionResults: [],
+          topicBreakdown: attempt.topicBreakdown ?? {}
+        });
+        migratedCount += 1;
+      } catch {
+        failedCount += 1;
+      }
       migratedIds.add(attempt.id);
       writeMigratedAttemptIds(migratedIds);
     }

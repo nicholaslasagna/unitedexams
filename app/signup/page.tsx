@@ -6,6 +6,7 @@ import type { FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { PasswordStrength } from "@/components/auth/password-strength";
+import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { resolveNextAfterLogin } from "@/lib/auth/guards";
@@ -20,6 +21,10 @@ import {
   validateRealName,
   validateDisplayName
 } from "@/lib/auth/display-name";
+import {
+  isTurnstileClientEnabled,
+  verifyTurnstileClient
+} from "@/lib/security/turnstile-client";
 
 function SignupPageContent() {
   const router = useRouter();
@@ -30,6 +35,8 @@ function SignupPageContent() {
   const [displayName, setDisplayName] = useState("");
   const [realName, setRealName] = useState("");
   const [showRealName, setShowRealName] = useState(false);
+  const [role, setRole] = useState<"student" | "professor">("student");
+  const [acceptLegal, setAcceptLegal] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -37,9 +44,11 @@ function SignupPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [checkInbox, setCheckInbox] = useState(false);
   const [activeEmail, setActiveEmail] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const next = resolveNextAfterLogin(searchParams.get("next"));
   const guestReturnPath = next.startsWith("/app/") ? "/courses" : next;
+  const turnstileEnabled = isTurnstileClientEnabled();
 
   useEffect(() => {
     if (!supabase) return;
@@ -65,6 +74,24 @@ function SignupPageContent() {
 
     if (!supabase) {
       setError("Supabase is not configured. Add environment variables first.");
+      return;
+    }
+
+    if (turnstileEnabled) {
+      if (!turnstileToken) {
+        setError("Please complete the verification challenge.");
+        return;
+      }
+      try {
+        await verifyTurnstileClient({ token: turnstileToken, action: "signup" });
+      } catch (turnstileError) {
+        setError((turnstileError as Error).message);
+        return;
+      }
+    }
+
+    if (!acceptLegal) {
+      setError("You must accept the Privacy Policy and Terms of Service.");
       return;
     }
 
@@ -104,7 +131,8 @@ function SignupPageContent() {
         data: {
           display_name: normalizedDisplayName,
           real_name: normalizedRealName || null,
-          show_real_name: showRealName
+          show_real_name: showRealName,
+          role
         }
       }
     });
@@ -117,13 +145,41 @@ function SignupPageContent() {
     }
 
     if (data.user) {
-      await supabase.from("profiles").upsert({
+      const legalVersion = "2026-03-04";
+      const { error: profileError } = await supabase.from("profiles").upsert({
         id: data.user.id,
         email: email.trim(),
         display_name: normalizedDisplayName,
         real_name: normalizedRealName || null,
-        show_real_name: showRealName
+        show_real_name: showRealName,
+        role,
+        display_name_locked: true,
+        real_name_locked: Boolean(normalizedRealName),
+        privacy_version_accepted: legalVersion,
+        terms_version_accepted: legalVersion
       });
+
+      if (profileError) {
+        console.error("[signup] profile upsert failed", profileError);
+      }
+
+      const { error: consentError } = await supabase.from("legal_consents").insert([
+        {
+          user_id: data.user.id,
+          doc_type: "privacy",
+          doc_version: legalVersion,
+          user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null
+        },
+        {
+          user_id: data.user.id,
+          doc_type: "terms",
+          doc_version: legalVersion,
+          user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null
+        }
+      ]);
+      if (consentError) {
+        console.error("[signup] legal consent insert failed", consentError);
+      }
     }
 
     setCheckInbox(true);
@@ -217,6 +273,31 @@ function SignupPageContent() {
           </label>
 
           <div className="space-y-1.5">
+            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">Role</label>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { id: "student", label: "Student", hint: "For studying and progress tracking." },
+                { id: "professor", label: "Teacher", hint: "Creates sections, materials, and assignments." }
+              ] as const).map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setRole(option.id)}
+                  className={`rounded-xl border px-3 py-3 text-left ${
+                    role === option.id
+                      ? "border-brand-2/55 bg-brand-2/12 text-white"
+                      : "border-white/15 bg-white/5 text-white/80 hover:bg-white/10"
+                  }`}
+                  aria-pressed={role === option.id}
+                >
+                  <p className="text-sm font-semibold">{option.label}</p>
+                  <p className="mt-1 text-xs text-white/60">{option.hint}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
             <label htmlFor="email" className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
               Email
             </label>
@@ -265,9 +346,33 @@ function SignupPageContent() {
 
           <PasswordStrength password={password} />
 
+          <label className="flex items-start gap-2 rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-sm text-white/75">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 rounded border-white/25 bg-transparent accent-[hsl(var(--accent))]"
+              checked={acceptLegal}
+              onChange={(event) => setAcceptLegal(event.target.checked)}
+            />
+            <span>
+              I agree to the{" "}
+              <Link href="/privacy" className="font-semibold text-accent hover:text-white">
+                Privacy Policy
+              </Link>{" "}
+              and{" "}
+              <Link href="/terms" className="font-semibold text-accent hover:text-white">
+                Terms of Service
+              </Link>
+              .
+            </span>
+          </label>
+
           {error ? <p className="rounded-lg border border-danger/35 bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p> : null}
 
-          <Button type="submit" className="w-full" loading={loading}>
+          {turnstileEnabled ? (
+            <TurnstileWidget action="signup" onToken={setTurnstileToken} />
+          ) : null}
+
+          <Button type="submit" className="w-full" loading={loading} disabled={!acceptLegal}>
             Create account
           </Button>
         </form>

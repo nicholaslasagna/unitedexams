@@ -18,6 +18,9 @@ Premium-feeling college study platform built with **Next.js + TypeScript + Tailw
      - `NEXT_PUBLIC_SUPABASE_URL`
      - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
      - `NEXT_PUBLIC_SITE_URL` (for auth callback links, e.g. `https://unitedexams.com`)
+     - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (Cloudflare Turnstile)
+     - `TURNSTILE_SECRET_KEY` (server-side Turnstile verify secret)
+     - `IP_COOKIE_SIGNING_SECRET` (HMAC secret for trusted-device/IP cookies)
 3. Run development server
    - `npm run dev`
 4. Open
@@ -37,7 +40,14 @@ Premium-feeling college study platform built with **Next.js + TypeScript + Tailw
    - `supabase/migrations/20260303223000_public_read_published_only.sql`
    - `supabase/migrations/20260303234500_homework_exam_modes.sql`
    - `supabase/migrations/20260304002000_homework_mode_backfill.sql`
+   - `supabase/migrations/20260304013000_remove_ttu_reference.sql`
    - `supabase/migrations/20260304021000_email_change_flow.sql`
+   - `supabase/migrations/20260304023500_fix_get_recommendations_uuid_and_tags.sql`
+   - `supabase/migrations/20260304030000_fix_security_definer_views.sql`
+   - `supabase/migrations/20260304043000_contact_gating_ip_protection.sql`
+   - `supabase/migrations/20260304052000_university_picker_lock_and_name_guardrails.sql`
+   - `supabase/migrations/20260304090000_expand_university_catalog_and_name_rules.sql`
+   - `supabase/migrations/20260304103000_profile_locks_professor_expansion.sql`
 4. Optional content import (service role key required):
    - `npm run content:generate:se-exam`
    - `npm run content:import:supabase`
@@ -79,6 +89,11 @@ Protected (`/app/*`, middleware guarded):
 - `/app/settings`
 - `/app/professor`
 - `/app/professor/sections/[id]`
+- `/app/sections`
+- `/app/sections/[sectionId]`
+- `/app/sections/[sectionId]/materials`
+- `/app/sections/[sectionId]/analytics`
+- `/app/sections/[sectionId]/gradebook`
 
 Public leaderboard:
 - `/leaderboard` (top 5 for signed-out users, full paginated list for signed-in users)
@@ -107,6 +122,12 @@ Public leaderboard:
 - Change password with current-password re-auth in settings
 - Change email flow with re-auth + inbox verification + pending/resend/cancel UX
 - 2FA TOTP enroll/verify/manage UI (uses Supabase MFA API when enabled)
+- Cloudflare Turnstile on:
+  - `/signup`
+  - `/login`
+  - `/forgot-password`
+  - `/reset-password`
+  with server-side verification at `/api/security/turnstile/verify`
 - Middleware protection for `/app/*` routes
 - Explicit guest mode for public study routes (`/courses`, `/quiz`)
 - `/login` and `/signup` now show signed-in state with dashboard/sign-out actions
@@ -119,7 +140,7 @@ App data is stored through repository abstraction:
 
 Persisted entities include:
 - profile (`display_name`, optional `real_name`, privacy toggles, university)
-- preferences (`theme`, `accent_hue`, `accent_strength`, `reduce_motion`)
+- preferences (`theme`, `accent_preset`, `accent_hue`, `accent_saturation`, `accent_lightness`, `accent_strength`, `reduce_motion`)
 - attempts + answers
 - derived streak/mastery/leaderboard cache (via DB triggers)
 
@@ -148,28 +169,51 @@ Persisted entities include:
 
 ## Professor Mode
 - Professors/admins can access:
-  - `/app/professor`
-  - `/app/professor/sections/[id]`
+  - `/app/sections`
+  - `/app/sections/[sectionId]`
+  - `/app/sections/[sectionId]/materials`
+  - `/app/sections/[sectionId]/analytics`
+  - `/app/sections/[sectionId]/gradebook`
 - Includes:
   - section creation by course/term
   - join code generation + regeneration
-  - quiz assignment creation
+  - section materials (markdown + optional PDF upload URL/storage)
+  - homework assignment configuration (`title`, `instructions`, `due_at`, `allow_late`, `max_attempts`, `grading_mode`)
+  - assignment submission + autograding bridge (`submit_assignment`)
+  - gradebook RPC (`get_section_gradebook`)
   - analytics summary via `rpc('get_section_analytics')`
 - Students can join sections using join codes.
+- Role mapping:
+  - UI label `Teacher` is stored as `profiles.role = 'professor'`.
 
 ## Account + Settings Highlights
 - Account page:
   - profile fields
-  - university searchable combobox (+ add university flow)
+  - university searchable combobox from accredited list
   - enrolled courses multi-select
   - privacy toggles for real name/university leaderboard visibility
+  - identity lock states for display name + real name
+  - masked user ID with reveal/copy controls
 - Settings page:
-  - theme + accent + reduced-motion controls
+  - theme + accent presets + custom color picker + reduced-motion controls
+  - richer live preview (buttons/tags/progress/input/link/card)
   - email change section with pending verification state + resend/cancel
   - password change with re-auth
   - 2FA TOTP enroll/verify/manage
   - export/import data
   - danger-zone account deletion via `rpc('delete_my_account')`
+
+## Legal Consent
+- Public routes:
+  - `/privacy`
+  - `/terms`
+  - `/legal/accept`
+- Signup requires policy acceptance checkbox before submit.
+- Accepted version is stored in:
+  - `profiles.privacy_version_accepted`
+  - `profiles.terms_version_accepted`
+  - immutable `legal_consents` audit table.
+- Middleware redirects authenticated users to `/legal/accept` until required versions are accepted.
 
 ## Course + Quiz Seed Data
 Seeded content lives in `data/seed/` and powers UI immediately:
@@ -216,7 +260,13 @@ Validate these before production:
 6. Account privacy toggles update leaderboard visibility immediately.
 7. Onboarding blocks recommendations until enrolled courses are set.
 8. Professor section creation/assignment/analytics works for professor role.
-9. Data export includes profile/preferences/user_courses/attempt summary/mastery.
+9. Display name + real name lock after first set and cannot be changed via normal profile update.
+10. Student section submission returns graded score for auto-grade sets and `needs_review` for manual/mixed free-response cases.
+11. Data export includes profile/preferences/user_courses/attempt summary/mastery.
+12. Turnstile challenge blocks auth form submission when invalid/missing token.
+13. Profile persistence check:
+  - edit display name / real name / university, refresh page, and confirm values persist.
+  - leaderboard row reflects profile changes on next load.
 
 ## Add a Course or Quiz Set
 1. Add course object in `data/seed/courses.ts`.

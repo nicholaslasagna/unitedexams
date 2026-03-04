@@ -7,9 +7,14 @@ import type { FormEvent } from "react";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { resolveNextAfterLogin } from "@/lib/auth/guards";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAppData } from "@/lib/app-data-context";
+import {
+  isTurnstileClientEnabled,
+  verifyTurnstileClient
+} from "@/lib/security/turnstile-client";
 
 export function LoginForm() {
   const router = useRouter();
@@ -23,10 +28,12 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeEmail, setActiveEmail] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const next = resolveNextAfterLogin(searchParams.get("next"));
   const passwordUpdated = searchParams.get("passwordUpdated") === "1";
   const guestReturnPath = next.startsWith("/app/") ? "/courses" : next;
+  const turnstileEnabled = isTurnstileClientEnabled();
 
   useEffect(() => {
     if (!supabase) return;
@@ -53,6 +60,19 @@ export function LoginForm() {
     if (!supabase) {
       setError("Supabase is not configured. Add environment variables first.");
       return;
+    }
+
+    if (turnstileEnabled) {
+      if (!turnstileToken) {
+        setError("Please complete the verification challenge.");
+        return;
+      }
+      try {
+        await verifyTurnstileClient({ token: turnstileToken, action: "login" });
+      } catch (turnstileError) {
+        setError((turnstileError as Error).message);
+        return;
+      }
     }
 
     setLoading(true);
@@ -164,6 +184,10 @@ export function LoginForm() {
         </label>
 
         {error ? <p className="rounded-lg border border-danger/35 bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p> : null}
+
+        {turnstileEnabled ? (
+          <TurnstileWidget action="login" onToken={setTurnstileToken} />
+        ) : null}
 
         <Button type="submit" className="w-full" loading={loading}>
           Sign in

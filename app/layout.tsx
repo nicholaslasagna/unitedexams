@@ -39,6 +39,8 @@ const themeBootScript = `
     var theme = prefs && prefs.theme ? prefs.theme : 'system';
     var reduced = !!(prefs && prefs.reducedMotion);
     var accentHue = prefs && typeof prefs.accentHue === 'number' ? ((prefs.accentHue % 360) + 360) % 360 : 265;
+    var accentSaturation = prefs && typeof prefs.accentSaturation === 'number' ? Math.max(38, Math.min(88, prefs.accentSaturation)) : 72;
+    var accentLightness = prefs && typeof prefs.accentLightness === 'number' ? Math.max(38, Math.min(76, prefs.accentLightness)) : 62;
     var accentStrength = prefs && typeof prefs.accentStrength === 'number' ? Math.max(0, Math.min(100, prefs.accentStrength)) : 60;
     var resolved = theme === 'system'
       ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
@@ -48,6 +50,8 @@ const themeBootScript = `
     document.documentElement.style.colorScheme = resolved;
     document.documentElement.dataset.reduceMotion = reduced ? 'on' : 'off';
     document.documentElement.style.setProperty('--accent-hue', String(accentHue));
+    document.documentElement.style.setProperty('--accent-sat', String(accentSaturation));
+    document.documentElement.style.setProperty('--accent-lit', String(accentLightness));
     document.documentElement.style.setProperty('--accent-strength', String(accentStrength));
   } catch (err) {
     document.documentElement.dataset.reduceMotion = 'off';

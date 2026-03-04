@@ -73,7 +73,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     root.classList.toggle("dark", resolved === "dark");
     root.style.colorScheme = resolved;
     root.dataset.reduceMotion = prefs.reducedMotion ? "on" : "off";
-    applyThemeCssVars({ accentHue: prefs.accentHue, accentStrength: prefs.accentStrength });
+    applyThemeCssVars({
+      accentHue: prefs.accentHue,
+      accentSaturation: prefs.accentSaturation,
+      accentLightness: prefs.accentLightness,
+      accentStrength: prefs.accentStrength
+    });
   }, []);
 
   const refresh = useCallback(async () => {
@@ -89,7 +94,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           guestRepository: localRepo,
           accountRepository: repo
         });
-        if (migration.failed && typeof window !== "undefined") {
+        if (migration.failed && migration.migratedCount === 0 && typeof window !== "undefined") {
           window.dispatchEvent(
             new CustomEvent("ue:toast", {
               detail: {
@@ -140,18 +145,15 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
     let active = true;
 
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       if (!active) return;
-      const sessionUser = data.session?.user ?? null;
+      let sessionUser = data.session?.user ?? null;
+      if (!sessionUser) {
+        const { data: userData } = await supabase.auth.getUser();
+        if (!active) return;
+        sessionUser = userData.user ?? null;
+      }
       if (sessionUser) {
-        const remember = localStorage.getItem("ue.rememberSession");
-        const sessionActive = sessionStorage.getItem("ue.activeSession");
-        if (remember === "0" && !sessionActive) {
-          supabase.auth.signOut();
-          setUser(null);
-          setAuthReady(true);
-          return;
-        }
         sessionStorage.setItem("ue.activeSession", "1");
       }
       setUser(sessionUser);
@@ -201,25 +203,49 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
   const saveProfile = useCallback(
     async (next: UserProfile) => {
+      const previous = profile;
       setProfile(next);
       if (typeof window !== "undefined") {
         window.localStorage.setItem("ue.profile.v1", JSON.stringify(next));
       }
-      await repo.saveProfile(next);
+      try {
+        await repo.saveProfile(next);
+        const refreshed = await repo.getProfile();
+        setProfile(refreshed);
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem("ue.profile.v1", JSON.stringify(refreshed));
+        }
+      } catch (error) {
+        setProfile(previous);
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem("ue.profile.v1", JSON.stringify(previous));
+        }
+        throw error;
+      }
     },
-    [repo]
+    [profile, repo]
   );
 
   const savePreferences = useCallback(
     async (next: AppPreferences) => {
+      const previous = preferences;
       setPreferences(next);
       applyPreferences(next);
       if (typeof window !== "undefined") {
         window.localStorage.setItem("ue.preferences.v1", JSON.stringify(next));
       }
-      await repo.savePreferences(next);
+      try {
+        await repo.savePreferences(next);
+      } catch (error) {
+        setPreferences(previous);
+        applyPreferences(previous);
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem("ue.preferences.v1", JSON.stringify(previous));
+        }
+        throw error;
+      }
     },
-    [repo, applyPreferences]
+    [repo, applyPreferences, preferences]
   );
 
   const exportData = useCallback(() => repo.exportData(), [repo]);

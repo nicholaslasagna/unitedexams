@@ -2,7 +2,9 @@ export interface ProfileRecord {
   id: string;
   email: string | null;
   display_name: string;
+  display_name_locked?: boolean;
   real_name: string | null;
+  real_name_locked?: boolean;
   show_real_name: boolean;
   university_id: string | null;
   show_university: boolean;
@@ -14,7 +16,10 @@ export interface ProfileRecord {
 export interface UserPreferenceRecord {
   user_id: string;
   theme_mode: "dark" | "light" | "system";
+  accent_preset?: string;
   accent_hue: number;
+  accent_saturation?: number;
+  accent_lightness?: number;
   accent_strength: number;
   reduce_motion: boolean;
   dashboard_layout: string;

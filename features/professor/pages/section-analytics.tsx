@@ -7,7 +7,14 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
 import { useAppData } from "@/lib/app-data-context";
-import { getSectionAnalytics, listProfessorSections, type SectionAnalytics, type SectionSummary } from "@/features/professor/api";
+import {
+  getSectionAnalytics,
+  getSectionGradebook,
+  listProfessorSections,
+  type SectionAnalytics,
+  type SectionGradebookRow,
+  type SectionSummary
+} from "@/features/professor/api";
 
 const bucketDefs = [
   { key: "90_plus", label: "90+" },
@@ -23,6 +30,7 @@ export function ProfessorSectionAnalyticsPage({ sectionId }: { sectionId?: strin
 
   const [section, setSection] = useState<SectionSummary | null>(null);
   const [analytics, setAnalytics] = useState<SectionAnalytics | null>(null);
+  const [gradebookRows, setGradebookRows] = useState<SectionGradebookRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   const isProfessor = profile.role === "professor" || profile.role === "admin";
@@ -35,16 +43,22 @@ export function ProfessorSectionAnalyticsPage({ sectionId }: { sectionId?: strin
 
     let active = true;
     setLoading(true);
-    Promise.all([listProfessorSections(supabase), getSectionAnalytics(supabase, resolvedSectionId)])
-      .then(([sections, analyticsRow]) => {
+    Promise.all([
+      listProfessorSections(supabase),
+      getSectionAnalytics(supabase, resolvedSectionId),
+      getSectionGradebook(supabase, resolvedSectionId)
+    ])
+      .then(([sections, analyticsRow, gradebook]) => {
         if (!active) return;
         setSection(sections.find((row) => row.id === resolvedSectionId) ?? null);
         setAnalytics(analyticsRow);
+        setGradebookRows(gradebook);
       })
       .catch(() => {
         if (!active) return;
         setSection(null);
         setAnalytics(null);
+        setGradebookRows([]);
       })
       .finally(() => {
         if (!active) return;
@@ -65,6 +79,29 @@ export function ProfessorSectionAnalyticsPage({ sectionId }: { sectionId?: strin
       return { ...bucket, count, pct };
     });
   }, [analytics]);
+
+  const studentsAtRisk = useMemo(() => {
+    const grouped = new Map<string, { name: string; scores: number[] }>();
+    for (const row of gradebookRows) {
+      if (!grouped.has(row.student_id)) {
+        grouped.set(row.student_id, { name: row.display_name, scores: [] });
+      }
+      if (row.latest_score !== null && row.latest_score !== undefined) {
+        grouped.get(row.student_id)?.scores.push(Number(row.latest_score));
+      }
+    }
+
+    return Array.from(grouped.entries())
+      .map(([studentId, item]) => ({
+        studentId,
+        name: item.name,
+        average: item.scores.length > 0 ? item.scores.reduce((sum, score) => sum + score, 0) / item.scores.length : 0,
+        gradedCount: item.scores.length
+      }))
+      .filter((item) => item.gradedCount === 0 || item.average < 70)
+      .sort((a, b) => a.average - b.average)
+      .slice(0, 8);
+  }, [gradebookRows]);
 
   if (!isProfessor) {
     return (
@@ -174,6 +211,28 @@ export function ProfessorSectionAnalyticsPage({ sectionId }: { sectionId?: strin
           </CardBody>
         </Card>
       </section>
+
+      <Card>
+        <CardHeader>
+          <h2 className="font-display text-2xl font-semibold">Students at risk</h2>
+        </CardHeader>
+        <CardBody className="space-y-2">
+          {studentsAtRisk.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-borderc bg-soft px-3 py-2 text-sm text-muted">
+              No at-risk indicators from current submissions.
+            </p>
+          ) : (
+            studentsAtRisk.map((student) => (
+              <div key={student.studentId} className="flex items-center justify-between rounded-xl border border-borderc bg-soft px-3 py-2 text-sm">
+                <span className="text-text">{student.name}</span>
+                <span className="font-mono text-muted">
+                  {student.gradedCount === 0 ? "No graded submissions" : `${student.average.toFixed(1)}% avg`}
+                </span>
+              </div>
+            ))
+          )}
+        </CardBody>
+      </Card>
     </div>
   );
 }

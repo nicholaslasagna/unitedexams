@@ -6,6 +6,8 @@ function clamp(value: number, min: number, max: number) {
 
 export interface ThemeVarInput {
   accentHue?: number;
+  accentSaturation?: number;
+  accentLightness?: number;
   accentStrength?: number;
 }
 
@@ -20,7 +22,19 @@ export function applyThemeCssVars(input: ThemeVarInput) {
     ACCENT_RANGE.minStrength,
     ACCENT_RANGE.maxStrength
   );
+  const saturation = clamp(
+    input.accentSaturation ?? THEME_DEFAULTS.accentSaturation,
+    38,
+    88
+  );
+  const lightness = clamp(
+    input.accentLightness ?? THEME_DEFAULTS.accentLightness,
+    38,
+    76
+  );
 
   root.style.setProperty("--accent-hue", String(hue));
+  root.style.setProperty("--accent-sat", String(saturation));
+  root.style.setProperty("--accent-lit", String(lightness));
   root.style.setProperty("--accent-strength", String(strength));
 }

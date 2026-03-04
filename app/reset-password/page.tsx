@@ -6,10 +6,15 @@ import type { FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { PasswordStrength } from "@/components/auth/password-strength";
+import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { validatePassword } from "@/lib/auth/password";
+import {
+  isTurnstileClientEnabled,
+  verifyTurnstileClient
+} from "@/lib/security/turnstile-client";
 
 function ResetPasswordContent() {
   const router = useRouter();
@@ -23,6 +28,8 @@ function ResetPasswordContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [linkError, setLinkError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileEnabled = isTurnstileClientEnabled();
 
   useEffect(() => {
     if (!supabase) {
@@ -135,6 +142,19 @@ function ResetPasswordContent() {
       return;
     }
 
+    if (turnstileEnabled) {
+      if (!turnstileToken) {
+        setError("Please complete the verification challenge.");
+        return;
+      }
+      try {
+        await verifyTurnstileClient({ token: turnstileToken, action: "reset-password" });
+      } catch (turnstileError) {
+        setError((turnstileError as Error).message);
+        return;
+      }
+    }
+
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match.");
       return;
@@ -232,6 +252,10 @@ function ResetPasswordContent() {
           <PasswordStrength password={newPassword} />
 
           {error ? <p className="rounded-lg border border-danger/35 bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p> : null}
+
+          {turnstileEnabled ? (
+            <TurnstileWidget action="reset-password" onToken={setTurnstileToken} />
+          ) : null}
 
           <Button type="submit" className="w-full" loading={loading}>
             Update password
