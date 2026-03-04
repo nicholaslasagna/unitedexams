@@ -307,13 +307,7 @@ export class SupabaseRepository implements DataRepository {
   async getProfile(): Promise<UserProfile> {
     await this.ensureBaseRows();
 
-    const { data, error } = await this.client
-      .from("profiles")
-      .select(
-        "id, email, display_name, display_name_locked, real_name, real_name_locked, show_real_name, university_id, show_university, role, reset_required, mfa_enabled, universities(name)"
-      )
-      .eq("id", this.user.id)
-      .single();
+    const { data, error } = await this.client.from("profiles").select("*").eq("id", this.user.id).single();
 
     if (error || !data) {
       return {
@@ -323,14 +317,23 @@ export class SupabaseRepository implements DataRepository {
       };
     }
 
-    const row = data as ProfileRow;
+    const row = data as ProfileRow & { [key: string]: unknown };
+    let school: string | undefined;
+    if (row.university_id) {
+      const { data: university } = await this.client
+        .from("universities")
+        .select("name")
+        .eq("id", row.university_id)
+        .maybeSingle();
+      school = university?.name ?? undefined;
+    }
 
     return {
       id: row.id,
       email: row.email ?? this.user.email ?? undefined,
       name: row.display_name,
       displayNameLocked: Boolean(row.display_name_locked),
-      school: row.universities?.[0]?.name,
+      school,
       realName: row.real_name ?? undefined,
       realNameLocked: Boolean(row.real_name_locked),
       showRealName: row.show_real_name,
@@ -338,7 +341,7 @@ export class SupabaseRepository implements DataRepository {
       universityId: row.university_id ?? undefined,
       role: row.role,
       resetRequired: row.reset_required,
-      mfaEnabled: Boolean(row.mfa_enabled)
+      mfaEnabled: Boolean((row as { mfa_enabled?: boolean }).mfa_enabled)
     };
   }
 
@@ -358,8 +361,15 @@ export class SupabaseRepository implements DataRepository {
       university_id: profile.universityId ?? null
     };
 
+    const { data: lockRow } = await this.client
+      .from("profiles")
+      .select("display_name_locked")
+      .eq("id", this.user.id)
+      .maybeSingle();
+    const displayNameLocked = Boolean(lockRow?.display_name_locked ?? profile.displayNameLocked);
+
     // Allow real name / university updates even when display name is locked.
-    if (!profile.displayNameLocked) {
+    if (!displayNameLocked) {
       const normalizedName = normalizeDisplayName(profile.name || defaultProfile.name);
       const validation = validateDisplayName(normalizedName);
       if (!validation.valid) {
@@ -368,10 +378,21 @@ export class SupabaseRepository implements DataRepository {
       updates.display_name = normalizedName;
     }
 
-    const { error } = await this.client
+    let { error } = await this.client
       .from("profiles")
       .update(updates)
       .eq("id", this.user.id);
+
+    if (error && updates.display_name && /display name is locked/i.test(error.message || "")) {
+      const fallbackUpdates = { ...updates };
+      delete fallbackUpdates.display_name;
+      error = (
+        await this.client
+          .from("profiles")
+          .update(fallbackUpdates)
+          .eq("id", this.user.id)
+      ).error;
+    }
 
     if (error) {
       throw new Error(error.message);

@@ -22,7 +22,6 @@ import {
   getDisplayNameMaxLength,
   getRealNameMaxLength,
   normalizeRealName,
-  validateDisplayName,
   validateRealName
 } from "@/lib/auth/display-name";
 
@@ -111,14 +110,12 @@ export function AccountPageContent() {
   };
 
   const persistProfileChanges = async ({
-    nextDisplayName = displayName,
     nextRealName = realName,
     nextShowRealName = showRealName,
     nextShowUniversity = showUniversity,
     nextUniversityId = selectedUniversityId,
     successTitle = "Account updated"
   }: {
-    nextDisplayName?: string;
     nextRealName?: string;
     nextShowRealName?: boolean;
     nextShowUniversity?: boolean;
@@ -127,16 +124,9 @@ export function AccountPageContent() {
   }): Promise<boolean> => {
     setPrivacyError(null);
 
-    const safeDisplayName = hasLockedDisplayName ? profile.name : nextDisplayName;
+    // Display name stays permanent; real name remains editable for legal/personal updates.
+    const safeDisplayName = profile.name;
     const safeRealName = nextRealName;
-
-    if (!hasLockedDisplayName) {
-      const displayNameCheck = validateDisplayName(safeDisplayName);
-      if (!displayNameCheck.valid) {
-        setPrivacyError(displayNameCheck.message);
-        return false;
-      }
-    }
 
     const realNameCheck = validateRealName(safeRealName);
     if (!realNameCheck.valid) {
@@ -222,7 +212,6 @@ export function AccountPageContent() {
     });
   };
 
-  const hasLockedDisplayName = Boolean(profile.displayNameLocked);
   const userIdValue = user?.id || profile.id || "";
   const maskedUserId = userIdValue ? "••••••••-••••-••••-••••-••••••••••••" : "";
 
@@ -254,12 +243,10 @@ export function AccountPageContent() {
               <Input
                 value={displayName}
                 maxLength={getDisplayNameMaxLength()}
-                disabled={hasLockedDisplayName}
+                disabled
                 onChange={(event) => setDisplayName(event.target.value)}
               />
-              {hasLockedDisplayName ? (
-                <p className="text-xs text-muted">Display name is locked. Contact support to change it.</p>
-              ) : null}
+              <p className="text-xs text-muted">Display name is permanent after signup.</p>
             </div>
 
             <div className="space-y-1.5">
@@ -270,6 +257,7 @@ export function AccountPageContent() {
                 onChange={(event) => setRealName(event.target.value)}
                 placeholder="Your legal/full name"
               />
+              <p className="text-xs text-muted">You can update this if your legal name changes.</p>
             </div>
           </div>
 
