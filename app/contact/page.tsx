@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { Mail, Send } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { PublicShell } from "@/components/layout/public-shell";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export default function ContactPage() {
@@ -48,9 +48,8 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg text-text">
-      <div className="ambient-glow" />
-      <main className="relative z-[1] mx-auto w-full max-w-[940px] space-y-6 px-5 py-10">
+    <PublicShell>
+      <div className="mx-auto w-full max-w-[940px] space-y-6 py-2">
         <section className="space-y-3 text-center">
           <h1 className="font-display text-5xl font-semibold tracking-tight">Contact United Exams</h1>
           <p className="mx-auto max-w-3xl text-sm text-muted">
@@ -104,16 +103,7 @@ export default function ContactPage() {
             </form>
           </CardBody>
         </Card>
-
-        <footer className="border-t border-borderc/75 pt-6 text-center text-sm text-muted">
-          <p>
-            © {new Date().getFullYear()} Imagicast Studios ·{" "}
-            <Link href="https://imagicaststudios.com" target="_blank" rel="noreferrer" className="font-semibold text-accent hover:text-text">
-              imagicaststudios.com
-            </Link>
-          </p>
-        </footer>
-      </main>
-    </div>
+      </div>
+    </PublicShell>
   );
 }
