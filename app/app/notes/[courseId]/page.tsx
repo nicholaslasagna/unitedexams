@@ -3,12 +3,19 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Search } from "lucide-react";
 import { getCourse, getCourseContent } from "@/data/seed";
 import { Card, CardBody } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Markdown } from "@/components/ui/markdown";
 import { Button } from "@/components/ui/button";
+
+const Markdown = dynamic(
+  () => import("@/components/ui/markdown").then((module) => module.Markdown),
+  {
+    loading: () => <p className="text-sm text-muted">Loading notes content...</p>
+  }
+);
 
 function extractHeadings(markdown: string) {
   return markdown
