@@ -107,7 +107,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
       </main>
 
       {/* Footer */}
-      <footer className="mx-auto w-full max-w-[1200px] border-t border-borderc px-5 py-4 text-sm text-muted md:px-8">
+      <footer className="mx-auto w-full max-w-[1200px] border-t border-borderc px-5 py-4 text-center text-sm text-muted md:px-8">
         © {new Date().getFullYear()}{" "}
         <a
           href="https://imagicaststudios.com"

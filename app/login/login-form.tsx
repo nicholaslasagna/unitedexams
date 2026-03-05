@@ -227,7 +227,12 @@ export function LoginForm() {
           </p>
         )}
 
-        <Button type="submit" className="w-full" loading={loading}>
+        <Button
+          type="submit"
+          className="w-full"
+          loading={loading}
+          disabled={turnstileEnabled && !turnstileToken}
+        >
           Sign in
         </Button>
       </form>

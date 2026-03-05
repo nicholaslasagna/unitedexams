@@ -214,7 +214,6 @@ export function HomeworkExperiencePageContent({
   const [startedAt, setStartedAt] = useState(() => new Date().toISOString());
   const [result, setResult] = useState<Attempt | null>(null);
   const [draftAttemptId, setDraftAttemptId] = useState<string | null>(null);
-  const [isPersistingDraft, setIsPersistingDraft] = useState(false);
   const hydratedRef = useRef(false);
 
   useEffect(() => {
@@ -337,7 +336,6 @@ export function HomeworkExperiencePageContent({
     }
 
     const timeout = window.setTimeout(async () => {
-      setIsPersistingDraft(true);
       const nextDraftId = await upsertHomeworkDraft({
         supabase,
         userId: user.id,
@@ -348,7 +346,6 @@ export function HomeworkExperiencePageContent({
         snapshot
       });
       setDraftAttemptId(nextDraftId);
-      setIsPersistingDraft(false);
     }, 350);
 
     return () => window.clearTimeout(timeout);
@@ -635,7 +632,7 @@ export function HomeworkExperiencePageContent({
         </div>
       ) : (
         <div className="rounded-xl border border-borderc bg-soft px-4 py-3 text-xs text-muted">
-          {isPersistingDraft ? "Saving draft…" : "Draft saved automatically for resume from dashboard."}
+          Draft auto-save is enabled for resume from dashboard.
         </div>
       )}
 

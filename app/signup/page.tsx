@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { resolveNextAfterLogin } from "@/lib/auth/guards";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { useAppData } from "@/lib/app-data-context";
 import { validatePassword } from "@/lib/auth/password";
 import {
   getDisplayNameMaxLength,
@@ -41,7 +40,6 @@ function SignupPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
-  const { signOut } = useAppData();
 
   const [displayName, setDisplayName] = useState("");
   const [realName, setRealName] = useState("");
@@ -69,6 +67,11 @@ function SignupPageContent() {
   }, [error]);
 
   useEffect(() => {
+    if (!activeEmail) return;
+    router.replace("/app/dashboard");
+  }, [activeEmail, router]);
+
+  useEffect(() => {
     if (!supabase) return;
     let mounted = true;
     supabase.auth.getUser().then(({ data }) => {
@@ -92,6 +95,13 @@ function SignupPageContent() {
 
     if (!supabase) {
       setError("Supabase is not configured. Add environment variables first.");
+      return;
+    }
+
+    const { data: existingSession } = await supabase.auth.getUser();
+    if (existingSession.user) {
+      setError("You are already signed in. Sign out before creating a different account.");
+      router.replace("/app/dashboard");
       return;
     }
 
@@ -220,19 +230,7 @@ function SignupPageContent() {
           <p className="text-sm text-white/85">
             You&apos;re already signed in as <span className="font-semibold text-white">{activeEmail}</span>.
           </p>
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={() => router.push("/app/dashboard")}>Go to dashboard</Button>
-            <Button
-              variant="secondary"
-              onClick={async () => {
-                await signOut();
-                setActiveEmail(null);
-                router.refresh();
-              }}
-            >
-              Sign out
-            </Button>
-          </div>
+          <Button onClick={() => router.push("/app/dashboard")}>Go to dashboard</Button>
         </div>
       ) : checkInbox ? (
         <div className="space-y-3 rounded-xl border border-success/35 bg-success/10 p-4">
@@ -401,7 +399,12 @@ function SignupPageContent() {
             />
           ) : null}
 
-          <Button type="submit" className="w-full" loading={loading} disabled={!acceptLegal}>
+          <Button
+            type="submit"
+            className="w-full"
+            loading={loading}
+            disabled={!acceptLegal || (turnstileEnabled && !turnstileToken)}
+          >
             Create account
           </Button>
         </form>
