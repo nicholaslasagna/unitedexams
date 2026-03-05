@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, ChevronsUpDown, Copy, Eye, EyeOff, X } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
@@ -17,7 +17,12 @@ import {
   onboardingStatus,
   saveUserCourses
 } from "@/features/account/api";
-import { joinSectionByCode } from "@/features/professor/api";
+import {
+  joinSectionByCode,
+  leaveJoinedSection,
+  listJoinedSections,
+  type JoinedSectionSummary
+} from "@/features/professor/api";
 import type { UniversityRecord } from "@/lib/supabase/types";
 import {
   getDisplayNameMaxLength,
@@ -64,6 +69,8 @@ export function AccountPageContent() {
   const [saving, setSaving] = useState(false);
   const [savingCourses, setSavingCourses] = useState(false);
   const [privacyError, setPrivacyError] = useState<string | null>(null);
+  const [joiningSection, setJoiningSection] = useState(false);
+  const [leavingSectionId, setLeavingSectionId] = useState<string | null>(null);
 
   const [onboardingMode, setOnboardingMode] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
@@ -72,6 +79,8 @@ export function AccountPageContent() {
   );
   const [joinCode, setJoinCode] = useState("");
   const [showUserId, setShowUserId] = useState(false);
+  const [joinedSections, setJoinedSections] = useState<JoinedSectionSummary[]>([]);
+  const [loadingJoinedSections, setLoadingJoinedSections] = useState(false);
 
   const selectedUniversity = useMemo(
     () => universities.find((item) => item.id === selectedUniversityId),
@@ -100,8 +109,27 @@ export function AccountPageContent() {
     setSelectedOnboardingAccent(getInitialAccentOptionId(preferences.accentHue, preferences.accentStrength));
   }, [preferences.accentHue, preferences.accentStrength]);
 
+  const loadJoinedSections = useCallback(async () => {
+    if (!supabase || !user) {
+      setJoinedSections([]);
+      return;
+    }
+    setLoadingJoinedSections(true);
+    try {
+      const rows = await listJoinedSections(supabase, user.id);
+      setJoinedSections(rows);
+    } catch {
+      setJoinedSections([]);
+    } finally {
+      setLoadingJoinedSections(false);
+    }
+  }, [supabase, user]);
+
   useEffect(() => {
-    if (!supabase || !user) return;
+    if (!supabase || !user) {
+      setJoinedSections([]);
+      return;
+    }
 
     fetchUniversities(supabase)
       .then(setUniversities)
@@ -110,7 +138,9 @@ export function AccountPageContent() {
     fetchUserCourses(supabase, user.id)
       .then((ids) => setSelectedCourses(ids))
       .catch(() => setSelectedCourses([]));
-  }, [supabase, user?.id]);
+
+    void loadJoinedSections();
+  }, [loadJoinedSections, supabase, user]);
 
   useEffect(() => {
     if (!onboardingMode || !supabase || !user) return;
@@ -574,20 +604,87 @@ export function AccountPageContent() {
             />
             <Button
               variant="secondary"
+              loading={joiningSection}
               onClick={async () => {
-                if (!supabase || !joinCode.trim()) return;
+                if (!supabase || !joinCode.trim() || joiningSection) return;
+                setJoiningSection(true);
                 try {
                   const sectionId = await joinSectionByCode(supabase, joinCode.trim());
+                  await loadJoinedSections();
                   push({ title: "Joined section", tone: "success" });
                   setJoinCode("");
                   router.push(`/app/sections/${sectionId}`);
                 } catch (error) {
                   push({ title: "Unable to join section", description: (error as Error).message, tone: "error" });
+                } finally {
+                  setJoiningSection(false);
                 }
               }}
             >
               Join by code
             </Button>
+          </div>
+          <div className="space-y-2 rounded-xl border border-borderc bg-soft p-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Joined sections</p>
+            {loadingJoinedSections ? (
+              <p className="text-sm text-muted">Loading joined sections…</p>
+            ) : joinedSections.length === 0 ? (
+              <p className="text-sm text-muted">You have not joined any sections yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {joinedSections.map((membership) => {
+                  const canLeave = membership.role === "student" && !membership.isOwner;
+                  return (
+                    <div
+                      key={membership.sectionId}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-borderc bg-surface px-3 py-2"
+                    >
+                      <div>
+                        <p className="text-sm font-semibold text-text">{membership.sectionName}</p>
+                        <p className="text-xs text-muted">
+                          {membership.courseId}
+                          {membership.term ? ` · ${membership.term}` : ""}
+                          {membership.role !== "student" ? ` · ${membership.role}` : ""}
+                        </p>
+                      </div>
+                      {canLeave ? (
+                        <Button
+                          variant="ghost"
+                          loading={leavingSectionId === membership.sectionId}
+                          onClick={async () => {
+                            if (!supabase || !user || leavingSectionId) return;
+                            const confirmed = window.confirm(
+                              "Leave this section? You will lose access to its materials, homework, and exams."
+                            );
+                            if (!confirmed) return;
+
+                            setLeavingSectionId(membership.sectionId);
+                            try {
+                              await leaveJoinedSection(supabase, {
+                                sectionId: membership.sectionId,
+                                userId: user.id
+                              });
+                              await loadJoinedSections();
+                              push({ title: "Left section", tone: "success" });
+                            } catch (error) {
+                              push({ title: "Unable to leave section", description: (error as Error).message, tone: "error" });
+                            } finally {
+                              setLeavingSectionId(null);
+                            }
+                          }}
+                        >
+                          Leave section
+                        </Button>
+                      ) : (
+                        <span className="text-xs text-muted">
+                          {membership.isOwner ? "Section owner" : "Instructor access"}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </CardBody>
       </Card>

@@ -93,6 +93,16 @@ export interface SectionAnalytics {
   weak_tags: Array<{ tag: string; misses: number }>;
 }
 
+export interface JoinedSectionSummary {
+  sectionId: string;
+  role: "student" | "professor" | "ta";
+  joinedAt: string;
+  sectionName: string;
+  courseId: string;
+  term: string | null;
+  isOwner: boolean;
+}
+
 export async function listProfessorSections(client: SupabaseClient) {
   const { data, error } = await client
     .from("class_sections")
@@ -177,6 +187,75 @@ export async function joinSectionByCode(client: SupabaseClient, joinCode: string
   const second = await client.rpc("join_section_by_code", { code: normalized });
   if (second.error) throw second.error;
   return second.data as string;
+}
+
+export async function listJoinedSections(client: SupabaseClient, userId: string) {
+  type RawRow = {
+    section_id: string;
+    role: string | null;
+    joined_at: string;
+    class_sections:
+      | {
+          id: string;
+          name: string | null;
+          section_name: string | null;
+          course_id: string;
+          term: string | null;
+          created_by: string | null;
+          owner_id: string | null;
+        }
+      | Array<{
+          id: string;
+          name: string | null;
+          section_name: string | null;
+          course_id: string;
+          term: string | null;
+          created_by: string | null;
+          owner_id: string | null;
+        }>
+      | null;
+  };
+
+  const { data, error } = await client
+    .from("section_members")
+    .select(
+      "section_id, role, joined_at, class_sections(id, name, section_name, course_id, term, created_by, owner_id)"
+    )
+    .eq("user_id", userId)
+    .order("joined_at", { ascending: false });
+
+  if (error) throw error;
+
+  return ((data ?? []) as RawRow[])
+    .map((row) => {
+      const section = Array.isArray(row.class_sections) ? row.class_sections[0] : row.class_sections;
+      if (!section) return null;
+      const normalizedRole = row.role === "professor" || row.role === "ta" ? row.role : "student";
+      const ownerId = section.created_by ?? section.owner_id ?? "";
+      return {
+        sectionId: row.section_id,
+        role: normalizedRole,
+        joinedAt: row.joined_at,
+        sectionName: (section.name || section.section_name || "Untitled Section").trim(),
+        courseId: section.course_id,
+        term: section.term,
+        isOwner: ownerId !== "" && ownerId === userId
+      } satisfies JoinedSectionSummary;
+    })
+    .filter((value): value is JoinedSectionSummary => Boolean(value));
+}
+
+export async function leaveJoinedSection(
+  client: SupabaseClient,
+  payload: { sectionId: string; userId: string }
+) {
+  const { error } = await client
+    .from("section_members")
+    .delete()
+    .eq("section_id", payload.sectionId)
+    .eq("user_id", payload.userId);
+
+  if (error) throw error;
 }
 
 export async function createProfessorQuizSet(
