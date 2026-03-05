@@ -430,6 +430,27 @@ export async function getSectionGradebook(client: SupabaseClient, sectionId: str
   return (data ?? []) as SectionGradebookRow[];
 }
 
+export async function upsertManualGrade(
+  client: SupabaseClient,
+  payload: {
+    assignmentId: string;
+    studentId: string;
+    status: "submitted" | "graded" | "needs_review";
+    score: number | null;
+    feedback: string | null;
+  }
+) {
+  const { data, error } = await client.rpc("upsert_manual_grade", {
+    assignment_id_input: payload.assignmentId,
+    student_id_input: payload.studentId,
+    status_input: payload.status,
+    score_input: payload.score,
+    feedback_input: payload.feedback
+  });
+  if (error) throw error;
+  return { submissionId: data ? String(data) : "" };
+}
+
 export async function getSectionAnalytics(client: SupabaseClient, sectionId: string) {
   const { data, error } = await client.rpc("get_section_analytics", { section_id_input: sectionId });
   if (error) throw error;
