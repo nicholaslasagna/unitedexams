@@ -112,7 +112,7 @@ export function CourseDetailContent({
   }
 
   return (
-    <div className="animate-fade-rise space-y-6">
+    <div className="space-y-6">
       <section className="grid gap-4 xl:grid-cols-[1.45fr_1fr]">
         <Card className="mesh-hero">
           <CardBody className="space-y-4 p-6 md:p-8">

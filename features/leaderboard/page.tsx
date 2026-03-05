@@ -62,7 +62,7 @@ export function LeaderboardPageContent({ publicMode = false }: { publicMode?: bo
   const myRow = rows.find((row) => row.is_current_user || row.user_id === user?.id);
 
   return (
-    <div className="space-y-6 animate-fade-rise">
+    <div className="space-y-6">
       <section className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-display-lg font-semibold tracking-tight">Leaderboard</h1>

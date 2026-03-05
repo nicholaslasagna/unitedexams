@@ -40,7 +40,7 @@ export function CoursesIndexContent({
   }, [search, difficulty]);
 
   return (
-    <div className="animate-fade-rise space-y-6">
+    <div className="space-y-6">
       <section>
         <h1 className="text-display-lg font-semibold tracking-tight">{title}</h1>
         <p className="mt-2 text-muted text-text-secondary">{subtitle}</p>

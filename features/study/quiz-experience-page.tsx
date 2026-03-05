@@ -588,7 +588,7 @@ export function QuizExperiencePageContent({
 
   if (stage === "overview") {
     return (
-      <div className="animate-fade-rise space-y-6">
+      <div className="space-y-6">
         <Link href={coursePath} className="inline-flex items-center gap-2 text-sm font-semibold text-muted transition-all duration-200 ease-out-expo hover:text-text">
           <ArrowLeft className="h-4 w-4" />
           Back to {course.code}
@@ -740,7 +740,7 @@ export function QuizExperiencePageContent({
       .slice(0, 8);
 
     return (
-      <div className="animate-fade-rise space-y-6">
+      <div className="space-y-6">
         <Card>
           <CardBody className="grid gap-6 p-6 md:grid-cols-[1fr_1.2fr] md:p-8">
             <div className="space-y-4">
@@ -901,7 +901,7 @@ export function QuizExperiencePageContent({
       : questionSubmitted;
 
   return (
-    <div className="animate-fade-rise space-y-4">
+    <div className="space-y-4">
       {!isAuthenticated ? (
         <div className="rounded-xl border border-brand-2/35 bg-brand-2/10 px-4 py-3 text-xs text-text">
           Guest mode: your run is stored only on this device.{" "}
