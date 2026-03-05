@@ -169,13 +169,17 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    const { count } = await supabase
+    const userCoursesResult = await supabase
       .from("user_courses")
       .select("course_id", { count: "exact", head: true })
       .eq("user_id", user.id);
 
-    const needsUniversity = !profile?.university_id;
-    const needsCourses = (count ?? 0) === 0;
+    // Never trap users in onboarding loops when schema/RLS checks fail.
+    const canEvaluateUniversity = Boolean(profile) && !profileResult.error;
+    const canEvaluateCourses = !userCoursesResult.error;
+
+    const needsUniversity = canEvaluateUniversity ? !profile?.university_id : false;
+    const needsCourses = canEvaluateCourses ? (userCoursesResult.count ?? 0) === 0 : false;
     const normalizedRole = profile?.role ?? "student";
 
     if (shouldForceOnboarding(pathname, needsUniversity, needsCourses, normalizedRole)) {
