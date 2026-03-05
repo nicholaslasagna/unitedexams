@@ -68,7 +68,7 @@ function ApproveLoginContent() {
       subtitle="We’re securely verifying your new sign-in."
       footer={
         <p>
-          Need help? <Link href="/contact" className="font-semibold text-accent hover:text-white">Contact support</Link>
+          Need help? <Link href="/contact" className="font-semibold text-accent hover:text-text">Contact support</Link>
         </p>
       }
     >
@@ -79,7 +79,7 @@ function ApproveLoginContent() {
             : state === "error"
               ? "border-danger/35 bg-danger/10 text-danger"
               : state === "loading"
-                ? "border-brand-2/35 bg-brand-2/10 text-white/85"
+                ? "border-brand-2/35 bg-brand-2/10 text-text-secondary"
                 : "border-borderc bg-soft text-muted"
         }`}
       >

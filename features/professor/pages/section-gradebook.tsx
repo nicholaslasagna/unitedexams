@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAppData } from "@/lib/app-data-context";
+import { useToast } from "@/lib/hooks/use-toast";
+import { sendGradeChangeEmailNotice } from "@/features/announcements/api";
 import {
   getSectionGradebook,
   listProfessorSections,
@@ -17,41 +20,50 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
   const params = useParams<{ id?: string; sectionId?: string }>();
   const resolvedSectionId = sectionId ?? params.sectionId ?? params.id ?? "";
   const { profile, supabase } = useAppData();
+  const { push } = useToast();
 
   const [section, setSection] = useState<SectionSummary | null>(null);
   const [rows, setRows] = useState<SectionGradebookRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingSubmissionId, setEditingSubmissionId] = useState<string | null>(null);
+  const [editStatus, setEditStatus] = useState<"submitted" | "graded" | "needs_review">("graded");
+  const [editScore, setEditScore] = useState("");
+  const [editFeedback, setEditFeedback] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const isProfessor = profile.role === "professor" || profile.role === "admin";
 
-  useEffect(() => {
+  const refreshGradebook = useCallback(async () => {
     if (!supabase || !resolvedSectionId) {
       setLoading(false);
       return;
     }
 
-    let active = true;
     setLoading(true);
-    Promise.all([listProfessorSections(supabase), getSectionGradebook(supabase, resolvedSectionId)])
-      .then(([sections, gradebookRows]) => {
-        if (!active) return;
-        setSection(sections.find((item) => item.id === resolvedSectionId) ?? null);
-        setRows(gradebookRows);
-      })
-      .catch(() => {
-        if (!active) return;
-        setSection(null);
-        setRows([]);
-      })
-      .finally(() => {
-        if (!active) return;
-        setLoading(false);
-      });
+    try {
+      const [sections, gradebookRows] = await Promise.all([
+        listProfessorSections(supabase),
+        getSectionGradebook(supabase, resolvedSectionId)
+      ]);
+      setSection(sections.find((item) => item.id === resolvedSectionId) ?? null);
+      setRows(gradebookRows);
+    } catch {
+      setSection(null);
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [resolvedSectionId, supabase]);
+
+  useEffect(() => {
+    let active = true;
+    if (!active) return;
+    void refreshGradebook();
 
     return () => {
       active = false;
     };
-  }, [resolvedSectionId, supabase]);
+  }, [refreshGradebook]);
 
   const grouped = useMemo(() => {
     const byAssignment = new Map<string, SectionGradebookRow[]>();
@@ -114,13 +126,156 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
               </CardHeader>
               <CardBody className="space-y-2">
                 {gradeRows.map((row) => (
-                  <div key={`${row.assignment_id}:${row.student_id}`} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-borderc bg-soft px-3 py-2 text-sm">
-                    <span className="font-medium text-text">{row.display_name}</span>
-                    <span className="text-muted">
-                      {row.latest_status ? row.latest_status : "Not submitted"}
-                      {row.latest_score !== null ? ` · ${row.latest_score}%` : ""}
-                      {row.submitted_at ? ` · ${new Date(row.submitted_at).toLocaleString()}` : ""}
-                    </span>
+                  <div key={`${row.assignment_id}:${row.student_id}`} className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-medium text-text">{row.display_name}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted">
+                          {row.latest_status ? row.latest_status : "Not submitted"}
+                          {row.latest_score !== null ? ` · ${row.latest_score}%` : ""}
+                          {row.submitted_at ? ` · ${new Date(row.submitted_at).toLocaleString()}` : ""}
+                        </span>
+                        {row.latest_submission_id ? (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => {
+                              setEditingSubmissionId(row.latest_submission_id);
+                              setEditStatus(
+                                row.latest_status === "submitted" || row.latest_status === "needs_review"
+                                  ? row.latest_status
+                                  : "graded"
+                              );
+                              setEditScore(row.latest_score === null ? "" : String(row.latest_score));
+                              setEditFeedback("");
+                            }}
+                          >
+                            Edit grade
+                          </Button>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    {editingSubmissionId === row.latest_submission_id ? (
+                      <div className="mt-3 space-y-2 rounded-lg border border-borderc bg-surface p-3">
+                        <div className="grid gap-2 md:grid-cols-3">
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Status</label>
+                            <select
+                              className="h-10 w-full rounded-[10px] border border-borderc bg-soft px-3 text-sm text-text"
+                              value={editStatus}
+                              onChange={(event) =>
+                                setEditStatus(event.target.value as "submitted" | "graded" | "needs_review")
+                              }
+                            >
+                              <option value="graded">graded</option>
+                              <option value="needs_review">needs_review</option>
+                              <option value="submitted">submitted</option>
+                            </select>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Score (%)</label>
+                            <Input
+                              value={editScore}
+                              onChange={(event) => setEditScore(event.target.value.replace(/[^0-9.]/g, ""))}
+                              placeholder={editStatus === "graded" ? "0-100" : "Optional"}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Feedback</label>
+                          <textarea
+                            value={editFeedback}
+                            onChange={(event) => setEditFeedback(event.target.value)}
+                            className="min-h-20 w-full rounded-[10px] border border-borderc bg-soft px-3 py-2 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
+                            placeholder="Optional note to student"
+                          />
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button
+                            loading={savingEdit}
+                            onClick={async () => {
+                              if (!supabase || !editingSubmissionId) return;
+
+                              const numericScore =
+                                editScore.trim().length === 0 ? null : Number.parseFloat(editScore.trim());
+
+                              if (
+                                editStatus === "graded" &&
+                                (numericScore === null ||
+                                  Number.isNaN(numericScore) ||
+                                  numericScore < 0 ||
+                                  numericScore > 100)
+                              ) {
+                                push({
+                                  title: "Score must be between 0 and 100",
+                                  tone: "error"
+                                });
+                                return;
+                              }
+
+                              setSavingEdit(true);
+                              try {
+                                const { error } = await supabase
+                                  .from("assignment_submissions")
+                                  .update({
+                                    status: editStatus,
+                                    score: editStatus === "graded" ? numericScore : null,
+                                    feedback_md: editFeedback.trim() || null,
+                                    graded_at: editStatus === "graded" ? new Date().toISOString() : null
+                                  })
+                                  .eq("id", editingSubmissionId);
+
+                                if (error) {
+                                  throw error;
+                                }
+
+                                let warning: string | undefined;
+                                try {
+                                  const emailResult = await sendGradeChangeEmailNotice(editingSubmissionId);
+                                  warning = emailResult.warning;
+                                } catch (emailError) {
+                                  warning = (emailError as Error).message;
+                                }
+
+                                push({
+                                  title: "Grade updated",
+                                  description: warning,
+                                  tone: warning ? "default" : "success"
+                                });
+                                setEditingSubmissionId(null);
+                                setEditFeedback("");
+                                setEditScore("");
+                                await refreshGradebook();
+                              } catch (error) {
+                                push({
+                                  title: "Unable to update grade",
+                                  description: (error as Error).message,
+                                  tone: "error"
+                                });
+                              } finally {
+                                setSavingEdit(false);
+                              }
+                            }}
+                          >
+                            Save grade
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            onClick={() => {
+                              setEditingSubmissionId(null);
+                              setEditFeedback("");
+                              setEditScore("");
+                            }}
+                            disabled={savingEdit}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
                 ))}
               </CardBody>

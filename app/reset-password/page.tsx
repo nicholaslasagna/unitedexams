@@ -216,16 +216,16 @@ function ResetPasswordContent() {
       footer={
         <p>
           Need another link?{" "}
-          <Link href="/forgot-password" className="font-semibold text-accent hover:text-white">
+          <Link href="/forgot-password" className="font-semibold text-accent hover:text-text">
             Request a new reset email
           </Link>
         </p>
       }
     >
       {!ready ? (
-        <p className="text-sm text-white/70">Preparing secure reset session…</p>
+        <p className="text-sm text-muted">Preparing secure reset session…</p>
       ) : !hasSession ? (
-        <div className="space-y-3 rounded-xl border border-warn/35 bg-warn/10 p-4 text-sm text-white/80">
+        <div className="space-y-3 rounded-xl border border-warn/35 bg-warn/10 p-4 text-sm text-text-secondary">
           <p>Your password reset link is invalid or expired.</p>
           {linkError ? <p className="text-xs text-warn">Details: {linkError}</p> : null}
           <Button asChild className="w-full">
@@ -235,7 +235,7 @@ function ResetPasswordContent() {
       ) : (
         <form className="space-y-4" onSubmit={onSubmit}>
           <div className="space-y-1.5">
-            <label htmlFor="new-password" className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
+            <label htmlFor="new-password" className="text-xs font-semibold uppercase tracking-[0.14em] text-faint">
               New password
             </label>
             <Input
@@ -250,7 +250,7 @@ function ResetPasswordContent() {
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="confirm-password" className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
+            <label htmlFor="confirm-password" className="text-xs font-semibold uppercase tracking-[0.14em] text-faint">
               Confirm new password
             </label>
             <Input

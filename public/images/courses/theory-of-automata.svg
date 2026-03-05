@@ -1,0 +1,26 @@
+<svg width="440" height="280" viewBox="0 0 440 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-ta" x1="18" y1="18" x2="420" y2="262" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#059669"/>
+      <stop offset="1" stop-color="#1E293B"/>
+    </linearGradient>
+  </defs>
+  <rect width="440" height="280" rx="22" fill="url(#bg-ta)"/>
+  <rect x="30" y="34" width="380" height="62" rx="12" fill="#0B1027" fill-opacity="0.48"/>
+  <text x="50" y="72" fill="#ECFDF5" font-size="24" font-family="Inter, Arial, sans-serif" font-weight="700">Theory of Automata</text>
+
+  <circle cx="110" cy="168" r="24" stroke="#A7F3D0" stroke-width="3"/>
+  <circle cx="222" cy="136" r="24" stroke="#A7F3D0" stroke-width="3"/>
+  <circle cx="334" cy="176" r="24" stroke="#A7F3D0" stroke-width="3"/>
+
+  <path d="M134 158L198 142" stroke="#D1FAE5" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M246 144L310 166" stroke="#D1FAE5" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M332 152C352 130 384 128 398 146" stroke="#D1FAE5" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M87 189C72 205 74 227 90 240" stroke="#D1FAE5" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0 0L8 4L0 8V0Z" fill="#D1FAE5"/>
+    </marker>
+  </defs>
+</svg>

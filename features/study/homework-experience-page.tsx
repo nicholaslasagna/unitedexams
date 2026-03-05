@@ -638,7 +638,7 @@ export function HomeworkExperiencePageContent({
         <div className="rounded-xl border border-brand-2/35 bg-brand-2/10 px-4 py-3 text-sm text-text">
           Guest mode: homework progress is saved only on this device.
           <span className="ml-2 inline-flex gap-2">
-            <Link href={signUpPath} className="font-semibold text-accent hover:text-white">
+            <Link href={signUpPath} className="font-semibold text-accent hover:text-text">
               Create account
             </Link>
             <span className="text-muted">to sync progress.</span>

@@ -85,20 +85,20 @@ export default function ForgotPasswordPage() {
       footer={
         <p>
           Remembered it?{" "}
-          <Link href="/login" className="font-semibold text-accent hover:text-white">
+          <Link href="/login" className="font-semibold text-accent hover:text-text">
             Back to sign in
           </Link>
         </p>
       }
     >
       {done ? (
-        <div className="rounded-xl border border-success/30 bg-success/10 p-4 text-sm text-white/80">
-          If an account exists for <span className="font-semibold text-white">{email}</span>, a reset link is on the way.
+        <div className="rounded-xl border border-success/30 bg-success/10 p-4 text-sm text-text-secondary">
+          If an account exists for <span className="font-semibold text-text">{email}</span>, a reset link is on the way.
         </div>
       ) : (
         <form className="space-y-4" onSubmit={onSubmit}>
           <div className="space-y-1.5">
-            <label htmlFor="email" className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
+            <label htmlFor="email" className="text-xs font-semibold uppercase tracking-[0.14em] text-faint">
               Email
             </label>
             <Input

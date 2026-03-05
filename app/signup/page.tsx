@@ -215,11 +215,11 @@ function SignupPageContent() {
       footer={
         <p>
           Already have an account?{" "}
-          <Link href="/login" className="font-semibold text-accent hover:text-white">
+          <Link href="/login" className="font-semibold text-accent hover:text-text">
             Sign in
           </Link>
           {" · "}
-          <Link href={guestReturnPath} className="font-semibold text-accent hover:text-white">
+          <Link href={guestReturnPath} className="font-semibold text-accent hover:text-text">
             Continue as guest
           </Link>
         </p>
@@ -227,16 +227,16 @@ function SignupPageContent() {
     >
       {activeEmail ? (
         <div className="space-y-3 rounded-xl border border-brand-2/35 bg-brand-2/10 p-4">
-          <p className="text-sm text-white/85">
-            You&apos;re already signed in as <span className="font-semibold text-white">{activeEmail}</span>.
+          <p className="text-sm text-text-secondary">
+            You&apos;re already signed in as <span className="font-semibold text-text">{activeEmail}</span>.
           </p>
           <Button onClick={() => router.push("/app/dashboard")}>Go to dashboard</Button>
         </div>
       ) : checkInbox ? (
         <div className="space-y-3 rounded-xl border border-success/35 bg-success/10 p-4">
-          <p className="text-lg font-semibold text-white">Check your inbox</p>
-          <p className="text-sm text-white/75">
-            We sent a verification link to <span className="font-semibold text-white">{email}</span>. Verify your email before signing in.
+          <p className="text-lg font-semibold text-text">Check your inbox</p>
+          <p className="text-sm text-muted">
+            We sent a verification link to <span className="font-semibold text-text">{email}</span>. Verify your email before signing in.
           </p>
           <Button asChild className="w-full">
             <Link href="/login">Go to sign in</Link>
@@ -246,7 +246,7 @@ function SignupPageContent() {
         <form className="space-y-4" onSubmit={onSubmit}>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
-              <label htmlFor="display-name" className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
+              <label htmlFor="display-name" className="text-xs font-semibold uppercase tracking-[0.14em] text-faint">
                 Display Name
               </label>
               <Input
@@ -260,7 +260,7 @@ function SignupPageContent() {
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="real-name" className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
+              <label htmlFor="real-name" className="text-xs font-semibold uppercase tracking-[0.14em] text-faint">
                 Real Name (optional)
               </label>
               <Input
@@ -273,7 +273,7 @@ function SignupPageContent() {
             </div>
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-white/75">
+          <label className="flex items-center gap-2 text-sm text-muted">
             <input
               type="checkbox"
               className="h-4 w-4 rounded border-white/25 bg-transparent accent-[hsl(var(--accent))]"
@@ -284,7 +284,7 @@ function SignupPageContent() {
           </label>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">Role</label>
+            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-faint">Role</label>
             <div className="grid grid-cols-2 gap-2">
               {([
                 { id: "student", label: "Student", hint: "For studying and progress tracking." },
@@ -296,20 +296,20 @@ function SignupPageContent() {
                   onClick={() => setRole(option.id)}
                   className={`rounded-xl border px-3 py-3 text-left ${
                     role === option.id
-                      ? "border-brand-2/55 bg-brand-2/12 text-white"
-                      : "border-white/15 bg-white/5 text-white/80 hover:bg-white/10"
+                      ? "border-brand-2/55 bg-brand-2/12 text-text"
+                      : "border-borderc bg-soft text-text-secondary hover:bg-overlay"
                   }`}
                   aria-pressed={role === option.id}
                 >
                   <p className="text-sm font-semibold">{option.label}</p>
-                  <p className="mt-1 text-xs text-white/60">{option.hint}</p>
+                  <p className="mt-1 text-xs text-faint">{option.hint}</p>
                 </button>
               ))}
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="email" className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
+            <label htmlFor="email" className="text-xs font-semibold uppercase tracking-[0.14em] text-faint">
               Email
             </label>
             <Input
@@ -325,7 +325,7 @@ function SignupPageContent() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
-              <label htmlFor="password" className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
+              <label htmlFor="password" className="text-xs font-semibold uppercase tracking-[0.14em] text-faint">
                 Password
               </label>
               <Input
@@ -340,7 +340,7 @@ function SignupPageContent() {
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="confirm-password" className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
+              <label htmlFor="confirm-password" className="text-xs font-semibold uppercase tracking-[0.14em] text-faint">
                 Confirm Password
               </label>
               <Input
@@ -357,7 +357,7 @@ function SignupPageContent() {
 
           <PasswordStrength password={password} />
 
-          <label className="flex items-start gap-2 rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-sm text-white/75">
+          <label className="flex items-start gap-2 rounded-lg border border-borderc bg-soft px-3 py-2 text-sm text-muted">
             <input
               type="checkbox"
               className="mt-0.5 h-4 w-4 rounded border-white/25 bg-transparent accent-[hsl(var(--accent))]"
@@ -366,11 +366,11 @@ function SignupPageContent() {
             />
             <span>
               I agree to the{" "}
-              <Link href="/privacy" className="font-semibold text-accent hover:text-white">
+              <Link href="/privacy" className="font-semibold text-accent hover:text-text">
                 Privacy Policy
               </Link>{" "}
               and{" "}
-              <Link href="/terms" className="font-semibold text-accent hover:text-white">
+              <Link href="/terms" className="font-semibold text-accent hover:text-text">
                 Terms of Service
               </Link>
               .

@@ -341,7 +341,7 @@ html[data-reduce-motion="on"] .mesh-hero::after {
 }
 
 :root:not(.dark) .markdown pre {
-  @apply bg-[#1e1e2e] text-slate-100;
+  @apply bg-[#f5f5f8] text-[#1e1e2e];
 }
 
 .markdown pre code {

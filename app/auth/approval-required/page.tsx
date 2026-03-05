@@ -115,7 +115,7 @@ function ApprovalRequiredContent() {
       footer={
         <p>
           Need help?{" "}
-          <Link href="/contact" className="font-semibold text-accent hover:text-white">
+          <Link href="/contact" className="font-semibold text-accent hover:text-text">
             Contact support
           </Link>
         </p>
@@ -127,7 +127,7 @@ function ApprovalRequiredContent() {
             ? "border-success/35 bg-success/10 text-success"
             : statusTone === "error"
               ? "border-danger/35 bg-danger/10 text-danger"
-              : "border-brand-2/35 bg-brand-2/10 text-white/85"
+              : "border-brand-2/35 bg-brand-2/10 text-text-secondary"
         }`}
       >
         {status}

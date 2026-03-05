@@ -1,11 +1,15 @@
 import type { ReactNode } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
+import { NavigationProgress } from "@/components/layout/navigation-progress";
 import { ConstellationPattern } from "@/components/ui/constellation-pattern";
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen bg-bg">
+      {/* Navigation progress bar */}
+      <NavigationProgress />
+
       {/* Ambient glow — atmospheric background */}
       <div className="ambient-glow" />
 

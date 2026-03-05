@@ -105,7 +105,7 @@ function AuthCallbackContent() {
       subtitle="We’re finalizing your account email update securely."
       footer={
         <p>
-          Need help? <Link href="/contact" className="font-semibold text-accent hover:text-white">Contact support</Link>
+          Need help? <Link href="/contact" className="font-semibold text-accent hover:text-text">Contact support</Link>
         </p>
       }
     >
@@ -115,7 +115,7 @@ function AuthCallbackContent() {
             ? "border-success/35 bg-success/10 text-success"
             : status === "error"
               ? "border-danger/35 bg-danger/10 text-danger"
-              : "border-brand-2/35 bg-brand-2/10 text-white/85"
+              : "border-brand-2/35 bg-brand-2/10 text-text-secondary"
         }`}
       >
         {message}
