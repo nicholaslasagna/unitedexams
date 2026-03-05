@@ -378,7 +378,7 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
 
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Button asChild variant="secondary">
-                      <Link href={`/quiz/${assignment.quiz_set_id}`}>Open assigned set</Link>
+                      <Link href={`/quiz/${assignment.quiz_set_id}?section=${resolvedSectionId}`}>Open assigned set</Link>
                     </Button>
                     {!isProfessor ? (
                       <Button
