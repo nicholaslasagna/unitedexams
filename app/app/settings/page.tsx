@@ -643,16 +643,16 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-rise">
       <section>
-        <h1 className="font-display text-4xl font-semibold tracking-tight">Settings</h1>
-        <p className="mt-2 text-sm text-muted">Theme, personalization, security, and data portability.</p>
+        <h1 className="text-display-lg font-semibold tracking-tight">Settings</h1>
+        <p className="mt-2 text-sm text-muted text-text-secondary">Theme, personalization, security, and data portability.</p>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <Card>
+        <Card className="stagger-1">
           <CardHeader>
-            <h2 className="font-display text-2xl font-semibold">Appearance</h2>
+            <h2 className="text-heading font-semibold">Appearance</h2>
           </CardHeader>
           <CardBody className="space-y-4">
             <div className="rounded-xl border border-borderc bg-soft p-3">
@@ -662,10 +662,10 @@ export default function SettingsPage() {
                   <button
                     key={theme}
                     type="button"
-                    className={`rounded-lg border px-3 py-2 text-sm capitalize ${
+                    className={`rounded-lg border px-3 py-2 text-sm capitalize transition-all duration-200 ease-out-expo ${
                       preferences.theme === theme
                         ? "border-brand-2/55 bg-brand-2/10 text-text"
-                        : "border-borderc text-muted"
+                        : "border-borderc text-muted hover:shadow-card-hover hover:border-border-accent"
                     }`}
                     onClick={() => void updatePreferences((prev) => ({ ...prev, theme }), "Theme updated")}
                   >
@@ -704,7 +704,7 @@ export default function SettingsPage() {
             <label className="flex items-center justify-between rounded-xl border border-borderc bg-soft px-3 py-2">
               <span>
                 <span className="block text-sm font-semibold text-text">Reduced motion</span>
-                <span className="text-xs text-muted">Respect animations/motion preference.</span>
+                <span className="text-xs text-muted text-text-secondary">Respect animations/motion preference.</span>
               </span>
               <input
                 type="checkbox"
@@ -722,7 +722,7 @@ export default function SettingsPage() {
             <label className="flex items-center justify-between rounded-xl border border-borderc bg-soft px-3 py-2">
               <span>
                 <span className="block text-sm font-semibold text-text">Celebration confetti</span>
-                <span className="text-xs text-muted">Only for personal-best milestones.</span>
+                <span className="text-xs text-muted text-text-secondary">Only for personal-best milestones.</span>
               </span>
               <input
                 type="checkbox"
@@ -739,7 +739,7 @@ export default function SettingsPage() {
 
             <div className="rounded-xl border border-borderc bg-soft p-3">
               <p className="text-sm font-semibold text-text">Live preview</p>
-              <p className="mt-1 text-xs text-muted">Buttons, chips, focus ring, progress, and card depth update instantly.</p>
+              <p className="mt-1 text-xs text-muted text-text-secondary">Buttons, chips, focus ring, progress, and card depth update instantly.</p>
 
               <div className="mt-3 space-y-3 rounded-xl border border-borderc bg-surface p-3">
                 <div className="flex flex-wrap items-center gap-2">
@@ -782,14 +782,14 @@ export default function SettingsPage() {
           </CardBody>
         </Card>
 
-        <Card>
+        <Card className="stagger-2">
           <CardHeader>
-            <h2 className="font-display text-2xl font-semibold">Security</h2>
+            <h2 className="text-heading font-semibold">Security</h2>
           </CardHeader>
           <CardBody className="space-y-4">
             <div className="rounded-xl border border-borderc bg-soft p-3">
               <p className="text-sm font-semibold text-text">Email</p>
-              <p className="mt-1 text-xs text-muted">
+              <p className="mt-1 text-xs text-muted text-text-secondary">
                 Change your login email safely. You&apos;ll keep access with your current email until the new one is verified.
               </p>
 
@@ -856,7 +856,7 @@ export default function SettingsPage() {
 
             <div className="rounded-xl border border-borderc bg-soft p-3">
               <p className="text-sm font-semibold text-text">Change password</p>
-              <p className="mt-1 text-xs text-muted">Re-auth with your current password before saving a new one.</p>
+              <p className="mt-1 text-xs text-muted text-text-secondary">Re-auth with your current password before saving a new one.</p>
 
               <div className="mt-3 space-y-2">
                 <Input
@@ -895,7 +895,7 @@ export default function SettingsPage() {
               <label className="flex items-center justify-between gap-3">
                 <span>
                   <span className="block text-sm font-semibold text-text">Extra sign-in protection</span>
-                  <span className="mt-0.5 block text-xs text-muted">
+                  <span className="mt-0.5 block text-xs text-muted text-text-secondary">
                     Require email approval for new networks. Professor/admin accounts are always protected; if 2FA is off, we strongly recommend enabling this.
                   </span>
                 </span>
@@ -1019,12 +1019,12 @@ export default function SettingsPage() {
         </Card>
       </section>
 
-      <Card>
+      <Card className="stagger-3">
         <CardHeader>
-          <h2 className="font-display text-2xl font-semibold">Data</h2>
+          <h2 className="text-heading font-semibold">Data</h2>
         </CardHeader>
         <CardBody className="space-y-5">
-          <p className="text-sm text-muted">
+          <p className="text-sm text-muted text-text-secondary">
             Export your progress as JSON or import it from a previous backup.
           </p>
           <div className="flex flex-wrap gap-2">
@@ -1041,7 +1041,7 @@ export default function SettingsPage() {
 
           <div className="rounded-xl border border-danger/30 bg-danger/10 p-4">
             <p className="text-sm font-semibold text-danger">Danger Zone</p>
-            <p className="mt-1 text-xs text-muted">
+            <p className="mt-1 text-xs text-muted text-text-secondary">
               This permanently deletes your account and all connected data.
             </p>
             <div className="mt-3 grid gap-2 md:grid-cols-[1fr_auto]">

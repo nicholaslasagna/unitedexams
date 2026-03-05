@@ -85,11 +85,11 @@ export function QuestionCard({
         {/* Header with question number and topic tags */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand-2/15 text-xs font-bold text-brand-2">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand-2/15 font-mono text-xs font-bold text-brand-2">
               {questionNumber}
             </span>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-              of {totalQuestions}
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">
+              of <span className="font-mono">{totalQuestions}</span>
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -180,7 +180,7 @@ export function QuestionCard({
                     ))}
                   </ol>
                 ) : (
-                  <p className="mt-3 text-sm text-muted">Stuck? Reveal hints one at a time to guide your thinking.</p>
+                  <p className="mt-3 text-sm text-text-secondary">Stuck? Reveal hints one at a time to guide your thinking.</p>
                 )}
 
                 {question.sampleAnswer && effectiveHintCount === hints.length ? (
@@ -225,7 +225,7 @@ export function QuestionCard({
                   disabled={lockInteraction}
                   onClick={() => onToggleOption(index)}
                   className={cn(
-                    "group flex w-full items-start gap-3 rounded-xl border px-4 py-3.5 text-left transition-all duration-150",
+                    "group flex w-full items-start gap-3 rounded-xl border px-4 py-3.5 text-left transition-all duration-200 ease-out-expo",
                     optionState === "selected" && "border-brand-2/55 bg-brand-2/10 shadow-[0_0_0_1px_hsl(var(--brand-2)/0.2)]",
                     optionState === "ok" && "border-success/45 bg-success/15",
                     optionState === "bad" && "border-danger/45 bg-danger/15",
@@ -267,7 +267,7 @@ export function QuestionCard({
         {/* Pre-submit action bar */}
         {!submitted ? (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-borderc bg-soft p-3">
-            <p className="text-xs text-muted">
+            <p className="text-xs text-text-secondary">
               {isFreeResponse
                 ? "Work through the problem step by step, then submit. Use hints if stuck."
                 : "Keyboard: A/B/C/D choose • Enter submit • Arrow keys navigate"}
@@ -308,7 +308,7 @@ export function QuestionCard({
                         : "Not quite. Study the walkthrough below to understand why."}
                 </p>
                 {revealCorrectness && isCorrect === false && !isFreeResponse ? (
-                  <p className="mt-1 text-xs text-muted">
+                  <p className="mt-1 text-xs text-text-secondary">
                     Your answer is highlighted in red. The correct answer is highlighted in yellow.
                   </p>
                 ) : null}
@@ -343,7 +343,7 @@ export function QuestionCard({
             {isFreeResponse && !disableSelfMark ? (
               <div className="mt-3 rounded-lg border border-borderc bg-soft p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Self-check</p>
-                <p className="mt-1 text-sm text-muted">
+                <p className="mt-1 text-sm text-text-secondary">
                   Compare your work with the walkthrough. Did you get it right?
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -447,7 +447,7 @@ export function QuestionCard({
               <button
                 type="button"
                 onClick={() => setRevealedSteps((prev) => Math.min(walkthroughSteps.length, prev + 1))}
-                className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-brand-2/30 bg-brand-2/10 py-2.5 text-sm font-semibold text-brand-2 transition hover:bg-brand-2/15"
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-brand-2/30 bg-brand-2/10 py-2.5 text-sm font-semibold text-brand-2 transition-all duration-200 ease-out-expo hover:bg-brand-2/15"
               >
                 <ChevronDown className="h-4 w-4" />
                 Reveal step {revealedSteps + 1} of {walkthroughSteps.length}

@@ -101,8 +101,8 @@ export function CourseDetailContent({
     return (
       <Card>
         <CardBody className="space-y-3 p-8 text-center">
-          <p className="font-display text-2xl font-semibold text-text">Course not found</p>
-          <p className="text-sm text-muted">This course page is unavailable.</p>
+          <p className="text-heading font-semibold text-text">Course not found</p>
+          <p className="text-sm text-muted text-text-secondary">This course page is unavailable.</p>
           <Button asChild>
             <Link href={withPrefix(routePrefix, "/courses")}>Back to courses</Link>
           </Button>
@@ -112,13 +112,13 @@ export function CourseDetailContent({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-rise space-y-6">
       <section className="grid gap-4 xl:grid-cols-[1.45fr_1fr]">
         <Card className="mesh-hero">
           <CardBody className="space-y-4 p-6 md:p-8">
             <p className="text-xs uppercase tracking-[0.14em] text-muted">{course.code}</p>
-            <h1 className="font-display text-4xl font-semibold tracking-tight md:text-5xl">{course.name}</h1>
-            <p className="max-w-3xl text-sm leading-relaxed text-muted">{course.description}</p>
+            <h1 className="text-display-lg font-semibold tracking-tight">{course.name}</h1>
+            <p className="max-w-3xl text-sm leading-relaxed text-muted text-text-secondary">{course.description}</p>
 
             <div className="flex flex-wrap gap-2">
               <Badge tone={course.difficulty === "Advanced" ? "warn" : "default"}>{course.difficulty}</Badge>
@@ -131,7 +131,7 @@ export function CourseDetailContent({
 
         <Card>
           <CardBody className="space-y-4 p-6">
-            <p className="text-xs uppercase tracking-[0.14em] text-muted">Your progress snapshot</p>
+            <p className="text-xs uppercase tracking-[0.14em] text-muted text-text-secondary">Your progress snapshot</p>
             <div className="flex items-center justify-between gap-3">
               <ProgressRing value={progress} size={100} stroke={10} label="Mastery" />
               <div className="text-right">
@@ -208,27 +208,27 @@ export function CourseDetailContent({
                 </CardBody>
               </Card>
             ) : null}
-            {filteredSets.map((set) => {
+            {filteredSets.map((set, idx) => {
               const setMode = resolveQuizSetMode(set);
               const targetCount = resolveQuestionCountTarget(set);
               const questionCount = set.questions.length || targetCount || 0;
               const latest = latestAttemptForQuiz(attempts, set.id);
               const best = bestScoreForQuiz(attempts, set.id);
               return (
-                <Card key={set.id} className="overflow-hidden">
+                <Card key={set.id} className={`overflow-hidden transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-${(idx % 6) + 1}`}>
                   <CardHeader className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <h3 className="font-display text-2xl font-semibold text-text">{set.title}</h3>
-                      <p className="mt-1 text-sm text-muted">{set.description}</p>
+                      <h3 className="text-heading font-semibold text-text">{set.title}</h3>
+                      <p className="mt-1 text-sm text-muted text-text-secondary">{set.description}</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Badge tone={setMode === "homework" ? "success" : setMode === "exam" ? "warn" : "brand"}>
                         {modeLabel(setMode)}
                       </Badge>
                       <Badge>{set.difficulty}</Badge>
-                      <Badge tone="brand">{questionCount} questions</Badge>
-                      {targetCount ? <Badge tone="warn">Target {targetCount}</Badge> : null}
-                      <Badge tone="success">Best {best}%</Badge>
+                      <Badge tone="brand"><span className="font-mono">{questionCount}</span> questions</Badge>
+                      {targetCount ? <Badge tone="warn">Target <span className="font-mono">{targetCount}</span></Badge> : null}
+                      <Badge tone="success">Best <span className="font-mono">{best}%</span></Badge>
                     </div>
                   </CardHeader>
                   <CardBody className="space-y-4">
@@ -245,7 +245,7 @@ export function CourseDetailContent({
                     </div>
 
                     <div className="flex items-center justify-between rounded-xl border border-borderc bg-soft px-3 py-2 text-sm">
-                      <span className="text-muted">Last score</span>
+                      <span className="text-muted text-text-secondary">Last score</span>
                       <span className="font-mono text-text">{latest ? `${latest.score}%` : "Not attempted"}</span>
                     </div>
 
@@ -302,7 +302,7 @@ export function CourseDetailContent({
         <section id="panel-notes">
           <Card>
             <CardHeader>
-              <h2 className="font-display text-2xl font-semibold">Study Notes</h2>
+              <h2 className="text-heading font-semibold">Study Notes</h2>
             </CardHeader>
             <CardBody>
               <Markdown content={content.notes} />
@@ -320,7 +320,7 @@ export function CourseDetailContent({
         <section id="panel-cheats">
           <Card>
             <CardHeader>
-              <h2 className="font-display text-2xl font-semibold">Cheat Sheets</h2>
+              <h2 className="text-heading font-semibold">Cheat Sheets</h2>
             </CardHeader>
             <CardBody>
               <Markdown content={content.cheatSheet} />
@@ -331,12 +331,12 @@ export function CourseDetailContent({
 
       {tab === "resources" ? (
         <section id="panel-resources" className="grid gap-3 md:grid-cols-2">
-          {content.resources.map((item) => (
-            <Card key={item.href}>
+          {content.resources.map((item, idx) => (
+            <Card key={item.href} className={`transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-${(idx % 6) + 1}`}>
               <CardBody className="space-y-2">
                 <Badge tone="brand">{item.type}</Badge>
                 <h3 className="text-lg font-semibold text-text">{item.label}</h3>
-                <p className="inline-flex items-center gap-2 text-sm text-muted">
+                <p className="inline-flex items-center gap-2 text-sm text-muted text-text-secondary">
                   <FileText className="h-4 w-4" />
                   External resource
                 </p>

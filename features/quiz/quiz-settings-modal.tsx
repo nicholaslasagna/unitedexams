@@ -42,7 +42,7 @@ export function QuizSettingsModal({
           <label className="flex items-center justify-between gap-3">
             <span>
               <span className="block text-sm font-semibold text-text">Timed mode</span>
-              <span className="text-xs text-muted">Enable countdown timer during the attempt.</span>
+              <span className="text-xs text-text-secondary">Enable countdown timer during the attempt.</span>
             </span>
             <input
               type="checkbox"
@@ -75,7 +75,7 @@ export function QuizSettingsModal({
           <label className="flex items-center justify-between gap-3">
             <span>
               <span className="block text-sm font-semibold text-text">Randomize question order</span>
-              <span className="text-xs text-muted">Useful for retakes and spaced repetition.</span>
+              <span className="text-xs text-text-secondary">Useful for retakes and spaced repetition.</span>
             </span>
             <input
               type="checkbox"
@@ -93,7 +93,7 @@ export function QuizSettingsModal({
 
         <div className="rounded-xl border border-borderc bg-soft p-4">
           <p className="text-sm font-semibold text-text">Practice question count</p>
-          <p className="mt-1 text-xs text-muted">Choose how many questions to include in this attempt.</p>
+          <p className="mt-1 text-xs text-text-secondary">Choose how many questions to include in this attempt.</p>
           <div className="mt-3">
             <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-muted">
               Questions in this attempt
@@ -123,7 +123,7 @@ export function QuizSettingsModal({
             <label className="flex items-center justify-between gap-3">
               <span>
                 <span className="block text-sm font-semibold text-text">Include free response</span>
-                <span className="text-xs text-muted">
+                <span className="text-xs text-text-secondary">
                   Toggle short-answer items in full exam simulation.
                 </span>
               </span>
@@ -147,10 +147,10 @@ export function QuizSettingsModal({
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             <button
               type="button"
-              className={`rounded-lg border px-3 py-2 text-sm ${
+              className={`rounded-lg border px-3 py-2 text-sm transition-all duration-200 ease-out-expo ${
                 settings.explanationMode === "afterEach"
                   ? "border-brand-2/60 bg-brand-2/10 text-text"
-                  : "border-borderc text-muted"
+                  : "border-borderc text-text-secondary"
               }`}
               onClick={() => setSettings((prev) => ({ ...prev, explanationMode: "afterEach" }))}
             >
@@ -158,10 +158,10 @@ export function QuizSettingsModal({
             </button>
             <button
               type="button"
-              className={`rounded-lg border px-3 py-2 text-sm ${
+              className={`rounded-lg border px-3 py-2 text-sm transition-all duration-200 ease-out-expo ${
                 settings.explanationMode === "end"
                   ? "border-brand-2/60 bg-brand-2/10 text-text"
-                  : "border-borderc text-muted"
+                  : "border-borderc text-text-secondary"
               }`}
               onClick={() => setSettings((prev) => ({ ...prev, explanationMode: "end" }))}
             >

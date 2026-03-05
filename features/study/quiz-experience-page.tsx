@@ -571,8 +571,8 @@ export function QuizExperiencePageContent({
     return (
       <Card>
         <CardBody className="space-y-3 p-8 text-center">
-          <p className="font-display text-2xl font-semibold">Quiz not found</p>
-          <p className="text-sm text-muted">The requested quiz set is unavailable.</p>
+          <p className="text-heading font-semibold">Quiz not found</p>
+          <p className="text-sm text-text-secondary">The requested quiz set is unavailable.</p>
           <Button asChild>
             <Link href={withPrefix(routePrefix, "/courses")}>Back to courses</Link>
           </Button>
@@ -588,8 +588,8 @@ export function QuizExperiencePageContent({
 
   if (stage === "overview") {
     return (
-      <div className="space-y-6">
-        <Link href={coursePath} className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-text">
+      <div className="animate-fade-rise space-y-6">
+        <Link href={coursePath} className="inline-flex items-center gap-2 text-sm font-semibold text-muted transition-all duration-200 ease-out-expo hover:text-text">
           <ArrowLeft className="h-4 w-4" />
           Back to {course.code}
         </Link>
@@ -601,8 +601,8 @@ export function QuizExperiencePageContent({
               <Badge tone="brand">{quiz.difficulty}</Badge>
               <Badge tone="success">{quiz.questions.length} questions</Badge>
             </div>
-            <h1 className="font-display text-4xl font-semibold tracking-tight md:text-5xl">{quiz.title}</h1>
-            <p className="max-w-3xl text-sm leading-relaxed text-muted">{quiz.description}</p>
+            <h1 className="text-display-lg font-semibold tracking-tight">{quiz.title}</h1>
+            <p className="max-w-3xl text-sm leading-relaxed text-text-secondary">{quiz.description}</p>
 
             <div className="flex flex-wrap gap-2">
               <Badge tone={setMode === "exam" ? "warn" : setMode === "homework" ? "success" : "brand"}>
@@ -623,17 +623,17 @@ export function QuizExperiencePageContent({
             ) : null}
 
             <div className="grid gap-3 md:grid-cols-3">
-              <div className="rounded-xl border border-borderc bg-soft p-4">
-                <p className="text-xs text-muted">Estimated time</p>
-                <p className="mt-1 font-mono text-2xl font-bold text-text">{quiz.estMinutes}m</p>
+              <div className="rounded-xl border border-borderc bg-soft p-4 transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-1">
+                <p className="text-xs text-text-secondary">Estimated time</p>
+                <p className="mt-1 font-mono text-heading font-bold text-text">{quiz.estMinutes}m</p>
               </div>
-              <div className="rounded-xl border border-borderc bg-soft p-4">
-                <p className="text-xs text-muted">Best score</p>
-                <p className="mt-1 font-mono text-2xl font-bold text-text">{bestScore}%</p>
+              <div className="rounded-xl border border-borderc bg-soft p-4 transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-2">
+                <p className="text-xs text-text-secondary">Best score</p>
+                <p className="mt-1 font-mono text-heading font-bold text-text">{bestScore}%</p>
               </div>
-              <div className="rounded-xl border border-borderc bg-soft p-4">
-                <p className="text-xs text-muted">Last attempt</p>
-                <p className="mt-1 font-mono text-xl font-bold text-text">{latestAttempt ? `${latestAttempt.score}%` : "—"}</p>
+              <div className="rounded-xl border border-borderc bg-soft p-4 transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-3">
+                <p className="text-xs text-text-secondary">Last attempt</p>
+                <p className="mt-1 font-mono text-heading font-bold text-text">{latestAttempt ? `${latestAttempt.score}%` : "—"}</p>
               </div>
             </div>
 
@@ -680,25 +680,25 @@ export function QuizExperiencePageContent({
 
             {setMode === "exam" ? (
               <div className="grid gap-2 md:grid-cols-3">
-                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
+                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-text-secondary stagger-1">
                   <span className="font-semibold text-text">Rule 1:</span> one question at a time with exam pacing.
                 </div>
-                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
+                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-text-secondary stagger-2">
                   <span className="font-semibold text-text">Rule 2:</span> explanations default to end-of-exam review.
                 </div>
-                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
+                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-text-secondary stagger-3">
                   <span className="font-semibold text-text">Rule 3:</span> professor-priority items are always included.
                 </div>
               </div>
             ) : (
               <div className="grid gap-2 md:grid-cols-3">
-                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
+                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-text-secondary stagger-1">
                   <span className="font-semibold text-text">Test Mode:</span> answer-first flow, graded accuracy, and explanations on demand.
                 </div>
-                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
+                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-text-secondary stagger-2">
                   <span className="font-semibold text-text">Study Walkthrough:</span> guided hints + full step-by-step solution shown after each submit.
                 </div>
-                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-muted">
+                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-text-secondary stagger-3">
                   <span className="font-semibold text-text">Timed Exam:</span> strict clock with randomized order and end-of-quiz review.
                 </div>
               </div>
@@ -740,13 +740,13 @@ export function QuizExperiencePageContent({
       .slice(0, 8);
 
     return (
-      <div className="space-y-6">
+      <div className="animate-fade-rise space-y-6">
         <Card>
           <CardBody className="grid gap-6 p-6 md:grid-cols-[1fr_1.2fr] md:p-8">
             <div className="space-y-4">
-              <p className="text-xs uppercase tracking-[0.14em] text-muted">Results</p>
-              <h1 className="font-display text-4xl font-semibold tracking-tight">{result.score}%</h1>
-              <p className="text-sm text-muted">
+              <p className="text-xs uppercase tracking-[0.14em] text-text-secondary">Results</p>
+              <h1 className="text-display-lg font-semibold tracking-tight"><span className="font-mono">{result.score}%</span></h1>
+              <p className="text-sm text-text-secondary">
                 {result.correctCount} of {result.totalCount} correct • {Math.round(result.timeSpent / 60)} min • {percentile(result.score)}
               </p>
               <div className="flex flex-wrap gap-2">
@@ -781,7 +781,7 @@ export function QuizExperiencePageContent({
         {!isAuthenticated ? (
           <Card>
             <CardBody className="space-y-4 p-6">
-              <h2 className="font-display text-2xl font-semibold">Don&apos;t lose this score.</h2>
+              <h2 className="text-heading font-semibold">Don&apos;t lose this score.</h2>
               <ul className="space-y-2 text-sm text-muted">
                 <li>• Save attempts + progress charts</li>
                 <li>• Personalized weak-topic recommendations</li>
@@ -828,7 +828,7 @@ export function QuizExperiencePageContent({
         <Card>
           <CardBody className="space-y-3 p-8 text-center">
             <CircleCheckBig className="mx-auto h-9 w-9 text-success" />
-            <p className="font-display text-2xl font-semibold">No missed questions to review</p>
+            <p className="text-heading font-semibold">No missed questions to review</p>
             <Button onClick={() => setStage("results")}>Back to results</Button>
           </CardBody>
         </Card>
@@ -842,8 +842,8 @@ export function QuizExperiencePageContent({
             <ArrowLeft className="h-4 w-4" />
             Back to results
           </Button>
-          <p className="text-sm text-muted">
-            Missed review {reviewIndex + 1} / {missedQuestionIds.length}
+          <p className="text-sm text-text-secondary">
+            Missed review <span className="font-mono">{reviewIndex + 1} / {missedQuestionIds.length}</span>
           </p>
         </div>
 
@@ -901,7 +901,7 @@ export function QuizExperiencePageContent({
       : questionSubmitted;
 
   return (
-    <div className="space-y-4">
+    <div className="animate-fade-rise space-y-4">
       {!isAuthenticated ? (
         <div className="rounded-xl border border-brand-2/35 bg-brand-2/10 px-4 py-3 text-xs text-text">
           Guest mode: your run is stored only on this device.{" "}

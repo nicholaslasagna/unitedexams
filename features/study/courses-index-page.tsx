@@ -99,21 +99,21 @@ export function CoursesIndexContent({
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs uppercase tracking-[0.14em] text-muted">{course.code}</p>
-                    <h2 className="font-display text-2xl font-semibold text-text">{course.name}</h2>
+                    <h2 className="text-heading font-semibold text-text">{course.name}</h2>
                   </div>
                   <span className="text-3xl" aria-hidden>
                     {course.icon}
                   </span>
                 </div>
 
-                <p className="text-sm leading-relaxed text-muted">{course.description}</p>
+                <p className="text-sm leading-relaxed text-muted text-text-secondary">{course.description}</p>
 
                 <div className="flex flex-wrap gap-2">
                   <Badge tone={course.difficulty === "Advanced" ? "warn" : "default"}>{course.difficulty}</Badge>
                   <Badge tone="brand">
                     {quizCount} quiz • {examCount} exam • {homeworkCount} hw
                   </Badge>
-                  <Badge tone="success">{progress}% mastery</Badge>
+                  <Badge tone="success"><span className="font-mono">{progress}%</span> mastery</Badge>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -124,7 +124,7 @@ export function CoursesIndexContent({
                   ))}
                 </div>
 
-                <Button className="w-full justify-between" asChild>
+                <Button className="w-full justify-between transition-all duration-200 ease-out-expo" asChild>
                   <Link href={withPrefix(routePrefix, `/courses/${course.id}`)}>
                     Open learning hub
                     <span aria-hidden>→</span>

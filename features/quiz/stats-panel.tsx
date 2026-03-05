@@ -25,11 +25,11 @@ export function StatsPanel({
   return (
     <Card>
       <CardBody className="space-y-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Quiz Stats</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">Quiz Stats</p>
 
         <div className="rounded-xl border border-borderc bg-soft p-3">
-          <p className="text-xs text-muted">Progress</p>
-          <p className="mt-1 font-mono text-2xl font-bold text-text">
+          <p className="text-xs text-text-secondary">Progress</p>
+          <p className="mt-1 font-mono text-heading font-bold text-text">
             {current}/{total}
           </p>
           <div className="mt-3">
@@ -38,8 +38,8 @@ export function StatsPanel({
         </div>
 
         <div className="grid grid-cols-1 gap-2">
-          <div className="flex items-center justify-between rounded-lg border border-borderc bg-soft px-3 py-2 text-sm">
-            <span className="inline-flex items-center gap-2 text-muted">
+          <div className="flex items-center justify-between rounded-lg border border-borderc bg-soft px-3 py-2 text-sm transition-all duration-200 ease-out-expo stagger-1">
+            <span className="inline-flex items-center gap-2 text-text-secondary">
               <Flag className="h-4 w-4" />
               Answered
             </span>
@@ -47,8 +47,8 @@ export function StatsPanel({
           </div>
 
           {timerEnabled ? (
-            <div className="flex items-center justify-between rounded-lg border border-borderc bg-soft px-3 py-2 text-sm">
-              <span className="inline-flex items-center gap-2 text-muted">
+            <div className="flex items-center justify-between rounded-lg border border-borderc bg-soft px-3 py-2 text-sm transition-all duration-200 ease-out-expo stagger-2">
+              <span className="inline-flex items-center gap-2 text-text-secondary">
                 <Clock3 className="h-4 w-4" />
                 Time left
               </span>
@@ -57,8 +57,8 @@ export function StatsPanel({
           ) : null}
 
           {typeof scorePreview === "number" ? (
-            <div className="flex items-center justify-between rounded-lg border border-borderc bg-soft px-3 py-2 text-sm">
-              <span className="inline-flex items-center gap-2 text-muted">
+            <div className="flex items-center justify-between rounded-lg border border-borderc bg-soft px-3 py-2 text-sm transition-all duration-200 ease-out-expo stagger-3">
+              <span className="inline-flex items-center gap-2 text-text-secondary">
                 <Target className="h-4 w-4" />
                 Live score
               </span>

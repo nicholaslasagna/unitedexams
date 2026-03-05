@@ -65,14 +65,14 @@ export default function NotesViewerPage() {
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[260px_1fr]">
+    <div className="animate-fade-rise grid gap-4 lg:grid-cols-[260px_1fr]">
       <aside className="lg:sticky lg:top-24 lg:self-start">
         <Card>
           <CardBody className="space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Sections</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">Sections</p>
             <div className="space-y-1">
               {headings.map((heading) => (
-                <a key={heading} href={`#${heading.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`} className="block rounded-lg px-2 py-1.5 text-sm text-muted hover:bg-soft hover:text-text">
+                <a key={heading} href={`#${heading.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`} className="block rounded-lg px-2 py-1.5 text-sm text-muted transition-all duration-200 ease-out-expo hover:bg-soft hover:text-text">
                   {heading}
                 </a>
               ))}
@@ -87,8 +87,8 @@ export default function NotesViewerPage() {
       <section className="space-y-4">
         <Card>
           <CardBody className="space-y-3 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Notes viewer</p>
-            <h1 className="font-display text-3xl font-semibold">{course.name} Notes</h1>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">Notes viewer</p>
+            <h1 className="text-display-md font-semibold">{course.name} Notes</h1>
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
               <Input
