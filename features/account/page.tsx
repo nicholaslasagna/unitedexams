@@ -321,7 +321,7 @@ export function AccountPageContent() {
   }
 
   return (
-    <div className="animate-fade-rise space-y-6">
+    <div className="space-y-6">
       <section>
         <h1 className="text-display-lg font-semibold tracking-tight">Account</h1>
         <p className="mt-2 text-sm text-text-secondary">Profile, courses, and leaderboard privacy controls.</p>

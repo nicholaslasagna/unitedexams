@@ -33,7 +33,7 @@ export function StudentExamListPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-rise">
+    <div className="space-y-6">
       <section>
         <h1 className="text-display-lg font-semibold tracking-tight">Timed Exams</h1>
         <p className="mt-2 text-sm text-muted text-text-secondary">
