@@ -103,7 +103,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
 
       {/* Main */}
       <main id="main" className="relative z-[1] mx-auto w-full max-w-[1200px] px-5 py-8 md:px-8 lg:px-10">
-        <div className="animate-fade-rise">{children}</div>
+        <div className="animate-fade-in">{children}</div>
       </main>
 
       {/* Footer */}

@@ -17,7 +17,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="relative z-[1] flex min-w-0 flex-1 flex-col">
         <Topbar />
         <main id="main" className="mx-auto w-full max-w-[1360px] flex-1 px-5 py-8 md:px-8 lg:px-10">
-          <div className="animate-fade-rise">{children}</div>
+          <div className="animate-fade-in">{children}</div>
         </main>
         <footer className="mx-auto w-full max-w-[1360px] border-t border-borderc px-5 py-4 text-center text-sm text-muted md:px-8">
           © {new Date().getFullYear()}{" "}
