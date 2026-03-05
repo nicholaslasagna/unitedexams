@@ -195,7 +195,7 @@ export default function DashboardPage() {
             <h1 className="max-w-[22ch] text-display-lg font-display font-extrabold tracking-tight text-accent-fg">
               Build mastery with one focused sprint.
             </h1>
-            <p className="max-w-xl text-[15px] leading-relaxed text-muted">
+            <p className="max-w-xl text-[15px] leading-relaxed text-muted text-text-secondary">
               Pick up where you left off. One quality attempt keeps momentum alive.
             </p>
 
@@ -205,7 +205,7 @@ export default function DashboardPage() {
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-xl font-bold text-accent-fg">{continueQuiz.title}</p>
-                    <p className="mt-1 text-[14px] text-muted">{continueQuiz.description}</p>
+                    <p className="mt-1 text-[14px] text-muted text-text-secondary">{continueQuiz.description}</p>
                     <p className="mt-1 text-xs text-faint">
                       Last attempt: {continueQuizLast ? formatRelativeDate(continueQuizLast.date) : "No attempts yet"}
                     </p>
@@ -229,7 +229,7 @@ export default function DashboardPage() {
                       <Link
                         key={set.id}
                         href={`/quiz/${set.id}`}
-                        className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm text-text hover:bg-overlay"
+                        className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm text-text transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent"
                       >
                         {set.title}
                       </Link>
@@ -255,7 +255,7 @@ export default function DashboardPage() {
               <div className="rounded-[14px] border border-success/30 bg-success/10 p-4">
                 <p className="text-[10px] font-bold tracking-[1.5px] text-success uppercase">Resume homework</p>
                 <p className="mt-2 text-sm font-semibold text-text">{homeworkDraftSet.title}</p>
-                <p className="mt-1 text-xs text-muted">
+                <p className="mt-1 text-xs text-muted text-text-secondary">
                   Draft started {formatRelativeDate(homeworkDraft?.created_at ?? new Date().toISOString())}
                 </p>
                 <Button asChild className="mt-3">
@@ -273,7 +273,7 @@ export default function DashboardPage() {
           <CardBody className="space-y-5 p-6">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold tracking-[5px] text-accent uppercase">Study streak</span>
-              <span className="rounded-full bg-accent-subtle px-3 py-1 text-[11px] font-bold text-accent">
+              <span className="rounded-full bg-accent-subtle px-3 py-1 text-[11px] font-mono font-bold text-accent">
                 {points} pts
               </span>
             </div>
@@ -286,7 +286,7 @@ export default function DashboardPage() {
                   <span className="font-mono text-4xl font-bold text-text">{streak.current}</span>
                   <span className="text-sm text-muted">days</span>
                 </div>
-                <p className="mt-1 text-sm text-faint">Best streak: {streak.best} days</p>
+                <p className="mt-1 text-sm text-faint">Best streak: <span className="font-mono">{streak.best}</span> days</p>
               </div>
             </div>
 
@@ -328,7 +328,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-        {courses.map((course) => {
+        {courses.map((course, i) => {
           const progress = courseProgress(attempts, course.id);
           const courseQuizzes = quizSets.filter((quiz) => quiz.courseId === course.id);
           const latest = attempts
@@ -338,12 +338,13 @@ export default function DashboardPage() {
             courseQuizzes.length > 0
               ? Math.round(courseQuizzes.reduce((sum, quiz) => sum + bestScoreForQuiz(attempts, quiz.id), 0) / courseQuizzes.length)
               : 0;
+          const stagger = `stagger-${i + 1}` as const;
 
           return (
             <Link
               key={course.id}
               href={`/courses/${course.id}`}
-              className="group rounded-[20px] border border-borderc bg-soft shadow-subtle backdrop-blur-xl transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent hover:bg-overlay"
+              className={`group animate-fade-rise ${stagger} rounded-[20px] border border-borderc bg-soft shadow-subtle backdrop-blur-xl transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent hover:bg-overlay`}
             >
               <div className="space-y-4 p-5">
                 <div>
@@ -370,9 +371,9 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[13px] font-semibold text-faint transition-colors group-hover:text-muted">
+                <div className="flex items-center justify-between text-[13px] font-semibold text-faint transition-all duration-200 ease-out-expo group-hover:text-muted">
                   <span>Open course</span>
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out-expo group-hover:translate-x-1" />
                 </div>
               </div>
             </Link>
@@ -383,23 +384,23 @@ export default function DashboardPage() {
       <section className="grid gap-5 xl:grid-cols-[1.4fr_1fr]">
         <Card>
           <CardHeader>
-            <h2 className="font-display text-lg font-bold text-text">Recent attempts</h2>
+            <h2 className="text-display-md font-display font-bold text-text">Recent attempts</h2>
           </CardHeader>
           <CardBody>
             {recent.length === 0 ? (
               <div className="rounded-[14px] border border-borderc bg-soft p-8 text-center">
                 <p className="text-[16px] font-bold text-text">Start your first quiz to build momentum.</p>
-                <p className="mt-2 text-[14px] text-muted">Your latest attempts and topic signals will appear here.</p>
+                <p className="mt-2 text-[14px] text-muted text-text-secondary">Your latest attempts and topic signals will appear here.</p>
                 <Button className="mt-5" asChild>
                   <Link href="/courses">Explore courses</Link>
                 </Button>
               </div>
             ) : (
               <div className="space-y-2">
-                {recent.map((attempt) => (
+                {recent.map((attempt, i) => (
                   <div
                     key={attempt.id}
-                    className="flex items-center justify-between rounded-[10px] border border-borderc bg-soft px-4 py-3"
+                    className={`flex items-center justify-between rounded-[10px] border border-borderc bg-soft px-4 py-3 animate-fade-rise stagger-${i + 1}`}
                   >
                     <div>
                       <p className="text-[14px] font-semibold text-text">{attempt.quizTitle}</p>
@@ -407,7 +408,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="text-right">
                       <p className="font-mono text-xl font-bold text-text">{attempt.score}%</p>
-                      <p className="inline-flex items-center gap-1 text-xs text-faint">
+                      <p className="inline-flex items-center gap-1 text-xs font-mono text-faint">
                         <Clock3 className="h-3 w-3" />
                         {Math.round(attempt.timeSpent / 60)} min
                       </p>
@@ -424,7 +425,7 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <h2 className="inline-flex items-center gap-2 font-display text-lg font-bold text-text">
+              <h2 className="inline-flex items-center gap-2 text-display-md font-display font-bold text-text">
                 <TrendingUp className="h-5 w-5 text-accent" />
                 Focus lane
               </h2>
@@ -448,11 +449,11 @@ export default function DashboardPage() {
                   </span>
                 </div>
               </div>
-              {focusCourses.map((course) => (
+              {focusCourses.map((course, i) => (
                 <Link
                   key={course.id}
                   href={`/courses/${course.id}`}
-                  className="flex items-center justify-between rounded-[10px] border border-borderc bg-soft px-4 py-3 text-[14px] transition-all hover:border-border-bright hover:bg-soft"
+                  className={`flex items-center justify-between rounded-[10px] border border-borderc bg-soft px-4 py-3 text-[14px] transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent animate-fade-rise stagger-${i + 1}`}
                 >
                   <span className="inline-flex items-center gap-2">
                     <Target className="h-4 w-4 text-warn" />

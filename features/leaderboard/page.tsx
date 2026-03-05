@@ -62,16 +62,16 @@ export function LeaderboardPageContent({ publicMode = false }: { publicMode?: bo
   const myRow = rows.find((row) => row.is_current_user || row.user_id === user?.id);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-rise">
       <section className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-4xl font-semibold tracking-tight">Leaderboard</h1>
-          <p className="mt-2 text-sm text-muted">Real users only. Privacy controls are respected.</p>
+          <h1 className="text-display-lg font-semibold tracking-tight">Leaderboard</h1>
+          <p className="mt-2 text-sm text-muted text-text-secondary">Real users only. Privacy controls are respected.</p>
         </div>
 
         {myRow && !publicMode ? (
           <div className="rounded-xl border border-brand-2/40 bg-brand-2/10 px-4 py-2 text-sm text-text">
-            Your rank: <span className="font-mono font-bold">#{myRow.rank}</span> · {myRow.points} pts
+            Your rank: <span className="font-mono font-bold">#{myRow.rank}</span> · <span className="font-mono">{myRow.points}</span> pts
           </div>
         ) : null}
       </section>
@@ -93,7 +93,7 @@ export function LeaderboardPageContent({ publicMode = false }: { publicMode?: bo
 
       <Card>
         <CardHeader>
-          <h2 className="inline-flex items-center gap-2 font-display text-2xl font-semibold">
+          <h2 className="inline-flex items-center gap-2 text-heading font-semibold">
             <Trophy className="h-5 w-5 text-brand-2" />
             Rankings
           </h2>
@@ -115,7 +115,7 @@ export function LeaderboardPageContent({ publicMode = false }: { publicMode?: bo
 
           {publicMode && !user ? (
             <div className="space-y-3">
-              <div className="rounded-xl border border-borderc bg-soft px-4 py-3 text-sm text-muted">
+              <div className="rounded-xl border border-borderc bg-soft px-4 py-3 text-sm text-muted text-text-secondary">
                 Showing top 5.{" "}
                 <Link href="/login?next=/app/leaderboard" className="font-semibold text-accent">
                   Sign in
@@ -146,7 +146,7 @@ export function LeaderboardPageContent({ publicMode = false }: { publicMode?: bo
           ) : null}
 
           {publicMode && user ? (
-            <div className="rounded-xl border border-borderc bg-soft px-4 py-3 text-sm text-muted">
+            <div className="rounded-xl border border-borderc bg-soft px-4 py-3 text-sm text-muted text-text-secondary">
               Signed in? Open the full board in the app. <Link href="/app/leaderboard" className="font-semibold text-accent">Go to app leaderboard</Link>
             </div>
           ) : null}

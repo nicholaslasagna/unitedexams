@@ -57,24 +57,24 @@ export default function LandingPage() {
             <CardBody className="space-y-5">
               <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted text-text-secondary">Live Highlights</p>
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-borderc bg-soft p-4">
-                  <p className="text-xs text-muted">Quiz Sets</p>
+                <div className="rounded-xl border border-borderc bg-bg-inset p-4">
+                  <p className="text-xs text-muted text-text-secondary">Quiz Sets</p>
                   <p className="mt-1 font-mono text-3xl font-bold">{quizSets.length}</p>
                 </div>
-                <div className="rounded-xl border border-borderc bg-soft p-4">
-                  <p className="text-xs text-muted">Seed Questions</p>
+                <div className="rounded-xl border border-borderc bg-bg-inset p-4">
+                  <p className="text-xs text-muted text-text-secondary">Seed Questions</p>
                   <p className="mt-1 font-mono text-3xl font-bold">{totalQuestions}</p>
                 </div>
-                <div className="rounded-xl border border-borderc bg-soft p-4">
-                  <p className="text-xs text-muted">Courses</p>
+                <div className="rounded-xl border border-borderc bg-bg-inset p-4">
+                  <p className="text-xs text-muted text-text-secondary">Courses</p>
                   <p className="mt-1 font-mono text-3xl font-bold">{courses.length}</p>
                 </div>
-                <div className="rounded-xl border border-borderc bg-soft p-4">
-                  <p className="text-xs text-muted">Modes</p>
+                <div className="rounded-xl border border-borderc bg-bg-inset p-4">
+                  <p className="text-xs text-muted text-text-secondary">Modes</p>
                   <p className="mt-1 font-mono text-3xl font-bold">Study + Timed</p>
                 </div>
               </div>
-              <p className="rounded-xl border border-borderc bg-soft px-4 py-3 text-sm text-muted">
+              <p className="rounded-xl border border-borderc bg-bg-inset px-4 py-3 text-sm text-muted text-text-secondary">
                 Built for students, TAs, and professors who want clarity, speed, and confidence.
               </p>
             </CardBody>
@@ -84,16 +84,16 @@ export default function LandingPage() {
 
       <section className="mx-auto w-full max-w-[1240px] px-6 pb-14">
         <div className="grid gap-4 md:grid-cols-3">
-          {features.map((feature) => {
+          {features.map((feature, idx) => {
             const Icon = feature.icon;
             return (
-              <Card key={feature.title} className="hover:-translate-y-0.5 hover:shadow-glass">
+              <Card key={feature.title} className={`hover:shadow-card-hover hover:border-border-accent transition-all duration-200 ease-out-expo stagger-${idx + 1}`}>
                 <CardBody>
                   <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-gradient text-accent-fg">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h2 className="font-display text-xl font-semibold">{feature.title}</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-muted">{feature.description}</p>
+                  <h2 className="text-heading font-semibold">{feature.title}</h2>
+                  <p className="mt-2 text-sm leading-relaxed text-muted text-text-secondary">{feature.description}</p>
                 </CardBody>
               </Card>
             );
@@ -103,18 +103,18 @@ export default function LandingPage() {
 
       <section className="mx-auto w-full max-w-[1240px] px-6 pb-14">
         <div className="mb-4 flex items-end justify-between">
-          <h2 className="font-display text-3xl font-semibold">Course previews</h2>
+          <h2 className="text-display-md font-semibold">Course previews</h2>
           <Link href="/courses" className="text-sm font-semibold text-brand-2">
             View all courses
           </Link>
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {courses.map((course) => (
-            <Card key={course.id} className="group hover:-translate-y-1 hover:shadow-glass">
+          {courses.map((course, idx) => (
+            <Card key={course.id} className={`group hover:shadow-card-hover hover:border-border-accent transition-all duration-200 ease-out-expo stagger-${idx + 1}`}>
               <CardBody>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">{course.code}</p>
-                <h3 className="mt-1 font-display text-xl font-semibold">{course.name}</h3>
-                <p className="mt-2 text-sm text-muted">{course.description}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted text-text-secondary">{course.code}</p>
+                <h3 className="mt-1 text-heading font-semibold">{course.name}</h3>
+                <p className="mt-2 text-sm text-muted text-text-secondary">{course.description}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {course.tags.map((tag) => (
                     <span key={tag} className="rounded-full border border-borderc px-2 py-1 text-[11px] text-muted">

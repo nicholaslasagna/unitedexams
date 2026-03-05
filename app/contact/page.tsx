@@ -70,13 +70,13 @@ export default function ContactPage() {
 
   return (
     <PublicShell>
-      <div className="mx-auto w-full max-w-[940px] space-y-6 py-2">
+      <div className="animate-fade-rise mx-auto w-full max-w-[940px] space-y-6 py-2">
         <section className="space-y-3 text-center">
-          <h1 className="font-display text-5xl font-semibold tracking-tight">Contact United Exams</h1>
-          <p className="mx-auto max-w-3xl text-sm text-muted">
+          <h1 className="text-display-lg font-display font-semibold tracking-tight">Contact United Exams</h1>
+          <p className="mx-auto max-w-3xl text-sm text-muted text-text-secondary">
             United Exams helps students master exam material through guided quizzes, walkthrough solutions, and progress insights.
           </p>
-          <p className="inline-flex items-center gap-2 rounded-full border border-borderc bg-soft px-3 py-1.5 text-sm text-text">
+          <p className="inline-flex items-center gap-2 rounded-full border border-borderc bg-soft px-3 py-1.5 text-sm text-text transition-all duration-200 ease-out-expo">
             <Mail className="h-4 w-4 text-accent" />
             support@unitedexams.com
           </p>
@@ -84,7 +84,7 @@ export default function ContactPage() {
 
         <Card>
           <CardHeader>
-            <h2 className="font-display text-2xl font-semibold">Send feedback</h2>
+            <h2 className="text-display-md font-display font-semibold">Send feedback</h2>
           </CardHeader>
           <CardBody>
             {!authReady ? (
@@ -106,7 +106,7 @@ export default function ContactPage() {
                     <select
                       value={category}
                       onChange={(event) => setCategory(event.target.value as typeof category)}
-                      className="h-11 w-full rounded-[10px] border border-borderc bg-soft px-3.5 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
+                      className="h-11 w-full rounded-[10px] border border-borderc bg-soft px-3.5 text-sm text-text outline-none transition-all duration-200 ease-out-expo focus-visible:ring-2 focus-visible:ring-accent/55"
                     >
                       <option>Bug</option>
                       <option>Content request</option>
@@ -123,7 +123,7 @@ export default function ContactPage() {
                     minLength={20}
                     value={message}
                     onChange={(event) => setMessage(event.target.value)}
-                    className="min-h-44 w-full rounded-xl border border-borderc bg-soft p-3 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
+                    className="min-h-44 w-full rounded-xl border border-borderc bg-soft p-3 text-sm text-text outline-none transition-all duration-200 ease-out-expo focus-visible:ring-2 focus-visible:ring-accent/55"
                     placeholder="Describe the issue or request in detail (minimum 20 characters)."
                   />
                 </div>
@@ -147,7 +147,7 @@ export default function ContactPage() {
               </form>
             ) : (
               <div className="space-y-4">
-                <p className="text-sm text-muted">
+                <p className="text-sm text-muted text-text-secondary">
                   Sign in from the top navigation if you want in-app support requests with account context and recent activity.
                 </p>
                 <div className="flex flex-wrap gap-3">

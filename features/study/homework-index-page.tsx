@@ -60,10 +60,10 @@ export function HomeworkIndexContent({
   }, [search, sets]);
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-rise space-y-6">
       <section>
-        <h1 className="font-display text-4xl font-semibold tracking-tight">{title}</h1>
-        <p className="mt-2 text-muted">{subtitle}</p>
+        <h1 className="text-display-lg font-semibold tracking-tight">{title}</h1>
+        <p className="mt-2 text-muted text-text-secondary">{subtitle}</p>
       </section>
 
       <Card>
@@ -87,21 +87,21 @@ export function HomeworkIndexContent({
         </Card>
       ) : (
         <div className="grid gap-4">
-          {filtered.map((set) => {
+          {filtered.map((set, idx) => {
             const course = courses.find((item) => item.id === set.courseId);
             const questionCount = set.questions.length || set.questionCountTarget || 0;
             return (
-              <Card key={set.id}>
+              <Card key={set.id} className={`transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-${(idx % 6) + 1}`}>
                 <CardHeader className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-xs uppercase tracking-[0.14em] text-muted">{course?.code ?? set.courseId}</p>
-                    <h2 className="font-display text-2xl font-semibold text-text">{set.title}</h2>
-                    <p className="mt-1 text-sm text-muted">{set.description}</p>
+                    <h2 className="text-heading font-semibold text-text">{set.title}</h2>
+                    <p className="mt-1 text-sm text-muted text-text-secondary">{set.description}</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Badge tone="success">Homework</Badge>
                     <Badge>{set.difficulty}</Badge>
-                    <Badge tone="brand">{questionCount} questions</Badge>
+                    <Badge tone="brand"><span className="font-mono">{questionCount}</span> questions</Badge>
                   </div>
                 </CardHeader>
                 <CardBody className="space-y-3">

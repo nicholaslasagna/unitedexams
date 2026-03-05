@@ -10,10 +10,10 @@ export function LeaderboardList({
 }) {
   return (
     <div className="space-y-2">
-      {rows.map((row) => (
+      {rows.map((row, index) => (
         <div
           key={row.user_id}
-          className={`flex items-center justify-between rounded-xl border px-3 py-3 ${
+          className={`flex items-center justify-between rounded-xl border px-3 py-3 transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-${Math.min(index + 1, 8)} ${
             row.is_current_user || row.user_id === currentUserId
               ? "border-brand-2/45 bg-brand-2/12"
               : "border-borderc bg-soft"
@@ -25,7 +25,7 @@ export function LeaderboardList({
             </div>
             <div>
               <p className="text-sm font-semibold text-text">{row.display_name}</p>
-              <p className="text-xs text-muted">
+              <p className="text-xs text-muted text-text-secondary">
                 {row.real_name ? `${row.real_name} · ` : ""}
                 {row.university_name || "University hidden"}
               </p>
@@ -34,7 +34,7 @@ export function LeaderboardList({
           </div>
           <div className="text-right">
             <p className="font-mono text-base font-bold text-text">{row.points} pts</p>
-            <p className="text-xs text-muted">{row.streak} day streak</p>
+            <p className="text-xs text-muted text-text-secondary"><span className="font-mono">{row.streak}</span> day streak</p>
           </div>
         </div>
       ))}

@@ -33,32 +33,32 @@ export function StudentExamListPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-rise">
       <section>
-        <h1 className="font-display text-4xl font-semibold tracking-tight">Timed Exams</h1>
-        <p className="mt-2 text-sm text-muted">
+        <h1 className="text-display-lg font-semibold tracking-tight">Timed Exams</h1>
+        <p className="mt-2 text-sm text-muted text-text-secondary">
           Exams are visible only when your section access allows them.
         </p>
       </section>
 
       <Card>
         <CardHeader>
-          <h2 className="font-display text-2xl font-semibold">Available exams</h2>
+          <h2 className="text-heading font-semibold">Available exams</h2>
         </CardHeader>
         <CardBody className="space-y-3">
           {exams.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-borderc bg-soft px-4 py-3 text-sm text-muted">
+            <p className="rounded-xl border border-dashed border-borderc bg-soft px-4 py-3 text-sm text-muted text-text-secondary">
               No published exams currently available for your enrollments.
             </p>
           ) : (
-            exams.map((exam) => (
-              <article key={exam.id} className="rounded-xl border border-borderc bg-soft px-4 py-3">
+            exams.map((exam, index) => (
+              <article key={exam.id} className={`rounded-xl border border-borderc bg-soft px-4 py-3 transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-${Math.min(index + 1, 8)}`}>
                 <p className="text-base font-semibold text-text">{exam.title}</p>
-                <p className="mt-1 text-xs text-muted">
+                <p className="mt-1 text-xs text-muted text-text-secondary">
                   Window: {new Date(exam.starts_at).toLocaleString()} → {new Date(exam.ends_at).toLocaleString()}
                 </p>
-                <p className="mt-1 text-xs text-muted">
-                  Duration: {exam.duration_minutes} minutes • Attempts: {exam.attempt_limit}
+                <p className="mt-1 text-xs text-muted text-text-secondary">
+                  Duration: <span className="font-mono">{exam.duration_minutes}</span> minutes • Attempts: <span className="font-mono">{exam.attempt_limit}</span>
                 </p>
                 <div className="mt-3">
                   <Button asChild>

@@ -321,15 +321,15 @@ export function AccountPageContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-rise space-y-6">
       <section>
-        <h1 className="font-display text-4xl font-semibold tracking-tight">Account</h1>
-        <p className="mt-2 text-sm text-muted">Profile, courses, and leaderboard privacy controls.</p>
+        <h1 className="text-display-lg font-semibold tracking-tight">Account</h1>
+        <p className="mt-2 text-sm text-text-secondary">Profile, courses, and leaderboard privacy controls.</p>
       </section>
 
       <Card>
         <CardHeader>
-          <h2 className="font-display text-2xl font-semibold">Profile</h2>
+          <h2 className="text-heading font-semibold">Profile</h2>
         </CardHeader>
         <CardBody className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -341,7 +341,7 @@ export function AccountPageContent() {
                 disabled
                 onChange={(event) => setDisplayName(event.target.value)}
               />
-              <p className="text-xs text-muted">Display name is permanent after signup.</p>
+              <p className="text-xs text-text-secondary">Display name is permanent after signup.</p>
             </div>
 
             <div className="space-y-1.5">
@@ -352,7 +352,7 @@ export function AccountPageContent() {
                 onChange={(event) => setRealName(event.target.value)}
                 placeholder="Your legal/full name"
               />
-              <p className="text-xs text-muted">You can update this if your legal name changes.</p>
+              <p className="text-xs text-text-secondary">You can update this if your legal name changes.</p>
             </div>
           </div>
 
@@ -411,7 +411,7 @@ export function AccountPageContent() {
                 </div>
               ) : null}
             </div>
-            <p className="text-xs text-muted">
+            <p className="text-xs text-text-secondary">
               Pick from the accredited university list. Custom entries are disabled.
             </p>
           </div>
@@ -427,10 +427,10 @@ export function AccountPageContent() {
                     type="button"
                     onClick={() => toggleCourse(course.id)}
                     className={cn(
-                      "rounded-full border px-3 py-1.5 text-sm transition",
+                      "rounded-full border px-3 py-1.5 text-sm transition-all duration-200 ease-out-expo",
                       selected
                         ? "border-brand-2/55 bg-brand-2/10 text-text"
-                        : "border-borderc bg-soft text-muted hover:text-text"
+                        : "border-borderc bg-soft text-muted hover:text-text hover:shadow-card-hover hover:border-border-accent"
                     )}
                   >
                     {course.code} · {course.name}
@@ -464,13 +464,13 @@ export function AccountPageContent() {
 
       <Card>
         <CardHeader>
-          <h2 className="font-display text-2xl font-semibold">Privacy</h2>
+          <h2 className="text-heading font-semibold">Privacy</h2>
         </CardHeader>
         <CardBody className="space-y-3">
-          <label className="flex items-center justify-between rounded-xl border border-borderc bg-soft px-3 py-2">
+          <label className="flex items-center justify-between rounded-xl border border-borderc bg-soft px-3 py-2 transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent">
             <span>
               <span className="block text-sm font-semibold text-text">Show my real name on leaderboard</span>
-              <span className="text-xs text-muted">Off by default.</span>
+              <span className="text-xs text-text-secondary">Off by default.</span>
             </span>
             <input
               type="checkbox"
@@ -490,10 +490,10 @@ export function AccountPageContent() {
             />
           </label>
 
-          <label className="flex items-center justify-between rounded-xl border border-borderc bg-soft px-3 py-2">
+          <label className="flex items-center justify-between rounded-xl border border-borderc bg-soft px-3 py-2 transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent">
             <span>
               <span className="block text-sm font-semibold text-text">Show my university on leaderboard</span>
-              <span className="text-xs text-muted">Off by default.</span>
+              <span className="text-xs text-text-secondary">Off by default.</span>
             </span>
             <input
               type="checkbox"
@@ -513,7 +513,7 @@ export function AccountPageContent() {
             />
           </label>
 
-          <p className="text-xs text-muted">
+          <p className="text-xs text-text-secondary">
             Leaderboard is public: visitors can see top 5. Sign-in required for full list.
           </p>
 
@@ -525,7 +525,7 @@ export function AccountPageContent() {
 
       <Card>
         <CardHeader>
-          <h2 className="font-display text-2xl font-semibold">Identity</h2>
+          <h2 className="text-heading font-semibold">Identity</h2>
         </CardHeader>
         <CardBody className="space-y-3">
           <div className="space-y-1.5">
@@ -562,10 +562,10 @@ export function AccountPageContent() {
 
       <Card>
         <CardHeader>
-          <h2 className="font-display text-2xl font-semibold">Class sections</h2>
+          <h2 className="text-heading font-semibold">Class sections</h2>
         </CardHeader>
         <CardBody className="space-y-3">
-          <p className="text-sm text-muted">Join a professor section using a class join code.</p>
+          <p className="text-sm text-text-secondary">Join a professor section using a class join code.</p>
           <div className="grid gap-2 md:grid-cols-[1fr_auto]">
             <Input
               value={joinCode}
@@ -596,8 +596,8 @@ export function AccountPageContent() {
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#03030b]/75 p-4 backdrop-blur-sm">
           <Card className="w-full max-w-[720px]">
             <CardHeader>
-              <h2 className="font-display text-2xl font-semibold">Welcome to United Exams</h2>
-              <p className="text-sm text-muted">Step {onboardingStep} of 3</p>
+              <h2 className="text-heading font-semibold">Welcome to United Exams</h2>
+              <p className="text-sm text-text-secondary">Step <span className="font-mono">{onboardingStep}</span> of <span className="font-mono">3</span></p>
             </CardHeader>
             <CardBody className="space-y-4">
               {onboardingStep === 1 ? (
