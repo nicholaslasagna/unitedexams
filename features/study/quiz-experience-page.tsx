@@ -25,7 +25,13 @@ import { QuestionCard } from "@/features/quiz/question-card";
 import { StatsPanel } from "@/features/quiz/stats-panel";
 import { QuizSettingsModal } from "@/features/quiz/quiz-settings-modal";
 import { defaultQuizSettings } from "@/features/quiz/defaults";
-import { countMissed, gradeQuestion, summarizeAttempt } from "@/features/quiz/engine";
+import {
+  countMissed,
+  gradeQuestion,
+  isOpenResponseQuestion,
+  requiresSelfMark,
+  summarizeAttempt
+} from "@/features/quiz/engine";
 import { fireConfetti } from "@/features/quiz/confetti";
 import { bestScoreForQuiz, latestAttemptForQuiz } from "@/features/progress/metrics";
 import { useAppData } from "@/lib/app-data-context";
@@ -220,8 +226,11 @@ export function QuizExperiencePageContent({
     const correct = submittedIds.filter((id) => {
       const question = questionsById.get(id);
       if (!question) return false;
-      if (question.type === "free") {
-        return Boolean(selfMarkedByQuestion[id]);
+      if (isOpenResponseQuestion(question)) {
+        if (requiresSelfMark(question)) {
+          return Boolean(selfMarkedByQuestion[id]);
+        }
+        return Boolean(correctByQuestion[id]);
       }
       return Boolean(correctByQuestion[id]);
     }).length;
@@ -243,7 +252,7 @@ export function QuizExperiencePageContent({
     const includeFreeResponse = effective.includeFreeResponse !== false;
 
     let selectedQuestionIds = quiz.questions
-      .filter((question) => includeFreeResponse || question.type !== "free")
+      .filter((question) => includeFreeResponse || !isOpenResponseQuestion(question))
       .map((question) => question.id);
 
     if (setMode === "exam") {
@@ -348,7 +357,7 @@ export function QuizExperiencePageContent({
   const toggleOption = (index: number) => {
     if (!currentQuestion) return;
     if (submittedByQuestion[currentQuestion.id]) return;
-    if (currentQuestion.type === "free") return;
+    if (isOpenResponseQuestion(currentQuestion)) return;
 
     setSelectedByQuestion((prev) => {
       const existing = prev[currentQuestion.id] ?? [];
@@ -366,13 +375,13 @@ export function QuizExperiencePageContent({
   };
 
   const updateCurrentFreeResponse = (value: string) => {
-    if (!currentQuestion || currentQuestion.type !== "free") return;
+    if (!currentQuestion || !isOpenResponseQuestion(currentQuestion)) return;
     if (submittedByQuestion[currentQuestion.id]) return;
     setResponseByQuestion((prev) => ({ ...prev, [currentQuestion.id]: value }));
   };
 
   const markCurrentFreeQuestion = (isCorrect: boolean) => {
-    if (!currentQuestion || currentQuestion.type !== "free") return;
+    if (!currentQuestion || !requiresSelfMark(currentQuestion)) return;
     if (!submittedByQuestion[currentQuestion.id]) return;
 
     setSelfMarkedByQuestion((prev) => ({ ...prev, [currentQuestion.id]: isCorrect }));
@@ -383,13 +392,17 @@ export function QuizExperiencePageContent({
     if (!currentQuestion) return;
     if (submittedByQuestion[currentQuestion.id]) return;
 
-    if (currentQuestion.type === "free") {
+    if (isOpenResponseQuestion(currentQuestion)) {
       const response = responseByQuestion[currentQuestion.id]?.trim() ?? "";
       if (!response) {
         push({ title: "Write your response first", description: "Add your reasoning before submitting." });
         return;
       }
       setSubmittedByQuestion((prev) => ({ ...prev, [currentQuestion.id]: true }));
+      if (!requiresSelfMark(currentQuestion)) {
+        const correct = gradeQuestion(currentQuestion, [], response);
+        setCorrectByQuestion((prev) => ({ ...prev, [currentQuestion.id]: correct }));
+      }
       if (settings.explanationMode === "afterEach") {
         setShowExplanation((prev) => ({ ...prev, [currentQuestion.id]: true }));
       }
@@ -437,8 +450,13 @@ export function QuizExperiencePageContent({
         const question = questionsById.get(id);
         if (!question) return;
         finalSubmitted[id] = true;
-        if (question.type === "free") {
-          finalCorrect[id] = Boolean(selfMarkedByQuestion[id]);
+        if (isOpenResponseQuestion(question)) {
+          if (requiresSelfMark(question)) {
+            finalCorrect[id] = Boolean(selfMarkedByQuestion[id]);
+          } else {
+            const response = responseByQuestion[id]?.trim() ?? "";
+            finalCorrect[id] = gradeQuestion(question, [], response);
+          }
         } else {
           const selected = selectedByQuestion[id] ?? [];
           finalCorrect[id] = gradeQuestion(question, selected);
@@ -485,7 +503,7 @@ export function QuizExperiencePageContent({
       if (isTyping) return;
 
       const key = event.key.toLowerCase();
-      if (currentQuestion.type !== "free") {
+      if (!isOpenResponseQuestion(currentQuestion)) {
         const optionIndex = keyMap.indexOf(key);
         const optionsLength = currentQuestion.options?.length ?? 0;
         if (optionIndex >= 0 && optionIndex < optionsLength) {
@@ -502,7 +520,7 @@ export function QuizExperiencePageContent({
         } else {
           if (
             attemptMode !== "exam" &&
-            currentQuestion.type === "free" &&
+            requiresSelfMark(currentQuestion) &&
             selfMarkedByQuestion[currentQuestion.id] === undefined
           ) {
             push({
@@ -518,7 +536,7 @@ export function QuizExperiencePageContent({
       if (key === "arrowright") {
         if (
           attemptMode !== "exam" &&
-          currentQuestion.type === "free" &&
+          requiresSelfMark(currentQuestion) &&
           submittedByQuestion[currentQuestion.id] &&
           selfMarkedByQuestion[currentQuestion.id] === undefined
         ) {
@@ -892,11 +910,11 @@ export function QuizExperiencePageContent({
   const answeredCount = answeredSet.size;
   const questionSubmitted = currentQuestion ? submittedByQuestion[currentQuestion.id] : false;
   const pendingSelfMark =
-    currentQuestion?.type === "free" && questionSubmitted
+    currentQuestion && requiresSelfMark(currentQuestion) && questionSubmitted
       ? attemptMode !== "exam" && selfMarkedByQuestion[currentQuestion.id] === undefined
       : false;
   const canMoveForward =
-    currentQuestion?.type === "free"
+    currentQuestion && requiresSelfMark(currentQuestion)
       ? questionSubmitted && !pendingSelfMark
       : questionSubmitted;
 
@@ -954,7 +972,7 @@ export function QuizExperiencePageContent({
               submitted={Boolean(submittedByQuestion[currentQuestion.id])}
               isCorrect={
                 submittedByQuestion[currentQuestion.id]
-                  ? currentQuestion.type === "free" && selfMarkedByQuestion[currentQuestion.id] === undefined
+                  ? requiresSelfMark(currentQuestion) && selfMarkedByQuestion[currentQuestion.id] === undefined
                     ? null
                     : Boolean(correctByQuestion[currentQuestion.id])
                   : null

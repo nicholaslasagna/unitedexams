@@ -64,10 +64,12 @@ export function QuestionCard({
     setRevealedHints(0);
   }, [question.id]);
 
-  const isFreeResponse = question.type === "free";
+  const isLongResponse = question.type === "free";
+  const isShortResponse = question.type === "fill";
+  const isTextResponse = isLongResponse || isShortResponse;
   const optionRole = question.type === "single" ? "radiogroup" : "group";
   const promptId = `prompt-${question.id}`;
-  const canSubmit = isFreeResponse ? responseText.trim().length > 0 : selected.length > 0;
+  const canSubmit = isTextResponse ? responseText.trim().length > 0 : selected.length > 0;
 
   const options = question.options ?? [];
   const correctSet = useMemo(() => new Set(question.correct ?? []), [question.correct]);
@@ -110,26 +112,31 @@ export function QuestionCard({
         </div>
 
         {/* Free response or multiple choice options */}
-        {isFreeResponse ? (
+        {isTextResponse ? (
           <div className="space-y-3">
             <label htmlFor={`free-response-${question.id}`} className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-              Your Solution
+              {isShortResponse ? "Your Answer" : "Your Solution"}
             </label>
             <textarea
               id={`free-response-${question.id}`}
               value={responseText}
               onChange={(event) => onResponseChange(event.target.value)}
-              placeholder="Work through the problem step by step. Show your method and write your final answer."
+              placeholder={
+                isShortResponse
+                  ? "Enter a short answer."
+                  : "Work through the problem step by step. Show your method and write your final answer."
+              }
               disabled={lockInteraction}
               className={cn(
-                "min-h-44 w-full rounded-xl border border-borderc bg-soft p-4 font-mono text-sm leading-relaxed text-text outline-none transition placeholder:text-muted",
+                "w-full rounded-xl border border-borderc bg-soft p-4 font-mono text-sm leading-relaxed text-text outline-none transition placeholder:text-muted",
+                isShortResponse ? "min-h-24" : "min-h-44",
                 "focus-visible:ring-2 focus-visible:ring-brand-2/65",
                 lockInteraction && "cursor-not-allowed opacity-90"
               )}
               aria-labelledby={promptId}
             />
 
-            {hints.length > 0 && (showHintsBeforeSubmit || submitted) ? (
+            {isLongResponse && hints.length > 0 && (showHintsBeforeSubmit || submitted) ? (
               <div className="rounded-xl border border-brand-2/30 bg-brand-2/10 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
@@ -268,7 +275,7 @@ export function QuestionCard({
         {!submitted ? (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-borderc bg-soft p-3">
             <p className="text-xs text-text-secondary">
-              {isFreeResponse
+              {isTextResponse
                 ? "Work through the problem step by step, then submit. Use hints if stuck."
                 : "Keyboard: A/B/C/D choose • Enter submit • Arrow keys navigate"}
             </p>
@@ -307,7 +314,7 @@ export function QuestionCard({
                         ? "Correct! Well done."
                         : "Not quite. Study the walkthrough below to understand why."}
                 </p>
-                {revealCorrectness && isCorrect === false && !isFreeResponse ? (
+                {revealCorrectness && isCorrect === false && !isTextResponse ? (
                   <p className="mt-1 text-xs text-text-secondary">
                     Your answer is highlighted in red. The correct answer is highlighted in yellow.
                   </p>
@@ -340,7 +347,7 @@ export function QuestionCard({
             ) : null}
 
             {/* Self-check for free response */}
-            {isFreeResponse && !disableSelfMark ? (
+            {isLongResponse && !disableSelfMark ? (
               <div className="mt-3 rounded-lg border border-borderc bg-soft p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Self-check</p>
                 <p className="mt-1 text-sm text-text-secondary">

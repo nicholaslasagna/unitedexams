@@ -17,10 +17,17 @@ export interface CreateProfessorQuizSetPayload {
   estMinutes: number;
   mode: "quiz" | "exam" | "homework";
   tags: string[];
-  questionPrompt: string;
-  questionOptions: string[];
-  correctOptionIndexes: number[];
+  questions: ProfessorQuizQuestionPayload[];
+}
+
+export interface ProfessorQuizQuestionPayload {
+  type: "single" | "multi" | "fill" | "free";
+  prompt: string;
+  options?: string[];
+  correctIndexes?: number[];
+  acceptableAnswers?: string[];
   explanation?: string;
+  tags?: string[];
 }
 
 export interface AssignmentRow {
@@ -184,10 +191,15 @@ export async function createProfessorQuizSet(
     est_minutes_input: payload.estMinutes,
     mode_input: payload.mode,
     tags_input: payload.tags,
-    question_prompt_input: payload.questionPrompt,
-    question_options_input: payload.questionOptions,
-    correct_option_indexes_input: payload.correctOptionIndexes,
-    explanation_input: payload.explanation ?? ""
+    questions_input: payload.questions.map((question) => ({
+      type: question.type,
+      prompt: question.prompt,
+      options: question.options ?? [],
+      correct_indexes: question.correctIndexes ?? [],
+      acceptable_answers: question.acceptableAnswers ?? [],
+      explanation: question.explanation ?? "",
+      tags: question.tags ?? []
+    }))
   });
 
   if (error) throw error;
