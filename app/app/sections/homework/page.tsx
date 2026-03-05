@@ -4,7 +4,7 @@ export default function SectionHomeworkIndexPage() {
   return (
     <SectionLinkIndex
       title="Homework"
-      subtitle="Create and manage assignment areas for each section."
+      subtitle="Open homework spaces for your class sections."
       variant="homework"
     />
   );

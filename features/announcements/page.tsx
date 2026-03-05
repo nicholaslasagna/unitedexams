@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +14,13 @@ import { listProfessorSections, type SectionSummary } from "@/features/professor
 
 export function AnnouncementsPageContent() {
   const { supabase, profile } = useAppData();
+  const searchParams = useSearchParams();
   const { push } = useToast();
   const [items, setItems] = useState<AnnouncementFeedItem[]>([]);
   const [sections, setSections] = useState<SectionSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
+  const [feedSectionId, setFeedSectionId] = useState("all");
 
   const [selectedSectionId, setSelectedSectionId] = useState("");
   const [title, setTitle] = useState("");
@@ -26,10 +29,13 @@ export function AnnouncementsPageContent() {
 
   const isProfessor = isVerifiedProfessor(profile);
 
-  const visibleItems = useMemo(
-    () => [...items].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
-    [items]
-  );
+  const sectionFromQuery = searchParams.get("section") ?? "";
+
+  const visibleItems = useMemo(() => {
+    const sorted = [...items].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    if (!feedSectionId || feedSectionId === "all") return sorted;
+    return sorted.filter((item) => item.section_id === feedSectionId);
+  }, [feedSectionId, items]);
 
   const refresh = async () => {
     if (!supabase) {
@@ -41,17 +47,31 @@ export function AnnouncementsPageContent() {
 
     setLoading(true);
     try {
-      const [feed, professorSections] = await Promise.all([
+      const [feed, accessibleSections] = await Promise.all([
         getMyAnnouncements(supabase, 120),
-        isProfessor ? listProfessorSections(supabase) : Promise.resolve([] as SectionSummary[])
+        listProfessorSections(supabase)
       ]);
 
       setItems(feed);
-      setSections(professorSections);
+      setSections(accessibleSections);
 
-      if (isProfessor && !selectedSectionId && professorSections[0]) {
-        setSelectedSectionId(professorSections[0].id);
+      if (isProfessor) {
+        setSelectedSectionId((current) => {
+          if (current && accessibleSections.some((row) => row.id === current)) return current;
+          if (sectionFromQuery && accessibleSections.some((row) => row.id === sectionFromQuery)) return sectionFromQuery;
+          return accessibleSections[0]?.id ?? "";
+        });
       }
+
+      setFeedSectionId((current) => {
+        if (current !== "all" && accessibleSections.some((row) => row.id === current)) {
+          return current;
+        }
+        if (sectionFromQuery && accessibleSections.some((row) => row.id === sectionFromQuery)) {
+          return sectionFromQuery;
+        }
+        return "all";
+      });
     } catch (error) {
       setItems([]);
       setSections([]);
@@ -68,7 +88,7 @@ export function AnnouncementsPageContent() {
   useEffect(() => {
     void refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [supabase, isProfessor]);
+  }, [supabase, isProfessor, sectionFromQuery]);
 
   const submitAnnouncement = async () => {
     if (!isProfessor) return;
@@ -185,7 +205,26 @@ export function AnnouncementsPageContent() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-heading font-semibold">Recent announcements</h2>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <h2 className="text-heading font-semibold">Recent announcements</h2>
+            {sections.length > 0 ? (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Section filter</label>
+                <select
+                  value={feedSectionId}
+                  onChange={(event) => setFeedSectionId(event.target.value)}
+                  className="h-10 min-w-64 rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
+                >
+                  <option value="all">All sections</option>
+                  {sections.map((section) => (
+                    <option key={section.id} value={section.id}>
+                      {section.name} ({section.course_id})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
+          </div>
         </CardHeader>
         <CardBody className="space-y-3">
           {loading ? (

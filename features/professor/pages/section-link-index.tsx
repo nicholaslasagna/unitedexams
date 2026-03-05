@@ -7,7 +7,12 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppData } from "@/lib/app-data-context";
 import { isVerifiedProfessor } from "@/lib/auth/roles";
-import { listProfessorSections, type SectionSummary } from "@/features/professor/api";
+import {
+  listJoinedSections,
+  listProfessorSections,
+  type JoinedSectionSummary,
+  type SectionSummary
+} from "@/features/professor/api";
 
 interface SectionLinkIndexProps {
   title: string;
@@ -16,7 +21,7 @@ interface SectionLinkIndexProps {
 }
 
 export function SectionLinkIndex({ title, subtitle, variant }: SectionLinkIndexProps) {
-  const { supabase, profile } = useAppData();
+  const { supabase, profile, user } = useAppData();
   const [sections, setSections] = useState<SectionSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const isProfessor = isVerifiedProfessor(profile);
@@ -28,7 +33,22 @@ export function SectionLinkIndex({ title, subtitle, variant }: SectionLinkIndexP
     }
     let active = true;
     setLoading(true);
-    listProfessorSections(supabase)
+    const toSummary = (row: JoinedSectionSummary): SectionSummary => ({
+      id: row.sectionId,
+      name: row.sectionName,
+      term: row.term,
+      course_id: row.courseId,
+      join_code: "",
+      created_at: row.joinedAt
+    });
+
+    const run = isProfessor
+      ? listProfessorSections(supabase)
+      : user
+        ? listJoinedSections(supabase, user.id).then((rows) => rows.map(toSummary))
+        : Promise.resolve([] as SectionSummary[]);
+
+    run
       .then((rows) => {
         if (!active) return;
         setSections(rows);
@@ -44,7 +64,7 @@ export function SectionLinkIndex({ title, subtitle, variant }: SectionLinkIndexP
     return () => {
       active = false;
     };
-  }, [supabase]);
+  }, [isProfessor, supabase, user]);
 
   const buildHref = (sectionId: string) => {
     if (variant === "materials") return `/app/sections/${sectionId}/materials`;
@@ -52,10 +72,10 @@ export function SectionLinkIndex({ title, subtitle, variant }: SectionLinkIndexP
     return `/app/sections/${sectionId}`;
   };
 
-  if (!isProfessor) {
+  if (!isProfessor && variant === "gradebook") {
     return (
       <Card>
-        <CardBody className="p-8 text-sm text-text-secondary">Professor access required.</CardBody>
+        <CardBody className="p-8 text-sm text-text-secondary">Professor access required for gradebook.</CardBody>
       </Card>
     );
   }
@@ -79,7 +99,9 @@ export function SectionLinkIndex({ title, subtitle, variant }: SectionLinkIndexP
               <Skeleton className="h-11 w-3/4 rounded-lg" stagger={2} />
             </div>
           ) : sections.length === 0 ? (
-            <p className="text-sm text-text-secondary">No sections available.</p>
+            <p className="text-sm text-text-secondary">
+              {isProfessor ? "No sections available." : "You have not joined any sections yet."}
+            </p>
           ) : (
             sections.map((section) => (
               <Link
