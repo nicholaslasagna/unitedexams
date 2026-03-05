@@ -82,59 +82,86 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refresh = useCallback(async () => {
-    if (supabase && user && repo instanceof SupabaseRepository) {
-      try {
-        await supabase.rpc("sync_profile_email");
-      } catch {
-        // sync_profile_email may not exist in local dev before latest migration.
+    try {
+      if (supabase && user && repo instanceof SupabaseRepository) {
+        try {
+          await supabase.rpc("sync_profile_email");
+        } catch {
+          // sync_profile_email may not exist in local dev before latest migration.
+        }
+
+        try {
+          const migration = await migrateGuestAttemptsToAccount(user.id, {
+            guestRepository: localRepo,
+            accountRepository: repo
+          });
+          if (migration.failed && migration.migratedCount === 0 && typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("ue:toast", {
+                detail: {
+                  title: "Guest attempts not fully saved",
+                  description: "We’ll try again next time.",
+                  tone: "error"
+                }
+              })
+            );
+          }
+        } catch {
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("ue:toast", {
+                detail: {
+                  title: "Guest attempt sync failed",
+                  description: "We’ll try again next time.",
+                  tone: "error"
+                }
+              })
+            );
+          }
+        }
       }
 
-      try {
-        const migration = await migrateGuestAttemptsToAccount(user.id, {
-          guestRepository: localRepo,
-          accountRepository: repo
-        });
-        if (migration.failed && migration.migratedCount === 0 && typeof window !== "undefined") {
-          window.dispatchEvent(
-            new CustomEvent("ue:toast", {
-              detail: {
-                title: "Guest attempts not fully saved",
-                description: "We’ll try again next time.",
-                tone: "error"
-              }
-            })
-          );
-        }
-      } catch {
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(
-            new CustomEvent("ue:toast", {
-              detail: {
-                title: "Guest attempt sync failed",
-                description: "We’ll try again next time.",
-                tone: "error"
-              }
-            })
-          );
+      const [attemptsResult, profileResult, prefsResult] = await Promise.allSettled([
+        repo.getAttempts(),
+        repo.getProfile(),
+        repo.getPreferences()
+      ]);
+
+      const nextAttempts =
+        attemptsResult.status === "fulfilled" ? attemptsResult.value : [];
+      const nextProfile =
+        profileResult.status === "fulfilled"
+          ? profileResult.value
+          : { ...defaultProfile, id: user?.id ?? "", email: user?.email ?? undefined };
+      const nextPrefs =
+        prefsResult.status === "fulfilled" ? prefsResult.value : defaultPreferences;
+
+      setAttempts(nextAttempts);
+      setProfile(nextProfile);
+      setPreferences(nextPrefs);
+      applyPreferences(nextPrefs);
+
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("ue.preferences.v1", JSON.stringify(nextPrefs));
+        window.localStorage.setItem("ue.profile.v1", JSON.stringify(nextProfile));
+      }
+
+      if (
+        attemptsResult.status === "rejected" ||
+        profileResult.status === "rejected" ||
+        prefsResult.status === "rejected"
+      ) {
+        if (process.env.NODE_ENV !== "production") {
+          console.error("[app-data] refresh fallback", {
+            attempts: attemptsResult.status === "rejected" ? attemptsResult.reason : null,
+            profile: profileResult.status === "rejected" ? profileResult.reason : null,
+            preferences: prefsResult.status === "rejected" ? prefsResult.reason : null
+          });
         }
       }
+    } finally {
+      setReady(true);
     }
-
-    const [nextAttempts, nextProfile, nextPrefs] = await Promise.all([
-      repo.getAttempts(),
-      repo.getProfile(),
-      repo.getPreferences()
-    ]);
-
-    setAttempts(nextAttempts);
-    setProfile(nextProfile);
-    setPreferences(nextPrefs);
-    applyPreferences(nextPrefs);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("ue.preferences.v1", JSON.stringify(nextPrefs));
-      window.localStorage.setItem("ue.profile.v1", JSON.stringify(nextProfile));
-    }
-    setReady(true);
   }, [supabase, user, repo, localRepo, applyPreferences]);
 
   useEffect(() => {

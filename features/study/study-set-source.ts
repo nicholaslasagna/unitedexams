@@ -29,7 +29,8 @@ interface QuestionRow {
   explanation_md: string;
   solution_md: string | null;
   walkthrough_steps: string[] | null;
-  references_data: string[] | null;
+  references_data?: string[] | null;
+  reference_links?: string[] | null;
   difficulty: "easy" | "med" | "hard" | null;
   homework_format: "short" | "multi-step" | "proof" | "calc" | null;
   from_professor: boolean | null;
@@ -43,6 +44,11 @@ function mapDifficulty(value: QuizSetRow["difficulty"]): QuizSet["difficulty"] {
 }
 
 function toQuestion(row: QuestionRow, fallbackTags: string[]): Question {
+  const references =
+    (Array.isArray(row.references_data) ? row.references_data : null) ??
+    (Array.isArray(row.reference_links) ? row.reference_links : null) ??
+    undefined;
+
   return {
     id: row.id,
     externalId: row.external_id ?? undefined,
@@ -53,7 +59,7 @@ function toQuestion(row: QuestionRow, fallbackTags: string[]): Question {
     explanation: row.explanation_md,
     solutionMd: row.solution_md ?? undefined,
     walkthroughSteps: row.walkthrough_steps ?? undefined,
-    references: row.references_data ?? undefined,
+    references,
     tags: row.tags && row.tags.length > 0 ? row.tags : fallbackTags,
     difficulty: row.difficulty ?? undefined,
     homeworkFormat: row.homework_format ?? undefined,
@@ -111,9 +117,7 @@ export async function fetchPublishedStudySet(setId: string): Promise<QuizSet | n
 
   const { data: questionRows, error: questionsError } = await client
     .from("questions")
-    .select(
-      "id, external_id, quiz_set_id, type, prompt_md, options, correct, explanation_md, solution_md, walkthrough_steps, references_data, difficulty, homework_format, tags, from_professor"
-    )
+    .select("*")
     .eq("quiz_set_id", setId)
     .order("created_at", { ascending: true });
 
