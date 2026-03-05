@@ -40,10 +40,10 @@ export function CoursesIndexContent({
   }, [search, difficulty]);
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-rise space-y-6">
       <section>
-        <h1 className="font-display text-4xl font-semibold tracking-tight">{title}</h1>
-        <p className="mt-2 text-muted">{subtitle}</p>
+        <h1 className="text-display-lg font-semibold tracking-tight">{title}</h1>
+        <p className="mt-2 text-muted text-text-secondary">{subtitle}</p>
       </section>
 
       <Card>
@@ -87,14 +87,14 @@ export function CoursesIndexContent({
       </Card>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {filtered.map((course) => {
+        {filtered.map((course, idx) => {
           const progress = courseProgress(attempts, course.id);
           const courseSets = quizSets.filter((quiz) => quiz.courseId === course.id);
           const quizCount = courseSets.filter((set) => resolveQuizSetMode(set) === "quiz").length;
           const examCount = courseSets.filter((set) => resolveQuizSetMode(set) === "exam").length;
           const homeworkCount = courseSets.filter((set) => resolveQuizSetMode(set) === "homework").length;
           return (
-            <Card key={course.id} className="group overflow-hidden hover:-translate-y-0.5 hover:shadow-glass">
+            <Card key={course.id} className={`group overflow-hidden transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-${(idx % 6) + 1}`}>
               <CardBody className="space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
