@@ -86,19 +86,41 @@ export async function createProfessorSection(
   client: SupabaseClient,
   payload: { name: string; term?: string; courseId: string; createdBy: string }
 ) {
-  const { data, error } = await client
-    .from("class_sections")
-    .insert({
+  const joinCode = Array.from({ length: 8 }, () => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 32)]).join("");
+  const attempts: Array<Record<string, string | null>> = [
+    {
+      name: payload.name,
+      section_name: payload.name,
+      term: payload.term ?? null,
+      course_id: payload.courseId,
+      created_by: payload.createdBy,
+      owner_id: payload.createdBy,
+      join_code: joinCode
+    },
+    {
       name: payload.name,
       term: payload.term ?? null,
       course_id: payload.courseId,
-      created_by: payload.createdBy
-    })
-    .select("id, name, term, course_id, join_code, created_at")
-    .single();
+      created_by: payload.createdBy,
+      join_code: joinCode
+    },
+    {
+      section_name: payload.name,
+      term: payload.term ?? null,
+      course_id: payload.courseId,
+      owner_id: payload.createdBy,
+      join_code: joinCode
+    }
+  ];
 
-  if (error) throw error;
-  return data as SectionSummary;
+  let lastError: { message: string } | null = null;
+  for (const attempt of attempts) {
+    const { error } = await client.from("class_sections").insert(attempt);
+    if (!error) return;
+    lastError = error;
+  }
+
+  throw new Error(lastError?.message ?? "Unable to create section.");
 }
 
 export async function regenerateJoinCode(client: SupabaseClient, sectionId: string) {
@@ -116,7 +138,16 @@ export async function joinSectionByCode(client: SupabaseClient, joinCode: string
     return first.data as string;
   }
 
-  // Backward compatibility for older function signatures.
+  const normalizedMessage = first.error.message.toLowerCase();
+  const likelyArgMismatch =
+    normalizedMessage.includes("could not find the function public.join_section_by_code(join_code_input)") ||
+    (normalizedMessage.includes("schema cache") && normalizedMessage.includes("join_section_by_code"));
+
+  if (!likelyArgMismatch) {
+    throw first.error;
+  }
+
+  // Backward compatibility for legacy function argument name.
   const second = await client.rpc("join_section_by_code", { code: normalized });
   if (second.error) throw second.error;
   return second.data as string;
