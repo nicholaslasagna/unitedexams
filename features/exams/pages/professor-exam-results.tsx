@@ -6,6 +6,7 @@ import { Download } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAppData } from "@/lib/app-data-context";
+import { isVerifiedProfessor } from "@/lib/auth/roles";
 import { useToast } from "@/lib/hooks/use-toast";
 import { getExam, getExamMonitor, type ExamMonitorRow } from "@/features/exams/api";
 
@@ -42,7 +43,7 @@ function toCsv(rows: ExamMonitorRow[]) {
 export function ProfessorExamResultsPage({ examId }: { examId: string }) {
   const { supabase, profile } = useAppData();
   const { push } = useToast();
-  const isProfessor = profile.role === "professor" || profile.role === "admin";
+  const isProfessor = isVerifiedProfessor(profile);
 
   const [examTitle, setExamTitle] = useState("Exam Results");
   const [rows, setRows] = useState<ExamMonitorRow[]>([]);

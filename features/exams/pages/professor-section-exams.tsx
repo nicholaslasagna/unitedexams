@@ -8,6 +8,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAppData } from "@/lib/app-data-context";
+import { isVerifiedProfessor } from "@/lib/auth/roles";
 import { useToast } from "@/lib/hooks/use-toast";
 import { listProfessorSections } from "@/features/professor/api";
 import {
@@ -28,7 +29,7 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
   const resolvedSectionId = sectionId ?? params.sectionId ?? params.id ?? "";
   const { supabase, user, profile } = useAppData();
   const { push } = useToast();
-  const isProfessor = profile.role === "professor" || profile.role === "admin";
+  const isProfessor = isVerifiedProfessor(profile);
 
   const [sectionName, setSectionName] = useState("");
   const [loading, setLoading] = useState(true);

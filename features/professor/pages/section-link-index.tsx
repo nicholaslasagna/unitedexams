@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppData } from "@/lib/app-data-context";
+import { isVerifiedProfessor } from "@/lib/auth/roles";
 import { listProfessorSections, type SectionSummary } from "@/features/professor/api";
 
 interface SectionLinkIndexProps {
@@ -18,7 +19,7 @@ export function SectionLinkIndex({ title, subtitle, variant }: SectionLinkIndexP
   const { supabase, profile } = useAppData();
   const [sections, setSections] = useState<SectionSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const isProfessor = profile.role === "professor" || profile.role === "admin";
+  const isProfessor = isVerifiedProfessor(profile);
 
   useEffect(() => {
     if (!supabase) {

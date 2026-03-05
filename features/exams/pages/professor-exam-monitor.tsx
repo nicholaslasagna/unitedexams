@@ -6,6 +6,7 @@ import { AlertTriangle } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAppData } from "@/lib/app-data-context";
+import { isVerifiedProfessor } from "@/lib/auth/roles";
 import { useToast } from "@/lib/hooks/use-toast";
 import {
   getExam,
@@ -18,7 +19,7 @@ import {
 export function ProfessorExamMonitorPage({ examId }: { examId: string }) {
   const { supabase, profile } = useAppData();
   const { push } = useToast();
-  const isProfessor = profile.role === "professor" || profile.role === "admin";
+  const isProfessor = isVerifiedProfessor(profile);
 
   const [examTitle, setExamTitle] = useState("Exam Monitor");
   const [rows, setRows] = useState<ExamMonitorRow[]>([]);

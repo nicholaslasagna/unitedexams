@@ -5,6 +5,8 @@ export interface ProfileRecord {
   display_name_locked?: boolean;
   real_name: string | null;
   real_name_locked?: boolean;
+  professor_verified?: boolean;
+  professor_verified_at?: string | null;
   show_real_name: boolean;
   university_id: string | null;
   show_university: boolean;

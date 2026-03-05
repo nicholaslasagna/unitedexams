@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppData } from "@/lib/app-data-context";
+import { isUniversityAdmin, isVerifiedProfessor } from "@/lib/auth/roles";
 import type { LucideIcon } from "lucide-react";
 
 interface NavItem {
@@ -45,11 +46,12 @@ const baseItems: NavItem[] = [
 export function Sidebar() {
   const pathname = usePathname();
   const { profile, isAuthenticated, supabase, user } = useAppData();
-  const showProfessor = profile.role === "professor" || profile.role === "admin";
+  const showProfessor = isVerifiedProfessor(profile);
+  const showSchoolAdmin = isUniversityAdmin(profile);
   const [hasJoinedSection, setHasJoinedSection] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated || !supabase || !user || showProfessor) {
+    if (!isAuthenticated || !supabase || !user || showProfessor || showSchoolAdmin) {
       setHasJoinedSection(false);
       return;
     }
@@ -78,7 +80,7 @@ export function Sidebar() {
     return () => {
       active = false;
     };
-  }, [isAuthenticated, showProfessor, supabase, user]);
+  }, [isAuthenticated, showProfessor, showSchoolAdmin, supabase, user]);
 
   const [sectionsOpen, setSectionsOpen] = useState(
     () => pathname.startsWith("/app/sections")
@@ -91,6 +93,14 @@ export function Sidebar() {
   const showAnnouncements = showProfessor || hasJoinedSection;
 
   const items = useMemo(() => {
+    if (showSchoolAdmin) {
+      return [
+        { href: "/app/admin/professors", label: "Professor Staff", icon: GraduationCap },
+        { href: "/app/account", label: "Account", icon: UserRound },
+        { href: "/app/settings", label: "Settings", icon: Settings }
+      ] satisfies NavItem[];
+    }
+
     const announcementItem = {
       href: "/app/announcements",
       label: "Announcements",
@@ -133,7 +143,7 @@ export function Sidebar() {
       },
       ...professorBase.slice(3)
     ];
-  }, [showAnnouncements, showProfessor]);
+  }, [showAnnouncements, showProfessor, showSchoolAdmin]);
 
   return (
     <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 border-r border-borderc bg-surface/90 px-4 pb-5 pt-5 backdrop-blur-xl lg:block">

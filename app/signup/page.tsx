@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { resolveNextAfterLogin } from "@/lib/auth/guards";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import type { UniversityRecord } from "@/lib/supabase/types";
 import { validatePassword } from "@/lib/auth/password";
 import {
   getDisplayNameMaxLength,
@@ -23,6 +24,7 @@ import {
 import {
   isTurnstileClientEnabled
 } from "@/lib/security/turnstile-client";
+import { fetchUniversities } from "@/features/account/api";
 
 function mapAuthError(message: string, captchaEnabled: boolean) {
   if (!message) return "Unable to create account.";
@@ -45,6 +47,11 @@ function SignupPageContent() {
   const [realName, setRealName] = useState("");
   const [showRealName, setShowRealName] = useState(false);
   const [role, setRole] = useState<"student" | "professor">("student");
+  const [universities, setUniversities] = useState<UniversityRecord[]>([]);
+  const [universitySearch, setUniversitySearch] = useState("");
+  const [selectedUniversityId, setSelectedUniversityId] = useState("");
+  const [professorCode, setProfessorCode] = useState("");
+  const [loadingUniversities, setLoadingUniversities] = useState(false);
   const [acceptLegal, setAcceptLegal] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -61,6 +68,11 @@ function SignupPageContent() {
   const guestReturnPath = next.startsWith("/app/") ? "/courses" : next;
   const turnstileEnabled = isTurnstileClientEnabled();
   const errorId = "signup-form-error";
+  const filteredUniversities = useMemo(() => {
+    const query = universitySearch.trim().toLowerCase();
+    if (!query) return universities.slice(0, 120);
+    return universities.filter((item) => item.name.toLowerCase().includes(query)).slice(0, 120);
+  }, [universitySearch, universities]);
 
   useEffect(() => {
     if (error) errorRef.current?.focus();
@@ -89,6 +101,28 @@ function SignupPageContent() {
     };
   }, [supabase]);
 
+  useEffect(() => {
+    if (!supabase) return;
+    let active = true;
+    setLoadingUniversities(true);
+    fetchUniversities(supabase)
+      .then((rows) => {
+        if (!active) return;
+        setUniversities(rows);
+      })
+      .catch(() => {
+        if (!active) return;
+        setUniversities([]);
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoadingUniversities(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [supabase]);
+
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
@@ -113,6 +147,38 @@ function SignupPageContent() {
     if (!acceptLegal) {
       setError("You must accept the Privacy Policy and Terms of Service.");
       return;
+    }
+
+    if (role === "professor") {
+      if (!selectedUniversityId) {
+        setError("Teachers must select their university.");
+        return;
+      }
+      if (professorCode.trim().length < 6) {
+        setError("Enter your university-issued professor verification code.");
+        return;
+      }
+
+      const { data: codeValid, error: codeError } = await supabase.rpc(
+        "validate_professor_verification_code",
+        {
+          university_id_input: selectedUniversityId,
+          code_input: professorCode.trim()
+        }
+      );
+      if (codeError) {
+        const normalized = (codeError.message || "").toLowerCase();
+        if (normalized.includes("function") && normalized.includes("does not exist")) {
+          setError("Professor verification is not configured yet. Ask support to run the latest migration.");
+        } else {
+          setError(codeError.message);
+        }
+        return;
+      }
+      if (!codeValid) {
+        setError("That professor verification code is invalid or expired.");
+        return;
+      }
     }
 
     if (password !== confirmPassword) {
@@ -153,7 +219,9 @@ function SignupPageContent() {
           display_name: normalizedDisplayName,
           real_name: normalizedRealName || null,
           show_real_name: showRealName,
-          role
+          role,
+          university_id: role === "professor" ? selectedUniversityId : null,
+          professor_code: role === "professor" ? professorCode.trim() : null
         }
       }
     });
@@ -175,9 +243,7 @@ function SignupPageContent() {
         display_name: normalizedDisplayName,
         real_name: normalizedRealName || null,
         show_real_name: showRealName,
-        role,
-        display_name_locked: true,
-        real_name_locked: Boolean(normalizedRealName),
+        university_id: role === "professor" ? selectedUniversityId : null,
         privacy_version_accepted: legalVersion,
         terms_version_accepted: legalVersion
       });
@@ -308,6 +374,52 @@ function SignupPageContent() {
             </div>
           </div>
 
+          {role === "professor" ? (
+            <div className="space-y-4 rounded-xl border border-borderc bg-soft p-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-[0.14em] text-faint">
+                  University (required)
+                </label>
+                <Input
+                  value={universitySearch}
+                  onChange={(event) => setUniversitySearch(event.target.value)}
+                  placeholder="Search your university"
+                />
+                <select
+                  className="h-11 w-full rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
+                  value={selectedUniversityId}
+                  onChange={(event) => setSelectedUniversityId(event.target.value)}
+                  disabled={loadingUniversities}
+                >
+                  <option value="">
+                    {loadingUniversities ? "Loading universities..." : "Select your university"}
+                  </option>
+                  {filteredUniversities.map((university) => (
+                    <option key={university.id} value={university.id}>
+                      {university.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-[0.14em] text-faint">
+                  Professor verification code
+                </label>
+                <Input
+                  value={professorCode}
+                  onChange={(event) => setProfessorCode(event.target.value.toUpperCase())}
+                  placeholder="Enter code from your university admin"
+                  autoComplete="one-time-code"
+                  maxLength={32}
+                />
+                <p className="text-xs text-faint">
+                  Your university admin provides this code. Without it, teacher signup is denied.
+                </p>
+              </div>
+            </div>
+          ) : null}
+
           <div className="space-y-1.5">
             <label htmlFor="email" className="text-xs font-semibold uppercase tracking-[0.14em] text-faint">
               Email
@@ -403,7 +515,11 @@ function SignupPageContent() {
             type="submit"
             className="w-full"
             loading={loading}
-            disabled={!acceptLegal || (turnstileEnabled && !turnstileToken)}
+            disabled={
+              !acceptLegal ||
+              (turnstileEnabled && !turnstileToken) ||
+              (role === "professor" && (!selectedUniversityId || !professorCode.trim()))
+            }
           >
             Create account
           </Button>

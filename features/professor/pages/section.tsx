@@ -7,6 +7,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAppData } from "@/lib/app-data-context";
+import { isVerifiedProfessor } from "@/lib/auth/roles";
 import { useToast } from "@/lib/hooks/use-toast";
 import {
   deleteProfessorSection,
@@ -54,8 +55,8 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
   const [maxAttempts, setMaxAttempts] = useState("");
   const [gradingMode, setGradingMode] = useState<"auto" | "manual" | "mixed">("auto");
 
-  const isProfessor = profile.role === "professor" || profile.role === "admin";
-  const canDeleteSection = profile.role === "professor";
+  const isProfessor = isVerifiedProfessor(profile);
+  const canDeleteSection = isProfessor;
 
   const refresh = async () => {
     if (!supabase || !resolvedSectionId) return;

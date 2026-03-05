@@ -81,6 +81,7 @@ export function AccountPageContent() {
   const [showUserId, setShowUserId] = useState(false);
   const [joinedSections, setJoinedSections] = useState<JoinedSectionSummary[]>([]);
   const [loadingJoinedSections, setLoadingJoinedSections] = useState(false);
+  const staffUniversityLocked = profile.role === "professor" || profile.role === "admin";
 
   const selectedUniversity = useMemo(
     () => universities.find((item) => item.id === selectedUniversityId),
@@ -391,9 +392,13 @@ export function AccountPageContent() {
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setOpenPicker((prev) => !prev)}
+                onClick={() => {
+                  if (staffUniversityLocked) return;
+                  setOpenPicker((prev) => !prev);
+                }}
                 className="flex h-11 w-full items-center justify-between rounded-[10px] border border-borderc bg-soft px-3.5 text-left text-sm text-text"
                 aria-expanded={openPicker}
+                disabled={staffUniversityLocked}
               >
                 <span>{selectedUniversity?.name || "Select university"}</span>
                 <ChevronsUpDown className="h-4 w-4 text-muted" />
@@ -414,6 +419,7 @@ export function AccountPageContent() {
                         key={item.id}
                         type="button"
                         onClick={async () => {
+                          if (staffUniversityLocked) return;
                           const previousUniversityId = selectedUniversityId;
                           setSelectedUniversityId(item.id);
                           setSearch("");
@@ -442,7 +448,9 @@ export function AccountPageContent() {
               ) : null}
             </div>
             <p className="text-xs text-text-secondary">
-              Pick from the accredited university list. Custom entries are disabled.
+              {staffUniversityLocked
+                ? "Staff university assignment is managed by your university admin."
+                : "Pick from the accredited university list. Custom entries are disabled."}
             </p>
           </div>
 

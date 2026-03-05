@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Markdown } from "@/components/ui/markdown";
 import { useAppData } from "@/lib/app-data-context";
+import { isVerifiedProfessor } from "@/lib/auth/roles";
 import { useToast } from "@/lib/hooks/use-toast";
 import { getMyAnnouncements, postSectionAnnouncement, type AnnouncementFeedItem } from "@/features/announcements/api";
 import { listProfessorSections, type SectionSummary } from "@/features/professor/api";
@@ -23,7 +24,7 @@ export function AnnouncementsPageContent() {
   const [message, setMessage] = useState("");
   const [sendEmail, setSendEmail] = useState(true);
 
-  const isProfessor = profile.role === "professor" || profile.role === "admin";
+  const isProfessor = isVerifiedProfessor(profile);
 
   const visibleItems = useMemo(
     () => [...items].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),

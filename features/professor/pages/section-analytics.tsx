@@ -7,6 +7,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
 import { useAppData } from "@/lib/app-data-context";
+import { isVerifiedProfessor } from "@/lib/auth/roles";
 import {
   getSectionAnalytics,
   getSectionGradebook,
@@ -33,7 +34,7 @@ export function ProfessorSectionAnalyticsPage({ sectionId }: { sectionId?: strin
   const [gradebookRows, setGradebookRows] = useState<SectionGradebookRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const isProfessor = profile.role === "professor" || profile.role === "admin";
+  const isProfessor = isVerifiedProfessor(profile);
 
   useEffect(() => {
     if (!isProfessor || !supabase || !resolvedSectionId) {
