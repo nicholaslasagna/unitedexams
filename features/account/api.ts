@@ -61,7 +61,7 @@ export async function fetchUniversities(client: SupabaseClient) {
     const to = from + pageSize - 1;
     const { data, error } = await client
       .from("universities")
-      .select("id, name")
+      .select("id, name, state, country")
       .order("name", { ascending: true })
       .range(from, to);
 

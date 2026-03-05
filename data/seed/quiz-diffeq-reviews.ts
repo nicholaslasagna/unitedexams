@@ -527,13 +527,19 @@ const differentialEquationReviewReplacementsRaw: QuizSet[] = [
         id: "de-hw4-q1",
         type: "free",
         prompt: "Find the general solution of `16y'' + 24y' + 9y = 0`.",
-        explanation: "Repeated root case.",
+        explanation: "Repeated-root homogeneous ODE from the characteristic polynomial.",
         sampleAnswer: "`y=(C_1 + C_2 t)e^{-3t/4}`.",
-        hintSteps: ["Characteristic equation.", "Check multiplicity.", "Use repeated-root template."],
+        hintSteps: [
+          "Write the characteristic equation `16r^2+24r+9=0`.",
+          "Check the discriminant to confirm a repeated root.",
+          "For repeated root `r`, use `y=(C_1+C_2t)e^{rt}`."
+        ],
         walkthroughSteps: [
-          "`16r^2+24r+9=(4r+3)^2=0`.",
-          "Repeated root `r=-3/4`.",
-          "`y=(C_1+C_2t)e^{-3t/4}`."
+          "Characteristic equation: `16r^2 + 24r + 9 = 0`.",
+          "Factor: `16r^2 + 24r + 9 = (4r+3)^2`, so `(4r+3)^2=0`.",
+          "The repeated root is `r=-3/4`.",
+          "For a double root, `y(t)=(C_1 + C_2 t)e^{rt}`.",
+          "Therefore `y(t)=(C_1 + C_2 t)e^{-3t/4}`."
         ],
         references: ["hwk_diff4.pdf Problem 1"],
         tags: ["homework-4", "homogeneous", "repeated-root"]
@@ -542,14 +548,20 @@ const differentialEquationReviewReplacementsRaw: QuizSet[] = [
         id: "de-hw4-q2",
         type: "free",
         prompt: "Find the general solution of `y'' - 2y' - 3y = 3e^{2t}`.",
-        explanation: "Homogeneous + undetermined coefficients for exponential forcing.",
+        explanation: "Solve homogeneous part, then use undetermined coefficients for exponential forcing.",
         sampleAnswer: "`y=C_1e^{3t}+C_2e^{-t}-e^{2t}`.",
-        hintSteps: ["Solve homogeneous equation.", "Try `y_p=Ae^{2t}`.", "Substitute to solve `A`."],
+        hintSteps: [
+          "Homogeneous roots come from `r^2-2r-3=0`.",
+          "Try a particular `y_p=Ae^{2t}` since `r=2` is not a homogeneous root.",
+          "Substitute `y_p`, `y_p'`, and `y_p''` and solve for `A`."
+        ],
         walkthroughSteps: [
-          "`y_h=C_1e^{3t}+C_2e^{-t}` from roots `3,-1`.",
-          "Trial `y_p=Ae^{2t}`.",
-          "Substitute: `4A-4A-3A=3` => `A=-1`.",
-          "`y=y_h+y_p=C_1e^{3t}+C_2e^{-t}-e^{2t}`."
+          "Homogeneous equation: `r^2-2r-3=0=(r-3)(r+1)` gives roots `r=3,-1`.",
+          "So `y_h=C_1e^{3t}+C_2e^{-t}`.",
+          "Try `y_p=Ae^{2t}`. Then `y_p'=2Ae^{2t}`, `y_p''=4Ae^{2t}`.",
+          "Substitute: `4Ae^{2t}-2(2Ae^{2t})-3(Ae^{2t})=3e^{2t}`.",
+          "This is `-3A e^{2t}=3e^{2t}`, so `A=-1`.",
+          "Final solution: `y=C_1e^{3t}+C_2e^{-t}-e^{2t}`."
         ],
         references: ["hwk_diff4.pdf Problem 1"],
         tags: ["homework-4", "nonhomogeneous", "undetermined-coefficients"]
@@ -558,15 +570,22 @@ const differentialEquationReviewReplacementsRaw: QuizSet[] = [
         id: "de-hw4-q3",
         type: "free",
         prompt: "Find the general solution of `y'' + 2y' = 3 + 4\sin(2t)`.",
-        explanation: "Use homogeneous part plus separate particular terms for constant and sinusoid.",
-        sampleAnswer: "`y=C_1 + C_2e^{-2t} + (3/2)t + A\sin(2t)+B\cos(2t)` with solved `A,B`.",
-        hintSteps: ["Solve homogeneous first.", "Use trial `at+b + A\sin2t + B\cos2t`.", "Match coefficients."],
+        explanation: "Use homogeneous plus a resonant/trigonometric particular via undetermined coefficients.",
+        sampleAnswer: "`y=C_1 + C_2e^{-2t} + (3/2)t - (1/2)\cos(2t) - (1/2)\sin(2t)`.",
+        hintSteps: [
+          "Homogeneous roots satisfy `r(r+2)=0`.",
+          "Use `y_p=At + B\cos(2t)+C\sin(2t)` because constant forcing resonates with root `r=0`.",
+          "Substitute into `y''+2y'` and match constant, cosine, and sine coefficients."
+        ],
         walkthroughSteps: [
-          "Homogeneous: `r(r+2)=0` -> `y_h=C_1 + C_2e^{-2t}`.",
-          "Try `y_p=at+b+A\sin2t+B\cos2t`.",
-          "Differentiate and substitute into ODE.",
-          "Match constant, `\sin2t`, and `\cos2t` coefficients to solve parameters.",
-          "Combine `y_h+y_p`."
+          "Homogeneous: `r^2+2r=0` gives `r=0,-2`, so `y_h=C_1 + C_2e^{-2t}`.",
+          "Try `y_p=At + B\cos(2t)+C\sin(2t)`.",
+          "Then `y_p'=A-2B\sin(2t)+2C\cos(2t)` and `y_p''=-4B\cos(2t)-4C\sin(2t)`.",
+          "Substitute into `y''+2y'`: `2A + (-4B+4C)\cos(2t) + (-4C-4B)\sin(2t)`.",
+          "Match coefficients with `3+4\sin(2t)`:",
+          "`2A=3`, `-4B+4C=0`, `-4C-4B=4`.",
+          "Solve: `A=3/2`, `C=B`, and `-8B=4` so `B=C=-1/2`.",
+          "Final: `y=C_1 + C_2e^{-2t} + (3/2)t - (1/2)\cos(2t) - (1/2)\sin(2t)`."
         ],
         references: ["hwk_diff4.pdf Problem 1"],
         tags: ["homework-4", "nonhomogeneous", "trig-forcing"]
@@ -575,15 +594,21 @@ const differentialEquationReviewReplacementsRaw: QuizSet[] = [
         id: "de-hw4-q4",
         type: "free",
         prompt: "Find the general solution of `y'' + 9y = 9\sec^2(3t)`.",
-        explanation: "Variation of parameters (or Green-function form) is appropriate because RHS is secant-squared.",
-        sampleAnswer: "`y=C_1\cos(3t)+C_2\sin(3t)+y_p(t)` where `y_p` comes from parameter variation integrals.",
-        hintSteps: ["Write homogeneous basis `\cos3t,\sin3t`.", "Set up variation of parameters formulas.", "Integrate forcing terms carefully."],
+        explanation: "Use variation of parameters with basis `cos(3t), sin(3t)` for secant-squared forcing.",
+        sampleAnswer:
+          "`y=C_1\cos(3t)+C_2\sin(3t)-1+\sin(3t)\ln|\\sec(3t)+\\tan(3t)|`.",
+        hintSteps: [
+          "Homogeneous basis: `y_1=\\cos(3t)`, `y_2=\\sin(3t)`.",
+          "Compute Wronskian `W=y_1y_2' - y_2y_1'`.",
+          "Use `u_1'=-y_2 g/W`, `u_2'=y_1 g/W` with `g(t)=9\\sec^2(3t)`."
+        ],
         walkthroughSteps: [
-          "Homogeneous solution: `y_h=C_1\cos3t + C_2\sin3t`.",
-          "Wronskian for basis is constant multiple of `3`.",
-          "Compute `u_1',u_2'` from forcing `9\sec^2(3t)`.",
-          "Integrate `u_1,u_2`, then form `y_p=u_1y_1+u_2y_2`.",
-          "Add to `y_h`."
+          "Homogeneous part: `r^2+9=0` gives `y_h=C_1\\cos(3t)+C_2\\sin(3t)`.",
+          "Take `y_1=\\cos(3t)`, `y_2=\\sin(3t)`. Then `W=3`.",
+          "With `g(t)=9\\sec^2(3t)`: `u_1'=-y_2 g/W=-3\\tan(3t)\\sec(3t)` and `u_2'=y_1 g/W=3\\sec(3t)`.",
+          "Integrate: `u_1=-\\sec(3t)` and `u_2=\\ln|\\sec(3t)+\\tan(3t)|`.",
+          "Build particular: `y_p=u_1y_1+u_2y_2=-1+\\sin(3t)\\ln|\\sec(3t)+\\tan(3t)|`.",
+          "General solution: `y=C_1\\cos(3t)+C_2\\sin(3t)-1+\\sin(3t)\\ln|\\sec(3t)+\\tan(3t)|`."
         ],
         references: ["hwk_diff4.pdf Problem 1"],
         tags: ["homework-4", "variation-of-parameters", "nonhomogeneous"]
@@ -592,15 +617,21 @@ const differentialEquationReviewReplacementsRaw: QuizSet[] = [
         id: "de-hw4-q5",
         type: "free",
         prompt: "Find the general solution of `y'' - 4y' + 4y = (x+1)e^{2x}`.",
-        explanation: "Repeated homogeneous root and resonant exponential-polynomial forcing.",
-        sampleAnswer: "`y=(C_1+C_2x)e^{2x} + e^{2x}x^2(ax+b)` with solved `a,b`.",
-        hintSteps: ["Solve homogeneous `(r-2)^2=0`.", "Use resonant trial multiplied by `x^2`.", "Substitute and match coefficients."],
+        explanation: "Repeated homogeneous root; solve nonhomogeneous term with variation of parameters.",
+        sampleAnswer: "`y=e^{2x}\\left(C_1 + C_2x + x^3/6 + x^2/2\\right)`.",
+        hintSteps: [
+          "Homogeneous root is repeated: `(r-2)^2=0`.",
+          "Use `y_1=e^{2x}`, `y_2=xe^{2x}` for variation of parameters.",
+          "Compute `W`, then integrate `u_1'` and `u_2'` from `g(x)=(x+1)e^{2x}`."
+        ],
         walkthroughSteps: [
-          "`y_h=(C_1+C_2x)e^{2x}`.",
-          "Because forcing is polynomial times `e^{2x}` and `r=2` is repeated, trial `y_p=e^{2x}x^2(ax+b)`.",
-          "Compute derivatives and substitute.",
-          "Match polynomial coefficients of `x` and constants to solve `a,b`.",
-          "Write final `y=y_h+y_p`."
+          "Homogeneous: `(r-2)^2=0` so `y_h=(C_1 + C_2x)e^{2x}`.",
+          "Choose `y_1=e^{2x}`, `y_2=xe^{2x}`. Wronskian is `W=e^{4x}`.",
+          "With `g(x)=(x+1)e^{2x}`:",
+          "`u_1'=-y_2 g/W=-x(x+1)=-x^2-x`, and `u_2'=y_1 g/W=x+1`.",
+          "Integrate: `u_1=-(x^3/3) - x^2/2`, `u_2=x^2/2 + x`.",
+          "Particular: `y_p=u_1y_1+u_2y_2=e^{2x}(x^3/6 + x^2/2)`.",
+          "Final: `y=e^{2x}\\left(C_1 + C_2x + x^3/6 + x^2/2\\right)`."
         ],
         references: ["hwk_diff4.pdf Problem 1"],
         tags: ["homework-4", "resonance", "undetermined-coefficients"]
@@ -609,14 +640,23 @@ const differentialEquationReviewReplacementsRaw: QuizSet[] = [
         id: "de-hw4-q6",
         type: "free",
         prompt: "Solve the IVP `y'' + y = \tan t`, `y(0)=1`, `y'(0)=1`.",
-        explanation: "Nonhomogeneous IVP with trig basis and tangent forcing.",
-        sampleAnswer: "`y=\cos t + \sin t + y_p(t)` with `y_p` from variation of parameters.",
-        hintSteps: ["Solve homogeneous and apply IC framework.", "Find particular by variation of parameters.", "Apply initial conditions last."],
+        explanation: "Variation of parameters with trigonometric basis, then apply initial conditions.",
+        sampleAnswer: "`y(t)=\\cos t + 2\\sin t - \\cos t\\ln|\\sec t + \\tan t|`.",
+        hintSteps: [
+          "Homogeneous basis is `\\cos t, \\sin t` with Wronskian `W=1`.",
+          "Use `u_1'=-y_2 g`, `u_2'=y_1 g` for `g(t)=\\tan t`.",
+          "After building `y_p`, apply `y(0)=1` and `y'(0)=1`."
+        ],
         walkthroughSteps: [
-          "Homogeneous: `y_h=C_1\cos t + C_2\sin t`.",
-          "Set up variation formulas using `y_1=\cos t`, `y_2=\sin t`.",
-          "Integrate for `u_1,u_2` with forcing `\tan t`.",
-          "Build `y_p`, then enforce `y(0)=1`, `y'(0)=1` to get constants."
+          "Homogeneous equation: `r^2+1=0`, so `y_h=C_1\\cos t + C_2\\sin t`.",
+          "Take `y_1=\\cos t`, `y_2=\\sin t`, `W=1`, and forcing `g(t)=\\tan t`.",
+          "`u_1'=-\\sin t\\tan t = \\cos t - \\sec t`, so `u_1=\\sin t - \\ln|\\sec t+\\tan t|`.",
+          "`u_2'=\\cos t\\tan t = \\sin t`, so `u_2=-\\cos t`.",
+          "Thus `y_p=u_1y_1+u_2y_2=-\\cos t\\ln|\\sec t+\\tan t|`.",
+          "General form: `y=C_1\\cos t + C_2\\sin t - \\cos t\\ln|\\sec t+\\tan t|`.",
+          "From `y(0)=1`, get `C_1=1`.",
+          "Differentiate and apply `y'(0)=1`: `C_2-1=1`, so `C_2=2`.",
+          "Final: `y(t)=\\cos t + 2\\sin t - \\cos t\\ln|\\sec t + \\tan t|`."
         ],
         references: ["hwk_diff4.pdf Problem 1"],
         tags: ["homework-4", "ivp", "variation-of-parameters"]
@@ -626,14 +666,20 @@ const differentialEquationReviewReplacementsRaw: QuizSet[] = [
         type: "free",
         prompt: "Solve the IVP `9y'' - 12y' + 4y = 0`, `y(0)=2`, `y'(0)=-1`.",
         explanation: "Repeated root IVP.",
-        sampleAnswer: "`y=(2 + (1/3)t)e^{2t/3}`.",
-        hintSteps: ["Characteristic equation.", "Repeated-root form.", "Apply ICs to constants."],
+        sampleAnswer: "`y(t)=\\left(2-\\frac{7}{3}t\\right)e^{2t/3}`.",
+        hintSteps: [
+          "Solve characteristic equation `(3r-2)^2=0`.",
+          "Use repeated-root form `y=(C_1+C_2t)e^{2t/3}`.",
+          "Apply `y(0)` first, then `y'(0)`."
+        ],
         walkthroughSteps: [
           "Characteristic: `9r^2-12r+4=(3r-2)^2=0` => `r=2/3` double.",
           "`y=(C_1+C_2t)e^{2t/3}`.",
           "`y(0)=2` gives `C_1=2`.",
-          "Differentiate and use `y'(0)=-1` to get `C_2=1/3`.",
-          "Final `y=(2+t/3)e^{2t/3}`."
+          "Differentiate: `y' = C_2 e^{2t/3} + (C_1+C_2t)(2/3)e^{2t/3}`.",
+          "At `t=0`: `y'(0)=C_2 + (2/3)C_1 = -1` gives `C_2 + 4/3 = -1`.",
+          "So `C_2=-7/3`.",
+          "Final `y(t)=\\left(2-\\frac{7}{3}t\\right)e^{2t/3}`."
         ],
         references: ["hwk_diff4.pdf Problem 2"],
         tags: ["homework-4", "ivp", "repeated-root"]
@@ -643,14 +689,22 @@ const differentialEquationReviewReplacementsRaw: QuizSet[] = [
         type: "free",
         prompt: "Solve the IVP `y'' + y' - 2y = 2t`, `y(0)=0`, `y'(0)=1`.",
         explanation: "Nonhomogeneous IVP with polynomial forcing.",
-        sampleAnswer: "`y=e^t - (1/2)e^{-2t} - t - 1/2`.",
-        hintSteps: ["Solve homogeneous roots.", "Try `y_p=at+b`.", "Apply two initial conditions."],
+        sampleAnswer: "`y(t)=e^t-\\frac12e^{-2t}-t-\\frac12`.",
+        hintSteps: [
+          "Homogeneous roots come from `(r+2)(r-1)=0`.",
+          "Try linear particular `y_p=At+B` for forcing `2t`.",
+          "Use `y(0)` and `y'(0)` to solve `C_1,C_2`."
+        ],
         walkthroughSteps: [
-          "`r^2+r-2=0` -> roots `1,-2`, so `y_h=C_1e^t+C_2e^{-2t}`.",
-          "Try `y_p=at+b`: substitution gives `a=-1`, `b=-1/2`.",
-          "General: `y=C_1e^t+C_2e^{-2t}-t-1/2`.",
-          "Apply `y(0)=0`, `y'(0)=1` => `C_1=1`, `C_2=-1/2`.",
-          "Final `y=e^t-(1/2)e^{-2t}-t-1/2`."
+          "Homogeneous equation: `r^2+r-2=0`, roots `1,-2`, so `y_h=C_1e^t+C_2e^{-2t}`.",
+          "Try `y_p=At+B`, so `y_p'=A`, `y_p''=0`.",
+          "Substitute into ODE: `A-2(At+B)=2t` => `-2A t + (A-2B)=2t`.",
+          "Match coefficients: `A=-1`, `B=-1/2`.",
+          "General form: `y=C_1e^t+C_2e^{-2t}-t-1/2`.",
+          "From `y(0)=0`: `C_1+C_2=1/2`.",
+          "Differentiate: `y'=C_1e^t-2C_2e^{-2t}-1`; from `y'(0)=1`: `C_1-2C_2=2`.",
+          "Solve the system: `C_2=-1/2`, `C_1=1`.",
+          "Final: `y(t)=e^t-\\frac12e^{-2t}-t-\\frac12`."
         ],
         references: ["hwk_diff4.pdf Problem 2"],
         tags: ["homework-4", "ivp", "nonhomogeneous"]

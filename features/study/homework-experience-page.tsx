@@ -28,6 +28,8 @@ interface HomeworkProgressSnapshot {
   currentIndex: number;
   selectedByQuestion: Record<string, number[]>;
   responseByQuestion: Record<string, string>;
+  stepInputByQuestion: Record<string, string[]>;
+  stepDraftByQuestion: Record<string, string>;
   selfMarkedByQuestion: Record<string, boolean | undefined>;
   submittedByQuestion: Record<string, boolean>;
   correctByQuestion: Record<string, boolean>;
@@ -195,6 +197,82 @@ function summarizeWeakTopics(attempt: Attempt) {
     .slice(0, 5);
 }
 
+const STEP_STOP_WORDS = new Set([
+  "the",
+  "and",
+  "for",
+  "with",
+  "that",
+  "this",
+  "then",
+  "from",
+  "into",
+  "using",
+  "have",
+  "has",
+  "where",
+  "when",
+  "after",
+  "before",
+  "there",
+  "their",
+  "your",
+  "you",
+  "are",
+  "was",
+  "were",
+  "but",
+  "all",
+  "any",
+  "let",
+  "set",
+  "get",
+  "our",
+  "out",
+  "one",
+  "two",
+  "three"
+]);
+
+function getStepKeywords(value: string) {
+  const tokens = value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .split(" ")
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 3 && !STEP_STOP_WORDS.has(token));
+  return [...new Set(tokens)].slice(0, 8);
+}
+
+function evaluateStepMatch(studentStep: string, expectedStep: string | undefined) {
+  if (!expectedStep) {
+    return {
+      status: "extra" as const,
+      matchedCount: 0,
+      neededCount: 0
+    };
+  }
+
+  const expectedKeywords = getStepKeywords(expectedStep);
+  if (expectedKeywords.length === 0) {
+    return {
+      status: "on-track" as const,
+      matchedCount: 0,
+      neededCount: 0
+    };
+  }
+
+  const studentKeywords = new Set(getStepKeywords(studentStep));
+  const matchedCount = expectedKeywords.filter((keyword) => studentKeywords.has(keyword)).length;
+  const neededCount = Math.min(2, expectedKeywords.length);
+
+  return {
+    status: matchedCount >= neededCount ? ("on-track" as const) : ("review" as const),
+    matchedCount,
+    neededCount
+  };
+}
+
 export function HomeworkExperiencePageContent({
   setId,
   routePrefix
@@ -212,6 +290,8 @@ export function HomeworkExperiencePageContent({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedByQuestion, setSelectedByQuestion] = useState<Record<string, number[]>>({});
   const [responseByQuestion, setResponseByQuestion] = useState<Record<string, string>>({});
+  const [stepInputByQuestion, setStepInputByQuestion] = useState<Record<string, string[]>>({});
+  const [stepDraftByQuestion, setStepDraftByQuestion] = useState<Record<string, string>>({});
   const [selfMarkedByQuestion, setSelfMarkedByQuestion] = useState<Record<string, boolean | undefined>>({});
   const [submittedByQuestion, setSubmittedByQuestion] = useState<Record<string, boolean>>({});
   const [correctByQuestion, setCorrectByQuestion] = useState<Record<string, boolean>>({});
@@ -276,6 +356,8 @@ export function HomeworkExperiencePageContent({
             setCurrentIndex(Math.min(state.currentIndex ?? 0, Math.max(order.length - 1, 0)));
             setSelectedByQuestion(state.selectedByQuestion ?? {});
             setResponseByQuestion(state.responseByQuestion ?? {});
+            setStepInputByQuestion(state.stepInputByQuestion ?? {});
+            setStepDraftByQuestion(state.stepDraftByQuestion ?? {});
             setSelfMarkedByQuestion(state.selfMarkedByQuestion ?? {});
             setSubmittedByQuestion(state.submittedByQuestion ?? {});
             setCorrectByQuestion(state.correctByQuestion ?? {});
@@ -296,6 +378,8 @@ export function HomeworkExperiencePageContent({
         setCurrentIndex(Math.min(guestState.currentIndex ?? 0, Math.max(order.length - 1, 0)));
         setSelectedByQuestion(guestState.selectedByQuestion ?? {});
         setResponseByQuestion(guestState.responseByQuestion ?? {});
+        setStepInputByQuestion(guestState.stepInputByQuestion ?? {});
+        setStepDraftByQuestion(guestState.stepDraftByQuestion ?? {});
         setSelfMarkedByQuestion(guestState.selfMarkedByQuestion ?? {});
         setSubmittedByQuestion(guestState.submittedByQuestion ?? {});
         setCorrectByQuestion(guestState.correctByQuestion ?? {});
@@ -329,6 +413,8 @@ export function HomeworkExperiencePageContent({
       currentIndex,
       selectedByQuestion,
       responseByQuestion,
+      stepInputByQuestion,
+      stepDraftByQuestion,
       selfMarkedByQuestion,
       submittedByQuestion,
       correctByQuestion,
@@ -368,6 +454,8 @@ export function HomeworkExperiencePageContent({
     order,
     quiz,
     responseByQuestion,
+    stepDraftByQuestion,
+    stepInputByQuestion,
     result,
     revealedHintCount,
     revealedWalkthroughCount,
@@ -447,6 +535,22 @@ export function HomeworkExperiencePageContent({
     }));
   };
 
+  const hideHint = () => {
+    if (!currentQuestion) return;
+    setRevealedHintCount((prev) => ({
+      ...prev,
+      [currentQuestion.id]: Math.max(0, (prev[currentQuestion.id] ?? 0) - 1)
+    }));
+  };
+
+  const hideAllHints = () => {
+    if (!currentQuestion) return;
+    setRevealedHintCount((prev) => ({
+      ...prev,
+      [currentQuestion.id]: 0
+    }));
+  };
+
   const revealWalkthroughStep = () => {
     if (!currentQuestion) return;
     const steps = currentQuestion.walkthroughSteps ?? [];
@@ -454,6 +558,53 @@ export function HomeworkExperiencePageContent({
     setRevealedWalkthroughCount((prev) => ({
       ...prev,
       [currentQuestion.id]: Math.min(steps.length, (prev[currentQuestion.id] ?? 0) + 1)
+    }));
+  };
+
+  const hideWalkthroughStep = () => {
+    if (!currentQuestion) return;
+    setRevealedWalkthroughCount((prev) => ({
+      ...prev,
+      [currentQuestion.id]: Math.max(0, (prev[currentQuestion.id] ?? 0) - 1)
+    }));
+  };
+
+  const hideAllWalkthroughSteps = () => {
+    if (!currentQuestion) return;
+    setRevealedWalkthroughCount((prev) => ({
+      ...prev,
+      [currentQuestion.id]: 0
+    }));
+  };
+
+  const addStudyStep = () => {
+    if (!currentQuestion) return;
+    const nextValue = (stepDraftByQuestion[currentQuestion.id] ?? "").trim();
+    if (!nextValue) return;
+
+    setStepInputByQuestion((prev) => ({
+      ...prev,
+      [currentQuestion.id]: [...(prev[currentQuestion.id] ?? []), nextValue]
+    }));
+    setStepDraftByQuestion((prev) => ({
+      ...prev,
+      [currentQuestion.id]: ""
+    }));
+  };
+
+  const removeStudyStep = (stepIndex: number) => {
+    if (!currentQuestion) return;
+    setStepInputByQuestion((prev) => ({
+      ...prev,
+      [currentQuestion.id]: (prev[currentQuestion.id] ?? []).filter((_, idx) => idx !== stepIndex)
+    }));
+  };
+
+  const clearStudySteps = () => {
+    if (!currentQuestion) return;
+    setStepInputByQuestion((prev) => ({
+      ...prev,
+      [currentQuestion.id]: []
     }));
   };
 
@@ -540,6 +691,8 @@ export function HomeworkExperiencePageContent({
                 setCurrentIndex(0);
                 setSelectedByQuestion({});
                 setResponseByQuestion({});
+                setStepInputByQuestion({});
+                setStepDraftByQuestion({});
                 setSelfMarkedByQuestion({});
                 setSubmittedByQuestion({});
                 setCorrectByQuestion({});
@@ -626,6 +779,14 @@ export function HomeworkExperiencePageContent({
     : false;
 
   const isLast = currentIndex === order.length - 1;
+  const isDifferentialEquations = quiz.courseId === "differential-equations";
+  const studentStepDraft = currentQuestion ? (stepDraftByQuestion[currentQuestion.id] ?? "") : "";
+  const studentSteps = currentQuestion ? (stepInputByQuestion[currentQuestion.id] ?? []) : [];
+  const stepChecks = studentSteps.map((step, index) => ({
+    step,
+    review: evaluateStepMatch(step, walkthroughSteps[index]),
+    expected: walkthroughSteps[index]
+  }));
 
   return (
     <div className="space-y-5">
@@ -774,10 +935,90 @@ export function HomeworkExperiencePageContent({
                     )}
                   </div>
 
+                  {isDifferentialEquations && isOpenResponseQuestion(currentQuestion) ? (
+                    <div className="space-y-3 rounded-xl border border-brand-2/30 bg-brand-2/10 p-4">
+                      <div className="space-y-1">
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-2">
+                          Step-by-step check (optional)
+                        </p>
+                        <p className="text-xs text-text-secondary">
+                          Add one step at a time and we&apos;ll compare it with the official walkthrough sequence.
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <textarea
+                          value={studentStepDraft}
+                          onChange={(event) =>
+                            setStepDraftByQuestion((prev) => ({
+                              ...prev,
+                              [currentQuestion.id]: event.target.value
+                            }))
+                          }
+                          placeholder="Example: Characteristic equation r^2 + r - 2 = 0 gives roots r=1,-2."
+                          className="min-h-20 w-full rounded-lg border border-borderc bg-surface p-3 font-mono text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-brand-2/60"
+                        />
+                        <div className="flex flex-wrap gap-2">
+                          <Button variant="secondary" onClick={addStudyStep} disabled={studentStepDraft.trim().length === 0}>
+                            Add step
+                          </Button>
+                          <Button variant="ghost" onClick={clearStudySteps} disabled={studentSteps.length === 0}>
+                            Clear steps
+                          </Button>
+                        </div>
+                      </div>
+
+                      {stepChecks.length > 0 ? (
+                        <ol className="space-y-2">
+                          {stepChecks.map((entry, idx) => (
+                            <li key={`${currentQuestion.id}-typed-step-${idx}`} className="rounded-lg border border-borderc bg-surface p-3">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                                  Your step {idx + 1}
+                                </p>
+                                {entry.review.status === "on-track" ? (
+                                  <span className="rounded-full border border-success/50 bg-success/10 px-2 py-0.5 text-[11px] font-semibold text-success">
+                                    On track
+                                  </span>
+                                ) : entry.review.status === "review" ? (
+                                  <span className="rounded-full border border-warn/50 bg-warn/10 px-2 py-0.5 text-[11px] font-semibold text-warn">
+                                    Review this step
+                                  </span>
+                                ) : (
+                                  <span className="rounded-full border border-brand-2/50 bg-brand-2/10 px-2 py-0.5 text-[11px] font-semibold text-brand-2">
+                                    Extra practice step
+                                  </span>
+                                )}
+                              </div>
+                              <div className="mt-2 text-sm text-text">
+                                <Markdown content={entry.step} promoteMathInInlineCode />
+                              </div>
+                              {entry.review.status === "review" && entry.expected ? (
+                                <p className="mt-2 text-xs text-text-secondary">
+                                  Expected focus for step {idx + 1}: {entry.expected}
+                                </p>
+                              ) : null}
+                              <div className="mt-2 flex justify-end">
+                                <Button variant="ghost" onClick={() => removeStudyStep(idx)}>
+                                  Remove
+                                </Button>
+                              </div>
+                            </li>
+                          ))}
+                        </ol>
+                      ) : null}
+                    </div>
+                  ) : null}
+
                   <div className="flex flex-wrap gap-2">
                     <Button variant="secondary" onClick={revealHint} disabled={shownHints >= hints.length || hints.length === 0}>
                       <Lightbulb className="h-4 w-4" />
                       {hints.length === 0 ? "No hints" : shownHints >= hints.length ? "All hints shown" : "Show hint"}
+                    </Button>
+                    <Button variant="ghost" onClick={hideHint} disabled={shownHints <= 0}>
+                      Hide hint
+                    </Button>
+                    <Button variant="ghost" onClick={hideAllHints} disabled={shownHints <= 0}>
+                      Hide all hints
                     </Button>
                     <Button
                       variant="secondary"
@@ -789,6 +1030,12 @@ export function HomeworkExperiencePageContent({
                         : shownWalkthroughSteps >= walkthroughSteps.length
                           ? "All steps shown"
                           : "Show walkthrough step"}
+                    </Button>
+                    <Button variant="ghost" onClick={hideWalkthroughStep} disabled={shownWalkthroughSteps <= 0}>
+                      Hide step
+                    </Button>
+                    <Button variant="ghost" onClick={hideAllWalkthroughSteps} disabled={shownWalkthroughSteps <= 0}>
+                      Hide all steps
                     </Button>
                     <Button
                       variant="ghost"

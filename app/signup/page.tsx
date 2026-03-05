@@ -38,6 +38,18 @@ function mapAuthError(message: string, captchaEnabled: boolean) {
   return message;
 }
 
+function normalizeUniversitySearch(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, " ");
+}
+
+function formatUniversityLabel(university: UniversityRecord) {
+  const suffix = [university.state, university.country].filter(Boolean).join(" - ");
+  return suffix ? `${university.name} (${suffix})` : university.name;
+}
+
 function SignupPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -69,10 +81,37 @@ function SignupPageContent() {
   const turnstileEnabled = isTurnstileClientEnabled();
   const errorId = "signup-form-error";
   const filteredUniversities = useMemo(() => {
-    const query = universitySearch.trim().toLowerCase();
-    if (!query) return universities.slice(0, 120);
-    return universities.filter((item) => item.name.toLowerCase().includes(query)).slice(0, 120);
+    const query = normalizeUniversitySearch(universitySearch);
+    if (!query) return universities;
+
+    const startsWith: UniversityRecord[] = [];
+    const includes: UniversityRecord[] = [];
+
+    for (const item of universities) {
+      const haystack = normalizeUniversitySearch(
+        [item.name, item.state, item.country].filter(Boolean).join(" ")
+      );
+
+      if (!haystack.includes(query)) continue;
+      if (haystack.startsWith(query)) {
+        startsWith.push(item);
+      } else {
+        includes.push(item);
+      }
+    }
+
+    return [...startsWith, ...includes];
   }, [universitySearch, universities]);
+
+  const selectedUniversity = useMemo(
+    () => universities.find((item) => item.id === selectedUniversityId),
+    [universities, selectedUniversityId]
+  );
+  const visibleUniversityOptions = useMemo(() => {
+    if (!selectedUniversity) return filteredUniversities;
+    if (filteredUniversities.some((item) => item.id === selectedUniversity.id)) return filteredUniversities;
+    return [selectedUniversity, ...filteredUniversities];
+  }, [filteredUniversities, selectedUniversity]);
 
   useEffect(() => {
     if (error) errorRef.current?.focus();
@@ -385,6 +424,11 @@ function SignupPageContent() {
                   onChange={(event) => setUniversitySearch(event.target.value)}
                   placeholder="Search your university"
                 />
+                <p className="text-xs text-faint">
+                  {loadingUniversities
+                    ? "Loading accredited universities..."
+                    : `Showing ${visibleUniversityOptions.length} of ${universities.length} universities`}
+                </p>
                 <select
                   className="h-11 w-full rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
                   value={selectedUniversityId}
@@ -394,9 +438,14 @@ function SignupPageContent() {
                   <option value="">
                     {loadingUniversities ? "Loading universities..." : "Select your university"}
                   </option>
-                  {filteredUniversities.map((university) => (
+                  {!loadingUniversities && visibleUniversityOptions.length === 0 ? (
+                    <option disabled value="">
+                      No universities found for that search
+                    </option>
+                  ) : null}
+                  {visibleUniversityOptions.map((university) => (
                     <option key={university.id} value={university.id}>
-                      {university.name}
+                      {formatUniversityLabel(university)}
                     </option>
                   ))}
                 </select>
