@@ -43,12 +43,236 @@ function makeQuestion(type: BuilderQuestionType = "single"): BuilderQuestion {
   };
 }
 
+function isBlankQuestion(question: BuilderQuestion) {
+  const hasOptions = question.options.some((value) => value.trim().length > 0);
+  const hasAnswers = question.acceptableAnswers.some((value) => value.trim().length > 0);
+  return (
+    question.prompt.trim().length === 0 &&
+    question.explanation.trim().length === 0 &&
+    question.tags.trim().length === 0 &&
+    !hasOptions &&
+    !hasAnswers
+  );
+}
+
 function normalizeTags(value: string) {
   return value
     .split(",")
     .map((tag) => tag.trim().toLowerCase())
     .filter((tag) => tag.length > 0)
     .slice(0, 8);
+}
+
+function parseCorrectSpec(input: string, optionCount: number) {
+  const tokens = input
+    .split(/[,\s]+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length > 0);
+  const parsed: number[] = [];
+
+  for (const token of tokens) {
+    if (/^[a-z]$/i.test(token)) {
+      const idx = token.toUpperCase().charCodeAt(0) - 65;
+      if (idx >= 0 && idx < optionCount) parsed.push(idx);
+      continue;
+    }
+
+    if (/^\d+$/.test(token)) {
+      const numeric = Number(token);
+      const idx = numeric === 0 ? 0 : numeric - 1;
+      if (idx >= 0 && idx < optionCount) parsed.push(idx);
+    }
+  }
+
+  return Array.from(new Set(parsed));
+}
+
+function parseImportedQuestions(rawInput: string) {
+  const lines = rawInput.split(/\r?\n/);
+  const questions: BuilderQuestion[] = [];
+  const errors: string[] = [];
+  let current: BuilderQuestion | null = null;
+  let currentStartedAt = 1;
+
+  const finalizeCurrent = () => {
+    if (!current) return;
+    const question = current;
+
+    question.prompt = question.prompt.trim();
+    question.explanation = question.explanation.trim();
+    question.tags = question.tags.trim();
+
+    if (!question.prompt) {
+      errors.push(`Line ${currentStartedAt}: question prompt is missing.`);
+    }
+
+    if (question.type === "single" || question.type === "multi") {
+      question.options = question.options.map((value) => value.trim()).filter((value) => value.length > 0);
+      question.correctIndexes = Array.from(new Set(question.correctIndexes))
+        .filter((idx) => idx >= 0 && idx < question.options.length)
+        .sort((a, b) => a - b);
+
+      if (question.options.length < 2) {
+        errors.push(`Line ${currentStartedAt}: multiple choice/select-all questions need at least 2 options.`);
+      }
+      if (question.correctIndexes.length === 0) {
+        errors.push(`Line ${currentStartedAt}: mark at least one correct option (use [x], *, +, or "correct:").`);
+      }
+      if (question.type === "single" && question.correctIndexes.length > 1) {
+        errors.push(`Line ${currentStartedAt}: multiple choice can only have one correct answer.`);
+      }
+    }
+
+    if (question.type === "fill") {
+      question.acceptableAnswers = question.acceptableAnswers
+        .map((value) => value.trim().toLowerCase())
+        .filter((value) => value.length > 0);
+      if (question.acceptableAnswers.length === 0) {
+        errors.push(`Line ${currentStartedAt}: fill-in-the-blank needs at least one acceptable answer.`);
+      }
+      question.options = [];
+      question.correctIndexes = [];
+    }
+
+    if (question.type === "free") {
+      question.options = [];
+      question.correctIndexes = [];
+      question.acceptableAnswers = [];
+    }
+
+    questions.push(question);
+    current = null;
+  };
+
+  const startQuestion = (type: BuilderQuestionType, lineNo: number) => {
+    finalizeCurrent();
+    current = makeQuestion(type);
+    current.options = [];
+    current.correctIndexes = [];
+    current.acceptableAnswers = [];
+    currentStartedAt = lineNo;
+  };
+
+  lines.forEach((rawLine, lineIndex) => {
+    const lineNo = lineIndex + 1;
+    const line = rawLine.trim();
+    if (!line) return;
+
+    const normalized = line.toLowerCase().replace(/\s+/g, "");
+    if (normalized === "-mc" || normalized === "mc") {
+      startQuestion("single", lineNo);
+      return;
+    }
+    if (normalized === "-sata" || normalized === "sata") {
+      startQuestion("multi", lineNo);
+      return;
+    }
+    if (normalized === "-fib" || normalized === "fib") {
+      startQuestion("fill", lineNo);
+      return;
+    }
+    if (normalized === "-frq" || normalized === "frq") {
+      startQuestion("free", lineNo);
+      return;
+    }
+
+    if (!current) {
+      startQuestion("single", lineNo);
+    }
+
+    if (!current) return;
+
+    if (/^tags?\s*[:=-]/i.test(line)) {
+      current.tags = line.replace(/^tags?\s*[:=-]\s*/i, "");
+      return;
+    }
+
+    if (/^exp(?:lanation)?\s*[:=-]/i.test(line)) {
+      current.explanation = line.replace(/^exp(?:lanation)?\s*[:=-]\s*/i, "");
+      return;
+    }
+
+    if (/^correct\s*[:=-]/i.test(line) && (current.type === "single" || current.type === "multi")) {
+      const spec = line.replace(/^correct\s*[:=-]\s*/i, "");
+      current.correctIndexes = parseCorrectSpec(spec, current.options.length);
+      return;
+    }
+
+    if (line.startsWith("--")) {
+      current.prompt = line.replace(/^--\s*/, "");
+      return;
+    }
+
+    if (/^(q|question)\s*[:=-]/i.test(line)) {
+      current.prompt = line.replace(/^(q|question)\s*[:=-]\s*/i, "");
+      return;
+    }
+
+    if (current.type === "single" || current.type === "multi") {
+      if (/^\-\s*/.test(line)) {
+        let option = line.replace(/^\-\s*/, "");
+        let isCorrect = false;
+
+        if (/^\[[xX]\]\s*/.test(option)) {
+          isCorrect = true;
+          option = option.replace(/^\[[xX]\]\s*/, "");
+        } else if (/^\(x\)\s*/i.test(option)) {
+          isCorrect = true;
+          option = option.replace(/^\(x\)\s*/i, "");
+        } else if (/^\*\s*/.test(option)) {
+          isCorrect = true;
+          option = option.replace(/^\*\s*/, "");
+        } else if (/^\+\s*/.test(option)) {
+          isCorrect = true;
+          option = option.replace(/^\+\s*/, "");
+        }
+
+        const clean = option.trim();
+        if (clean.length > 0) {
+          const optionIndex = current.options.length;
+          current.options.push(clean);
+          if (isCorrect) {
+            current.correctIndexes.push(optionIndex);
+          }
+        }
+        return;
+      }
+    }
+
+    if (current.type === "fill") {
+      if (/^(?:-|ans(?:wer)?\s*[:=-])/i.test(line)) {
+        const cleaned = line
+          .replace(/^\-\s*/, "")
+          .replace(/^ans(?:wer)?\s*[:=-]\s*/i, "")
+          .trim();
+        if (cleaned.length > 0) {
+          const answers = cleaned
+            .split("|")
+            .map((value) => value.trim())
+            .filter((value) => value.length > 0);
+          current.acceptableAnswers.push(...answers);
+        }
+        return;
+      }
+    }
+
+    if (!current.prompt) {
+      current.prompt = line;
+      return;
+    }
+
+    current.explanation = current.explanation
+      ? `${current.explanation}\n${line}`
+      : line;
+  });
+
+  finalizeCurrent();
+
+  if (questions.length === 0) {
+    errors.push("No questions detected. Use -mc, -sata, -fib, or -frq blocks.");
+  }
+
+  return { questions, errors };
 }
 
 export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } = {}) {
@@ -70,6 +294,8 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
   const [mode, setMode] = useState<"quiz" | "exam" | "homework">("quiz");
   const [tags, setTags] = useState("");
   const [questions, setQuestions] = useState<BuilderQuestion[]>([makeQuestion("single")]);
+  const [bulkInput, setBulkInput] = useState("");
+  const [bulkErrors, setBulkErrors] = useState<string[]>([]);
 
   const isProfessor = profile.role === "professor" || profile.role === "admin";
 
@@ -292,6 +518,76 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
           </div>
           <div className="md:col-span-2 rounded-xl border border-borderc bg-surface px-3 py-2 text-xs text-muted">
             {modeLabel} • {questionCount} question{questionCount === 1 ? "" : "s"}
+          </div>
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <h2 className="font-display text-2xl font-semibold">Quick Paste Import</h2>
+        </CardHeader>
+        <CardBody className="space-y-3">
+          <p className="text-sm text-muted">
+            Paste questions from ChatGPT or notes using blocks like <code>-mc</code>, <code>-sata</code>, <code>-fib</code>, <code>-frq</code>.
+            Use <code>--</code> for the prompt and prefix correct options with <code>[x]</code>, <code>*</code>, or <code>+</code>.
+          </p>
+          <textarea
+            value={bulkInput}
+            onChange={(event) => setBulkInput(event.target.value)}
+            className="min-h-48 w-full rounded-[10px] border border-borderc bg-soft px-3 py-2 font-mono text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
+            placeholder={`-mc
+-- Which protocol is stateless?
+- [x] HTTP
+- TCP
+- FTP
+
+-sata
+-- Select all prime numbers:
+- [x] 2
+- [x] 3
+- 4
+
+-fib
+-- Derivative of x^2
+- answer: 2x | 2*x
+
+-frq
+-- Explain why normalization reduces redundancy.`}
+          />
+          {bulkErrors.length > 0 ? (
+            <div className="rounded-xl border border-danger/45 bg-danger/10 p-3 text-sm text-danger">
+              <p className="font-semibold">Import errors</p>
+              <ul className="mt-1 list-disc pl-5">
+                {bulkErrors.map((error) => (
+                  <li key={error}>{error}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                const parsed = parseImportedQuestions(bulkInput);
+                if (parsed.errors.length > 0) {
+                  setBulkErrors(parsed.errors);
+                  push({ title: "Could not import questions", description: "Fix formatting errors and try again.", tone: "error" });
+                  return;
+                }
+
+                setQuestions((prev) => {
+                  const base = prev.length === 1 && isBlankQuestion(prev[0]) ? [] : prev;
+                  return [...base, ...parsed.questions];
+                });
+                setBulkErrors([]);
+                push({ title: `${parsed.questions.length} question${parsed.questions.length === 1 ? "" : "s"} imported`, tone: "success" });
+              }}
+            >
+              Parse and append
+            </Button>
+            <Button variant="ghost" onClick={() => setBulkInput("")}>
+              Clear pasted text
+            </Button>
           </div>
         </CardBody>
       </Card>
@@ -645,4 +941,3 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
     </div>
   );
 }
-
