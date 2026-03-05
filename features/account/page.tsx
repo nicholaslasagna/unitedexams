@@ -14,6 +14,7 @@ import { courses } from "@/data/seed";
 import {
   fetchUniversities,
   fetchUserCourses,
+  onboardingStatus,
   saveUserCourses
 } from "@/features/account/api";
 import { joinSectionByCode } from "@/features/professor/api";
@@ -28,6 +29,19 @@ import {
 function parseOnboardingParam() {
   if (typeof window === "undefined") return false;
   return new URLSearchParams(window.location.search).get("onboarding") === "1";
+}
+
+const onboardingAccentOptions = [
+  { id: "classic-violet", label: "Classic Violet", hue: 265, strength: 60 },
+  { id: "deep-indigo", label: "Deep Indigo", hue: 245, strength: 52 },
+  { id: "electric-plum", label: "Electric Plum", hue: 280, strength: 74 }
+] as const;
+
+function getInitialAccentOptionId(hue: number, strength: number) {
+  const found = onboardingAccentOptions.find(
+    (option) => option.hue === hue && option.strength === strength
+  );
+  return found?.id ?? onboardingAccentOptions[0].id;
 }
 
 export function AccountPageContent() {
@@ -48,10 +62,14 @@ export function AccountPageContent() {
   const [openPicker, setOpenPicker] = useState(false);
 
   const [saving, setSaving] = useState(false);
+  const [savingCourses, setSavingCourses] = useState(false);
   const [privacyError, setPrivacyError] = useState<string | null>(null);
 
   const [onboardingMode, setOnboardingMode] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
+  const [selectedOnboardingAccent, setSelectedOnboardingAccent] = useState<string>(() =>
+    getInitialAccentOptionId(preferences.accentHue, preferences.accentStrength)
+  );
   const [joinCode, setJoinCode] = useState("");
   const [showUserId, setShowUserId] = useState(false);
 
@@ -79,6 +97,10 @@ export function AccountPageContent() {
   }, []);
 
   useEffect(() => {
+    setSelectedOnboardingAccent(getInitialAccentOptionId(preferences.accentHue, preferences.accentStrength));
+  }, [preferences.accentHue, preferences.accentStrength]);
+
+  useEffect(() => {
     if (!supabase || !user) return;
 
     fetchUniversities(supabase)
@@ -90,22 +112,44 @@ export function AccountPageContent() {
       .catch(() => setSelectedCourses([]));
   }, [supabase, user?.id]);
 
-  const toggleCourse = async (courseId: string) => {
-    if (!supabase || !user) return;
+  useEffect(() => {
+    if (!onboardingMode || !supabase || !user) return;
 
-    const previous = selectedCourses;
-    const next = selectedCourses.includes(courseId)
-      ? selectedCourses.filter((id) => id !== courseId)
-      : [...selectedCourses, courseId];
+    onboardingStatus(supabase, user.id)
+      .then((status) => {
+        if (status.hasUniversity && status.hasCourses) {
+          setOnboardingMode(false);
+          if (typeof window !== "undefined") {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("onboarding");
+            window.history.replaceState({}, "", url.toString());
+          }
+        }
+      })
+      .catch(() => {
+        // If status fetch fails, keep onboarding open rather than incorrectly dismissing it.
+      });
+  }, [onboardingMode, supabase, user?.id]);
 
-    setSelectedCourses(next);
+  const toggleCourse = (courseId: string) => {
+    setSelectedCourses((prev) =>
+      prev.includes(courseId)
+        ? prev.filter((id) => id !== courseId)
+        : [...prev, courseId]
+    );
+  };
 
+  const persistCourses = async (courseIds: string[]) => {
+    if (!supabase || !user) return false;
+    setSavingCourses(true);
     try {
-      await saveUserCourses(supabase, user.id, next);
-      push({ title: "Courses updated", tone: "success" });
+      await saveUserCourses(supabase, user.id, courseIds);
+      return true;
     } catch (error) {
-      setSelectedCourses(previous);
       push({ title: "Unable to update courses", description: (error as Error).message, tone: "error" });
+      return false;
+    } finally {
+      setSavingCourses(false);
     }
   };
 
@@ -114,13 +158,15 @@ export function AccountPageContent() {
     nextShowRealName = showRealName,
     nextShowUniversity = showUniversity,
     nextUniversityId = selectedUniversityId,
-    successTitle = "Account updated"
+    successTitle = "Account updated",
+    showSuccessToast = true
   }: {
     nextRealName?: string;
     nextShowRealName?: boolean;
     nextShowUniversity?: boolean;
     nextUniversityId?: string;
     successTitle?: string;
+    showSuccessToast?: boolean;
   }): Promise<boolean> => {
     setPrivacyError(null);
 
@@ -156,7 +202,9 @@ export function AccountPageContent() {
         showUniversity: nextShowUniversity,
         universityId: nextUniversityId
       });
-      push({ title: successTitle, tone: "success" });
+      if (showSuccessToast) {
+        push({ title: successTitle, tone: "success" });
+      }
       return true;
     } catch (error) {
       if (process.env.NODE_ENV !== "production") {
@@ -170,7 +218,15 @@ export function AccountPageContent() {
   };
 
   const saveAccount = async () => {
-    await persistProfileChanges({});
+    const profileSaved = await persistProfileChanges({
+      showSuccessToast: false
+    });
+    if (!profileSaved) return;
+
+    const coursesSaved = await persistCourses(selectedCourses);
+    if (!coursesSaved) return;
+
+    push({ title: "Account updated", tone: "success" });
   };
 
   const nextOnboardingStep = () => {
@@ -188,28 +244,54 @@ export function AccountPageContent() {
 
   const finishOnboarding = async () => {
     const saved = await persistProfileChanges({
-      successTitle: "Onboarding profile saved"
+      successTitle: "Onboarding profile saved",
+      showSuccessToast: false
     });
     if (!saved) return;
+
+    const coursesSaved = await persistCourses(selectedCourses);
+    if (!coursesSaved) return;
+
+    if (supabase && user) {
+      try {
+        const status = await onboardingStatus(supabase, user.id);
+        if (!status.hasUniversity || !status.hasCourses) {
+          push({
+            title: "Onboarding incomplete",
+            description: "Please select a university and at least one course.",
+            tone: "error"
+          });
+          return;
+        }
+      } catch {
+        // If status check fails, still allow close after successful writes.
+      }
+    }
+
     setOnboardingMode(false);
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       url.searchParams.delete("onboarding");
       window.history.replaceState({}, "", url.toString());
     }
+    router.refresh();
     push({ title: "Onboarding complete", description: "Recommendations are now personalized.", tone: "success" });
   };
 
   const themePreset = async (hue: number, strength: number) => {
-    await savePreferences({
-      ...preferences,
-      palette: "custom",
-      accentPreset: "custom",
-      accentHue: hue,
-      accentSaturation: 72,
-      accentLightness: 62,
-      accentStrength: strength
-    });
+    try {
+      await savePreferences({
+        ...preferences,
+        palette: "custom",
+        accentPreset: "custom",
+        accentHue: hue,
+        accentSaturation: 72,
+        accentLightness: 62,
+        accentStrength: strength
+      });
+    } catch (error) {
+      push({ title: "Unable to update accent", description: (error as Error).message, tone: "error" });
+    }
   };
 
   const userIdValue = user?.id || profile.id || "";
@@ -361,7 +443,7 @@ export function AccountPageContent() {
             ) : null}
           </div>
 
-          <Button onClick={saveAccount} loading={saving}>
+          <Button onClick={saveAccount} loading={saving || savingCourses}>
             Save changes
           </Button>
         </CardBody>
@@ -534,8 +616,7 @@ export function AccountPageContent() {
                       <p className="px-2 py-2 text-xs text-muted">No universities match this query.</p>
                     ) : null}
                   </div>
-                  {search.trim().length > 1 &&
-                  !universities.some((item) => item.name.toLowerCase() === search.trim().toLowerCase()) ? (
+                  {search.trim().length > 1 && filteredUniversities.length === 0 ? (
                     <p className="rounded-lg border border-borderc bg-soft px-3 py-2 text-xs text-muted">
                       No matches found. Contact support if your accredited university is missing.
                     </p>
@@ -553,12 +634,13 @@ export function AccountPageContent() {
                         type="button"
                         onClick={() => toggleCourse(course.id)}
                         className={cn(
-                          "rounded-full border px-3 py-1.5 text-sm",
+                          "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition",
                           selectedCourses.includes(course.id)
                             ? "border-brand-2/55 bg-brand-2/10 text-text"
-                            : "border-borderc bg-soft text-muted"
+                            : "border-borderc bg-soft text-muted hover:text-text"
                         )}
                       >
+                        {selectedCourses.includes(course.id) ? <Check className="h-3.5 w-3.5 text-success" /> : null}
                         {course.code}
                       </button>
                     ))}
@@ -570,9 +652,22 @@ export function AccountPageContent() {
                 <div className="space-y-2">
                   <p className="text-sm text-muted">Choose your accent preset.</p>
                   <div className="flex flex-wrap gap-2">
-                    <Button variant="secondary" onClick={() => themePreset(265, 60)}>Classic Violet</Button>
-                    <Button variant="secondary" onClick={() => themePreset(245, 52)}>Deep Indigo</Button>
-                    <Button variant="secondary" onClick={() => themePreset(280, 74)}>Electric Plum</Button>
+                    {onboardingAccentOptions.map((option) => {
+                      const selected = selectedOnboardingAccent === option.id;
+                      return (
+                        <Button
+                          key={option.id}
+                          variant={selected ? "primary" : "secondary"}
+                          onClick={() => {
+                            setSelectedOnboardingAccent(option.id);
+                            void themePreset(option.hue, option.strength);
+                          }}
+                        >
+                          {selected ? <Check className="h-4 w-4" /> : null}
+                          {option.label}
+                        </Button>
+                      );
+                    })}
                   </div>
                 </div>
               ) : null}
