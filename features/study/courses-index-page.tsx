@@ -13,6 +13,7 @@ import { useAppData } from "@/lib/app-data-context";
 import { courseProgress } from "@/features/progress/metrics";
 import { resolveQuizSetMode } from "@/lib/study/set-mode";
 import { listJoinedSections } from "@/features/professor/api";
+import type { JoinedSectionSummary } from "@/features/professor/api";
 
 const courseArtworkById: Record<string, string> = {
   "software-engineering": "/images/courses/software-engineering.svg",
@@ -37,13 +38,15 @@ export function CoursesIndexContent({
   const { attempts, isAuthenticated, supabase, user, profile } = useAppData();
   const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState<string>("all");
-  const [studentSectionByCourseId, setStudentSectionByCourseId] = useState<Record<string, string>>({});
+  const [studentSectionsByCourseId, setStudentSectionsByCourseId] = useState<Record<string, JoinedSectionSummary[]>>({});
+  const [selectedSectionByCourseId, setSelectedSectionByCourseId] = useState<Record<string, string>>({});
 
   const isStudent = profile.role === "student";
 
   useEffect(() => {
     if (!isAuthenticated || !supabase || !user || !isStudent) {
-      setStudentSectionByCourseId({});
+      setStudentSectionsByCourseId({});
+      setSelectedSectionByCourseId({});
       return;
     }
 
@@ -51,19 +54,26 @@ export function CoursesIndexContent({
     listJoinedSections(supabase, user.id)
       .then((rows) => {
         if (!active) return;
-        const next: Record<string, string> = {};
+        const nextByCourse: Record<string, JoinedSectionSummary[]> = {};
         for (const row of rows) {
           if (row.role !== "student") continue;
           if (row.isOwner) continue;
-          if (!next[row.courseId]) {
-            next[row.courseId] = row.sectionId;
-          }
+          nextByCourse[row.courseId] = [...(nextByCourse[row.courseId] ?? []), row];
         }
-        setStudentSectionByCourseId(next);
+        setStudentSectionsByCourseId(nextByCourse);
+        setSelectedSectionByCourseId((prev) => {
+          const nextSelected: Record<string, string> = {};
+          for (const [courseId, sections] of Object.entries(nextByCourse)) {
+            const stillValid = prev[courseId] && sections.some((section) => section.sectionId === prev[courseId]);
+            nextSelected[courseId] = stillValid ? prev[courseId] : sections[0]?.sectionId ?? "";
+          }
+          return nextSelected;
+        });
       })
       .catch(() => {
         if (!active) return;
-        setStudentSectionByCourseId({});
+        setStudentSectionsByCourseId({});
+        setSelectedSectionByCourseId({});
       });
 
     return () => {
@@ -135,11 +145,22 @@ export function CoursesIndexContent({
           const quizCount = courseSets.filter((set) => resolveQuizSetMode(set) === "quiz").length;
           const examCount = courseSets.filter((set) => resolveQuizSetMode(set) === "exam").length;
           const homeworkCount = courseSets.filter((set) => resolveQuizSetMode(set) === "homework").length;
-          const sectionId = isStudent ? studentSectionByCourseId[course.id] : undefined;
-          const primaryHref = sectionId
-            ? `/app/sections/${sectionId}/materials`
+          const courseSections = isStudent ? (studentSectionsByCourseId[course.id] ?? []) : [];
+          const selectedSectionId = selectedSectionByCourseId[course.id] ?? courseSections[0]?.sectionId;
+          const hasCourseSections = courseSections.length > 0 && Boolean(selectedSectionId);
+          const primaryHref = hasCourseSections
+            ? `/app/sections/${selectedSectionId}/materials`
             : withPrefix(routePrefix, `/courses/${course.id}`);
-          const primaryLabel = sectionId ? "Open class materials" : "Study materials";
+          const primaryLabel = hasCourseSections ? "Open class materials" : "Study materials";
+          const selectedSection = courseSections.find((section) => section.sectionId === selectedSectionId);
+          const selectedSectionLabel = selectedSection
+            ? selectedSection.term
+              ? `${selectedSection.sectionName} (${selectedSection.term})`
+              : selectedSection.sectionName
+            : "Select a section";
+          const sectionMaterialHref = selectedSectionId
+            ? `/app/sections/${selectedSectionId}/materials`
+            : withPrefix(routePrefix, `/courses/${course.id}`);
           const artworkSrc = courseArtworkById[course.id] ?? "/images/courses/default-course.svg";
           return (
             <Card key={course.id} className={`group overflow-hidden transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-${(idx % 6) + 1}`}>
@@ -175,6 +196,39 @@ export function CoursesIndexContent({
                     </span>
                   ))}
                 </div>
+
+                {hasCourseSections ? (
+                  <div className="space-y-2 rounded-xl border border-brand-2/30 bg-brand-2/10 p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-2">
+                      Your class sections
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <select
+                        value={selectedSectionId}
+                        onChange={(event) =>
+                          setSelectedSectionByCourseId((prev) => ({
+                            ...prev,
+                            [course.id]: event.target.value
+                          }))
+                        }
+                        className="min-w-[14rem] flex-1 rounded-lg border border-borderc bg-surface px-3 py-2 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-brand-2/60"
+                        aria-label={`${course.name} sections`}
+                      >
+                        {courseSections.map((section) => (
+                          <option key={section.sectionId} value={section.sectionId}>
+                            {section.term ? `${section.sectionName} (${section.term})` : section.sectionName}
+                          </option>
+                        ))}
+                      </select>
+                      <Button variant="secondary" asChild>
+                        <Link href={sectionMaterialHref}>Open selected section</Link>
+                      </Button>
+                    </div>
+                    <p className="text-xs text-text-secondary">
+                      Selected: <span className="font-semibold text-text">{selectedSectionLabel}</span>
+                    </p>
+                  </div>
+                ) : null}
 
                 <Button className="w-full justify-between transition-all duration-200 ease-out-expo" asChild>
                   <Link href={primaryHref}>

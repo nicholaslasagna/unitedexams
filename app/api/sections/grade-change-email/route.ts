@@ -110,6 +110,31 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "You do not have permission to notify this student." }, { status: 403 });
   }
 
+  if (row.status !== "graded") {
+    return NextResponse.json({ ok: true });
+  }
+
+  if (row.student_user_id === user.id) {
+    return NextResponse.json({
+      ok: true,
+      warning: "Grade updated. Notification skipped because this submission belongs to the instructor account."
+    });
+  }
+
+  const { data: membership } = await supabase
+    .from("section_members")
+    .select("role")
+    .eq("section_id", row.section_id)
+    .eq("user_id", row.student_user_id)
+    .maybeSingle();
+
+  if (!membership || membership.role !== "student") {
+    return NextResponse.json({
+      ok: true,
+      warning: "Grade updated. Notification skipped because recipient is not an enrolled student."
+    });
+  }
+
   const toEmail = (row.student_email || "").trim().toLowerCase();
   if (!toEmail) {
     return NextResponse.json({ ok: true, warning: "Grade updated, but student email was unavailable." });
