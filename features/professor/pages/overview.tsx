@@ -11,6 +11,7 @@ import { useAppData } from "@/lib/app-data-context";
 import { useToast } from "@/lib/hooks/use-toast";
 import {
   createProfessorSection,
+  deleteProfessorSection,
   joinSectionByCode,
   listProfessorSections,
   regenerateJoinCode,
@@ -33,6 +34,7 @@ export function ProfessorOverviewPage() {
   const [joinCode, setJoinCode] = useState("");
 
   const isProfessor = profile.role === "professor" || profile.role === "admin";
+  const canDeleteSections = profile.role === "professor";
 
   const refresh = async () => {
     if (!supabase) return;
@@ -196,6 +198,22 @@ export function ProfessorOverviewPage() {
                     push({ title: "Unable to regenerate code", description: (error as Error).message, tone: "error" });
                   }
                 }}
+                onDelete={
+                  canDeleteSections
+                    ? async (sectionId) => {
+                        if (!supabase) return;
+                        const confirmed = window.confirm("Delete this section? This also removes members, assignments, and related exam data.");
+                        if (!confirmed) return;
+                        try {
+                          await deleteProfessorSection(supabase, sectionId);
+                          push({ title: "Section deleted", tone: "success" });
+                          refresh();
+                        } catch (error) {
+                          push({ title: "Unable to delete section", description: (error as Error).message, tone: "error" });
+                        }
+                      }
+                    : undefined
+                }
               />
             ))}
           </div>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Copy, RefreshCw } from "lucide-react";
+import { Copy, RefreshCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import type { SectionSummary } from "@/features/professor/api";
@@ -7,11 +7,13 @@ import type { SectionSummary } from "@/features/professor/api";
 export function SectionCard({
   section,
   onCopy,
-  onRegenerate
+  onRegenerate,
+  onDelete
 }: {
   section: SectionSummary;
   onCopy: (code: string) => void;
   onRegenerate: (sectionId: string) => void;
+  onDelete?: (sectionId: string) => void;
 }) {
   return (
     <Card>
@@ -38,6 +40,11 @@ export function SectionCard({
             <Button variant="ghost" className="h-8 px-2" onClick={() => onRegenerate(section.id)}>
               <RefreshCw className="h-4 w-4" />
             </Button>
+            {onDelete ? (
+              <Button variant="ghost" className="h-8 px-2 text-danger hover:text-danger" onClick={() => onDelete(section.id)}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            ) : null}
           </div>
         </div>
       </CardBody>
