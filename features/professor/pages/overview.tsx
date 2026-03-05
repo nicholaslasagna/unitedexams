@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { courses } from "@/data/seed";
 import { useAppData } from "@/lib/app-data-context";
+import { isVerifiedProfessor } from "@/lib/auth/roles";
 import { useToast } from "@/lib/hooks/use-toast";
 import {
   createProfessorSection,
@@ -33,8 +34,8 @@ export function ProfessorOverviewPage() {
 
   const [joinCode, setJoinCode] = useState("");
 
-  const isProfessor = profile.role === "professor" || profile.role === "admin";
-  const canDeleteSections = profile.role === "professor";
+  const isProfessor = isVerifiedProfessor(profile);
+  const canDeleteSections = isProfessor;
 
   const refresh = async () => {
     if (!supabase) return;

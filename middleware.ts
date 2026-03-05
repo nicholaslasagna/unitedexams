@@ -34,7 +34,9 @@ export async function middleware(request: NextRequest) {
     const [profileResult, prefsResult] = await Promise.all([
       supabase
         .from("profiles")
-        .select("reset_required, university_id, role, privacy_version_accepted, terms_version_accepted")
+        .select(
+          "reset_required, university_id, role, professor_verified, privacy_version_accepted, terms_version_accepted"
+        )
         .eq("id", user.id)
         .maybeSingle(),
       supabase
@@ -57,6 +59,7 @@ export async function middleware(request: NextRequest) {
       if (!fallbackCore.error && fallbackCore.data) {
         profile = {
           ...fallbackCore.data,
+          professor_verified: false,
           privacy_version_accepted: null,
           terms_version_accepted: null
         };
@@ -114,6 +117,29 @@ export async function middleware(request: NextRequest) {
     }
 
     const role = (profile?.role ?? "student") as UserRole;
+    const professorVerified = Boolean(profile?.professor_verified);
+    const hasUniversity = Boolean(profile?.university_id);
+
+    if (role === "professor" && (!professorVerified || !hasUniversity)) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/app/settings";
+      redirectUrl.search = "";
+      redirectUrl.searchParams.set("verification", "required");
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    if (
+      role === "admin" &&
+      !pathname.startsWith("/app/admin") &&
+      !pathname.startsWith("/app/account") &&
+      !pathname.startsWith("/app/settings")
+    ) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/app/admin/professors";
+      redirectUrl.search = "";
+      return NextResponse.redirect(redirectUrl);
+    }
+
     const extraSigninProtection = Boolean(prefs?.extra_signin_protection);
     const mfaEnabled = false;
 

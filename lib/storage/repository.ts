@@ -22,6 +22,7 @@ export const defaultProfile: UserProfile = {
   name: "Student",
   showRealName: false,
   showUniversity: false,
+  professorVerified: false,
   role: "student"
 };
 

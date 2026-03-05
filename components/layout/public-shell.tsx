@@ -8,6 +8,7 @@ import { GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConstellationPattern } from "@/components/ui/constellation-pattern";
 import { useAppData } from "@/lib/app-data-context";
+import { isUniversityAdmin, isVerifiedProfessor } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
 
 const guestNavItems = [
@@ -26,16 +27,23 @@ const accountNavItems = [
   { href: "/app/settings", label: "Settings" }
 ];
 
+const schoolAdminNavItems = [
+  { href: "/app/admin/professors", label: "Professor Staff" },
+  { href: "/app/account", label: "Account" },
+  { href: "/app/settings", label: "Settings" }
+];
+
 export function PublicShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { authReady, isAuthenticated, profile, signOut, supabase, user } = useAppData();
   const [hasJoinedSection, setHasJoinedSection] = useState(false);
 
-  const isProfessor = profile.role === "professor" || profile.role === "admin";
+  const isProfessor = isVerifiedProfessor(profile);
+  const isSchoolAdmin = isUniversityAdmin(profile);
 
   useEffect(() => {
-    if (!isAuthenticated || !supabase || !user || isProfessor) {
+    if (!isAuthenticated || !supabase || !user || isProfessor || isSchoolAdmin) {
       setHasJoinedSection(false);
       return;
     }
@@ -64,19 +72,20 @@ export function PublicShell({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, [isAuthenticated, isProfessor, supabase, user]);
+  }, [isAuthenticated, isProfessor, isSchoolAdmin, supabase, user]);
 
   const showAnnouncements = isProfessor || hasJoinedSection;
 
   const navItems = useMemo(() => {
     if (!isAuthenticated) return guestNavItems;
+    if (isSchoolAdmin) return schoolAdminNavItems;
     if (!showAnnouncements) return accountNavItems;
     return [
       ...accountNavItems.slice(0, 3),
       { href: "/app/announcements", label: "Announcements" },
       ...accountNavItems.slice(3)
     ];
-  }, [isAuthenticated, showAnnouncements]);
+  }, [isAuthenticated, isSchoolAdmin, showAnnouncements]);
 
   return (
     <div className="min-h-screen bg-bg text-text">

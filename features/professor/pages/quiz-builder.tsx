@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAppData } from "@/lib/app-data-context";
+import { isVerifiedProfessor } from "@/lib/auth/roles";
 import { useToast } from "@/lib/hooks/use-toast";
 import {
   createProfessorQuizSet,
@@ -297,7 +298,7 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
   const [bulkInput, setBulkInput] = useState("");
   const [bulkErrors, setBulkErrors] = useState<string[]>([]);
 
-  const isProfessor = profile.role === "professor" || profile.role === "admin";
+  const isProfessor = isVerifiedProfessor(profile);
 
   useEffect(() => {
     if (!supabase || !resolvedSectionId || !isProfessor) {

@@ -97,6 +97,8 @@ export interface UserProfile {
   realName?: string;
   displayNameLocked?: boolean;
   realNameLocked?: boolean;
+  professorVerified?: boolean;
+  professorVerifiedAt?: string;
   showRealName?: boolean;
   showUniversity?: boolean;
   universityId?: string;

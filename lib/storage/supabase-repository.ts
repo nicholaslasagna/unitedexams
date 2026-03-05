@@ -26,6 +26,8 @@ interface ProfileRow {
   display_name_locked: boolean | null;
   real_name: string | null;
   real_name_locked: boolean | null;
+  professor_verified?: boolean | null;
+  professor_verified_at?: string | null;
   show_real_name: boolean;
   university_id: string | null;
   show_university: boolean;
@@ -350,6 +352,8 @@ export class SupabaseRepository implements DataRepository {
       email: row.email ?? this.user.email ?? undefined,
       name: row.display_name,
       displayNameLocked: Boolean(row.display_name_locked),
+      professorVerified: Boolean(row.professor_verified),
+      professorVerifiedAt: row.professor_verified_at ?? undefined,
       school,
       realName: row.real_name ?? undefined,
       realNameLocked: Boolean(row.real_name_locked),
