@@ -146,14 +146,30 @@ export function QuestionCard({
                     </p>
                   </div>
                   {!submitted && showHintsBeforeSubmit ? (
-                    <Button
-                      variant="ghost"
-                      disabled={revealedHints >= hints.length}
-                      onClick={() => setRevealedHints((prev) => Math.min(hints.length, prev + 1))}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                      {revealedHints >= hints.length ? "All hints revealed" : `Reveal hint ${revealedHints + 1}`}
-                    </Button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        disabled={revealedHints >= hints.length}
+                        onClick={() => setRevealedHints((prev) => Math.min(hints.length, prev + 1))}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                        {revealedHints >= hints.length ? "All hints revealed" : `Reveal hint ${revealedHints + 1}`}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        disabled={revealedHints <= 0}
+                        onClick={() => setRevealedHints((prev) => Math.max(0, prev - 1))}
+                      >
+                        Hide last hint
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        disabled={revealedHints <= 0}
+                        onClick={() => setRevealedHints(0)}
+                      >
+                        Hide all
+                      </Button>
+                    </div>
                   ) : null}
                 </div>
 
@@ -449,16 +465,35 @@ export function QuestionCard({
               ))}
             </div>
 
-            {/* Reveal next step button */}
-            {!studyMode && revealedSteps < walkthroughSteps.length ? (
-              <button
-                type="button"
-                onClick={() => setRevealedSteps((prev) => Math.min(walkthroughSteps.length, prev + 1))}
-                className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-brand-2/30 bg-brand-2/10 py-2.5 text-sm font-semibold text-brand-2 transition-all duration-200 ease-out-expo hover:bg-brand-2/15"
-              >
-                <ChevronDown className="h-4 w-4" />
-                Reveal step {revealedSteps + 1} of {walkthroughSteps.length}
-              </button>
+            {/* Reveal / hide step controls */}
+            {!studyMode ? (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRevealedSteps((prev) => Math.min(walkthroughSteps.length, prev + 1))}
+                  disabled={revealedSteps >= walkthroughSteps.length}
+                  className="flex items-center justify-center gap-2 rounded-lg border border-brand-2/30 bg-brand-2/10 px-3 py-2.5 text-sm font-semibold text-brand-2 transition-all duration-200 ease-out-expo hover:bg-brand-2/15 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <ChevronDown className="h-4 w-4" />
+                  {revealedSteps >= walkthroughSteps.length
+                    ? "All steps revealed"
+                    : `Reveal step ${revealedSteps + 1} of ${walkthroughSteps.length}`}
+                </button>
+                <Button
+                  variant="ghost"
+                  disabled={revealedSteps <= 0}
+                  onClick={() => setRevealedSteps((prev) => Math.max(0, prev - 1))}
+                >
+                  Hide last step
+                </Button>
+                <Button
+                  variant="ghost"
+                  disabled={revealedSteps <= 0}
+                  onClick={() => setRevealedSteps(0)}
+                >
+                  Hide all
+                </Button>
+              </div>
             ) : (
               <div className="mt-3 flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-3 py-2">
                 <CheckCircle2 className="h-4 w-4 text-success" />
