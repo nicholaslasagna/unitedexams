@@ -134,11 +134,25 @@ export async function POST(request: NextRequest) {
   const postedBy = profileRow?.display_name || "Instructor";
   const siteUrl = resolveSiteUrl(request);
 
+  const { data: studentMembers } = await supabase
+    .from("section_members")
+    .select("user_id")
+    .eq("section_id", payload.sectionId)
+    .eq("role", "student");
+  const allowedStudentIds = new Set((studentMembers ?? []).map((row) => row.user_id));
+
   const uniqueRecipients = new Map<string, RecipientRow>();
   for (const recipient of recipients) {
+    if (recipient.user_id === user.id) continue;
+    if (!allowedStudentIds.has(recipient.user_id)) continue;
     const email = recipient.email?.trim().toLowerCase();
     if (!email) continue;
-    if (!uniqueRecipients.has(email)) uniqueRecipients.set(email, recipient);
+    const dedupeKey = recipient.user_id || email;
+    if (!uniqueRecipients.has(dedupeKey)) uniqueRecipients.set(dedupeKey, recipient);
+  }
+
+  if (uniqueRecipients.size === 0) {
+    return NextResponse.json({ ok: true, warning: "Announcement posted, but there were no student recipients to email." });
   }
 
   let failedCount = 0;

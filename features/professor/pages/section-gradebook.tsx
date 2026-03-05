@@ -67,14 +67,49 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
   }, [refreshGradebook]);
 
   const grouped = useMemo(() => {
-    const byAssignment = new Map<string, SectionGradebookRow[]>();
+    const byAssignment = new Map<
+      string,
+      {
+        assignmentTitle: string;
+        rows: SectionGradebookRow[];
+      }
+    >();
+
+    const compareRowFreshness = (candidate: SectionGradebookRow, existing: SectionGradebookRow) => {
+      const candidateTime = candidate.submitted_at ? new Date(candidate.submitted_at).getTime() : -1;
+      const existingTime = existing.submitted_at ? new Date(existing.submitted_at).getTime() : -1;
+      if (candidateTime !== existingTime) return candidateTime > existingTime;
+      const candidateHasSubmission = Boolean(candidate.latest_submission_id);
+      const existingHasSubmission = Boolean(existing.latest_submission_id);
+      return candidateHasSubmission && !existingHasSubmission;
+    };
+
     for (const row of rows) {
-      const key = `${row.assignment_id}:${row.assignment_title}`;
-      const list = byAssignment.get(key) ?? [];
-      list.push(row);
-      byAssignment.set(key, list);
+      const existingGroup = byAssignment.get(row.assignment_id);
+      if (!existingGroup) {
+        byAssignment.set(row.assignment_id, {
+          assignmentTitle: row.assignment_title,
+          rows: [row]
+        });
+        continue;
+      }
+
+      const existingRowIndex = existingGroup.rows.findIndex((item) => item.student_id === row.student_id);
+      if (existingRowIndex === -1) {
+        existingGroup.rows.push(row);
+        continue;
+      }
+
+      if (compareRowFreshness(row, existingGroup.rows[existingRowIndex])) {
+        existingGroup.rows[existingRowIndex] = row;
+      }
     }
-    return Array.from(byAssignment.entries());
+
+    return Array.from(byAssignment.entries()).map(([assignmentId, value]) => ({
+      assignmentId,
+      assignmentTitle: value.assignmentTitle,
+      rows: value.rows.sort((a, b) => a.display_name.localeCompare(b.display_name))
+    }));
   }, [rows]);
 
   if (!isProfessor) {
@@ -118,10 +153,9 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
           <CardBody className="p-6 text-sm text-muted">No submissions yet.</CardBody>
         </Card>
       ) : (
-        grouped.map(([key, gradeRows]) => {
-          const [, assignmentTitle] = key.split(":");
+        grouped.map(({ assignmentId, assignmentTitle, rows: gradeRows }) => {
           return (
-            <Card key={key}>
+            <Card key={assignmentId}>
               <CardHeader>
                 <h2 className="font-display text-2xl font-semibold">{assignmentTitle}</h2>
               </CardHeader>
@@ -157,7 +191,7 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
                       </div>
                     </div>
 
-                    {editingSubmissionId === row.latest_submission_id ? (
+                    {Boolean(row.latest_submission_id) && editingSubmissionId === row.latest_submission_id ? (
                       <div className="mt-3 space-y-2 rounded-lg border border-borderc bg-surface p-3">
                         <div className="grid gap-2 md:grid-cols-3">
                           <div className="space-y-1">
@@ -197,8 +231,17 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
                         <div className="flex gap-2">
                           <Button
                             loading={savingEdit}
+                            disabled={savingEdit}
                             onClick={async () => {
-                              if (!supabase || !editingSubmissionId) return;
+                              if (savingEdit) return;
+                              if (!supabase || !editingSubmissionId) {
+                                push({
+                                  title: "Unable to update grade",
+                                  description: "No submission was selected for grading.",
+                                  tone: "error"
+                                });
+                                return;
+                              }
 
                               const numericScore =
                                 editScore.trim().length === 0 ? null : Number.parseFloat(editScore.trim());
@@ -234,11 +277,13 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
                                 }
 
                                 let warning: string | undefined;
-                                try {
-                                  const emailResult = await sendGradeChangeEmailNotice(editingSubmissionId);
-                                  warning = emailResult.warning;
-                                } catch (emailError) {
-                                  warning = (emailError as Error).message;
+                                if (editStatus === "graded") {
+                                  try {
+                                    const emailResult = await sendGradeChangeEmailNotice(editingSubmissionId);
+                                    warning = emailResult.warning;
+                                  } catch (emailError) {
+                                    warning = (emailError as Error).message;
+                                  }
                                 }
 
                                 push({
