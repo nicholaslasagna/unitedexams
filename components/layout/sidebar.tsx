@@ -91,6 +91,7 @@ export function Sidebar() {
   }, [pathname]);
 
   const showAnnouncements = showProfessor || hasJoinedSection;
+  const showSections = showProfessor || hasJoinedSection;
 
   const items = useMemo(() => {
     if (showSchoolAdmin) {
@@ -116,7 +117,22 @@ export function Sidebar() {
       : baseItems;
 
     if (!showProfessor) {
-      return studentItems;
+      if (!showSections) return studentItems;
+      return [
+        studentItems[0],
+        studentItems[1],
+        {
+          href: "/app/sections",
+          label: "Sections",
+          icon: GraduationCap,
+          sectionGroup: true,
+          children: [
+            { href: "/app/sections/materials", label: "Materials", icon: BookMarked },
+            { href: "/app/sections/homework", label: "Homework", icon: ListChecks }
+          ]
+        },
+        ...studentItems.slice(2)
+      ];
     }
 
     const professorBase = showAnnouncements
@@ -143,7 +159,7 @@ export function Sidebar() {
       },
       ...professorBase.slice(3)
     ];
-  }, [showAnnouncements, showProfessor, showSchoolAdmin]);
+  }, [showAnnouncements, showProfessor, showSchoolAdmin, showSections]);
 
   return (
     <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 border-r border-borderc bg-surface/90 px-4 pb-5 pt-5 backdrop-blur-xl lg:block">

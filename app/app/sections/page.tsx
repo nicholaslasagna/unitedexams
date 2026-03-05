@@ -1,5 +1,5 @@
-import { ProfessorOverviewPage } from "@/features/professor/pages/overview";
+import { SectionsOverviewPageContent } from "@/features/sections/pages/overview";
 
 export default function SectionsOverviewPage() {
-  return <ProfessorOverviewPage />;
+  return <SectionsOverviewPageContent />;
 }

@@ -75,17 +75,29 @@ export function PublicShell({ children }: { children: ReactNode }) {
   }, [isAuthenticated, isProfessor, isSchoolAdmin, supabase, user]);
 
   const showAnnouncements = isProfessor || hasJoinedSection;
+  const showSections = isProfessor || hasJoinedSection;
 
   const navItems = useMemo(() => {
     if (!isAuthenticated) return guestNavItems;
     if (isSchoolAdmin) return schoolAdminNavItems;
-    if (!showAnnouncements) return accountNavItems;
-    return [
-      ...accountNavItems.slice(0, 3),
-      { href: "/app/announcements", label: "Announcements" },
-      ...accountNavItems.slice(3)
-    ];
-  }, [isAuthenticated, isSchoolAdmin, showAnnouncements]);
+    let next = [...accountNavItems];
+    if (showSections) {
+      next = [...next.slice(0, 2), { href: "/app/sections", label: "Sections" }, ...next.slice(2)];
+    }
+    if (showAnnouncements) {
+      const homeworkIndex = next.findIndex((item) => item.href === "/homework");
+      if (homeworkIndex >= 0) {
+        next = [
+          ...next.slice(0, homeworkIndex + 1),
+          { href: "/app/announcements", label: "Announcements" },
+          ...next.slice(homeworkIndex + 1)
+        ];
+      } else {
+        next = [...next, { href: "/app/announcements", label: "Announcements" }];
+      }
+    }
+    return next;
+  }, [isAuthenticated, isSchoolAdmin, showAnnouncements, showSections]);
 
   return (
     <div className="min-h-screen bg-bg text-text">

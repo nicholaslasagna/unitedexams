@@ -195,8 +195,13 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
               <Link href={`/app/sections/${section.id}/materials`}>Materials</Link>
             </Button>
             <Button variant="secondary" asChild>
-              <Link href={`/app/sections/${section.id}/gradebook`}>Gradebook</Link>
+              <Link href={`/app/announcements?section=${section.id}`}>Announcements</Link>
             </Button>
+            {isProfessor ? (
+              <Button variant="secondary" asChild>
+                <Link href={`/app/sections/${section.id}/gradebook`}>Gradebook</Link>
+              </Button>
+            ) : null}
             {isProfessor ? (
               <Button variant="secondary" asChild>
                 <Link href={`/app/professor/sections/${section.id}/exams`}>Exams</Link>

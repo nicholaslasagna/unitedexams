@@ -4,7 +4,7 @@ export default function SectionMaterialsIndexPage() {
   return (
     <SectionLinkIndex
       title="Materials"
-      subtitle="Post notes, references, and handouts for each class section."
+      subtitle="Open materials for a specific class section."
       variant="materials"
     />
   );
