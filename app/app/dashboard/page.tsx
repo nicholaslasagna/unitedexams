@@ -343,7 +343,7 @@ export default function DashboardPage() {
             <Link
               key={course.id}
               href={`/courses/${course.id}`}
-              className="group rounded-[20px] border border-borderc bg-soft shadow-subtle backdrop-blur-xl transition duration-200 hover:-translate-y-[2px] hover:border-border-bright hover:bg-overlay hover:shadow-soft"
+              className="group rounded-[20px] border border-borderc bg-soft shadow-subtle backdrop-blur-xl transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent hover:bg-overlay"
             >
               <div className="space-y-4 p-5">
                 <div>

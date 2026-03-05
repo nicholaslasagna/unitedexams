@@ -30,32 +30,32 @@ export default function LandingPage() {
 
   return (
     <PublicShell>
-      <section className="mesh-hero mx-auto w-full max-w-[1240px] px-6 pb-16 pt-8">
+      <section className="mesh-hero mx-auto w-full max-w-[1240px] px-6 pb-16 pt-8 animate-fade-rise">
         <div className="glass grid gap-10 rounded-[2rem] px-8 py-12 md:grid-cols-[1.3fr_0.9fr] md:px-12 md:py-16">
           <div>
             <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-brand-2/30 bg-brand-2/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-brand-2">
               Premium College Study Platform
             </p>
-            <h1 className="max-w-[14ch] font-display text-5xl font-semibold leading-[1.03] tracking-tight md:text-6xl">
+            <h1 className="max-w-[14ch] text-display-xl font-semibold leading-[1.03] tracking-tight">
               Study smarter. Test stronger.
             </h1>
-            <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
+            <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted text-text-secondary">
               United Exams combines cinematic polish with rigorous academic workflows: walkthrough quizzes, streak momentum,
               topic mastery analytics, and clean course notes in one focused experience.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/courses" className="inline-flex items-center gap-2 rounded-xl bg-brand-gradient px-5 py-3 text-sm font-semibold text-accent-fg shadow-soft">
+              <Link href="/courses" className="inline-flex items-center gap-2 rounded-xl bg-brand-gradient px-5 py-3 text-sm font-semibold text-accent-fg shadow-soft transition-all duration-200 ease-out-expo">
                 Open Dashboard
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link href="/courses" className="inline-flex items-center rounded-xl border border-borderc px-5 py-3 text-sm font-semibold text-text hover:bg-soft">
+              <Link href="/courses" className="inline-flex items-center rounded-xl border border-borderc px-5 py-3 text-sm font-semibold text-text hover:bg-bg-inset transition-all duration-200 ease-out-expo">
                 Explore Course Catalog
               </Link>
             </div>
           </div>
           <Card className="overflow-hidden border-borderc bg-surface/70">
             <CardBody className="space-y-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted">Live Highlights</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted text-text-secondary">Live Highlights</p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl border border-borderc bg-soft p-4">
                   <p className="text-xs text-muted">Quiz Sets</p>
