@@ -44,7 +44,7 @@ export function AuthShell({
                 Guided walkthroughs, rigorous exam practice, and progress analytics with a calm, high-focus experience.
               </p>
             </div>
-            <p className="text-xs text-faint">© {new Date().getFullYear()} Imagicast Studios</p>
+            <p className="text-center text-xs text-faint">© {new Date().getFullYear()} Imagicast Studios</p>
           </section>
 
           {/* Form area */}

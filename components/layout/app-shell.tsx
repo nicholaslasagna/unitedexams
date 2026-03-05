@@ -19,7 +19,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main id="main" className="mx-auto w-full max-w-[1360px] flex-1 px-5 py-8 md:px-8 lg:px-10">
           <div className="animate-fade-rise">{children}</div>
         </main>
-        <footer className="mx-auto w-full max-w-[1360px] border-t border-borderc px-5 py-4 text-sm text-muted md:px-8">
+        <footer className="mx-auto w-full max-w-[1360px] border-t border-borderc px-5 py-4 text-center text-sm text-muted md:px-8">
           © {new Date().getFullYear()}{" "}
           <a
             href="https://imagicaststudios.com"

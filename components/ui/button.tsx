@@ -9,6 +9,7 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: Variant;
   size?: Size;
   loading?: boolean;
+  loadingLabel?: string;
   asChild?: boolean;
 };
 
@@ -49,7 +50,17 @@ const sizeStyles: Record<Size, string> = {
 };
 
 export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
-  { className, variant = "primary", size = "md", loading = false, disabled, children, asChild = false, ...props },
+  {
+    className,
+    variant = "primary",
+    size = "md",
+    loading = false,
+    loadingLabel = "Loading...",
+    disabled,
+    children,
+    asChild = false,
+    ...props
+  },
   ref
 ) {
   const classes = cn(
@@ -72,15 +83,20 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
       ref={ref}
       className={classes}
       disabled={disabled || loading}
+      aria-busy={loading || undefined}
       {...props}
     >
       {loading ? (
-        <span
-          className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current"
-          aria-hidden
-        />
-      ) : null}
-      {children}
+        <>
+          <span
+            className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current"
+            aria-hidden
+          />
+          {size === "icon" ? <span className="sr-only">{loadingLabel}</span> : <span>{loadingLabel}</span>}
+        </>
+      ) : (
+        children
+      )}
     </button>
   );
 });

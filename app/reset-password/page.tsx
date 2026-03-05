@@ -288,7 +288,12 @@ function ResetPasswordContent() {
             />
           ) : null}
 
-          <Button type="submit" className="w-full" loading={loading}>
+          <Button
+            type="submit"
+            className="w-full"
+            loading={loading}
+            disabled={turnstileEnabled && !turnstileToken}
+          >
             Update password
           </Button>
         </form>
