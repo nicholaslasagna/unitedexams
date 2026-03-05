@@ -44,7 +44,7 @@ interface PreferencesRow {
   accent_lightness: number | null;
   accent_strength: number;
   reduce_motion: boolean;
-  dashboard_layout: string;
+  dashboard_layout?: string | null;
   extra_signin_protection: boolean | null;
 }
 
@@ -162,6 +162,27 @@ export class SupabaseRepository implements DataRepository {
 
       if (
         insertPrefsError &&
+        /dashboard_layout|accent_preset|accent_saturation|accent_lightness/i.test(
+          insertPrefsError.message || ""
+        )
+      ) {
+        insertPrefsError = (
+          await this.client.from("user_preferences").insert({
+            user_id: this.user.id,
+            theme_mode: defaultPreferences.theme,
+            accent_preset: defaultPreferences.accentPreset,
+            accent_hue: defaultPreferences.accentHue,
+            accent_saturation: defaultPreferences.accentSaturation,
+            accent_lightness: defaultPreferences.accentLightness,
+            accent_strength: defaultPreferences.accentStrength,
+            reduce_motion: defaultPreferences.reducedMotion,
+            extra_signin_protection: defaultPreferences.extraSigninProtection
+          })
+        ).error;
+      }
+
+      if (
+        insertPrefsError &&
         /accent_preset|accent_saturation|accent_lightness/i.test(insertPrefsError.message || "")
       ) {
         insertPrefsError = (
@@ -171,7 +192,6 @@ export class SupabaseRepository implements DataRepository {
             accent_hue: defaultPreferences.accentHue,
             accent_strength: defaultPreferences.accentStrength,
             reduce_motion: defaultPreferences.reducedMotion,
-            dashboard_layout: defaultPreferences.dashboardLayout,
             extra_signin_protection: defaultPreferences.extraSigninProtection
           })
         ).error;
@@ -248,15 +268,12 @@ export class SupabaseRepository implements DataRepository {
     const previousBest = Number(bestRows?.[0]?.score ?? 0);
     const isPersonalBest = attempt.score > previousBest;
     const streakDayMaintained = (existingTodayRows?.length ?? 0) === 0;
-    const pointsAwarded =
-      Math.round(attempt.score) + (isPersonalBest ? 10 : 0) + (streakDayMaintained ? 5 : 0);
 
     const settings = {
       mode: attempt.mode ?? "quiz",
       course_id: attempt.courseId,
       topic_breakdown: attempt.topicBreakdown,
       per_question_results: attempt.perQuestionResults,
-      points_awarded: pointsAwarded,
       personal_best_bonus: isPersonalBest ? 10 : 0,
       streak_bonus: streakDayMaintained ? 5 : 0,
       streak_day_maintained: streakDayMaintained
@@ -273,8 +290,7 @@ export class SupabaseRepository implements DataRepository {
         correct_count: attempt.correctCount,
         total_count: attempt.totalCount,
         time_spent_seconds: attempt.timeSpent,
-        settings,
-        points_awarded: pointsAwarded
+        settings
       })
       .select("id")
       .single();
@@ -402,32 +418,36 @@ export class SupabaseRepository implements DataRepository {
   async getPreferences(): Promise<AppPreferences> {
     await this.ensureBaseRows();
 
-    let { data, error } = await this.client
+    const initial = await this.client
       .from("user_preferences")
       .select(
         "user_id, theme_mode, accent_preset, accent_hue, accent_saturation, accent_lightness, accent_strength, reduce_motion, dashboard_layout, extra_signin_protection"
       )
       .eq("user_id", this.user.id)
       .single();
+    let data = (initial.data as Record<string, unknown> | null) ?? null;
+    let error = initial.error as { message?: string } | null;
 
     if (
       error &&
-      /accent_preset|accent_saturation|accent_lightness/i.test(error.message || "")
+      /dashboard_layout|accent_preset|accent_saturation|accent_lightness/i.test(
+        error.message || ""
+      )
     ) {
       const fallback = await this.client
         .from("user_preferences")
         .select(
-          "user_id, theme_mode, accent_hue, accent_strength, reduce_motion, dashboard_layout, extra_signin_protection"
+          "user_id, theme_mode, accent_preset, accent_hue, accent_saturation, accent_lightness, accent_strength, reduce_motion, extra_signin_protection"
         )
         .eq("user_id", this.user.id)
         .single();
-      data = (fallback.data as unknown as PreferencesRow | null) ?? null;
-      error = fallback.error;
+      data = (fallback.data as Record<string, unknown> | null) ?? null;
+      error = fallback.error as { message?: string } | null;
     }
 
     if (error || !data) return defaultPreferences;
 
-    const row = data as PreferencesRow;
+    const row = data as unknown as PreferencesRow;
     return {
       theme: row.theme_mode,
       reducedMotion: row.reduce_motion,
@@ -438,7 +458,7 @@ export class SupabaseRepository implements DataRepository {
       accentLightness: Number(row.accent_lightness ?? defaultPreferences.accentLightness),
       accentStrength: row.accent_strength,
       palette: row.accent_preset ?? findClosestPalette(row.accent_hue, row.accent_strength),
-      dashboardLayout: row.dashboard_layout,
+      dashboardLayout: row.dashboard_layout ?? defaultPreferences.dashboardLayout,
       extraSigninProtection: Boolean(row.extra_signin_protection)
     };
   }
@@ -461,6 +481,27 @@ export class SupabaseRepository implements DataRepository {
 
     if (
       error &&
+      /dashboard_layout|accent_preset|accent_saturation|accent_lightness/i.test(
+        error.message || ""
+      )
+    ) {
+      error = (
+        await this.client.from("user_preferences").upsert({
+          user_id: this.user.id,
+          theme_mode: preferences.theme,
+          accent_preset: preferences.accentPreset,
+          accent_hue: preferences.accentHue,
+          accent_saturation: preferences.accentSaturation,
+          accent_lightness: preferences.accentLightness,
+          accent_strength: preferences.accentStrength,
+          reduce_motion: preferences.reducedMotion,
+          extra_signin_protection: preferences.extraSigninProtection
+        })
+      ).error;
+    }
+
+    if (
+      error &&
       /accent_preset|accent_saturation|accent_lightness/i.test(error.message || "")
     ) {
       error = (
@@ -470,7 +511,6 @@ export class SupabaseRepository implements DataRepository {
           accent_hue: preferences.accentHue,
           accent_strength: preferences.accentStrength,
           reduce_motion: preferences.reducedMotion,
-          dashboard_layout: preferences.dashboardLayout,
           extra_signin_protection: preferences.extraSigninProtection
         })
       ).error;

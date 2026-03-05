@@ -22,7 +22,7 @@ export interface UserPreferenceRecord {
   accent_lightness?: number;
   accent_strength: number;
   reduce_motion: boolean;
-  dashboard_layout: string;
+  dashboard_layout?: string;
   extra_signin_protection?: boolean;
 }
 

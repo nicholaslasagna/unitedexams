@@ -251,17 +251,21 @@ export default function SettingsPage() {
     let exportPayload: unknown = localData;
 
     if (supabase && user?.id) {
+      const prefPromise = supabase
+        .from("user_preferences")
+        .select(
+          "theme_mode, accent_preset, accent_hue, accent_saturation, accent_lightness, accent_strength, reduce_motion, dashboard_layout, created_at, updated_at"
+        )
+        .eq("user_id", user.id)
+        .maybeSingle();
+
       const [profileRow, prefRow, userCoursesRows, attemptsRows, masteryRows] = await Promise.all([
         supabase
           .from("profiles")
           .select("id, email, display_name, real_name, show_real_name, show_university, university_id, role, created_at, updated_at")
           .eq("id", user.id)
           .maybeSingle(),
-        supabase
-          .from("user_preferences")
-          .select("theme_mode, accent_preset, accent_hue, accent_saturation, accent_lightness, accent_strength, reduce_motion, dashboard_layout, created_at, updated_at")
-          .eq("user_id", user.id)
-          .maybeSingle(),
+        prefPromise,
         supabase
           .from("user_courses")
           .select("course_id, created_at")
@@ -277,11 +281,23 @@ export default function SettingsPage() {
           .eq("user_id", user.id)
       ]);
 
+      let safePrefData = (prefRow.data as Record<string, unknown> | null) ?? null;
+      if (prefRow.error && /dashboard_layout/i.test(prefRow.error.message || "")) {
+        const fallbackPref = await supabase
+          .from("user_preferences")
+          .select(
+            "theme_mode, accent_preset, accent_hue, accent_saturation, accent_lightness, accent_strength, reduce_motion, created_at, updated_at"
+          )
+          .eq("user_id", user.id)
+          .maybeSingle();
+        safePrefData = (fallbackPref.data as Record<string, unknown> | null) ?? null;
+      }
+
       exportPayload = {
         ...localData,
         supabase: {
           profile: profileRow.data ?? null,
-          preferences: prefRow.data ?? null,
+          preferences: safePrefData ?? null,
           user_courses: userCoursesRows.data ?? [],
           attempts_summary: attemptsRows.data ?? [],
           mastery: masteryRows.data ?? []
