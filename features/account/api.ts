@@ -5,16 +5,51 @@ import { courses as seededCourses } from "@/data/seed";
 interface CourseCatalogRow {
   id: string;
   code: string | null;
+  title: string | null;
 }
 
 async function fetchCourseCatalog(client: SupabaseClient) {
-  const { data, error } = await client.from("courses").select("id, code");
+  const { data, error } = await client.from("courses").select("id, code, title");
   if (error) throw error;
   return (data ?? []) as CourseCatalogRow[];
 }
 
 function normalizeCode(value: string | null | undefined) {
   return (value ?? "").trim().toUpperCase();
+}
+
+function normalizeText(value: string | null | undefined) {
+  return (value ?? "").trim().toLowerCase().replace(/[^a-z0-9]+/g, " ");
+}
+
+function resolveCatalogCourseIdForSeedCourse(
+  seedCourseId: string,
+  catalog: CourseCatalogRow[]
+): string | null {
+  const directId = catalog.find((course) => course.id === seedCourseId)?.id;
+  if (directId) return directId;
+
+  const seedCourse = seededCourses.find((course) => course.id === seedCourseId);
+  if (!seedCourse) return null;
+
+  const byCode = catalog.find(
+    (course) => normalizeCode(course.code) === normalizeCode(seedCourse.code)
+  )?.id;
+  if (byCode) return byCode;
+
+  const seedName = normalizeText(seedCourse.name);
+  const byExactTitle = catalog.find(
+    (course) => normalizeText(course.title) === seedName
+  )?.id;
+  if (byExactTitle) return byExactTitle;
+
+  const byLooseTitle = catalog.find((course) => {
+    const title = normalizeText(course.title);
+    return title.includes(seedName) || seedName.includes(title);
+  })?.id;
+  if (byLooseTitle) return byLooseTitle;
+
+  return null;
 }
 
 export async function fetchUniversities(client: SupabaseClient) {
@@ -58,8 +93,9 @@ export async function fetchUserCourses(client: SupabaseClient, userId: string) {
   if (error) throw error;
 
   const seedById = new Map(seededCourses.map((course) => [course.id, course.id]));
-  const seedByCode = new Map(
-    seededCourses.map((course) => [normalizeCode(course.code), course.id])
+  const seedByCode = new Map(seededCourses.map((course) => [normalizeCode(course.code), course.id]));
+  const seedByTitle = new Map(
+    seededCourses.map((course) => [normalizeText(course.name), course.id])
   );
   const catalogById = new Map(catalog.map((course) => [course.id, course]));
   const catalogByCode = new Map(
@@ -86,6 +122,11 @@ export async function fetchUserCourses(client: SupabaseClient, userId: string) {
           return seedIdByCatalogCode;
         }
 
+        const seedIdByCatalogTitle = seedByTitle.get(normalizeText(catalogRow?.title));
+        if (seedIdByCatalogTitle) {
+          return seedIdByCatalogTitle;
+        }
+
         const catalogIdByCode = catalogByCode.get(rawCode);
         if (catalogIdByCode) {
           const byCatalogCode = seedByCode.get(
@@ -105,17 +146,15 @@ export async function fetchUserCourses(client: SupabaseClient, userId: string) {
 export async function saveUserCourses(client: SupabaseClient, userId: string, courseIds: string[]) {
   const [catalog] = await Promise.all([fetchCourseCatalog(client)]);
   const catalogIdSet = new Set(catalog.map((course) => course.id));
-  const catalogByCode = new Map(catalog.map((course) => [normalizeCode(course.code), course.id]));
-  const seedById = new Map(seededCourses.map((course) => [course.id, course]));
 
-  const normalizedCourseIds = courseIds.map((courseId) => {
+  const resolvedCourseIds = courseIds
+    .map((courseId) => {
     if (catalogIdSet.has(courseId)) return courseId;
-    const seedCourse = seedById.get(courseId);
-    if (!seedCourse) return courseId;
-    return catalogByCode.get(normalizeCode(seedCourse.code)) ?? courseId;
-  });
+      return resolveCatalogCourseIdForSeedCourse(courseId, catalog);
+    })
+    .filter((courseId): courseId is string => Boolean(courseId));
 
-  const uniqueCourseIds = Array.from(new Set(normalizedCourseIds));
+  const uniqueCourseIds = Array.from(new Set(resolvedCourseIds));
 
   const { error: deleteError } = await client.from("user_courses").delete().eq("user_id", userId);
   if (deleteError) throw deleteError;
