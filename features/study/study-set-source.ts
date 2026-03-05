@@ -100,7 +100,51 @@ async function loadQuestionCounts(client: NonNullable<ReturnType<typeof getSupab
   }, {});
 }
 
-export async function fetchPublishedStudySet(setId: string): Promise<QuizSet | null> {
+async function loadProfessorSetIds(
+  client: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>,
+  setIds: string[]
+) {
+  if (setIds.length === 0) return new Set<string>();
+  const { data, error } = await client
+    .from("questions")
+    .select("quiz_set_id")
+    .in("quiz_set_id", setIds)
+    .eq("from_professor", true);
+
+  if (error || !data) return new Set<string>();
+  return new Set((data as Array<{ quiz_set_id: string }>).map((row) => row.quiz_set_id));
+}
+
+async function isProfessorSet(
+  client: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>,
+  setId: string
+) {
+  const professorSetIds = await loadProfessorSetIds(client, [setId]);
+  return professorSetIds.has(setId);
+}
+
+async function canAccessProfessorSetFromSection(
+  client: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>,
+  setId: string,
+  sectionId?: string
+) {
+  if (!sectionId) return false;
+
+  const { data, error } = await client
+    .from("assignments")
+    .select("id")
+    .eq("quiz_set_id", setId)
+    .eq("section_id", sectionId)
+    .limit(1);
+
+  if (error) return false;
+  return (data?.length ?? 0) > 0;
+}
+
+export async function fetchPublishedStudySet(
+  setId: string,
+  options?: { sectionId?: string }
+): Promise<QuizSet | null> {
   const client = getSupabaseBrowserClient();
   if (!client) return null;
 
@@ -114,6 +158,12 @@ export async function fetchPublishedStudySet(setId: string): Promise<QuizSet | n
     .maybeSingle();
 
   if (quizError || !quizRow) return null;
+
+  const professorOwned = await isProfessorSet(client, setId);
+  if (professorOwned) {
+    const allowed = await canAccessProfessorSetFromSection(client, setId, options?.sectionId);
+    if (!allowed) return null;
+  }
 
   const { data: questionRows, error: questionsError } = await client
     .from("questions")
@@ -141,9 +191,15 @@ export async function fetchPublishedSetsByMode(mode: "quiz" | "exam" | "homework
     .order("created_at", { ascending: false });
 
   if (error || !data) return [];
-  const counts = await loadQuestionCounts(client, (data as QuizSetRow[]).map((row) => row.id));
+  const rows = data as QuizSetRow[];
+  const setIds = rows.map((row) => row.id);
+  const [counts, professorSetIds] = await Promise.all([
+    loadQuestionCounts(client, setIds),
+    loadProfessorSetIds(client, setIds)
+  ]);
+  const publicRows = rows.filter((row) => !professorSetIds.has(row.id));
 
-  return (data as QuizSetRow[]).map((row) => ({
+  return publicRows.map((row) => ({
     id: row.id,
     courseId: row.course_id,
     title: row.title,
@@ -173,9 +229,15 @@ export async function fetchPublishedSetsByCourse(courseId: string): Promise<Quiz
     .order("created_at", { ascending: false });
 
   if (error || !data) return [];
-  const counts = await loadQuestionCounts(client, (data as QuizSetRow[]).map((row) => row.id));
+  const rows = data as QuizSetRow[];
+  const setIds = rows.map((row) => row.id);
+  const [counts, professorSetIds] = await Promise.all([
+    loadQuestionCounts(client, setIds),
+    loadProfessorSetIds(client, setIds)
+  ]);
+  const publicRows = rows.filter((row) => !professorSetIds.has(row.id));
 
-  return (data as QuizSetRow[]).map((row) => ({
+  return publicRows.map((row) => ({
     id: row.id,
     courseId: row.course_id,
     title: row.title,

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Flag, Lightbulb, RotateCcw } from "lucide-react";
 import { getCourse, getQuizSet } from "@/data/seed";
 import { fetchPublishedStudySet } from "@/features/study/study-set-source";
@@ -201,6 +202,8 @@ export function HomeworkExperiencePageContent({
   setId: string;
   routePrefix: string;
 }) {
+  const searchParams = useSearchParams();
+  const sectionParam = searchParams.get("section")?.trim() || "";
   const { attempts, saveAttempt, isAuthenticated, user, supabase } = useAppData();
   const { push } = useToast();
 
@@ -225,8 +228,9 @@ export function HomeworkExperiencePageContent({
   useEffect(() => {
     let active = true;
     setLoading(true);
+    const sectionId = sectionParam || undefined;
 
-    fetchPublishedStudySet(setId)
+    fetchPublishedStudySet(setId, { sectionId })
       .then((found) => {
         if (!active) return;
         setQuiz(found ?? getQuizSet(setId) ?? null);
@@ -239,7 +243,7 @@ export function HomeworkExperiencePageContent({
     return () => {
       active = false;
     };
-  }, [setId]);
+  }, [sectionParam, setId]);
 
   const course = quiz ? getCourse(quiz.courseId) : null;
   const setMode = quiz ? resolveQuizSetMode(quiz) : "homework";

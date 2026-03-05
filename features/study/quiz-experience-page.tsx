@@ -59,6 +59,7 @@ export function QuizExperiencePageContent({
   const searchParams = useSearchParams();
   const router = useRouter();
   const fallbackQuiz = useMemo(() => getQuizSet(quizId), [quizId]);
+  const sectionParam = searchParams.get("section")?.trim() || "";
 
   const { attempts, saveAttempt, preferences, isAuthenticated } = useAppData();
   const { push } = useToast();
@@ -90,8 +91,9 @@ export function QuizExperiencePageContent({
   useEffect(() => {
     let active = true;
     setQuizLoading(true);
+    const sectionId = sectionParam || undefined;
 
-    fetchPublishedStudySet(quizId)
+    fetchPublishedStudySet(quizId, { sectionId })
       .then((remoteQuiz) => {
         if (!active) return;
         setQuiz(remoteQuiz ?? fallbackQuiz);
@@ -108,7 +110,7 @@ export function QuizExperiencePageContent({
     return () => {
       active = false;
     };
-  }, [fallbackQuiz, quizId]);
+  }, [fallbackQuiz, quizId, sectionParam]);
 
   useEffect(() => {
     if (!quiz) return;
