@@ -254,7 +254,7 @@ export default function SettingsPage() {
       const prefPromise = supabase
         .from("user_preferences")
         .select(
-          "theme_mode, accent_preset, accent_hue, accent_saturation, accent_lightness, accent_strength, reduce_motion, dashboard_layout, created_at, updated_at"
+          "theme_mode, accent_preset, accent_hue, accent_saturation, accent_lightness, accent_strength, reduce_motion, created_at, updated_at"
         )
         .eq("user_id", user.id)
         .maybeSingle();
@@ -281,23 +281,11 @@ export default function SettingsPage() {
           .eq("user_id", user.id)
       ]);
 
-      let safePrefData = (prefRow.data as Record<string, unknown> | null) ?? null;
-      if (prefRow.error && /dashboard_layout/i.test(prefRow.error.message || "")) {
-        const fallbackPref = await supabase
-          .from("user_preferences")
-          .select(
-            "theme_mode, accent_preset, accent_hue, accent_saturation, accent_lightness, accent_strength, reduce_motion, created_at, updated_at"
-          )
-          .eq("user_id", user.id)
-          .maybeSingle();
-        safePrefData = (fallbackPref.data as Record<string, unknown> | null) ?? null;
-      }
-
       exportPayload = {
         ...localData,
         supabase: {
           profile: profileRow.data ?? null,
-          preferences: safePrefData ?? null,
+          preferences: (prefRow.data as Record<string, unknown> | null) ?? null,
           user_courses: userCoursesRows.data ?? [],
           attempts_summary: attemptsRows.data ?? [],
           mastery: masteryRows.data ?? []
