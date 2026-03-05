@@ -229,7 +229,7 @@ export function AccountPageContent() {
     push({ title: "Account updated", tone: "success" });
   };
 
-  const nextOnboardingStep = () => {
+  const nextOnboardingStep = async () => {
     if (onboardingStep === 1 && !selectedUniversityId) {
       push({ title: "Please select your university", tone: "error" });
       return;
@@ -237,6 +237,19 @@ export function AccountPageContent() {
     if (onboardingStep === 2 && selectedCourses.length === 0) {
       push({ title: "Select at least one course", tone: "error" });
       return;
+    }
+
+    if (onboardingStep === 1) {
+      const profileSaved = await persistProfileChanges({
+        nextUniversityId: selectedUniversityId,
+        showSuccessToast: false
+      });
+      if (!profileSaved) return;
+    }
+
+    if (onboardingStep === 2) {
+      const coursesSaved = await persistCourses(selectedCourses);
+      if (!coursesSaved) return;
     }
 
     setOnboardingStep((step) => Math.min(3, step + 1));
@@ -677,9 +690,13 @@ export function AccountPageContent() {
                   Back
                 </Button>
                 {onboardingStep < 3 ? (
-                  <Button onClick={nextOnboardingStep}>Next</Button>
+                  <Button onClick={() => void nextOnboardingStep()} loading={saving || savingCourses}>
+                    Next
+                  </Button>
                 ) : (
-                  <Button onClick={finishOnboarding}>Finish</Button>
+                  <Button onClick={finishOnboarding} loading={saving || savingCourses}>
+                    Finish
+                  </Button>
                 )}
               </div>
             </CardBody>
