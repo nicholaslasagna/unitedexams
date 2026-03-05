@@ -17,6 +17,35 @@ import {
   type SectionSummary
 } from "@/features/professor/api";
 
+const MAX_ATTACHMENT_BYTES = 50 * 1024 * 1024;
+
+type AttachmentUploadStatus = "queued" | "uploading" | "uploaded" | "error";
+
+interface PendingAttachment {
+  id: string;
+  file: File;
+  status: AttachmentUploadStatus;
+  progress: number;
+  error: string | null;
+  uploadedUrl: string | null;
+}
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function validateAttachmentFile(file: File) {
+  if (file.type !== "application/pdf") {
+    return "Only PDF attachments are supported.";
+  }
+  if (file.size > MAX_ATTACHMENT_BYTES) {
+    return `File exceeds ${formatBytes(MAX_ATTACHMENT_BYTES)} limit.`;
+  }
+  return null;
+}
+
 export function ProfessorSectionMaterialsPage({ sectionId }: { sectionId?: string } = {}) {
   const params = useParams<{ id?: string; sectionId?: string }>();
   const resolvedSectionId = sectionId ?? params.sectionId ?? params.id ?? "";
@@ -30,8 +59,28 @@ export function ProfessorSectionMaterialsPage({ sectionId }: { sectionId?: strin
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [attachmentUrl, setAttachmentUrl] = useState("");
-  const [materialFile, setMaterialFile] = useState<File | null>(null);
+  const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
+  const [dragActive, setDragActive] = useState(false);
   const [publishing, setPublishing] = useState(false);
+
+  const appendFiles = (files: File[]) => {
+    if (files.length === 0) return;
+    const mapped = files.map((file) => ({
+      id: crypto.randomUUID(),
+      file,
+      status: "queued" as const,
+      progress: 0,
+      error: validateAttachmentFile(file),
+      uploadedUrl: null
+    }));
+    setPendingAttachments((prev) => [...prev, ...mapped]);
+  };
+
+  const updateAttachment = (id: string, patch: Partial<PendingAttachment>) => {
+    setPendingAttachments((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, ...patch } : item))
+    );
+  };
 
   const refresh = async () => {
     if (!supabase || !resolvedSectionId) return;
@@ -116,12 +165,74 @@ export function ProfessorSectionMaterialsPage({ sectionId }: { sectionId?: strin
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Upload PDF (optional)</label>
-              <Input
-                type="file"
-                accept="application/pdf"
-                onChange={(event) => setMaterialFile(event.target.files?.[0] ?? null)}
-              />
+              <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Add section attachments</label>
+              <div
+                className={`rounded-xl border border-dashed px-4 py-6 text-sm transition ${dragActive ? "border-accent bg-accent/10" : "border-borderc bg-soft"}`}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  setDragActive(true);
+                }}
+                onDragLeave={() => setDragActive(false)}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  setDragActive(false);
+                  appendFiles(Array.from(event.dataTransfer.files));
+                }}
+              >
+                <div className="space-y-2 text-center">
+                  <p className="font-semibold text-text">Drag and drop PDF files here</p>
+                  <p className="text-xs text-muted">or</p>
+                  <label className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-borderc bg-surface px-3 py-2 text-xs font-semibold text-text hover:border-accent">
+                    Select PDF files
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      multiple
+                      className="hidden"
+                      onChange={(event) => {
+                        appendFiles(Array.from(event.target.files ?? []));
+                        event.currentTarget.value = "";
+                      }}
+                    />
+                  </label>
+                  <p className="text-xs text-muted">PDF only • max {formatBytes(MAX_ATTACHMENT_BYTES)} each</p>
+                </div>
+              </div>
+
+              {pendingAttachments.length > 0 ? (
+                <div className="space-y-2">
+                  {pendingAttachments.map((item) => (
+                    <div key={item.id} className="rounded-lg border border-borderc bg-surface p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-text">{item.file.name}</p>
+                          <p className="text-xs text-muted">
+                            {formatBytes(item.file.size)} • {item.status}
+                          </p>
+                          {item.error ? <p className="mt-1 text-xs text-danger">{item.error}</p> : null}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          disabled={publishing && item.status === "uploading"}
+                          onClick={() =>
+                            setPendingAttachments((prev) => prev.filter((entry) => entry.id !== item.id))
+                          }
+                        >
+                          Remove
+                        </Button>
+                      </div>
+
+                      <div className="mt-2 h-2 w-full rounded-full bg-soft">
+                        <div
+                          className={`h-full rounded-full transition-all ${item.error ? "bg-danger" : "bg-accent"}`}
+                          style={{ width: `${Math.max(0, Math.min(100, item.progress))}%` }}
+                        />
+                      </div>
+                      <p className="mt-1 text-[11px] text-muted">{Math.round(item.progress)}%</p>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </div>
             <Button
               loading={publishing}
@@ -139,32 +250,79 @@ export function ProfessorSectionMaterialsPage({ sectionId }: { sectionId?: strin
                     attachments.push(attachmentUrl.trim());
                   }
 
-                  if (materialFile) {
-                    const ext = materialFile.name.split(".").pop()?.toLowerCase() || "pdf";
+                  const invalidAttachment = pendingAttachments.find((item) => item.error);
+                  if (invalidAttachment) {
+                    throw new Error(`Fix attachment issue: ${invalidAttachment.error}`);
+                  }
+
+                  for (const item of pendingAttachments) {
+                    if (item.uploadedUrl) {
+                      attachments.push(item.uploadedUrl);
+                      continue;
+                    }
+
+                    const ext = item.file.name.split(".").pop()?.toLowerCase() || "pdf";
                     const safeExt = ext === "pdf" ? ext : "pdf";
                     const path = `${resolvedSectionId}/${Date.now()}-${Math.random().toString(16).slice(2)}.${safeExt}`;
 
+                    updateAttachment(item.id, { status: "uploading", progress: 5, error: null });
+                    const progressTimer = window.setInterval(() => {
+                      setPendingAttachments((prev) =>
+                        prev.map((entry) => {
+                          if (entry.id !== item.id || entry.status !== "uploading") return entry;
+                          return {
+                            ...entry,
+                            progress: Math.min(95, entry.progress + Math.random() * 18)
+                          };
+                        })
+                      );
+                    }, 180);
+
                     const { error: uploadError } = await supabase.storage
                       .from("section-materials")
-                      .upload(path, materialFile, {
+                      .upload(path, item.file, {
                         cacheControl: "3600",
                         upsert: false,
                         contentType: "application/pdf"
                       });
 
+                    window.clearInterval(progressTimer);
+
                     if (uploadError) {
                       const message = (uploadError.message ?? "").toLowerCase();
                       if (message.includes("bucket not found")) {
+                        updateAttachment(item.id, {
+                          status: "error",
+                          error: "Missing section-materials bucket",
+                          progress: 0
+                        });
                         throw new Error(
                           "Storage bucket section-materials is missing. Apply the latest Supabase migration and try again."
                         );
                       }
+                      updateAttachment(item.id, {
+                        status: "error",
+                        error: uploadError.message ?? "Upload failed",
+                        progress: 0
+                      });
                       throw uploadError;
                     }
 
                     const { data: urlData } = supabase.storage.from("section-materials").getPublicUrl(path);
                     if (urlData?.publicUrl) {
                       attachments.push(urlData.publicUrl);
+                      updateAttachment(item.id, {
+                        status: "uploaded",
+                        uploadedUrl: urlData.publicUrl,
+                        progress: 100
+                      });
+                    } else {
+                      updateAttachment(item.id, {
+                        status: "error",
+                        error: "Uploaded but no public URL returned.",
+                        progress: 0
+                      });
+                      throw new Error("Attachment URL generation failed.");
                     }
                   }
 
@@ -178,7 +336,7 @@ export function ProfessorSectionMaterialsPage({ sectionId }: { sectionId?: strin
                   setTitle("");
                   setBody("");
                   setAttachmentUrl("");
-                  setMaterialFile(null);
+                  setPendingAttachments([]);
                   push({ title: "Material posted", tone: "success" });
                   await refresh();
                 } catch (error) {
