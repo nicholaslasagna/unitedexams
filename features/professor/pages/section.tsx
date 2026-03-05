@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAppData } from "@/lib/app-data-context";
 import { useToast } from "@/lib/hooks/use-toast";
 import {
+  createProfessorQuizSet,
+  deleteProfessorSection,
   createSectionAssignment,
   getSectionAnalytics,
   listProfessorSections,
@@ -29,6 +31,7 @@ interface QuizSetOption {
 }
 
 export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {}) {
+  const router = useRouter();
   const params = useParams<{ id?: string; sectionId?: string }>();
   const resolvedSectionId = sectionId ?? params.sectionId ?? params.id ?? "";
 
@@ -45,6 +48,19 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
   const [submittingAssignmentId, setSubmittingAssignmentId] = useState<string | null>(null);
 
   const [quizSetId, setQuizSetId] = useState("");
+  const [creatingQuizSet, setCreatingQuizSet] = useState(false);
+  const [quizSetTitle, setQuizSetTitle] = useState("");
+  const [quizSetDescription, setQuizSetDescription] = useState("");
+  const [quizSetDifficulty, setQuizSetDifficulty] = useState<"intro" | "medium" | "hard">("medium");
+  const [quizSetMinutes, setQuizSetMinutes] = useState("20");
+  const [quizSetMode, setQuizSetMode] = useState<"quiz" | "exam" | "homework">("quiz");
+  const [quizSetTags, setQuizSetTags] = useState("");
+  const [questionPrompt, setQuestionPrompt] = useState("");
+  const [questionOptionA, setQuestionOptionA] = useState("");
+  const [questionOptionB, setQuestionOptionB] = useState("");
+  const [questionOptionC, setQuestionOptionC] = useState("");
+  const [questionOptionD, setQuestionOptionD] = useState("");
+  const [correctOptionIndex, setCorrectOptionIndex] = useState("0");
   const [assignmentTitle, setAssignmentTitle] = useState("");
   const [instructions, setInstructions] = useState("");
   const [dueAt, setDueAt] = useState("");
@@ -53,6 +69,7 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
   const [gradingMode, setGradingMode] = useState<"auto" | "manual" | "mixed">("auto");
 
   const isProfessor = profile.role === "professor" || profile.role === "admin";
+  const canDeleteSection = profile.role === "professor";
 
   const refresh = async () => {
     if (!supabase || !resolvedSectionId) return;
@@ -90,12 +107,16 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
           setAvailableQuizSets(mapped);
           if (!quizSetId && mapped[0]) {
             setQuizSetId(mapped[0].id);
+          } else if (mapped.length === 0) {
+            setQuizSetId("");
           }
         } else {
           setAvailableQuizSets([]);
+          setQuizSetId("");
         }
       } else {
         setAvailableQuizSets([]);
+        setQuizSetId("");
       }
     } catch {
       setSection(null);
@@ -104,6 +125,7 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
       setMembers([]);
       setSectionExams([]);
       setAvailableQuizSets([]);
+      setQuizSetId("");
     } finally {
       setLoading(false);
     }
@@ -193,12 +215,209 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
                 <Link href={`/app/professor/sections/${section.id}/exams`}>Exams</Link>
               </Button>
             ) : null}
+            {canDeleteSection ? (
+              <Button
+                variant="danger"
+                onClick={async () => {
+                  if (!supabase) return;
+                  const confirmed = window.confirm("Delete this section? This also removes members, assignments, materials, and exams.");
+                  if (!confirmed) return;
+                  try {
+                    await deleteProfessorSection(supabase, section.id);
+                    push({ title: "Section deleted", tone: "success" });
+                    router.push("/app/professor/sections");
+                  } catch (error) {
+                    push({ title: "Unable to delete section", description: (error as Error).message, tone: "error" });
+                  }
+                }}
+              >
+                Delete section
+              </Button>
+            ) : null}
           </div>
         </CardHeader>
         <CardBody className="space-y-4">
           {isProfessor ? (
             <div className="space-y-3 rounded-xl border border-borderc bg-soft p-4">
               <h2 className="font-display text-2xl font-semibold">Create assignment</h2>
+              <div className="space-y-3 rounded-xl border border-borderc bg-surface p-4">
+                <h3 className="text-base font-semibold text-text">Create quiz set</h3>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Title</label>
+                    <Input
+                      value={quizSetTitle}
+                      onChange={(event) => setQuizSetTitle(event.target.value)}
+                      placeholder="Quiz 1 · Limits and continuity"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Mode</label>
+                    <select
+                      className="h-11 w-full rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
+                      value={quizSetMode}
+                      onChange={(event) => setQuizSetMode(event.target.value as typeof quizSetMode)}
+                    >
+                      <option value="quiz">Quiz</option>
+                      <option value="homework">Homework</option>
+                      <option value="exam">Exam</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Description</label>
+                  <Input
+                    value={quizSetDescription}
+                    onChange={(event) => setQuizSetDescription(event.target.value)}
+                    placeholder="Short overview shown to students."
+                  />
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Difficulty</label>
+                    <select
+                      className="h-11 w-full rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
+                      value={quizSetDifficulty}
+                      onChange={(event) => setQuizSetDifficulty(event.target.value as typeof quizSetDifficulty)}
+                    >
+                      <option value="intro">Intro</option>
+                      <option value="medium">Medium</option>
+                      <option value="hard">Hard</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Est. minutes</label>
+                    <Input
+                      value={quizSetMinutes}
+                      onChange={(event) => setQuizSetMinutes(event.target.value.replace(/[^0-9]/g, ""))}
+                      placeholder="20"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Tags</label>
+                    <Input
+                      value={quizSetTags}
+                      onChange={(event) => setQuizSetTags(event.target.value)}
+                      placeholder="limits, continuity, derivatives"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Starter question prompt</label>
+                  <textarea
+                    value={questionPrompt}
+                    onChange={(event) => setQuestionPrompt(event.target.value)}
+                    className="min-h-20 w-full rounded-[10px] border border-borderc bg-surface px-3 py-2 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
+                    placeholder="Enter the first question students will see."
+                  />
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <Input value={questionOptionA} onChange={(event) => setQuestionOptionA(event.target.value)} placeholder="Option A" />
+                  <Input value={questionOptionB} onChange={(event) => setQuestionOptionB(event.target.value)} placeholder="Option B" />
+                  <Input value={questionOptionC} onChange={(event) => setQuestionOptionC(event.target.value)} placeholder="Option C (optional)" />
+                  <Input value={questionOptionD} onChange={(event) => setQuestionOptionD(event.target.value)} placeholder="Option D (optional)" />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Correct option</label>
+                  <select
+                    className="h-11 w-full rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
+                    value={correctOptionIndex}
+                    onChange={(event) => setCorrectOptionIndex(event.target.value)}
+                  >
+                    <option value="0">Option A</option>
+                    <option value="1">Option B</option>
+                    <option value="2">Option C</option>
+                    <option value="3">Option D</option>
+                  </select>
+                </div>
+
+                <Button
+                  loading={creatingQuizSet}
+                  onClick={async () => {
+                    if (!supabase) return;
+                    if (!quizSetTitle.trim()) {
+                      push({ title: "Quiz set title is required", tone: "error" });
+                      return;
+                    }
+                    if (!questionPrompt.trim()) {
+                      push({ title: "Starter question prompt is required", tone: "error" });
+                      return;
+                    }
+
+                    const options = [questionOptionA, questionOptionB, questionOptionC, questionOptionD]
+                      .map((value) => value.trim())
+                      .filter((value) => value.length > 0);
+                    if (options.length < 2) {
+                      push({ title: "At least two answer options are required", tone: "error" });
+                      return;
+                    }
+
+                    const correctIndex = Number(correctOptionIndex);
+                    if (Number.isNaN(correctIndex) || correctIndex < 0 || correctIndex >= options.length) {
+                      push({ title: "Select a valid correct option", tone: "error" });
+                      return;
+                    }
+
+                    const parsedMinutes = Number(quizSetMinutes || "0");
+                    if (!Number.isFinite(parsedMinutes) || parsedMinutes < 1 || parsedMinutes > 240) {
+                      push({ title: "Estimated minutes must be between 1 and 240", tone: "error" });
+                      return;
+                    }
+
+                    const tags = quizSetTags
+                      .split(",")
+                      .map((tag) => tag.trim().toLowerCase())
+                      .filter((tag) => tag.length > 0)
+                      .slice(0, 8);
+
+                    setCreatingQuizSet(true);
+                    try {
+                      const nextSetId = await createProfessorQuizSet(supabase, {
+                        sectionId: resolvedSectionId,
+                        title: quizSetTitle.trim(),
+                        description: quizSetDescription.trim(),
+                        difficulty: quizSetDifficulty,
+                        estMinutes: parsedMinutes,
+                        mode: quizSetMode,
+                        tags,
+                        questionPrompt: questionPrompt.trim(),
+                        questionOptions: options,
+                        correctOptionIndexes: [correctIndex],
+                        explanation: ""
+                      });
+
+                      setQuizSetTitle("");
+                      setQuizSetDescription("");
+                      setQuizSetDifficulty("medium");
+                      setQuizSetMinutes("20");
+                      setQuizSetMode("quiz");
+                      setQuizSetTags("");
+                      setQuestionPrompt("");
+                      setQuestionOptionA("");
+                      setQuestionOptionB("");
+                      setQuestionOptionC("");
+                      setQuestionOptionD("");
+                      setCorrectOptionIndex("0");
+                      setQuizSetId(nextSetId);
+
+                      push({ title: "Quiz set created", tone: "success" });
+                      await refresh();
+                    } catch (error) {
+                      push({ title: "Unable to create quiz set", description: (error as Error).message, tone: "error" });
+                    } finally {
+                      setCreatingQuizSet(false);
+                    }
+                  }}
+                >
+                  Create quiz set
+                </Button>
+              </div>
+
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Title</label>
@@ -215,6 +434,9 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
                     value={quizSetId}
                     onChange={(event) => setQuizSetId(event.target.value)}
                   >
+                    {availableQuizSets.length === 0 ? (
+                      <option value="">No quiz sets available for this course</option>
+                    ) : null}
                     {availableQuizSets.map((set) => (
                       <option key={set.id} value={set.id}>
                         {set.title} ({set.est_minutes}m)

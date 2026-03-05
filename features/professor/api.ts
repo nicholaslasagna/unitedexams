@@ -9,6 +9,20 @@ export interface SectionSummary {
   created_at: string;
 }
 
+export interface CreateProfessorQuizSetPayload {
+  sectionId: string;
+  title: string;
+  description?: string;
+  difficulty: "intro" | "medium" | "hard";
+  estMinutes: number;
+  mode: "quiz" | "exam" | "homework";
+  tags: string[];
+  questionPrompt: string;
+  questionOptions: string[];
+  correctOptionIndexes: number[];
+  explanation?: string;
+}
+
 export interface AssignmentRow {
   id: string;
   section_id: string;
@@ -123,6 +137,11 @@ export async function createProfessorSection(
   throw new Error(lastError?.message ?? "Unable to create section.");
 }
 
+export async function deleteProfessorSection(client: SupabaseClient, sectionId: string) {
+  const { error } = await client.from("class_sections").delete().eq("id", sectionId);
+  if (error) throw error;
+}
+
 export async function regenerateJoinCode(client: SupabaseClient, sectionId: string) {
   const { data, error } = await client.rpc("regenerate_section_join_code", {
     section_id_input: sectionId
@@ -151,6 +170,28 @@ export async function joinSectionByCode(client: SupabaseClient, joinCode: string
   const second = await client.rpc("join_section_by_code", { code: normalized });
   if (second.error) throw second.error;
   return second.data as string;
+}
+
+export async function createProfessorQuizSet(
+  client: SupabaseClient,
+  payload: CreateProfessorQuizSetPayload
+) {
+  const { data, error } = await client.rpc("create_professor_quiz_set", {
+    section_id_input: payload.sectionId,
+    title_input: payload.title,
+    description_input: payload.description ?? "",
+    difficulty_input: payload.difficulty,
+    est_minutes_input: payload.estMinutes,
+    mode_input: payload.mode,
+    tags_input: payload.tags,
+    question_prompt_input: payload.questionPrompt,
+    question_options_input: payload.questionOptions,
+    correct_option_indexes_input: payload.correctOptionIndexes,
+    explanation_input: payload.explanation ?? ""
+  });
+
+  if (error) throw error;
+  return String(data);
 }
 
 export async function listSectionAssignments(client: SupabaseClient, sectionId: string) {
