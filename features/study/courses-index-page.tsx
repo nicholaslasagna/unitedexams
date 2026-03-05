@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Filter, Search } from "lucide-react";
 import { courses, quizSets } from "@/data/seed";
 import { Card, CardBody } from "@/components/ui/card";
@@ -25,7 +25,6 @@ export function CoursesIndexContent({
   title?: string;
   subtitle?: string;
 }) {
-  const router = useRouter();
   const { attempts } = useAppData();
   const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState<string>("all");
@@ -125,12 +124,11 @@ export function CoursesIndexContent({
                   ))}
                 </div>
 
-                <Button
-                  className="w-full justify-between"
-                  onClick={() => router.push(withPrefix(routePrefix, `/courses/${course.id}`))}
-                >
-                  Open learning hub
-                  <span aria-hidden>→</span>
+                <Button className="w-full justify-between" asChild>
+                  <Link href={withPrefix(routePrefix, `/courses/${course.id}`)}>
+                    Open learning hub
+                    <span aria-hidden>→</span>
+                  </Link>
                 </Button>
               </CardBody>
             </Card>

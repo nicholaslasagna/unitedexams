@@ -155,14 +155,13 @@ export class SupabaseRepository implements DataRepository {
           accent_lightness: defaultPreferences.accentLightness,
           accent_strength: defaultPreferences.accentStrength,
           reduce_motion: defaultPreferences.reducedMotion,
-          dashboard_layout: defaultPreferences.dashboardLayout,
           extra_signin_protection: defaultPreferences.extraSigninProtection
         })
       ).error;
 
       if (
         insertPrefsError &&
-        /dashboard_layout|accent_preset|accent_saturation|accent_lightness/i.test(
+        /accent_preset|accent_saturation|accent_lightness/i.test(
           insertPrefsError.message || ""
         )
       ) {
@@ -421,7 +420,7 @@ export class SupabaseRepository implements DataRepository {
     const initial = await this.client
       .from("user_preferences")
       .select(
-        "user_id, theme_mode, accent_preset, accent_hue, accent_saturation, accent_lightness, accent_strength, reduce_motion, dashboard_layout, extra_signin_protection"
+        "user_id, theme_mode, accent_preset, accent_hue, accent_saturation, accent_lightness, accent_strength, reduce_motion, extra_signin_protection"
       )
       .eq("user_id", this.user.id)
       .single();
@@ -430,14 +429,14 @@ export class SupabaseRepository implements DataRepository {
 
     if (
       error &&
-      /dashboard_layout|accent_preset|accent_saturation|accent_lightness/i.test(
+      /accent_preset|accent_saturation|accent_lightness/i.test(
         error.message || ""
       )
     ) {
       const fallback = await this.client
         .from("user_preferences")
         .select(
-          "user_id, theme_mode, accent_preset, accent_hue, accent_saturation, accent_lightness, accent_strength, reduce_motion, extra_signin_protection"
+          "user_id, theme_mode, accent_hue, accent_strength, reduce_motion, extra_signin_protection"
         )
         .eq("user_id", this.user.id)
         .single();
@@ -458,7 +457,7 @@ export class SupabaseRepository implements DataRepository {
       accentLightness: Number(row.accent_lightness ?? defaultPreferences.accentLightness),
       accentStrength: row.accent_strength,
       palette: row.accent_preset ?? findClosestPalette(row.accent_hue, row.accent_strength),
-      dashboardLayout: row.dashboard_layout ?? defaultPreferences.dashboardLayout,
+      dashboardLayout: defaultPreferences.dashboardLayout,
       extraSigninProtection: Boolean(row.extra_signin_protection)
     };
   }
@@ -475,13 +474,12 @@ export class SupabaseRepository implements DataRepository {
       accent_lightness: preferences.accentLightness,
       accent_strength: preferences.accentStrength,
       reduce_motion: preferences.reducedMotion,
-      dashboard_layout: preferences.dashboardLayout,
       extra_signin_protection: preferences.extraSigninProtection
     });
 
     if (
       error &&
-      /dashboard_layout|accent_preset|accent_saturation|accent_lightness/i.test(
+      /accent_preset|accent_saturation|accent_lightness/i.test(
         error.message || ""
       )
     ) {
