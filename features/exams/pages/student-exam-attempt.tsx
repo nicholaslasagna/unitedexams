@@ -49,7 +49,9 @@ function normalizeOptionOrder(questions: Question[], shouldShuffle: boolean) {
 function gradeLocal(question: Question, selected: number[]) {
   if (!question.correct || question.correct.length === 0) return false;
   const a = [...selected].sort((x, y) => x - y);
-  const b = [...question.correct].sort((x, y) => x - y);
+  const b = [...question.correct]
+    .filter((value): value is number => typeof value === "number")
+    .sort((x, y) => x - y);
   if (a.length !== b.length) return false;
   return a.every((value, index) => value === b[index]);
 }
@@ -454,7 +456,9 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
                         {mappedOptions.map((optionIndex) => {
                           const optionLabel = question.options?.[optionIndex] ?? "";
                           const isSelected = selected.includes(optionIndex);
-                          const isCorrect = (question.correct ?? []).includes(optionIndex);
+                          const isCorrect = (question.correct ?? [])
+                            .filter((value): value is number => typeof value === "number")
+                            .includes(optionIndex);
                           return (
                             <li key={`${question.id}:${optionIndex}`} className="rounded-lg border border-borderc bg-surface px-3 py-2 text-xs text-muted">
                               <span className="font-semibold text-text">{optionLabel}</span>

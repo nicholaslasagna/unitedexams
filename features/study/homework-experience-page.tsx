@@ -9,7 +9,13 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Markdown } from "@/components/ui/markdown";
-import { countMissed, gradeQuestion, summarizeAttempt } from "@/features/quiz/engine";
+import {
+  countMissed,
+  gradeQuestion,
+  isOpenResponseQuestion,
+  requiresSelfMark,
+  summarizeAttempt
+} from "@/features/quiz/engine";
 import { useAppData } from "@/lib/app-data-context";
 import { useToast } from "@/lib/hooks/use-toast";
 import { resolveQuizSetMode } from "@/lib/study/set-mode";
@@ -380,7 +386,7 @@ export function HomeworkExperiencePageContent({
   }, [attempts, quiz]);
 
   const toggleOption = (optionIndex: number) => {
-    if (!currentQuestion || currentQuestion.type === "free") return;
+    if (!currentQuestion || isOpenResponseQuestion(currentQuestion)) return;
     if (submittedByQuestion[currentQuestion.id]) return;
 
     setSelectedByQuestion((prev) => {
@@ -401,13 +407,17 @@ export function HomeworkExperiencePageContent({
     if (!currentQuestion) return;
     if (submittedByQuestion[currentQuestion.id]) return;
 
-    if (currentQuestion.type === "free") {
+    if (isOpenResponseQuestion(currentQuestion)) {
       const response = (responseByQuestion[currentQuestion.id] ?? "").trim();
       if (!response) {
         push({ title: "Write your solution first", description: "Show your work before submitting." });
         return;
       }
       setSubmittedByQuestion((prev) => ({ ...prev, [currentQuestion.id]: true }));
+      if (!requiresSelfMark(currentQuestion)) {
+        const isCorrect = gradeQuestion(currentQuestion, [], response);
+        setCorrectByQuestion((prev) => ({ ...prev, [currentQuestion.id]: isCorrect }));
+      }
       setShowFullSolutionByQuestion((prev) => ({ ...prev, [currentQuestion.id]: true }));
       return;
     }
@@ -601,12 +611,12 @@ export function HomeworkExperiencePageContent({
   const showFullSolution = currentQuestion ? Boolean(showFullSolutionByQuestion[currentQuestion.id]) : false;
   const questionSubmitted = currentQuestion ? Boolean(submittedByQuestion[currentQuestion.id]) : false;
   const pendingSelfMark =
-    currentQuestion?.type === "free" && questionSubmitted
+    currentQuestion && requiresSelfMark(currentQuestion) && questionSubmitted
       ? selfMarkedByQuestion[currentQuestion.id] === undefined
       : false;
 
   const canAdvance = currentQuestion
-    ? currentQuestion.type === "free"
+    ? requiresSelfMark(currentQuestion)
       ? questionSubmitted && !pendingSelfMark
       : questionSubmitted
     : false;
@@ -700,7 +710,7 @@ export function HomeworkExperiencePageContent({
                 <>
                   <div className="space-y-3">
                     <Markdown content={currentQuestion.prompt} className="quiz-question-prompt" promoteMathInInlineCode />
-                    {currentQuestion.type === "free" ? (
+                    {isOpenResponseQuestion(currentQuestion) ? (
                       <textarea
                         value={responseByQuestion[currentQuestion.id] ?? ""}
                         onChange={(event) =>
@@ -709,9 +719,16 @@ export function HomeworkExperiencePageContent({
                             [currentQuestion.id]: event.target.value
                           }))
                         }
-                        placeholder="Show your full work, not just the final answer."
+                        placeholder={
+                          currentQuestion.type === "fill"
+                            ? "Enter a short response."
+                            : "Show your full work, not just the final answer."
+                        }
                         disabled={questionSubmitted}
-                        className="min-h-40 w-full rounded-xl border border-borderc bg-soft p-4 font-mono text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-brand-2/60"
+                        className={cn(
+                          "w-full rounded-xl border border-borderc bg-soft p-4 font-mono text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-brand-2/60",
+                          currentQuestion.type === "fill" ? "min-h-24" : "min-h-40"
+                        )}
                       />
                     ) : (
                       <div className="space-y-2">
@@ -783,7 +800,7 @@ export function HomeworkExperiencePageContent({
                     {!questionSubmitted ? (
                       <Button onClick={submitCurrent}>Submit answer</Button>
                     ) : null}
-                    {questionSubmitted && currentQuestion.type !== "free" && !correctByQuestion[currentQuestion.id] ? (
+                    {questionSubmitted && !isOpenResponseQuestion(currentQuestion) && !correctByQuestion[currentQuestion.id] ? (
                       <Button variant="ghost" onClick={resetCurrent}>
                         Try again
                       </Button>
@@ -827,7 +844,7 @@ export function HomeworkExperiencePageContent({
                             ? "Correct."
                             : "Needs review."}
                       </p>
-                      {currentQuestion.type === "free" ? (
+                      {requiresSelfMark(currentQuestion) ? (
                         <div className="flex flex-wrap gap-2">
                           <Button
                             variant={selfMarkedByQuestion[currentQuestion.id] === true ? "primary" : "secondary"}

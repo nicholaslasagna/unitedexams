@@ -22,10 +22,10 @@ interface QuestionRow {
   id: string;
   external_id: string | null;
   quiz_set_id: string;
-  type: "single" | "multi" | "free";
+  type: "single" | "multi" | "fill" | "free";
   prompt_md: string;
   options: string[] | null;
-  correct: number[] | null;
+  correct: Array<number | string> | null;
   explanation_md: string;
   solution_md: string | null;
   walkthrough_steps: string[] | null;
@@ -55,7 +55,7 @@ function toQuestion(row: QuestionRow, fallbackTags: string[]): Question {
     type: row.type,
     prompt: row.prompt_md,
     options: row.options ?? undefined,
-    correct: row.correct ?? undefined,
+    correct: Array.isArray(row.correct) ? row.correct : undefined,
     explanation: row.explanation_md,
     solutionMd: row.solution_md ?? undefined,
     walkthroughSteps: row.walkthrough_steps ?? undefined,

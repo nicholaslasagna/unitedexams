@@ -88,7 +88,9 @@ function asPerQuestionResults(value: unknown): PerQuestionResult[] {
         questionType: item.questionType ?? "single",
         isCorrect: Boolean(item.isCorrect),
         selected: Array.isArray(item.selected) ? item.selected.map((x) => Number(x)) : [],
-        correct: Array.isArray(item.correct) ? item.correct.map((x) => Number(x)) : [],
+        correct: Array.isArray(item.correct)
+          ? item.correct.map((x) => (typeof x === "number" ? x : String(x)))
+          : [],
         responseText: item.responseText,
         selfMarked: item.selfMarked,
         tags: Array.isArray(item.tags) ? item.tags.map((x) => String(x)) : []

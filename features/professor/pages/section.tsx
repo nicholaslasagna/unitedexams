@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { useAppData } from "@/lib/app-data-context";
 import { useToast } from "@/lib/hooks/use-toast";
 import {
-  createProfessorQuizSet,
   deleteProfessorSection,
   createSectionAssignment,
   getSectionAnalytics,
@@ -48,19 +47,6 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
   const [submittingAssignmentId, setSubmittingAssignmentId] = useState<string | null>(null);
 
   const [quizSetId, setQuizSetId] = useState("");
-  const [creatingQuizSet, setCreatingQuizSet] = useState(false);
-  const [quizSetTitle, setQuizSetTitle] = useState("");
-  const [quizSetDescription, setQuizSetDescription] = useState("");
-  const [quizSetDifficulty, setQuizSetDifficulty] = useState<"intro" | "medium" | "hard">("medium");
-  const [quizSetMinutes, setQuizSetMinutes] = useState("20");
-  const [quizSetMode, setQuizSetMode] = useState<"quiz" | "exam" | "homework">("quiz");
-  const [quizSetTags, setQuizSetTags] = useState("");
-  const [questionPrompt, setQuestionPrompt] = useState("");
-  const [questionOptionA, setQuestionOptionA] = useState("");
-  const [questionOptionB, setQuestionOptionB] = useState("");
-  const [questionOptionC, setQuestionOptionC] = useState("");
-  const [questionOptionD, setQuestionOptionD] = useState("");
-  const [correctOptionIndex, setCorrectOptionIndex] = useState("0");
   const [assignmentTitle, setAssignmentTitle] = useState("");
   const [instructions, setInstructions] = useState("");
   const [dueAt, setDueAt] = useState("");
@@ -240,181 +226,15 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
           {isProfessor ? (
             <div className="space-y-3 rounded-xl border border-borderc bg-soft p-4">
               <h2 className="font-display text-2xl font-semibold">Create assignment</h2>
-              <div className="space-y-3 rounded-xl border border-borderc bg-surface p-4">
-                <h3 className="text-base font-semibold text-text">Create quiz set</h3>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Title</label>
-                    <Input
-                      value={quizSetTitle}
-                      onChange={(event) => setQuizSetTitle(event.target.value)}
-                      placeholder="Quiz 1 · Limits and continuity"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Mode</label>
-                    <select
-                      className="h-11 w-full rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
-                      value={quizSetMode}
-                      onChange={(event) => setQuizSetMode(event.target.value as typeof quizSetMode)}
-                    >
-                      <option value="quiz">Quiz</option>
-                      <option value="homework">Homework</option>
-                      <option value="exam">Exam</option>
-                    </select>
-                  </div>
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-borderc bg-surface p-4">
+                <div>
+                  <h3 className="text-base font-semibold text-text">Quiz Builder</h3>
+                  <p className="text-xs text-muted">
+                    Build full quiz sets with multiple question types and student preview.
+                  </p>
                 </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Description</label>
-                  <Input
-                    value={quizSetDescription}
-                    onChange={(event) => setQuizSetDescription(event.target.value)}
-                    placeholder="Short overview shown to students."
-                  />
-                </div>
-
-                <div className="grid gap-3 md:grid-cols-3">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Difficulty</label>
-                    <select
-                      className="h-11 w-full rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
-                      value={quizSetDifficulty}
-                      onChange={(event) => setQuizSetDifficulty(event.target.value as typeof quizSetDifficulty)}
-                    >
-                      <option value="intro">Intro</option>
-                      <option value="medium">Medium</option>
-                      <option value="hard">Hard</option>
-                    </select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Est. minutes</label>
-                    <Input
-                      value={quizSetMinutes}
-                      onChange={(event) => setQuizSetMinutes(event.target.value.replace(/[^0-9]/g, ""))}
-                      placeholder="20"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Tags</label>
-                    <Input
-                      value={quizSetTags}
-                      onChange={(event) => setQuizSetTags(event.target.value)}
-                      placeholder="limits, continuity, derivatives"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Starter question prompt</label>
-                  <textarea
-                    value={questionPrompt}
-                    onChange={(event) => setQuestionPrompt(event.target.value)}
-                    className="min-h-20 w-full rounded-[10px] border border-borderc bg-surface px-3 py-2 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
-                    placeholder="Enter the first question students will see."
-                  />
-                </div>
-
-                <div className="grid gap-3 md:grid-cols-2">
-                  <Input value={questionOptionA} onChange={(event) => setQuestionOptionA(event.target.value)} placeholder="Option A" />
-                  <Input value={questionOptionB} onChange={(event) => setQuestionOptionB(event.target.value)} placeholder="Option B" />
-                  <Input value={questionOptionC} onChange={(event) => setQuestionOptionC(event.target.value)} placeholder="Option C (optional)" />
-                  <Input value={questionOptionD} onChange={(event) => setQuestionOptionD(event.target.value)} placeholder="Option D (optional)" />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Correct option</label>
-                  <select
-                    className="h-11 w-full rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
-                    value={correctOptionIndex}
-                    onChange={(event) => setCorrectOptionIndex(event.target.value)}
-                  >
-                    <option value="0">Option A</option>
-                    <option value="1">Option B</option>
-                    <option value="2">Option C</option>
-                    <option value="3">Option D</option>
-                  </select>
-                </div>
-
-                <Button
-                  loading={creatingQuizSet}
-                  onClick={async () => {
-                    if (!supabase) return;
-                    if (!quizSetTitle.trim()) {
-                      push({ title: "Quiz set title is required", tone: "error" });
-                      return;
-                    }
-                    if (!questionPrompt.trim()) {
-                      push({ title: "Starter question prompt is required", tone: "error" });
-                      return;
-                    }
-
-                    const options = [questionOptionA, questionOptionB, questionOptionC, questionOptionD]
-                      .map((value) => value.trim())
-                      .filter((value) => value.length > 0);
-                    if (options.length < 2) {
-                      push({ title: "At least two answer options are required", tone: "error" });
-                      return;
-                    }
-
-                    const correctIndex = Number(correctOptionIndex);
-                    if (Number.isNaN(correctIndex) || correctIndex < 0 || correctIndex >= options.length) {
-                      push({ title: "Select a valid correct option", tone: "error" });
-                      return;
-                    }
-
-                    const parsedMinutes = Number(quizSetMinutes || "0");
-                    if (!Number.isFinite(parsedMinutes) || parsedMinutes < 1 || parsedMinutes > 240) {
-                      push({ title: "Estimated minutes must be between 1 and 240", tone: "error" });
-                      return;
-                    }
-
-                    const tags = quizSetTags
-                      .split(",")
-                      .map((tag) => tag.trim().toLowerCase())
-                      .filter((tag) => tag.length > 0)
-                      .slice(0, 8);
-
-                    setCreatingQuizSet(true);
-                    try {
-                      const nextSetId = await createProfessorQuizSet(supabase, {
-                        sectionId: resolvedSectionId,
-                        title: quizSetTitle.trim(),
-                        description: quizSetDescription.trim(),
-                        difficulty: quizSetDifficulty,
-                        estMinutes: parsedMinutes,
-                        mode: quizSetMode,
-                        tags,
-                        questionPrompt: questionPrompt.trim(),
-                        questionOptions: options,
-                        correctOptionIndexes: [correctIndex],
-                        explanation: ""
-                      });
-
-                      setQuizSetTitle("");
-                      setQuizSetDescription("");
-                      setQuizSetDifficulty("medium");
-                      setQuizSetMinutes("20");
-                      setQuizSetMode("quiz");
-                      setQuizSetTags("");
-                      setQuestionPrompt("");
-                      setQuestionOptionA("");
-                      setQuestionOptionB("");
-                      setQuestionOptionC("");
-                      setQuestionOptionD("");
-                      setCorrectOptionIndex("0");
-                      setQuizSetId(nextSetId);
-
-                      push({ title: "Quiz set created", tone: "success" });
-                      await refresh();
-                    } catch (error) {
-                      push({ title: "Unable to create quiz set", description: (error as Error).message, tone: "error" });
-                    } finally {
-                      setCreatingQuizSet(false);
-                    }
-                  }}
-                >
-                  Create quiz set
+                <Button asChild>
+                  <Link href={`/app/professor/sections/${resolvedSectionId}/quiz-builder`}>Open quiz builder</Link>
                 </Button>
               </div>
 

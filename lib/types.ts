@@ -1,4 +1,4 @@
-export type QuestionType = "single" | "multi" | "free";
+export type QuestionType = "single" | "multi" | "fill" | "free";
 export type StudySetMode = "quiz" | "exam" | "homework";
 
 export interface Course {
@@ -19,7 +19,7 @@ export interface Question {
   type: QuestionType;
   prompt: string;
   options?: string[];
-  correct?: number[];
+  correct?: Array<number | string>;
   explanation: string;
   solutionMd?: string;
   walkthroughSteps?: string[];
@@ -54,7 +54,7 @@ export interface PerQuestionResult {
   questionType: QuestionType;
   isCorrect: boolean;
   selected: number[];
-  correct: number[];
+  correct: Array<number | string>;
   responseText?: string;
   selfMarked?: boolean;
   tags: string[];

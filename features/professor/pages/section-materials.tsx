@@ -153,6 +153,12 @@ export function ProfessorSectionMaterialsPage({ sectionId }: { sectionId?: strin
                       });
 
                     if (uploadError) {
+                      const message = (uploadError.message ?? "").toLowerCase();
+                      if (message.includes("bucket not found")) {
+                        throw new Error(
+                          "Storage bucket section-materials is missing. Apply the latest Supabase migration and try again."
+                        );
+                      }
                       throw uploadError;
                     }
 

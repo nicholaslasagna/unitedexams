@@ -1,9 +1,30 @@
 import { uid } from "@/lib/utils";
 import type { Attempt, PerQuestionResult, Question, QuizSet } from "@/lib/types";
 
-export function gradeQuestion(question: Question, selected: number[]) {
+function normalizeText(value: string) {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+export function isOpenResponseQuestion(question: Question) {
+  return question.type === "free" || question.type === "fill";
+}
+
+export function requiresSelfMark(question: Question) {
+  return question.type === "free";
+}
+
+export function gradeQuestion(question: Question, selected: number[], responseText = "") {
   if (question.type === "free") return false;
-  const correct = question.correct ?? [];
+  if (question.type === "fill") {
+    const normalizedResponse = normalizeText(responseText);
+    if (!normalizedResponse) return false;
+    const acceptable = (question.correct ?? [])
+      .filter((value): value is string => typeof value === "string")
+      .map((value) => normalizeText(value));
+    return acceptable.includes(normalizedResponse);
+  }
+
+  const correct = (question.correct ?? []).filter((value): value is number => typeof value === "number");
   if (correct.length !== selected.length) return false;
   return correct.every((idx) => selected.includes(idx));
 }
@@ -39,6 +60,20 @@ export function summarizeAttempt({
           correct: [],
           responseText: freeResponseByQuestion?.[question.id]?.trim() ?? "",
           selfMarked,
+          tags: question.tags
+        };
+      }
+
+      if (question.type === "fill") {
+        const responseText = freeResponseByQuestion?.[question.id]?.trim() ?? "";
+        const isCorrect = gradeQuestion(question, [], responseText);
+        return {
+          questionId: question.id,
+          questionType: question.type,
+          isCorrect,
+          selected: [],
+          correct: question.correct ?? [],
+          responseText,
           tags: question.tags
         };
       }
