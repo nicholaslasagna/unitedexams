@@ -81,6 +81,7 @@ export interface SectionGradebookRow {
   assignment_title: string;
   student_id: string;
   display_name: string;
+  latest_submission_id: string | null;
   latest_status: string | null;
   latest_score: number | null;
   submitted_at: string | null;

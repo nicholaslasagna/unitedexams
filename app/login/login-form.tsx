@@ -119,11 +119,11 @@ export function LoginForm() {
       footer={
         <p>
           New to United Exams?{" "}
-          <Link href="/signup" className="font-semibold text-accent hover:text-white">
+          <Link href="/signup" className="font-semibold text-accent hover:text-text">
             Create an account
           </Link>
           {" · "}
-          <Link href={guestReturnPath} className="font-semibold text-accent hover:text-white">
+          <Link href={guestReturnPath} className="font-semibold text-accent hover:text-text">
             Continue as guest
           </Link>
         </p>
@@ -131,8 +131,8 @@ export function LoginForm() {
     >
       {activeEmail ? (
         <div className="space-y-3 rounded-xl border border-brand-2/35 bg-brand-2/10 p-4">
-          <p className="text-sm text-white/85">
-            You&apos;re already signed in as <span className="font-semibold text-white">{activeEmail}</span>.
+          <p className="text-sm text-text-secondary">
+            You&apos;re already signed in as <span className="font-semibold text-text">{activeEmail}</span>.
           </p>
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => router.push("/app/dashboard")}>Go to dashboard</Button>
@@ -157,7 +157,7 @@ export function LoginForm() {
         ) : null}
 
         <div className="space-y-1.5">
-          <label htmlFor="email" className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
+          <label htmlFor="email" className="text-xs font-semibold uppercase tracking-[0.14em] text-faint">
             Email
           </label>
           <Input
@@ -173,10 +173,10 @@ export function LoginForm() {
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label htmlFor="password" className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
+            <label htmlFor="password" className="text-xs font-semibold uppercase tracking-[0.14em] text-faint">
               Password
             </label>
-            <Link href="/forgot-password" className="text-xs font-semibold text-accent hover:text-white">
+            <Link href="/forgot-password" className="text-xs font-semibold text-accent hover:text-text">
               Forgot password?
             </Link>
           </div>
@@ -191,7 +191,7 @@ export function LoginForm() {
           />
         </div>
 
-        <label className="flex items-center gap-2 text-sm text-white/75">
+        <label className="flex items-center gap-2 text-sm text-muted">
           <input
             type="checkbox"
             className="h-4 w-4 rounded border-white/25 bg-transparent accent-[hsl(var(--accent))]"

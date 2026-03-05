@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,8 +29,54 @@ const accountNavItems = [
 export function PublicShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { authReady, isAuthenticated, profile, signOut } = useAppData();
-  const navItems = isAuthenticated ? accountNavItems : guestNavItems;
+  const { authReady, isAuthenticated, profile, signOut, supabase, user } = useAppData();
+  const [hasJoinedSection, setHasJoinedSection] = useState(false);
+
+  const isProfessor = profile.role === "professor" || profile.role === "admin";
+
+  useEffect(() => {
+    if (!isAuthenticated || !supabase || !user || isProfessor) {
+      setHasJoinedSection(false);
+      return;
+    }
+
+    let active = true;
+    void (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("section_members")
+          .select("section_id")
+          .eq("user_id", user.id)
+          .limit(1);
+
+        if (!active) return;
+        if (error) {
+          setHasJoinedSection(false);
+          return;
+        }
+        setHasJoinedSection((data?.length ?? 0) > 0);
+      } catch {
+        if (!active) return;
+        setHasJoinedSection(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [isAuthenticated, isProfessor, supabase, user]);
+
+  const showAnnouncements = isProfessor || hasJoinedSection;
+
+  const navItems = useMemo(() => {
+    if (!isAuthenticated) return guestNavItems;
+    if (!showAnnouncements) return accountNavItems;
+    return [
+      ...accountNavItems.slice(0, 3),
+      { href: "/app/announcements", label: "Announcements" },
+      ...accountNavItems.slice(3)
+    ];
+  }, [isAuthenticated, showAnnouncements]);
 
   return (
     <div className="min-h-screen bg-bg text-text">

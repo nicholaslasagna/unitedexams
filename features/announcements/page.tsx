@@ -1,0 +1,216 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Markdown } from "@/components/ui/markdown";
+import { useAppData } from "@/lib/app-data-context";
+import { useToast } from "@/lib/hooks/use-toast";
+import { getMyAnnouncements, postSectionAnnouncement, type AnnouncementFeedItem } from "@/features/announcements/api";
+import { listProfessorSections, type SectionSummary } from "@/features/professor/api";
+
+export function AnnouncementsPageContent() {
+  const { supabase, profile } = useAppData();
+  const { push } = useToast();
+  const [items, setItems] = useState<AnnouncementFeedItem[]>([]);
+  const [sections, setSections] = useState<SectionSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [posting, setPosting] = useState(false);
+
+  const [selectedSectionId, setSelectedSectionId] = useState("");
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
+  const [sendEmail, setSendEmail] = useState(true);
+
+  const isProfessor = profile.role === "professor" || profile.role === "admin";
+
+  const visibleItems = useMemo(
+    () => [...items].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+    [items]
+  );
+
+  const refresh = async () => {
+    if (!supabase) {
+      setItems([]);
+      setSections([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const [feed, professorSections] = await Promise.all([
+        getMyAnnouncements(supabase, 120),
+        isProfessor ? listProfessorSections(supabase) : Promise.resolve([] as SectionSummary[])
+      ]);
+
+      setItems(feed);
+      setSections(professorSections);
+
+      if (isProfessor && !selectedSectionId && professorSections[0]) {
+        setSelectedSectionId(professorSections[0].id);
+      }
+    } catch (error) {
+      setItems([]);
+      setSections([]);
+      push({
+        title: "Unable to load announcements",
+        description: (error as Error).message,
+        tone: "error"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [supabase, isProfessor]);
+
+  const submitAnnouncement = async () => {
+    if (!isProfessor) return;
+    if (!selectedSectionId) {
+      push({ title: "Select a section", tone: "error" });
+      return;
+    }
+    if (title.trim().length < 3) {
+      push({ title: "Title must be at least 3 characters", tone: "error" });
+      return;
+    }
+    if (message.trim().length < 4) {
+      push({ title: "Message is too short", tone: "error" });
+      return;
+    }
+
+    setPosting(true);
+    try {
+      const result = await postSectionAnnouncement({
+        sectionId: selectedSectionId,
+        title: title.trim(),
+        message: message.trim(),
+        sendEmail
+      });
+
+      setTitle("");
+      setMessage("");
+      push({
+        title: "Announcement posted",
+        description: result.warning || undefined,
+        tone: result.warning ? "default" : "success"
+      });
+      await refresh();
+    } catch (error) {
+      push({
+        title: "Unable to post announcement",
+        description: (error as Error).message,
+        tone: "error"
+      });
+    } finally {
+      setPosting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <section>
+        <h1 className="text-display-lg font-semibold tracking-tight">Announcements</h1>
+        <p className="mt-2 text-sm text-text-secondary">
+          Section updates from your instructors and grade notifications.
+        </p>
+      </section>
+
+      {isProfessor ? (
+        <Card>
+          <CardHeader>
+            <h2 className="text-heading font-semibold">Post announcement</h2>
+          </CardHeader>
+          <CardBody className="space-y-3">
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Section</label>
+                <select
+                  value={selectedSectionId}
+                  onChange={(event) => setSelectedSectionId(event.target.value)}
+                  className="h-11 w-full rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
+                >
+                  {sections.length === 0 ? <option value="">No sections available</option> : null}
+                  {sections.map((section) => (
+                    <option key={section.id} value={section.id}>
+                      {section.name} ({section.course_id})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Title</label>
+                <Input
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  placeholder="Exam room changed to ENG 204"
+                  maxLength={160}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Message</label>
+              <textarea
+                value={message}
+                onChange={(event) => setMessage(event.target.value)}
+                className="min-h-32 w-full rounded-[10px] border border-borderc bg-surface px-3 py-2 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
+                placeholder="Please bring a calculator. Homework 4 is now due Friday at 5 PM."
+              />
+            </div>
+
+            <label className="flex items-center gap-2 text-sm text-muted">
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-[hsl(var(--brand-2))]"
+                checked={sendEmail}
+                onChange={(event) => setSendEmail(event.target.checked)}
+              />
+              Email enrolled students
+            </label>
+
+            <Button onClick={submitAnnouncement} loading={posting}>
+              Post announcement
+            </Button>
+          </CardBody>
+        </Card>
+      ) : null}
+
+      <Card>
+        <CardHeader>
+          <h2 className="text-heading font-semibold">Recent announcements</h2>
+        </CardHeader>
+        <CardBody className="space-y-3">
+          {loading ? (
+            <p className="text-sm text-muted">Loading announcements…</p>
+          ) : visibleItems.length === 0 ? (
+            <p className="text-sm text-muted">
+              No announcements yet. New section updates will appear here.
+            </p>
+          ) : (
+            visibleItems.map((item) => (
+              <article key={item.announcement_id} className="rounded-xl border border-borderc bg-soft p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm font-semibold text-text">{item.title}</p>
+                  <span className="text-xs text-muted">{new Date(item.created_at).toLocaleString()}</span>
+                </div>
+                <p className="mt-1 text-xs text-muted">
+                  {item.section_name} · {item.course_id} · {item.posted_by_name}
+                </p>
+                <div className="prose prose-sm mt-3 max-w-none text-text prose-p:my-2">
+                  <Markdown content={item.message_md} />
+                </div>
+              </article>
+            ))
+          )}
+        </CardBody>
+      </Card>
+    </div>
+  );
+}

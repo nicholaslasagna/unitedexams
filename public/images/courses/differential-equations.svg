@@ -1,0 +1,14 @@
+<svg width="440" height="280" viewBox="0 0 440 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-de" x1="34" y1="18" x2="410" y2="264" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4F46E5"/>
+      <stop offset="1" stop-color="#022C22"/>
+    </linearGradient>
+  </defs>
+  <rect width="440" height="280" rx="22" fill="url(#bg-de)"/>
+  <path d="M28 186C78 114 128 114 178 186C228 258 278 258 328 186C356 146 384 130 412 138" stroke="#A5F3FC" stroke-width="5" stroke-linecap="round"/>
+  <path d="M32 156C82 84 132 84 182 156C232 228 282 228 332 156C360 116 388 100 416 108" stroke="#67E8F9" stroke-opacity="0.65" stroke-width="3" stroke-linecap="round"/>
+  <rect x="28" y="34" width="386" height="64" rx="12" fill="#0B1027" fill-opacity="0.5"/>
+  <text x="50" y="74" fill="#ECFEFF" font-size="24" font-family="Inter, Arial, sans-serif" font-weight="700">Differential Equations</text>
+  <text x="50" y="122" fill="#D1FAE5" font-size="18" font-family="Inter, Arial, sans-serif">dy/dx + p(x)y = q(x)</text>
+</svg>

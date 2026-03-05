@@ -79,6 +79,9 @@ export function ProfessorOverviewPage() {
         <p className="mt-2 text-sm text-muted">Create sections, share join codes, and monitor class progress signals.</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button variant="secondary" asChild>
+            <Link href="/app/announcements">Announcements</Link>
+          </Button>
+          <Button variant="secondary" asChild>
             <Link href="/app/sections/materials">Materials</Link>
           </Button>
           <Button variant="secondary" asChild>
