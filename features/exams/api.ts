@@ -107,6 +107,14 @@ export interface HeartbeatResponse {
   expiresAt: string | null;
 }
 
+async function parseJsonResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
+  const payload = (await response.json().catch(() => ({}))) as T & { error?: string; ok?: boolean };
+  if (!response.ok || ("ok" in payload && payload.ok === false)) {
+    throw new Error(payload.error || fallbackMessage);
+  }
+  return payload;
+}
+
 export async function listSectionExams(client: SupabaseClient, sectionId: string) {
   const { data, error } = await client
     .from("exams")
@@ -166,39 +174,61 @@ export async function getExamAccessRules(client: SupabaseClient, examId: string)
 }
 
 export async function createExam(
-  client: SupabaseClient,
+  _client: SupabaseClient,
   payload: Omit<ExamRow, "id" | "created_at" | "updated_at">
 ) {
-  const { data, error } = await client
-    .from("exams")
-    .insert(payload)
-    .select(
-      "id, section_id, title, description, quiz_set_id, mode, starts_at, ends_at, duration_minutes, attempt_limit, shuffle_questions, shuffle_options, show_results_after, published, created_by, created_at, updated_at"
-    )
-    .single();
-  if (error) throw error;
-  return data as ExamRow;
+  const response = await fetch("/api/professor/exams", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sectionId: payload.section_id,
+      title: payload.title,
+      description: payload.description,
+      quizSetId: payload.quiz_set_id,
+      mode: payload.mode,
+      startsAt: payload.starts_at,
+      endsAt: payload.ends_at,
+      durationMinutes: payload.duration_minutes,
+      attemptLimit: payload.attempt_limit,
+      shuffleQuestions: payload.shuffle_questions,
+      shuffleOptions: payload.shuffle_options,
+      showResultsAfter: payload.show_results_after,
+      published: payload.published
+    })
+  });
+  const result = await parseJsonResponse<{ ok: true; exam: ExamRow }>(response, "Unable to create exam.");
+  return result.exam;
 }
 
 export async function updateExam(
-  client: SupabaseClient,
+  _client: SupabaseClient,
   examId: string,
   payload: Partial<Omit<ExamRow, "id" | "section_id" | "created_by" | "created_at" | "updated_at">>
 ) {
-  const { data, error } = await client
-    .from("exams")
-    .update(payload)
-    .eq("id", examId)
-    .select(
-      "id, section_id, title, description, quiz_set_id, mode, starts_at, ends_at, duration_minutes, attempt_limit, shuffle_questions, shuffle_options, show_results_after, published, created_by, created_at, updated_at"
-    )
-    .single();
-  if (error) throw error;
-  return data as ExamRow;
+  const response = await fetch(`/api/professor/exams/${examId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      title: payload.title,
+      description: payload.description,
+      quizSetId: payload.quiz_set_id,
+      mode: payload.mode,
+      startsAt: payload.starts_at,
+      endsAt: payload.ends_at,
+      durationMinutes: payload.duration_minutes,
+      attemptLimit: payload.attempt_limit,
+      shuffleQuestions: payload.shuffle_questions,
+      shuffleOptions: payload.shuffle_options,
+      showResultsAfter: payload.show_results_after,
+      published: payload.published
+    })
+  });
+  const result = await parseJsonResponse<{ ok: true; exam: ExamRow }>(response, "Unable to update exam.");
+  return result.exam;
 }
 
 export async function upsertExamAccessRules(
-  client: SupabaseClient,
+  _client: SupabaseClient,
   payload: {
     examId: string;
     requireSectionMembership: boolean;
@@ -213,20 +243,12 @@ export async function upsertExamAccessRules(
     openNotesAllowed?: boolean;
   }
 ) {
-  const { error } = await client.rpc("upsert_exam_access_rules", {
-    exam_id_input: payload.examId,
-    require_section_membership_input: payload.requireSectionMembership,
-    require_proctor_code_input: payload.requireProctorCode,
-    proctor_code_input: payload.proctorCode?.trim() || null,
-    clear_proctor_code_input: Boolean(payload.clearProctorCode),
-    require_network_allowlist_input: payload.requireNetworkAllowlist,
-    allow_mobile_hotspot_input: payload.allowMobileHotspot,
-    block_vpn_input: payload.blockVpn,
-    lockdown_mode_input: payload.lockdownMode,
-    suspicion_threshold_input: payload.suspicionThreshold,
-    open_notes_allowed_input: Boolean(payload.openNotesAllowed)
+  const response = await fetch(`/api/professor/exams/${payload.examId}/access-rules`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
   });
-  if (error) throw error;
+  await parseJsonResponse<{ ok: true }>(response, "Unable to update exam access rules.");
 }
 
 export async function addCurrentNetworkAllowlist(examId: string) {

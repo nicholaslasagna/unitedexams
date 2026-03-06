@@ -104,6 +104,14 @@ export interface JoinedSectionSummary {
   isOwner: boolean;
 }
 
+async function parseJsonResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
+  const payload = (await response.json().catch(() => ({}))) as T & { error?: string; ok?: boolean };
+  if (!response.ok || ("ok" in payload && payload.ok === false)) {
+    throw new Error(payload.error || fallbackMessage);
+  }
+  return payload;
+}
+
 export async function listProfessorSections(client: SupabaseClient) {
   const { data, error } = await client
     .from("class_sections")
@@ -115,57 +123,39 @@ export async function listProfessorSections(client: SupabaseClient) {
 }
 
 export async function createProfessorSection(
-  client: SupabaseClient,
+  _client: SupabaseClient,
   payload: { name: string; term?: string; courseId: string; createdBy: string }
 ) {
-  const joinCode = Array.from({ length: 8 }, () => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 32)]).join("");
-  const attempts: Array<Record<string, string | null>> = [
-    {
-      name: payload.name,
-      section_name: payload.name,
-      term: payload.term ?? null,
-      course_id: payload.courseId,
-      created_by: payload.createdBy,
-      owner_id: payload.createdBy,
-      join_code: joinCode
-    },
-    {
+  const response = await fetch("/api/professor/sections", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
       name: payload.name,
       term: payload.term ?? null,
-      course_id: payload.courseId,
-      created_by: payload.createdBy,
-      join_code: joinCode
-    },
-    {
-      section_name: payload.name,
-      term: payload.term ?? null,
-      course_id: payload.courseId,
-      owner_id: payload.createdBy,
-      join_code: joinCode
-    }
-  ];
-
-  let lastError: { message: string } | null = null;
-  for (const attempt of attempts) {
-    const { error } = await client.from("class_sections").insert(attempt);
-    if (!error) return;
-    lastError = error;
-  }
-
-  throw new Error(lastError?.message ?? "Unable to create section.");
-}
-
-export async function deleteProfessorSection(client: SupabaseClient, sectionId: string) {
-  const { error } = await client.from("class_sections").delete().eq("id", sectionId);
-  if (error) throw error;
-}
-
-export async function regenerateJoinCode(client: SupabaseClient, sectionId: string) {
-  const { data, error } = await client.rpc("regenerate_section_join_code", {
-    section_id_input: sectionId
+      courseId: payload.courseId
+    })
   });
-  if (error) throw error;
-  return data as string;
+  await parseJsonResponse<{ ok: true; section: SectionSummary }>(response, "Unable to create section.");
+}
+
+export async function deleteProfessorSection(_client: SupabaseClient, sectionId: string) {
+  const response = await fetch(`/api/professor/sections/${sectionId}`, {
+    method: "DELETE"
+  });
+  await parseJsonResponse<{ ok: true }>(response, "Unable to delete section.");
+}
+
+export async function regenerateJoinCode(_client: SupabaseClient, sectionId: string) {
+  const response = await fetch("/api/professor/sections/join-code", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sectionId })
+  });
+  const payload = await parseJsonResponse<{ ok: true; joinCode: string }>(
+    response,
+    "Unable to regenerate join code."
+  );
+  return payload.joinCode;
 }
 
 export async function joinSectionByCode(client: SupabaseClient, joinCode: string) {
@@ -260,30 +250,19 @@ export async function leaveJoinedSection(
 }
 
 export async function createProfessorQuizSet(
-  client: SupabaseClient,
+  _client: SupabaseClient,
   payload: CreateProfessorQuizSetPayload
 ) {
-  const { data, error } = await client.rpc("create_professor_quiz_set", {
-    section_id_input: payload.sectionId,
-    title_input: payload.title,
-    description_input: payload.description ?? "",
-    difficulty_input: payload.difficulty,
-    est_minutes_input: payload.estMinutes,
-    mode_input: payload.mode,
-    tags_input: payload.tags,
-    questions_input: payload.questions.map((question) => ({
-      type: question.type,
-      prompt: question.prompt,
-      options: question.options ?? [],
-      correct_indexes: question.correctIndexes ?? [],
-      acceptable_answers: question.acceptableAnswers ?? [],
-      explanation: question.explanation ?? "",
-      tags: question.tags ?? []
-    }))
+  const response = await fetch("/api/professor/quiz-sets", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
   });
-
-  if (error) throw error;
-  return String(data);
+  const result = await parseJsonResponse<{ ok: true; quizSetId: string }>(
+    response,
+    "Unable to create quiz set."
+  );
+  return result.quizSetId;
 }
 
 export async function listSectionAssignments(client: SupabaseClient, sectionId: string) {
@@ -298,7 +277,7 @@ export async function listSectionAssignments(client: SupabaseClient, sectionId: 
 }
 
 export async function createSectionAssignment(
-  client: SupabaseClient,
+  _client: SupabaseClient,
   payload: {
     sectionId: string;
     quizSetId: string;
@@ -311,24 +290,25 @@ export async function createSectionAssignment(
     createdBy: string;
   }
 ) {
-  const { data, error } = await client
-    .from("assignments")
-    .insert({
-      section_id: payload.sectionId,
-      quiz_set_id: payload.quizSetId,
+  const response = await fetch("/api/professor/assignments", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sectionId: payload.sectionId,
+      quizSetId: payload.quizSetId,
       title: payload.title,
-      instructions_md: payload.instructionsMd ?? "",
-      due_at: payload.dueAt ?? null,
-      allow_late: Boolean(payload.allowLate),
-      max_attempts: payload.maxAttempts ?? null,
-      grading_mode: payload.gradingMode ?? "auto",
-      created_by: payload.createdBy
+      instructionsMd: payload.instructionsMd ?? "",
+      dueAt: payload.dueAt ?? null,
+      allowLate: Boolean(payload.allowLate),
+      maxAttempts: payload.maxAttempts ?? null,
+      gradingMode: payload.gradingMode ?? "auto"
     })
-    .select("id, section_id, quiz_set_id, title, instructions_md, due_at, allow_late, max_attempts, grading_mode, created_at")
-    .single();
-
-  if (error) throw error;
-  return data as AssignmentRow;
+  });
+  const result = await parseJsonResponse<{ ok: true; assignment: AssignmentRow }>(
+    response,
+    "Unable to create assignment."
+  );
+  return result.assignment;
 }
 
 export async function listSectionMembers(client: SupabaseClient, sectionId: string) {
@@ -357,7 +337,7 @@ export async function listSectionMaterials(client: SupabaseClient, sectionId: st
 }
 
 export async function createSectionMaterial(
-  client: SupabaseClient,
+  _client: SupabaseClient,
   payload: {
     sectionId: string;
     title: string;
@@ -366,29 +346,32 @@ export async function createSectionMaterial(
     createdBy: string;
   }
 ) {
-  const { data, error } = await client
-    .from("section_materials")
-    .insert({
-      section_id: payload.sectionId,
+  const response = await fetch("/api/professor/materials", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sectionId: payload.sectionId,
       title: payload.title,
-      body_md: payload.bodyMd,
-      attachments: payload.attachments ?? [],
-      created_by: payload.createdBy
+      bodyMd: payload.bodyMd,
+      attachments: payload.attachments ?? []
     })
-    .select("id, section_id, title, body_md, attachments, created_by, created_at, updated_at")
-    .single();
-
-  if (error) throw error;
-  const row = data as Omit<SectionMaterialRow, "attachments"> & { attachments: unknown };
+  });
+  const result = await parseJsonResponse<{ ok: true; material: Omit<SectionMaterialRow, "attachments"> & { attachments: unknown } }>(
+    response,
+    "Unable to post material."
+  );
+  const row = result.material;
   return {
     ...row,
     attachments: Array.isArray(row.attachments) ? row.attachments.map((item) => String(item)) : []
   } satisfies SectionMaterialRow;
 }
 
-export async function deleteSectionMaterial(client: SupabaseClient, materialId: string) {
-  const { error } = await client.from("section_materials").delete().eq("id", materialId);
-  if (error) throw error;
+export async function deleteSectionMaterial(_client: SupabaseClient, materialId: string) {
+  const response = await fetch(`/api/professor/materials/${materialId}`, {
+    method: "DELETE"
+  });
+  await parseJsonResponse<{ ok: true }>(response, "Unable to delete material.");
 }
 
 export async function listAssignmentSubmissions(client: SupabaseClient, assignmentId: string) {
@@ -431,7 +414,7 @@ export async function getSectionGradebook(client: SupabaseClient, sectionId: str
 }
 
 export async function upsertManualGrade(
-  client: SupabaseClient,
+  _client: SupabaseClient,
   payload: {
     assignmentId: string;
     studentId: string;
@@ -440,15 +423,16 @@ export async function upsertManualGrade(
     feedback: string | null;
   }
 ) {
-  const { data, error } = await client.rpc("upsert_manual_grade", {
-    assignment_id_input: payload.assignmentId,
-    student_id_input: payload.studentId,
-    status_input: payload.status,
-    score_input: payload.score,
-    feedback_input: payload.feedback
+  const response = await fetch("/api/professor/grades", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
   });
-  if (error) throw error;
-  return { submissionId: data ? String(data) : "" };
+  const result = await parseJsonResponse<{ ok: true; submissionId: string }>(
+    response,
+    "Unable to save grade."
+  );
+  return { submissionId: result.submissionId };
 }
 
 export async function getSectionAnalytics(client: SupabaseClient, sectionId: string) {

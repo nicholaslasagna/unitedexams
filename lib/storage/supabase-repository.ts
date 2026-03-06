@@ -46,7 +46,6 @@ interface PreferencesRow {
   accent_lightness: number | null;
   accent_strength: number;
   reduce_motion: boolean;
-  dashboard_layout?: string | null;
   extra_signin_protection: boolean | null;
 }
 

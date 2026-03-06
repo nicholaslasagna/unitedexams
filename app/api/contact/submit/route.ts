@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      apikey: env.anonKey,
+      apikey: env.publicKey,
       Authorization: `Bearer ${session.access_token}`
     },
     body: JSON.stringify({
@@ -89,4 +89,3 @@ export async function POST(request: NextRequest) {
     warning: result.warning
   });
 }
-

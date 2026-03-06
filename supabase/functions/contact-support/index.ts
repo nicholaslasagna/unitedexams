@@ -161,12 +161,14 @@ Deno.serve(async (request) => {
   }
 
   let supabaseUrl: string;
-  let supabaseAnonKey: string;
-  let supabaseServiceRoleKey: string;
+  let supabasePublicKey: string;
+  let supabaseSecretKey: string;
   try {
     supabaseUrl = requireEnv("SUPABASE_URL");
-    supabaseAnonKey = requireEnv("SUPABASE_ANON_KEY");
-    supabaseServiceRoleKey = requireEnv("SERVICE_ROLE_KEY");
+    supabasePublicKey =
+      Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || requireEnv("SUPABASE_ANON_KEY");
+    supabaseSecretKey =
+      Deno.env.get("SUPABASE_SECRET_KEY") || requireEnv("SERVICE_ROLE_KEY");
   } catch (error) {
     return json(500, { error: (error as Error).message });
   }
@@ -176,10 +178,10 @@ Deno.serve(async (request) => {
     return json(401, { error: "Unauthorized" });
   }
 
-  const anonClient = createClient(supabaseUrl, supabaseAnonKey, {
+  const anonClient = createClient(supabaseUrl, supabasePublicKey, {
     global: { headers: { Authorization: authHeader } }
   });
-  const adminClient = createClient(supabaseUrl, supabaseServiceRoleKey);
+  const adminClient = createClient(supabaseUrl, supabaseSecretKey);
 
   const {
     data: { user },
@@ -240,8 +242,7 @@ Deno.serve(async (request) => {
     .from("contact_messages")
     .insert({
       user_id: user.id,
-      email: userEmail || null,
-      name: displayName,
+      email: userEmail || user.email || "unknown@unitedexams.com",
       subject,
       category,
       message,

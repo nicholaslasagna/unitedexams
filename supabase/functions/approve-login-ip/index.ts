@@ -51,10 +51,10 @@ Deno.serve(async (request) => {
   }
 
   let supabaseUrl: string;
-  let serviceRoleKey: string;
+  let secretKey: string;
   try {
     supabaseUrl = requireEnv("SUPABASE_URL");
-    serviceRoleKey = requireEnv("SERVICE_ROLE_KEY");
+    secretKey = Deno.env.get("SUPABASE_SECRET_KEY") || requireEnv("SERVICE_ROLE_KEY");
   } catch (error) {
     return json(500, { error: (error as Error).message });
   }
@@ -68,7 +68,7 @@ Deno.serve(async (request) => {
 
   const pepper = Deno.env.get("IP_APPROVAL_PEPPER") || "";
   const tokenHash = await sha256Hex(`${token}::${pepper}`);
-  const adminClient = createClient(supabaseUrl, serviceRoleKey);
+  const adminClient = createClient(supabaseUrl, secretKey);
 
   const { data: challenge, error: challengeError } = await adminClient
     .from("login_ip_challenges")
@@ -138,13 +138,16 @@ Deno.serve(async (request) => {
 
   try {
     await adminClient.from("audit_log").insert({
-      user_id: challenge.user_id,
-      event_type: "login_ip_approved",
+      actor_user_id: challenge.user_id,
+      action: "login_ip_approved",
+      target_type: "login_ip_allowlist",
+      target_id: `${challenge.user_id}:${challenge.ip_hash}`,
+      outcome: "success",
+      ip_hash: challenge.ip_hash,
       metadata: {
         challenge_id: challenge.id,
         ip_hash: challenge.ip_hash
-      },
-      created_at: nowIso
+      }
     });
   } catch {
     // audit_log is optional.

@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
       supabase
         .from("profiles")
         .select(
-          "reset_required, university_id, role, professor_verified, privacy_version_accepted, terms_version_accepted"
+          "reset_required, university_id, role, professor_verified, privacy_version_accepted, terms_version_accepted, mfa_enabled"
         )
         .eq("id", user.id)
         .maybeSingle(),
@@ -61,7 +61,8 @@ export async function middleware(request: NextRequest) {
           ...fallbackCore.data,
           professor_verified: false,
           privacy_version_accepted: null,
-          terms_version_accepted: null
+          terms_version_accepted: null,
+          mfa_enabled: false
         };
       }
     }
@@ -141,7 +142,19 @@ export async function middleware(request: NextRequest) {
     }
 
     const extraSigninProtection = Boolean(prefs?.extra_signin_protection);
-    const mfaEnabled = false;
+    const mfaEnabled = Boolean(profile?.mfa_enabled);
+
+    if (
+      (role === "professor" || role === "admin") &&
+      !mfaEnabled &&
+      !pathname.startsWith("/app/settings")
+    ) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/app/settings";
+      redirectUrl.search = "";
+      redirectUrl.searchParams.set("mfa", "required");
+      return NextResponse.redirect(redirectUrl);
+    }
 
     const requiresIpApproval = shouldRequireIpApproval({
       role,

@@ -16,12 +16,14 @@ Premium-feeling college study platform built with **Next.js + TypeScript + Tailw
    - Copy `.env.example` to `.env.local`
    - Set:
      - `NEXT_PUBLIC_SUPABASE_URL`
-     - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+     - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (preferred)
+     - optional legacy fallback: `NEXT_PUBLIC_SUPABASE_ANON_KEY`
      - `NEXT_PUBLIC_SITE_URL` (for auth callback links, e.g. `https://unitedexams.com`)
      - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (Cloudflare Turnstile site key)
      - optional fallback: `TURNSTILE_SITE_KEY` (if you prefer server-injected runtime key bridge)
      - `TURNSTILE_SECRET_KEY` (optional; only needed for custom non-auth server verification such as exam start)
      - `IP_COOKIE_SIGNING_SECRET` (HMAC secret for trusted-device/IP cookies)
+     - `IP_APPROVAL_PEPPER` (hashing pepper for login approval and audit IP hashing)
 3. Run development server
    - `npm run dev`
 4. Open
@@ -50,19 +52,33 @@ Premium-feeling college study platform built with **Next.js + TypeScript + Tailw
    - `supabase/migrations/20260304090000_expand_university_catalog_and_name_rules.sql`
    - `supabase/migrations/20260304103000_profile_locks_professor_expansion.sql`
    - `supabase/migrations/20260304133000_professor_timed_exams_proctoring.sql`
+   - `supabase/migrations/20260305133000_university_admin_professor_verification.sql`
+   - `supabase/migrations/20260306103000_security_hardening_audit_and_mfa.sql`
 4. Optional content import (service role key required):
    - `npm run content:generate:se-exam`
    - `npm run content:import:supabase`
-5. Configure email templates using:
+   - local script env:
+     - `SUPABASE_SECRET_KEY` (preferred)
+     - optional legacy fallback: `SUPABASE_SERVICE_ROLE_KEY`
+5. Edge Function secrets:
+   - `SUPABASE_URL`
+   - `SUPABASE_PUBLISHABLE_KEY` (preferred) or `SUPABASE_ANON_KEY` for legacy compatibility
+   - `SUPABASE_SECRET_KEY` (preferred) or `SERVICE_ROLE_KEY` for legacy compatibility
+   - `MAILERSEND_API_KEY`
+   - `MAILERSEND_FROM_EMAIL`
+   - `MAILERSEND_FROM_NAME`
+   - `SUPPORT_EMAIL`
+   - `IP_APPROVAL_PEPPER`
+6. Configure email templates using:
    - `supabase/email-templates/confirm-signup.html`
    - `supabase/email-templates/reset-password.html`
-6. Auth URL configuration:
+7. Auth URL configuration:
    - Site URL: `https://unitedexams.com`
    - Redirect URLs:
      - `https://unitedexams.com/reset-password`
      - `https://unitedexams.com/auth/callback`
      - `https://unitedexams.com/app/*`
-7. Supabase Auth CAPTCHA configuration (recommended):
+8. Supabase Auth CAPTCHA configuration (recommended):
    - Auth → Bot and Abuse Protection → enable CAPTCHA
    - Provider: Cloudflare Turnstile
    - Configure site key + secret key in Supabase Dashboard
@@ -149,6 +165,19 @@ Public leaderboard:
 - Middleware protection for `/app/*` routes
 - Explicit guest mode for public study routes (`/courses`, `/quiz`)
 - `/login` and `/signup` now show signed-in state with dashboard/sign-out actions
+
+## Security Review
+- Current gap assessment and NIST-oriented posture notes:
+  - [SECURITY_POSTURE.md](./SECURITY_POSTURE.md)
+- Operations baseline, incident response, retention, and shared responsibility notes:
+  - [SECURITY_OPERATIONS.md](./SECURITY_OPERATIONS.md)
+
+## Security Automation
+- GitHub Actions:
+  - `.github/workflows/security.yml`
+  - `.github/workflows/codeql.yml`
+- Dependency automation:
+  - `.github/dependabot.yml`
 
 ## Data Persistence
 App data is stored through repository abstraction:
