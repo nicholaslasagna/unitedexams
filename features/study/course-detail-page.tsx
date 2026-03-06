@@ -112,13 +112,13 @@ export function CourseDetailContent({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       <section className="grid gap-4 xl:grid-cols-[1.45fr_1fr]">
         <Card className="mesh-hero">
-          <CardBody className="space-y-4 p-6 md:p-8">
+          <CardBody className="space-y-4 p-5 sm:p-6 md:p-8">
             <p className="text-xs uppercase tracking-[0.14em] text-muted">{course.code}</p>
-            <h1 className="text-display-lg font-semibold tracking-tight">{course.name}</h1>
-            <p className="max-w-3xl text-sm leading-relaxed text-muted text-text-secondary">{course.description}</p>
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-display-lg">{course.name}</h1>
+            <p className="max-w-3xl text-sm leading-relaxed text-muted text-text-secondary sm:text-base">{course.description}</p>
 
             <div className="flex flex-wrap gap-2">
               <Badge tone={course.difficulty === "Advanced" ? "warn" : "default"}>{course.difficulty}</Badge>
@@ -130,7 +130,7 @@ export function CourseDetailContent({
         </Card>
 
         <Card>
-          <CardBody className="space-y-4 p-6">
+          <CardBody className="space-y-4 p-5 sm:p-6">
             <p className="text-xs uppercase tracking-[0.14em] text-muted text-text-secondary">Your progress snapshot</p>
             <div className="flex items-center justify-between gap-3">
               <ProgressRing value={progress} size={100} stroke={10} label="Mastery" />
@@ -190,6 +190,7 @@ export function CourseDetailContent({
               </select>
               <Button
                 variant="ghost"
+                className="w-full md:w-auto"
                 onClick={() => {
                   setQuery("");
                   setDifficulty("all");
@@ -216,7 +217,7 @@ export function CourseDetailContent({
               const best = bestScoreForQuiz(attempts, set.id);
               return (
                 <Card key={set.id} className={`overflow-hidden transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-${(idx % 6) + 1}`}>
-                  <CardHeader className="flex flex-wrap items-center justify-between gap-3">
+                  <CardHeader className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
                     <div>
                       <h3 className="text-heading font-semibold text-text">{set.title}</h3>
                       <p className="mt-1 text-sm text-muted text-text-secondary">{set.description}</p>
@@ -231,7 +232,7 @@ export function CourseDetailContent({
                       <Badge tone="success">Best <span className="font-mono">{best}%</span></Badge>
                     </div>
                   </CardHeader>
-                  <CardBody className="space-y-4">
+                  <CardBody className="space-y-4 p-5 sm:p-6">
                     <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
                       <span className="inline-flex items-center gap-1 rounded-full border border-borderc px-2 py-1">
                         <Clock3 className="h-3 w-3" />
@@ -249,13 +250,13 @@ export function CourseDetailContent({
                       <span className="font-mono text-text">{latest ? `${latest.score}%` : "Not attempted"}</span>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                       {setMode === "homework" ? (
                         <>
-                          <Button asChild>
+                          <Button asChild className="w-full sm:w-auto">
                             <Link href={withPrefix(routePrefix, `/homework/${set.id}`)}>Start Homework</Link>
                           </Button>
-                          <Button variant="secondary" asChild>
+                          <Button variant="secondary" asChild className="w-full sm:w-auto">
                             <Link href={withPrefix(routePrefix, `/homework/${set.id}?review=1`)}>
                               Review flagged
                             </Link>
@@ -263,26 +264,26 @@ export function CourseDetailContent({
                         </>
                       ) : setMode === "exam" ? (
                         <>
-                          <Button asChild>
+                          <Button asChild className="w-full sm:w-auto">
                             <Link href={withPrefix(routePrefix, `/quiz/${set.id}?mode=exam`)}>
                               Start Exam Simulation
                             </Link>
                           </Button>
-                          <Button variant="secondary" asChild>
+                          <Button variant="secondary" asChild className="w-full sm:w-auto">
                             <Link href={withPrefix(routePrefix, `/quiz/${set.id}`)}>Practice this bank</Link>
                           </Button>
                         </>
                       ) : (
                         <>
-                          <Button asChild>
+                          <Button asChild className="w-full sm:w-auto">
                             <Link href={withPrefix(routePrefix, `/quiz/${set.id}`)}>Start Quiz</Link>
                           </Button>
-                          <Button variant="secondary" asChild>
+                          <Button variant="secondary" asChild className="w-full sm:w-auto">
                             <Link href={withPrefix(routePrefix, `/quiz/${set.id}?mode=study`)}>
                               Study Mode
                             </Link>
                           </Button>
-                          <Button variant="ghost" asChild>
+                          <Button variant="ghost" asChild className="w-full sm:w-auto">
                             <Link href={withPrefix(routePrefix, `/quiz/${set.id}?mode=timed`)}>
                               Timed Mode
                             </Link>

@@ -30,25 +30,25 @@ export default function LandingPage() {
 
   return (
     <PublicShell>
-      <section className="mesh-hero mx-auto w-full max-w-[1240px] px-6 pb-16 pt-8 animate-fade-rise">
-        <div className="glass grid gap-10 rounded-[2rem] px-8 py-12 md:grid-cols-[1.3fr_0.9fr] md:px-12 md:py-16">
+      <section className="mesh-hero mx-auto w-full max-w-[1240px] px-0 pb-12 pt-4 animate-fade-rise sm:px-2 md:px-6 md:pb-16 md:pt-8">
+        <div className="glass grid gap-8 rounded-[1.8rem] px-5 py-7 sm:px-7 sm:py-9 md:grid-cols-[1.3fr_0.9fr] md:gap-10 md:rounded-[2rem] md:px-12 md:py-16">
           <div>
             <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-brand-2/30 bg-brand-2/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-brand-2">
               Premium College Study Platform
             </p>
-            <h1 className="max-w-[14ch] text-display-xl font-semibold leading-[1.03] tracking-tight">
+            <h1 className="max-w-[11ch] text-5xl font-semibold leading-[0.98] tracking-tight sm:max-w-[14ch] sm:text-display-xl">
               Study smarter. Test stronger.
             </h1>
-            <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted text-text-secondary">
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted text-text-secondary sm:mt-5 sm:text-lg">
               United Exams combines cinematic polish with rigorous academic workflows: walkthrough quizzes, streak momentum,
               topic mastery analytics, and clean course notes in one focused experience.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/courses" className="inline-flex items-center gap-2 rounded-xl bg-brand-gradient px-5 py-3 text-sm font-semibold text-accent-fg shadow-soft transition-all duration-200 ease-out-expo">
+            <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
+              <Link href="/courses" className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-gradient px-5 py-3 text-sm font-semibold text-accent-fg shadow-soft transition-all duration-200 ease-out-expo">
                 Open Dashboard
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link href="/courses" className="inline-flex items-center rounded-xl border border-borderc px-5 py-3 text-sm font-semibold text-text hover:bg-bg-inset transition-all duration-200 ease-out-expo">
+              <Link href="/courses" className="inline-flex items-center justify-center rounded-xl border border-borderc px-5 py-3 text-sm font-semibold text-text hover:bg-bg-inset transition-all duration-200 ease-out-expo">
                 Explore Course Catalog
               </Link>
             </div>
@@ -82,7 +82,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-[1240px] px-6 pb-14">
+      <section className="mx-auto w-full max-w-[1240px] px-0 pb-12 sm:px-2 md:px-6 md:pb-14">
         <div className="grid gap-4 md:grid-cols-3">
           {features.map((feature, idx) => {
             const Icon = feature.icon;
@@ -101,9 +101,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-[1240px] px-6 pb-14">
-        <div className="mb-4 flex items-end justify-between">
-          <h2 className="text-display-md font-semibold">Course previews</h2>
+      <section className="mx-auto w-full max-w-[1240px] px-0 pb-12 sm:px-2 md:px-6 md:pb-14">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <h2 className="text-3xl font-semibold sm:text-display-md">Course previews</h2>
           <Link href="/courses" className="text-sm font-semibold text-brand-2">
             View all courses
           </Link>
