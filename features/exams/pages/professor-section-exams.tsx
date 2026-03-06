@@ -65,6 +65,7 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
   const [allowMobileHotspot, setAllowMobileHotspot] = useState(false);
   const [blockVpn, setBlockVpn] = useState(false);
   const [lockdownMode, setLockdownMode] = useState(true);
+  const [openNotesAllowed, setOpenNotesAllowed] = useState(false);
   const [suspicionThreshold, setSuspicionThreshold] = useState("100");
 
   const minimumStartIso = useMemo(() => new Date().toISOString().slice(0, 16), []);
@@ -263,6 +264,10 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
               <input type="checkbox" checked={lockdownMode} onChange={(event) => setLockdownMode(event.target.checked)} className="h-4 w-4 accent-[hsl(var(--brand-2))]" />
               Lockdown mode
             </label>
+            <label className="flex items-center gap-2 text-sm text-muted">
+              <input type="checkbox" checked={openNotesAllowed} onChange={(event) => setOpenNotesAllowed(event.target.checked)} className="h-4 w-4 accent-[hsl(var(--brand-2))]" />
+              Open notes allowed
+            </label>
           </div>
 
           <div className="rounded-xl border border-borderc bg-soft p-3">
@@ -340,7 +345,8 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
                   allowMobileHotspot,
                   blockVpn,
                   lockdownMode,
-                  suspicionThreshold: Math.max(20, Number(suspicionThreshold || 100))
+                  suspicionThreshold: Math.max(20, Number(suspicionThreshold || 100)),
+                  openNotesAllowed
                 });
 
                 setTitle("");
@@ -349,6 +355,7 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
                 setEndsAt("");
                 setProctorCode("");
                 setPublished(false);
+                setOpenNotesAllowed(false);
                 push({ title: "Exam created", tone: "success" });
                 await refresh();
               } catch (error) {

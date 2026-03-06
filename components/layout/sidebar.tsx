@@ -34,8 +34,8 @@ interface NavItem {
 
 const baseItems: NavItem[] = [
   { href: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/courses", label: "Courses", icon: LibraryBig },
-  { href: "/homework", label: "Homework", icon: ListChecks },
+  { href: "/app/courses", label: "Courses", icon: LibraryBig },
+  { href: "/app/homework", label: "Homework", icon: ListChecks },
   { href: "/app/exams", label: "Exams", icon: Timer },
   { href: "/app/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/app/notes/software-engineering", label: "Notes", icon: NotebookTabs },

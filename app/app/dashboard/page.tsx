@@ -245,7 +245,7 @@ export default function DashboardPage() {
                     </Link>
                   </Button>
                   <Button variant="secondary" asChild>
-                    <Link href={`/courses/${continueQuiz.courseId}`}>View course</Link>
+                    <Link href={`/app/courses/${continueQuiz.courseId}`}>View course</Link>
                   </Button>
                 </div>
               </div>
@@ -259,7 +259,7 @@ export default function DashboardPage() {
                   Draft started {formatRelativeDate(homeworkDraft?.created_at ?? new Date().toISOString())}
                 </p>
                 <Button asChild className="mt-3">
-                  <Link href={`/homework/${homeworkDraftSet.id}`}>
+                  <Link href={`/app/homework/${homeworkDraftSet.id}`}>
                     Resume now
                     <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -318,7 +318,7 @@ export default function DashboardPage() {
                 {studiedToday ? "Goal complete. Keep momentum with review mode." : "Finish one 20-minute quiz sprint."}
               </p>
               <Button asChild variant={studiedToday ? "secondary" : "primary"} className="mt-4 w-full">
-                <Link href={continueQuiz ? `/quiz/${continueQuiz.id}` : "/courses"}>
+                <Link href={continueQuiz ? `/quiz/${continueQuiz.id}` : "/app/courses"}>
                   {studiedToday ? "Run a quick review" : "Start today's sprint"}
                 </Link>
               </Button>
@@ -343,7 +343,7 @@ export default function DashboardPage() {
           return (
             <Link
               key={course.id}
-              href={`/courses/${course.id}`}
+              href={`/app/courses/${course.id}`}
               className={`group animate-fade-rise ${stagger} rounded-[20px] border border-borderc bg-soft shadow-subtle backdrop-blur-xl transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent hover:bg-overlay`}
             >
               <div className="space-y-4 p-5">
@@ -392,7 +392,7 @@ export default function DashboardPage() {
                 <p className="text-[16px] font-bold text-text">Start your first quiz to build momentum.</p>
                 <p className="mt-2 text-[14px] text-muted text-text-secondary">Your latest attempts and topic signals will appear here.</p>
                 <Button className="mt-5" asChild>
-                  <Link href="/courses">Explore courses</Link>
+                  <Link href="/app/courses">Explore courses</Link>
                 </Button>
               </div>
             ) : (
@@ -452,7 +452,7 @@ export default function DashboardPage() {
               {focusCourses.map((course, i) => (
                 <Link
                   key={course.id}
-                  href={`/courses/${course.id}`}
+                  href={`/app/courses/${course.id}`}
                   className={`flex items-center justify-between rounded-[10px] border border-borderc bg-soft px-4 py-3 text-[14px] transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent animate-fade-rise stagger-${i + 1}`}
                 >
                   <span className="inline-flex items-center gap-2">

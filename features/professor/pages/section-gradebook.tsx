@@ -10,6 +10,7 @@ import { useAppData } from "@/lib/app-data-context";
 import { isVerifiedProfessor } from "@/lib/auth/roles";
 import { useToast } from "@/lib/hooks/use-toast";
 import { sendGradeChangeEmailNotice } from "@/features/announcements/api";
+import { getExamMonitor, listSectionExams } from "@/features/exams/api";
 import {
   getSectionGradebook,
   listProfessorSections,
@@ -30,8 +31,19 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
   const [editingRowKey, setEditingRowKey] = useState<string | null>(null);
   const [editStatus, setEditStatus] = useState<"submitted" | "graded" | "needs_review">("graded");
   const [editScore, setEditScore] = useState("");
+  const [editPointsEarned, setEditPointsEarned] = useState("");
+  const [editPointsPossible, setEditPointsPossible] = useState("100");
   const [editFeedback, setEditFeedback] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
+  const [integrityRows, setIntegrityRows] = useState<
+    Array<{
+      examId: string;
+      examTitle: string;
+      attemptCount: number;
+      flaggedCount: number;
+      topFlags: Array<{ student: string; suspicion: number }>;
+    }>
+  >([]);
 
   const isProfessor = isVerifiedProfessor(profile);
 
@@ -43,15 +55,47 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
 
     setLoading(true);
     try {
-      const [sections, gradebookRows] = await Promise.all([
+      const [sections, gradebookRows, examRows] = await Promise.all([
         listProfessorSections(supabase),
-        getSectionGradebook(supabase, resolvedSectionId)
+        getSectionGradebook(supabase, resolvedSectionId),
+        listSectionExams(supabase, resolvedSectionId)
       ]);
       setSection(sections.find((item) => item.id === resolvedSectionId) ?? null);
       setRows(gradebookRows);
+
+      const monitorRows = await Promise.all(
+        examRows.map(async (exam) => {
+          try {
+            const monitor = await getExamMonitor(supabase, exam.id);
+            const flagged = monitor
+              .filter((attempt) => attempt.flagged)
+              .sort((a, b) => b.suspicion_score - a.suspicion_score);
+            return {
+              examId: exam.id,
+              examTitle: exam.title,
+              attemptCount: monitor.length,
+              flaggedCount: flagged.length,
+              topFlags: flagged.slice(0, 3).map((attempt) => ({
+                student: attempt.student_display_name,
+                suspicion: attempt.suspicion_score
+              }))
+            };
+          } catch {
+            return {
+              examId: exam.id,
+              examTitle: exam.title,
+              attemptCount: 0,
+              flaggedCount: 0,
+              topFlags: [] as Array<{ student: string; suspicion: number }>
+            };
+          }
+        })
+      );
+      setIntegrityRows(monitorRows);
     } catch {
       setSection(null);
       setRows([]);
+      setIntegrityRows([]);
     } finally {
       setLoading(false);
     }
@@ -112,6 +156,30 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
       rows: value.rows.sort((a, b) => a.display_name.localeCompare(b.display_name))
     }));
   }, [rows]);
+
+  const normalizeNumberInput = (value: string) => value.replace(/[^0-9.]/g, "");
+
+  const roundTwo = (value: number) => Math.round(value * 100) / 100;
+
+  const syncPercentFromPoints = useCallback((earnedRaw: string, possibleRaw: string) => {
+    const earned = Number.parseFloat(earnedRaw);
+    const possible = Number.parseFloat(possibleRaw);
+    if (Number.isNaN(earned) || Number.isNaN(possible) || possible <= 0) {
+      setEditScore("");
+      return;
+    }
+    setEditScore(String(roundTwo((earned / possible) * 100)));
+  }, []);
+
+  const syncPointsFromPercent = useCallback((percentRaw: string, possibleRaw: string) => {
+    const percent = Number.parseFloat(percentRaw);
+    const possible = Number.parseFloat(possibleRaw);
+    if (Number.isNaN(percent) || Number.isNaN(possible) || possible <= 0) {
+      setEditPointsEarned("");
+      return;
+    }
+    setEditPointsEarned(String(roundTwo((percent / 100) * possible)));
+  }, []);
 
   if (!isProfessor) {
     return (
@@ -183,7 +251,12 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
                                   ? row.latest_status
                                   : "graded"
                               );
-                              setEditScore(row.latest_score === null ? "" : String(row.latest_score));
+                              const nextScore = row.latest_score === null ? "" : String(row.latest_score);
+                              setEditScore(nextScore);
+                              setEditPointsPossible("100");
+                              setEditPointsEarned(
+                                row.latest_score === null ? "" : String(Math.round(row.latest_score * 100) / 100)
+                              );
                               setEditFeedback("");
                             }}
                           >
@@ -194,7 +267,7 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
 
                       {editingRowKey === rowKey ? (
                         <div className="mt-3 space-y-2 rounded-lg border border-borderc bg-surface p-3">
-                          <div className="grid gap-2 md:grid-cols-3">
+                          <div className="grid gap-2 md:grid-cols-4">
                             <div className="space-y-1">
                               <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Status</label>
                               <select
@@ -213,11 +286,46 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
                               <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Score (%)</label>
                               <Input
                                 value={editScore}
-                                onChange={(event) => setEditScore(event.target.value.replace(/[^0-9.]/g, ""))}
+                                onChange={(event) => {
+                                  const nextValue = normalizeNumberInput(event.target.value);
+                                  setEditScore(nextValue);
+                                  syncPointsFromPercent(nextValue, editPointsPossible);
+                                }}
                                 placeholder={editStatus === "graded" ? "0-100" : "Optional"}
                               />
                             </div>
+                            <div className="space-y-1">
+                              <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Points earned</label>
+                              <Input
+                                value={editPointsEarned}
+                                onChange={(event) => {
+                                  const nextValue = normalizeNumberInput(event.target.value);
+                                  setEditPointsEarned(nextValue);
+                                  syncPercentFromPoints(nextValue, editPointsPossible);
+                                }}
+                                placeholder="e.g. 10"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Points possible</label>
+                              <Input
+                                value={editPointsPossible}
+                                onChange={(event) => {
+                                  const nextValue = normalizeNumberInput(event.target.value);
+                                  setEditPointsPossible(nextValue);
+                                  if ((editPointsEarned || "").trim().length > 0) {
+                                    syncPercentFromPoints(editPointsEarned, nextValue);
+                                  } else {
+                                    syncPointsFromPercent(editScore, nextValue);
+                                  }
+                                }}
+                                placeholder="e.g. 10"
+                              />
+                            </div>
                           </div>
+                          <p className="text-xs text-muted">
+                            Enter either percent or points. Values auto-convert both ways.
+                          </p>
 
                           <div className="space-y-1">
                             <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Feedback</label>
@@ -289,6 +397,8 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
                                   setEditingRowKey(null);
                                   setEditFeedback("");
                                   setEditScore("");
+                                  setEditPointsEarned("");
+                                  setEditPointsPossible("100");
                                   await refreshGradebook();
                                 } catch (error) {
                                   push({
@@ -309,6 +419,8 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
                                 setEditingRowKey(null);
                                 setEditFeedback("");
                                 setEditScore("");
+                                setEditPointsEarned("");
+                                setEditPointsPossible("100");
                               }}
                               disabled={savingEdit}
                             >
@@ -325,6 +437,39 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
           );
         })
       )}
+
+      {integrityRows.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <h2 className="font-display text-2xl font-semibold">Integrity checks</h2>
+          </CardHeader>
+          <CardBody className="space-y-2">
+            {integrityRows.map((row) => (
+              <div key={row.examId} className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="font-medium text-text">{row.examTitle}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted">
+                      {row.flaggedCount} flagged / {row.attemptCount} attempts
+                    </span>
+                    <Button size="sm" variant="secondary" asChild>
+                      <Link href={`/app/professor/exams/${row.examId}/monitor`}>Open monitor</Link>
+                    </Button>
+                  </div>
+                </div>
+                {row.topFlags.length > 0 ? (
+                  <p className="mt-1 text-xs text-muted">
+                    Highest flags:{" "}
+                    {row.topFlags.map((flag) => `${flag.student} (${flag.suspicion})`).join(", ")}
+                  </p>
+                ) : (
+                  <p className="mt-1 text-xs text-muted">No flagged attempts.</p>
+                )}
+              </div>
+            ))}
+          </CardBody>
+        </Card>
+      ) : null}
     </div>
   );
 }

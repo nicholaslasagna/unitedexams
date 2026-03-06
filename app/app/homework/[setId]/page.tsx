@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { HomeworkExperiencePageContent } from "@/features/study/homework-experience-page";
 
 export default async function AppHomeworkSetRedirect({
   params
@@ -6,5 +6,5 @@ export default async function AppHomeworkSetRedirect({
   params: Promise<{ setId: string }>;
 }) {
   const { setId } = await params;
-  redirect(`/homework/${setId}`);
+  return <HomeworkExperiencePageContent setId={setId} routePrefix="/app" />;
 }

@@ -32,6 +32,7 @@ export interface ExamAccessRuleRow {
   allow_mobile_hotspot: boolean;
   block_vpn: boolean;
   lockdown_mode: boolean;
+  open_notes_allowed: boolean;
   suspicion_threshold: number;
 }
 
@@ -76,6 +77,7 @@ export interface ExamStartConfig {
   lockdown_mode: boolean;
   require_proctor_code: boolean;
   require_network_allowlist: boolean;
+  open_notes_allowed: boolean;
 }
 
 export interface StartExamResponse {
@@ -147,7 +149,7 @@ export async function getExamAccessRules(client: SupabaseClient, examId: string)
   const { data, error } = await client
     .from("exam_access_rules")
     .select(
-      "exam_id, require_section_membership, require_proctor_code, require_network_allowlist, allowed_ip_hashes, allow_mobile_hotspot, block_vpn, lockdown_mode, suspicion_threshold"
+      "exam_id, require_section_membership, require_proctor_code, require_network_allowlist, allowed_ip_hashes, allow_mobile_hotspot, block_vpn, lockdown_mode, open_notes_allowed, suspicion_threshold"
     )
     .eq("exam_id", examId)
     .maybeSingle();
@@ -208,6 +210,7 @@ export async function upsertExamAccessRules(
     blockVpn: boolean;
     lockdownMode: boolean;
     suspicionThreshold: number;
+    openNotesAllowed?: boolean;
   }
 ) {
   const { error } = await client.rpc("upsert_exam_access_rules", {
@@ -220,7 +223,8 @@ export async function upsertExamAccessRules(
     allow_mobile_hotspot_input: payload.allowMobileHotspot,
     block_vpn_input: payload.blockVpn,
     lockdown_mode_input: payload.lockdownMode,
-    suspicion_threshold_input: payload.suspicionThreshold
+    suspicion_threshold_input: payload.suspicionThreshold,
+    open_notes_allowed_input: Boolean(payload.openNotesAllowed)
   });
   if (error) throw error;
 }
@@ -259,12 +263,22 @@ export async function removeAllowedNetwork(examId: string, ipHash: string) {
 }
 
 export async function getExamStartConfig(client: SupabaseClient, examId: string) {
-  const { data, error } = await client.rpc("get_exam_start_config", {
-    exam_id_input: examId
-  });
-  if (error) throw error;
-  const row = (Array.isArray(data) ? data[0] : data) as ExamStartConfig | null;
-  return row ?? null;
+  const preferred = await client.rpc("get_exam_start_config_v2", { exam_id_input: examId });
+  if (!preferred.error) {
+    const preferredRow = (Array.isArray(preferred.data) ? preferred.data[0] : preferred.data) as ExamStartConfig | null;
+    return preferredRow ?? null;
+  }
+
+  const fallback = await client.rpc("get_exam_start_config", { exam_id_input: examId });
+  if (fallback.error) throw fallback.error;
+  const fallbackRow = (Array.isArray(fallback.data) ? fallback.data[0] : fallback.data) as
+    | (Omit<ExamStartConfig, "open_notes_allowed"> & { open_notes_allowed?: boolean | null })
+    | null;
+  if (!fallbackRow) return null;
+  return {
+    ...fallbackRow,
+    open_notes_allowed: Boolean(fallbackRow.open_notes_allowed)
+  } satisfies ExamStartConfig;
 }
 
 export async function startExamSession(payload: {

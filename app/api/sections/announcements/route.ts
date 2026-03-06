@@ -10,6 +10,10 @@ const inputSchema = z.object({
   sendEmail: z.boolean().optional().default(true)
 });
 
+const deleteSchema = z.object({
+  announcementId: z.string().uuid()
+});
+
 interface RecipientRow {
   user_id: string;
   email: string;
@@ -187,6 +191,62 @@ export async function POST(request: NextRequest) {
       ok: true,
       warning: `Announcement posted. ${failedCount} email${failedCount === 1 ? "" : "s"} failed to send.`
     });
+  }
+
+  return NextResponse.json({ ok: true });
+}
+
+export async function DELETE(request: NextRequest) {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) {
+    return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
+  }
+
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  let payload: z.infer<typeof deleteSchema>;
+  try {
+    payload = deleteSchema.parse(await request.json());
+  } catch {
+    return NextResponse.json({ error: "Invalid delete payload." }, { status: 400 });
+  }
+
+  const { data: announcement, error: lookupError } = await supabase
+    .from("section_announcements")
+    .select("id, section_id")
+    .eq("id", payload.announcementId)
+    .maybeSingle();
+
+  if (lookupError) {
+    return NextResponse.json({ error: lookupError.message }, { status: 400 });
+  }
+
+  if (!announcement) {
+    return NextResponse.json({ error: "Announcement not found." }, { status: 404 });
+  }
+
+  const { data: canDelete, error: roleError } = await supabase.rpc("section_professor_exists", {
+    section_id_input: announcement.section_id,
+    user_id_input: user.id
+  });
+
+  if (roleError || !canDelete) {
+    return NextResponse.json({ error: "Only section professors can remove announcements." }, { status: 403 });
+  }
+
+  const { error: deleteError } = await supabase
+    .from("section_announcements")
+    .delete()
+    .eq("id", payload.announcementId);
+
+  if (deleteError) {
+    return NextResponse.json({ error: deleteError.message }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true });
