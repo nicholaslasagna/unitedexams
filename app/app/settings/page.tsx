@@ -99,13 +99,13 @@ export default function SettingsPage() {
   const [mfaBusy, setMfaBusy] = useState(false);
   const [deletePhrase, setDeletePhrase] = useState("");
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [mfaRequired, setMfaRequired] = useState(false);
 
   const mfaApi = useMemo<MfaApi | undefined>(() => {
     if (!supabase) return undefined;
     const authWithMfa = supabase.auth as unknown as { mfa?: MfaApi };
     return authWithMfa.mfa;
   }, [supabase]);
-
   const currentEmail = user?.email || profile.email || "";
   const isDarkPreview = useMemo(() => {
     if (preferences.theme === "dark") return true;
@@ -139,10 +139,14 @@ export default function SettingsPage() {
     setFactors(next);
 
     if (supabase && user) {
-      await supabase
-        .from("profiles")
-        .update({ mfa_enabled: next.length > 0 })
-        .eq("id", user.id);
+      try {
+        await fetch("/api/auth/mfa/status", {
+          method: "POST",
+          cache: "no-store"
+        });
+      } catch {
+        // MFA sync failures should not break factor management.
+      }
     }
   };
 
@@ -184,6 +188,12 @@ export default function SettingsPage() {
     refreshMfa();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mfaApi]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    setMfaRequired(params.get("mfa") === "required");
+  }, []);
 
   useEffect(() => {
     void loadPendingEmailChange();
@@ -644,6 +654,18 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6 animate-fade-rise">
+      {mfaRequired ? (
+        <Card>
+          <CardHeader>
+            <h2 className="text-heading font-semibold">MFA Required</h2>
+          </CardHeader>
+          <CardBody>
+            <p className="text-sm text-text-secondary">
+              Professor and admin accounts must enroll at least one verified MFA factor before accessing the rest of the app.
+            </p>
+          </CardBody>
+        </Card>
+      ) : null}
       <section>
         <h1 className="text-display-lg font-semibold tracking-tight">Settings</h1>
         <p className="mt-2 text-sm text-muted text-text-secondary">Theme, personalization, security, and data portability.</p>

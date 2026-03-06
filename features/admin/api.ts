@@ -17,6 +17,14 @@ export interface ProfessorCodeStatusRow {
   updated_at: string | null;
 }
 
+async function parseJsonResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
+  const payload = (await response.json().catch(() => ({}))) as T & { error?: string; ok?: boolean };
+  if (!response.ok || ("ok" in payload && payload.ok === false)) {
+    throw new Error(payload.error || fallbackMessage);
+  }
+  return payload;
+}
+
 export async function getManagedProfessors(client: SupabaseClient) {
   const { data, error } = await client.rpc("get_managed_professors");
   if (error) throw error;
@@ -30,23 +38,25 @@ export async function getProfessorVerificationCodeStatus(client: SupabaseClient)
 }
 
 export async function rotateProfessorVerificationCode(
-  client: SupabaseClient,
+  _client: SupabaseClient,
   payload: { code: string; expiresAt: string | null }
 ) {
-  const { error } = await client.rpc("rotate_professor_verification_code", {
-    code_input: payload.code,
-    expires_at_input: payload.expiresAt
+  const response = await fetch("/api/admin/professors/verification-code", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
   });
-  if (error) throw error;
+  await parseJsonResponse<{ ok: true }>(response, "Unable to rotate code.");
 }
 
 export async function setManagedProfessorVerification(
-  client: SupabaseClient,
+  _client: SupabaseClient,
   payload: { professorId: string; approved: boolean }
 ) {
-  const { error } = await client.rpc("set_managed_professor_verification_status", {
-    professor_id_input: payload.professorId,
-    approved_input: payload.approved
+  const response = await fetch(`/api/admin/professors/${payload.professorId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ approved: payload.approved })
   });
-  if (error) throw error;
+  await parseJsonResponse<{ ok: true }>(response, "Unable to update professor status.");
 }

@@ -5,11 +5,11 @@ import { createClient } from "@supabase/supabase-js";
 
 const contentDir = process.argv[2] ?? path.resolve(process.cwd(), "content");
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const serviceRoleKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !serviceRoleKey) {
   throw new Error(
-    "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY. Set both before running this importer."
+    "Missing NEXT_PUBLIC_SUPABASE_URL or a Supabase server secret. Set SUPABASE_SECRET_KEY (preferred) or SUPABASE_SERVICE_ROLE_KEY before running this importer."
   );
 }
 

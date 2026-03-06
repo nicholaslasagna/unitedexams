@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { safeWriteAuditLog } from "@/lib/security/audit";
 
 const CHANGE_EMAIL_RATE_LIMIT_MS = 2 * 60 * 1000;
 
@@ -57,20 +58,17 @@ function isRateLimited(requestedAtIso: string | null | undefined) {
 
 async function addAuditLog(
   supabase: NonNullable<Awaited<ReturnType<typeof createSupabaseServerClient>>>,
+  request: NextRequest,
   userId: string,
-  eventType: string,
+  action: string,
   metadata: Record<string, unknown>
 ) {
-  try {
-    await supabase.from("audit_log").insert({
-      user_id: userId,
-      event_type: eventType,
-      metadata,
-      created_at: new Date().toISOString()
-    });
-  } catch {
-    // audit_log is optional in this deployment.
-  }
+  await safeWriteAuditLog(supabase, request, {
+    action,
+    targetType: "user",
+    targetId: userId,
+    metadata
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -125,7 +123,7 @@ export async function POST(request: NextRequest) {
       .update({ requested_at: new Date().toISOString(), status: "pending" })
       .eq("user_id", user.id);
 
-    await addAuditLog(supabase, user.id, "email_change_resend", {
+    await addAuditLog(supabase, request, user.id, "email_change_resend", {
       new_email: pending.new_email
     });
 
@@ -213,7 +211,7 @@ export async function POST(request: NextRequest) {
     updated_at: new Date().toISOString()
   });
 
-  await addAuditLog(supabase, user.id, "email_change_requested", {
+  await addAuditLog(supabase, request, user.id, "email_change_requested", {
     current_email: currentEmail,
     new_email: newEmail
   });
@@ -225,7 +223,7 @@ export async function POST(request: NextRequest) {
   });
 }
 
-export async function DELETE() {
+export async function DELETE(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
@@ -252,7 +250,7 @@ export async function DELETE() {
     .eq("user_id", user.id)
     .eq("status", "cancelled");
 
-  await addAuditLog(supabase, user.id, "email_change_cancelled", {});
+  await addAuditLog(supabase, request, user.id, "email_change_cancelled", {});
 
   return NextResponse.json({ ok: true, message: "Pending email change cancelled." });
 }

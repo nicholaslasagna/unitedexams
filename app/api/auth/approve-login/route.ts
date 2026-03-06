@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { getSupabasePublicEnv } from "@/lib/supabase/env";
+import { getSupabaseEdgeFunctionKey, getSupabasePublicEnv } from "@/lib/supabase/env";
 import {
   createSignedApprovedIpCookieValue,
   createSignedTrustDeviceCookieValue,
@@ -33,8 +33,12 @@ export async function POST(request: NextRequest) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      apikey: env.anonKey,
-      Authorization: `Bearer ${env.anonKey}`
+      apikey: getSupabaseEdgeFunctionKey(env),
+      ...(env.legacyAnonKey
+        ? {
+            Authorization: `Bearer ${env.legacyAnonKey}`
+          }
+        : {})
     },
     body: JSON.stringify({
       token: payload.token,

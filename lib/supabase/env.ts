@@ -1,13 +1,21 @@
 export interface SupabasePublicEnv {
   url: string;
-  anonKey: string;
+  publicKey: string;
+  legacyAnonKey: string | null;
 }
 
 export function getSupabasePublicEnv(): SupabasePublicEnv | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) return null;
-  return { url, anonKey };
+  const publicKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const legacyAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || null;
+  if (!url || !publicKey) return null;
+  return { url, publicKey, legacyAnonKey };
+}
+
+export function getSupabaseEdgeFunctionKey(env: SupabasePublicEnv) {
+  return env.legacyAnonKey || env.publicKey;
 }
 
 export function hasSupabasePublicEnv() {
@@ -18,7 +26,7 @@ export function requireSupabasePublicEnv(): SupabasePublicEnv {
   const env = getSupabasePublicEnv();
   if (!env) {
     throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. Configure Supabase env vars first."
+      "Missing NEXT_PUBLIC_SUPABASE_URL or a Supabase public key. Set NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (preferred) or NEXT_PUBLIC_SUPABASE_ANON_KEY."
     );
   }
   return env;
