@@ -55,6 +55,7 @@ export function ProfessorExamEditPage({ examId }: { examId: string }) {
   const [allowMobileHotspot, setAllowMobileHotspot] = useState(false);
   const [blockVpn, setBlockVpn] = useState(false);
   const [lockdownMode, setLockdownMode] = useState(true);
+  const [openNotesAllowed, setOpenNotesAllowed] = useState(false);
   const [suspicionThreshold, setSuspicionThreshold] = useState("100");
   const [allowedNetworkHashes, setAllowedNetworkHashes] = useState<string[]>([]);
   const [networkBusyHash, setNetworkBusyHash] = useState<string | null>(null);
@@ -92,10 +93,12 @@ export function ProfessorExamEditPage({ examId }: { examId: string }) {
         setAllowMobileHotspot(access.allow_mobile_hotspot);
         setBlockVpn(access.block_vpn);
         setLockdownMode(access.lockdown_mode);
+        setOpenNotesAllowed(access.open_notes_allowed);
         setSuspicionThreshold(String(access.suspicion_threshold));
         setAllowedNetworkHashes(access.allowed_ip_hashes);
       } else {
         setAllowedNetworkHashes([]);
+        setOpenNotesAllowed(false);
       }
     } catch (error) {
       push({ title: "Unable to load exam", description: (error as Error).message, tone: "error" });
@@ -178,11 +181,15 @@ export function ProfessorExamEditPage({ examId }: { examId: string }) {
               <input type="checkbox" checked={published} onChange={(event) => setPublished(event.target.checked)} className="h-4 w-4 accent-[hsl(var(--brand-2))]" />
               Published
             </label>
-            <label className="flex items-center gap-2 text-sm text-muted">
-              <input type="checkbox" checked={lockdownMode} onChange={(event) => setLockdownMode(event.target.checked)} className="h-4 w-4 accent-[hsl(var(--brand-2))]" />
-              Lockdown mode
-            </label>
-          </div>
+              <label className="flex items-center gap-2 text-sm text-muted">
+                <input type="checkbox" checked={lockdownMode} onChange={(event) => setLockdownMode(event.target.checked)} className="h-4 w-4 accent-[hsl(var(--brand-2))]" />
+                Lockdown mode
+              </label>
+              <label className="flex items-center gap-2 text-sm text-muted">
+                <input type="checkbox" checked={openNotesAllowed} onChange={(event) => setOpenNotesAllowed(event.target.checked)} className="h-4 w-4 accent-[hsl(var(--brand-2))]" />
+                Open notes allowed
+              </label>
+            </div>
 
           <div className="grid gap-3 md:grid-cols-2">
             <select
@@ -272,7 +279,8 @@ export function ProfessorExamEditPage({ examId }: { examId: string }) {
                     allowMobileHotspot,
                     blockVpn,
                     lockdownMode,
-                    suspicionThreshold: Math.max(20, Number(suspicionThreshold || 100))
+                    suspicionThreshold: Math.max(20, Number(suspicionThreshold || 100)),
+                    openNotesAllowed
                   });
 
                   setClearProctorCode(false);

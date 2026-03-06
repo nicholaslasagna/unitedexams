@@ -20,8 +20,8 @@ const guestNavItems = [
 
 const accountNavItems = [
   { href: "/app/dashboard", label: "Dashboard" },
-  { href: "/courses", label: "Courses" },
-  { href: "/homework", label: "Homework" },
+  { href: "/app/courses", label: "Courses" },
+  { href: "/app/homework", label: "Homework" },
   { href: "/app/leaderboard", label: "Leaderboard" },
   { href: "/app/account", label: "Account" },
   { href: "/app/settings", label: "Settings" }
@@ -85,7 +85,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
       next = [...next.slice(0, 2), { href: "/app/sections", label: "Sections" }, ...next.slice(2)];
     }
     if (showAnnouncements) {
-      const homeworkIndex = next.findIndex((item) => item.href === "/homework");
+      const homeworkIndex = next.findIndex((item) => item.href === "/app/homework");
       if (homeworkIndex >= 0) {
         next = [
           ...next.slice(0, homeworkIndex + 1),

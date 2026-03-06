@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { Trash2 } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,12 @@ import { Markdown } from "@/components/ui/markdown";
 import { useAppData } from "@/lib/app-data-context";
 import { isVerifiedProfessor } from "@/lib/auth/roles";
 import { useToast } from "@/lib/hooks/use-toast";
-import { getMyAnnouncements, postSectionAnnouncement, type AnnouncementFeedItem } from "@/features/announcements/api";
+import {
+  deleteSectionAnnouncement,
+  getMyAnnouncements,
+  postSectionAnnouncement,
+  type AnnouncementFeedItem
+} from "@/features/announcements/api";
 import { listProfessorSections, type SectionSummary } from "@/features/professor/api";
 
 export function AnnouncementsPageContent() {
@@ -20,6 +26,7 @@ export function AnnouncementsPageContent() {
   const [sections, setSections] = useState<SectionSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [feedSectionId, setFeedSectionId] = useState("all");
 
   const [selectedSectionId, setSelectedSectionId] = useState("");
@@ -36,6 +43,7 @@ export function AnnouncementsPageContent() {
     if (!feedSectionId || feedSectionId === "all") return sorted;
     return sorted.filter((item) => item.section_id === feedSectionId);
   }, [feedSectionId, items]);
+  const manageableSectionIds = useMemo(() => new Set(sections.map((section) => section.id)), [sections]);
 
   const refresh = async () => {
     if (!supabase) {
@@ -238,7 +246,37 @@ export function AnnouncementsPageContent() {
               <article key={item.announcement_id} className="rounded-xl border border-borderc bg-soft p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-sm font-semibold text-text">{item.title}</p>
-                  <span className="text-xs text-muted">{new Date(item.created_at).toLocaleString()}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted">{new Date(item.created_at).toLocaleString()}</span>
+                    {isProfessor && manageableSectionIds.has(item.section_id) ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        loading={deletingId === item.announcement_id}
+                        disabled={Boolean(deletingId)}
+                        onClick={async () => {
+                          if (deletingId) return;
+                          setDeletingId(item.announcement_id);
+                          try {
+                            await deleteSectionAnnouncement(item.announcement_id);
+                            push({ title: "Announcement removed", tone: "success" });
+                            await refresh();
+                          } catch (error) {
+                            push({
+                              title: "Unable to remove announcement",
+                              description: (error as Error).message,
+                              tone: "error"
+                            });
+                          } finally {
+                            setDeletingId(null);
+                          }
+                        }}
+                        aria-label="Remove announcement"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
                 <p className="mt-1 text-xs text-muted">
                   {item.section_name} · {item.course_id} · {item.posted_by_name}

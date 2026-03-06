@@ -40,8 +40,15 @@ import { resolveQuestionCountTarget, resolveQuizSetMode } from "@/lib/study/set-
 import { minutesSeconds, percentile, shuffle } from "@/lib/utils";
 import type { Attempt, QuizSet, QuizSettings } from "@/lib/types";
 
-type Stage = "overview" | "quiz" | "results" | "review";
+type Stage = "overview" | "quiz" | "submitted" | "results" | "review";
 type AttemptMode = "test" | "study" | "timed" | "exam";
+
+interface SectionAssignmentPolicy {
+  assignmentId: string;
+  assignmentTitle: string;
+  gradingMode: "auto" | "manual" | "mixed";
+  dueAt: string | null;
+}
 
 const keyMap = ["a", "b", "c", "d", "e", "f"];
 
@@ -61,7 +68,7 @@ export function QuizExperiencePageContent({
   const fallbackQuiz = useMemo(() => getQuizSet(quizId), [quizId]);
   const sectionParam = searchParams.get("section")?.trim() || "";
 
-  const { attempts, saveAttempt, preferences, isAuthenticated } = useAppData();
+  const { attempts, saveAttempt, preferences, isAuthenticated, supabase } = useAppData();
   const { push } = useToast();
 
   const [quiz, setQuiz] = useState<QuizSet | undefined>(fallbackQuiz);
@@ -84,6 +91,14 @@ export function QuizExperiencePageContent({
   const [timeLeft, setTimeLeft] = useState(0);
   const [timeSpent, setTimeSpent] = useState(0);
   const [result, setResult] = useState<Attempt | null>(null);
+  const [sectionAssignmentPolicy, setSectionAssignmentPolicy] = useState<SectionAssignmentPolicy | null>(null);
+  const [submissionMeta, setSubmissionMeta] = useState<{
+    resultsAvailable: boolean;
+    message: string;
+  }>({
+    resultsAvailable: true,
+    message: ""
+  });
   const [reviewIndex, setReviewIndex] = useState(0);
   const [guestSaveModalOpen, setGuestSaveModalOpen] = useState(false);
   const finalizingRef = useRef(false);
@@ -122,6 +137,46 @@ export function QuizExperiencePageContent({
       };
     });
   }, [quiz]);
+
+  useEffect(() => {
+    if (!supabase || !isAuthenticated || !sectionParam || !quiz?.id) {
+      setSectionAssignmentPolicy(null);
+      return;
+    }
+
+    let active = true;
+    void (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("assignments")
+          .select("id, title, grading_mode, due_at")
+          .eq("section_id", sectionParam)
+          .eq("quiz_set_id", quiz.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (!active) return;
+        if (error || !data) {
+          setSectionAssignmentPolicy(null);
+          return;
+        }
+        setSectionAssignmentPolicy({
+          assignmentId: String(data.id),
+          assignmentTitle: (data.title || "Assignment").toString(),
+          gradingMode: (data.grading_mode as "auto" | "manual" | "mixed") ?? "auto",
+          dueAt: (data.due_at as string | null) ?? null
+        });
+      } catch {
+        if (!active) return;
+        setSectionAssignmentPolicy(null);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [isAuthenticated, quiz?.id, sectionParam, supabase]);
 
   useEffect(() => {
     const mode = searchParams.get("mode");
@@ -294,6 +349,10 @@ export function QuizExperiencePageContent({
     setCorrectByQuestion({});
     setShowExplanation({});
     setResult(null);
+    setSubmissionMeta({
+      resultsAvailable: true,
+      message: ""
+    });
     setReviewIndex(0);
     finalizingRef.current = false;
     setTimeSpent(0);
@@ -443,57 +502,98 @@ export function QuizExperiencePageContent({
     if (!quiz) return;
     if (finalizingRef.current) return;
     finalizingRef.current = true;
+    try {
+      const finalSubmitted = { ...submittedByQuestion };
+      const finalCorrect = { ...correctByQuestion };
 
-    const finalSubmitted = { ...submittedByQuestion };
-    const finalCorrect = { ...correctByQuestion };
-
-    order.forEach((id) => {
-      if (!finalSubmitted[id]) {
-        const question = questionsById.get(id);
-        if (!question) return;
-        finalSubmitted[id] = true;
-        if (isOpenResponseQuestion(question)) {
-          if (requiresSelfMark(question)) {
-            finalCorrect[id] = Boolean(selfMarkedByQuestion[id]);
+      order.forEach((id) => {
+        if (!finalSubmitted[id]) {
+          const question = questionsById.get(id);
+          if (!question) return;
+          finalSubmitted[id] = true;
+          if (isOpenResponseQuestion(question)) {
+            if (requiresSelfMark(question)) {
+              finalCorrect[id] = Boolean(selfMarkedByQuestion[id]);
+            } else {
+              const response = responseByQuestion[id]?.trim() ?? "";
+              finalCorrect[id] = gradeQuestion(question, [], response);
+            }
           } else {
-            const response = responseByQuestion[id]?.trim() ?? "";
-            finalCorrect[id] = gradeQuestion(question, [], response);
+            const selected = selectedByQuestion[id] ?? [];
+            finalCorrect[id] = gradeQuestion(question, selected);
           }
-        } else {
-          const selected = selectedByQuestion[id] ?? [];
-          finalCorrect[id] = gradeQuestion(question, selected);
+        }
+      });
+
+      setSubmittedByQuestion(finalSubmitted);
+      setCorrectByQuestion(finalCorrect);
+
+      const attempt = summarizeAttempt({
+        quiz,
+        selectedByQuestion,
+        freeResponseByQuestion: responseByQuestion,
+        selfMarkedByQuestion,
+        order,
+        timeSpentSeconds: timeSpent
+      });
+      attempt.mode = setMode === "exam" ? "exam" : "quiz";
+      attempt.status = "completed";
+
+      let saveWarning: string | null = null;
+      try {
+        await saveAttempt(attempt);
+      } catch (error) {
+        saveWarning = (error as Error).message || "We could not sync your attempt yet.";
+      }
+
+      if (!saveWarning && isAuthenticated && supabase && sectionAssignmentPolicy) {
+        const { error: assignmentSubmitError } = await supabase.rpc("submit_assignment", {
+          assignment_id_input: sectionAssignmentPolicy.assignmentId,
+          attempt_id_input: null
+        });
+        if (assignmentSubmitError) {
+          saveWarning = assignmentSubmitError.message;
         }
       }
-    });
 
-    setSubmittedByQuestion(finalSubmitted);
-    setCorrectByQuestion(finalCorrect);
+      const resultsAvailableNow =
+        !sectionAssignmentPolicy || sectionAssignmentPolicy.gradingMode === "auto";
+      let submissionMessage = sectionAssignmentPolicy
+        ? resultsAvailableNow
+          ? `Thanks for submitting ${sectionAssignmentPolicy.assignmentTitle}. Your instructor allows immediate results.`
+          : `Thanks for submitting ${sectionAssignmentPolicy.assignmentTitle}. Your instructor will release results after review.`
+        : "Thanks for submitting your quiz.";
 
-    const attempt = summarizeAttempt({
-      quiz,
-      selectedByQuestion,
-      freeResponseByQuestion: responseByQuestion,
-      selfMarkedByQuestion,
-      order,
-      timeSpentSeconds: timeSpent
-    });
-    attempt.mode = setMode === "exam" ? "exam" : "quiz";
-    attempt.status = "completed";
+      if (saveWarning) {
+        submissionMessage = `${submissionMessage} We could not fully sync this submission yet: ${saveWarning}`;
+      }
 
-    await saveAttempt(attempt);
-    setResult(attempt);
-    setStage("results");
+      setResult(attempt);
+      setSubmissionMeta({
+        resultsAvailable: resultsAvailableNow,
+        message: submissionMessage
+      });
+      setStage("submitted");
 
-    const isPersonalBest = attempt.score > bestScore;
-    if (isPersonalBest && preferences.confettiEnabled) {
-      fireConfetti();
+      const isPersonalBest = attempt.score > bestScore;
+      if (isPersonalBest && preferences.confettiEnabled) {
+        fireConfetti();
+      }
+
+      push({
+        title: saveWarning
+          ? "Quiz submitted with sync warning"
+          : isPersonalBest
+            ? "New personal best"
+            : "Quiz submitted",
+        description: resultsAvailableNow
+          ? `${attempt.score}% • ${countMissed(attempt)} missed`
+          : "Submission received. Results are pending instructor release.",
+        tone: saveWarning ? "default" : isPersonalBest ? "success" : "default"
+      });
+    } finally {
+      finalizingRef.current = false;
     }
-
-    push({
-      title: isPersonalBest ? "New personal best" : "Quiz submitted",
-      description: `${attempt.score}% • ${countMissed(attempt)} missed`,
-      tone: isPersonalBest ? "success" : "default"
-    });
   };
 
   useEffect(() => {
@@ -603,6 +703,7 @@ export function QuizExperiencePageContent({
 
   const quizPath = withPrefix(routePrefix, `/quiz/${quiz.id}`);
   const coursePath = withPrefix(routePrefix, `/courses/${course.id}`);
+  const sectionPath = sectionParam ? `/app/sections/${sectionParam}` : null;
   const signInPath = `/login?next=${encodeURIComponent(quizPath)}`;
   const signUpPath = `/signup?next=${encodeURIComponent(quizPath)}`;
 
@@ -746,6 +847,51 @@ export function QuizExperiencePageContent({
           setMode={setMode}
           onConfirm={setSettings}
         />
+      </div>
+    );
+  }
+
+  if (stage === "submitted" && result) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardBody className="space-y-5 p-6 md:p-8">
+            <p className="text-xs uppercase tracking-[0.14em] text-text-secondary">Submission received</p>
+            <h1 className="text-display-lg font-semibold tracking-tight">Thanks for submitting</h1>
+            <p className="text-sm text-text-secondary">{submissionMeta.message}</p>
+
+            <div
+              className={`rounded-xl border px-4 py-3 text-sm ${
+                submissionMeta.resultsAvailable
+                  ? "border-success/35 bg-success/10 text-text"
+                  : "border-warn/35 bg-warn/10 text-text"
+              }`}
+            >
+              {submissionMeta.resultsAvailable
+                ? "Your results are available now."
+                : "Results are currently hidden by instructor policy and will appear when released."}
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {submissionMeta.resultsAvailable ? (
+                <Button onClick={() => setStage("results")}>View results</Button>
+              ) : null}
+              <Button variant="secondary" onClick={() => startQuiz()}>
+                <RotateCcw className="h-4 w-4" />
+                {setMode === "exam" ? "Retake Exam" : "Retake Quiz"}
+              </Button>
+              {sectionPath ? (
+                <Button variant="ghost" asChild>
+                  <Link href={sectionPath}>Back to section</Link>
+                </Button>
+              ) : (
+                <Button variant="ghost" onClick={() => router.push(coursePath)}>
+                  Back to course
+                </Button>
+              )}
+            </div>
+          </CardBody>
+        </Card>
       </div>
     );
   }

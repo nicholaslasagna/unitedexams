@@ -77,12 +77,13 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
 
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [expiresAtIso, setExpiresAtIso] = useState<string | null>(null);
-  const [suspicionScore, setSuspicionScore] = useState(0);
-  const [flagged, setFlagged] = useState(false);
   const [activeSessions, setActiveSessions] = useState(1);
   const [statusText, setStatusText] = useState("created");
   const [submittedResult, setSubmittedResult] = useState<SubmitExamResponse | null>(null);
   const [localScored, setLocalScored] = useState<Record<string, boolean>>({});
+  const [windowFocused, setWindowFocused] = useState(true);
+  const [documentVisible, setDocumentVisible] = useState(true);
+  const lastCursorLeaveEventRef = useRef(0);
 
   const examSessionIdRef = useRef(
     `exam-session-${Math.random().toString(16).slice(2)}-${Date.now().toString(36)}`
@@ -94,6 +95,17 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
     () => quiz?.questions.find((question) => question.id === currentQuestionId),
     [quiz, currentQuestionId]
   );
+  const strictIntegrityMode = Boolean(config?.lockdown_mode && !config?.open_notes_allowed);
+  const interactionBlocked =
+    stage === "running" &&
+    strictIntegrityMode &&
+    (!windowFocused || !documentVisible || activeSessions > 1);
+
+  useEffect(() => {
+    if (stage !== "running") return;
+    setWindowFocused(document.hasFocus());
+    setDocumentVisible(document.visibilityState === "visible");
+  }, [stage]);
 
   useEffect(() => {
     if (!supabase) {
@@ -145,17 +157,42 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
       }).catch(() => undefined);
     };
 
-    const onBlur = () => log("tab_blur");
-    const onFocus = () => log("tab_focus");
-    const onVisibility = () => {
-      log(document.visibilityState === "hidden" ? "visibility_hidden" : "tab_focus", {
-        visibility: document.visibilityState
-      });
+    const onBlur = () => {
+      setWindowFocused(false);
+      if (strictIntegrityMode) {
+        log("tab_blur");
+      }
     };
-    const onCopy = () => log("copy");
-    const onPaste = () => log("paste");
-    const onOnline = () => log("reconnect", { source: "online" });
+    const onFocus = () => {
+      setWindowFocused(true);
+      if (strictIntegrityMode) {
+        log("tab_focus");
+      }
+    };
+    const onVisibility = () => {
+      const visible = document.visibilityState === "visible";
+      setDocumentVisible(visible);
+      if (strictIntegrityMode) {
+        log(visible ? "tab_focus" : "visibility_hidden", {
+          visibility: document.visibilityState
+        });
+      }
+    };
+    const onCopy = () => {
+      if (strictIntegrityMode) {
+        log("copy");
+      }
+    };
+    const onPaste = () => {
+      if (strictIntegrityMode) {
+        log("paste");
+      }
+    };
+    const onOnline = () => {
+      log("reconnect", { source: "online" });
+    };
     const onDevtoolsProbe = () => {
+      if (!strictIntegrityMode) return;
       const widthGap = Math.abs(window.outerWidth - window.innerWidth);
       const heightGap = Math.abs(window.outerHeight - window.innerHeight);
       const looksOpen = widthGap > 180 || heightGap > 180;
@@ -166,6 +203,14 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
       lastDevtoolsEventRef.current = now;
 
       log("devtools_suspected", { widthGap, heightGap });
+    };
+    const onMouseLeave = (event: MouseEvent) => {
+      if (!strictIntegrityMode) return;
+      if (event.relatedTarget) return;
+      const now = Date.now();
+      if (now - lastCursorLeaveEventRef.current < 5000) return;
+      lastCursorLeaveEventRef.current = now;
+      log("cursor_left_window");
     };
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
       log("navigation_attempt", { type: "beforeunload" });
@@ -179,9 +224,12 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
     document.addEventListener("copy", onCopy);
     document.addEventListener("paste", onPaste);
     window.addEventListener("online", onOnline);
+    window.addEventListener("mouseout", onMouseLeave);
     window.addEventListener("beforeunload", onBeforeUnload);
     const devtoolsTimer = window.setInterval(onDevtoolsProbe, 6000);
-    onDevtoolsProbe();
+    if (strictIntegrityMode) {
+      onDevtoolsProbe();
+    }
 
     return () => {
       window.removeEventListener("blur", onBlur);
@@ -190,10 +238,11 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
       document.removeEventListener("copy", onCopy);
       document.removeEventListener("paste", onPaste);
       window.removeEventListener("online", onOnline);
+      window.removeEventListener("mouseout", onMouseLeave);
       window.removeEventListener("beforeunload", onBeforeUnload);
       window.clearInterval(devtoolsTimer);
     };
-  }, [attemptId, stage]);
+  }, [attemptId, stage, strictIntegrityMode]);
 
   useEffect(() => {
     if (!attemptId || stage !== "running") return;
@@ -201,12 +250,10 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
       heartbeatExamSession({
         attemptId,
         sessionId: examSessionIdRef.current,
-        visibilityState: document.visibilityState
+        visibilityState: strictIntegrityMode ? document.visibilityState : undefined
       })
         .then((heartbeat) => {
           setTimeRemaining(heartbeat.timeRemainingSeconds);
-          setSuspicionScore(heartbeat.suspicionScore);
-          setFlagged(heartbeat.flagged);
           setActiveSessions(heartbeat.activeSessions);
           setStatusText(heartbeat.status);
           if (heartbeat.expiresAt) {
@@ -216,7 +263,7 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
         .catch(() => undefined);
     }, 12000);
     return () => window.clearInterval(tick);
-  }, [attemptId, stage]);
+  }, [attemptId, stage, strictIntegrityMode]);
 
   useEffect(() => {
     if (stage !== "running" || !expiresAtIso) return;
@@ -265,6 +312,7 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
 
   const onToggleOption = (optionIndex: number) => {
     if (!currentQuestion) return;
+    if (interactionBlocked) return;
     if (currentQuestion.type === "free") return;
     setAnswers((prev) => {
       const existing = prev[currentQuestion.id] ?? [];
@@ -281,7 +329,7 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
   };
 
   const onSubmitExam = async () => {
-    if (!attemptId || submitting) return;
+    if (!attemptId || submitting || interactionBlocked) return;
     setSubmitting(true);
     try {
       const result = await submitExamSession({
@@ -373,7 +421,9 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
 
             {config.lockdown_mode ? (
               <div className="rounded-xl border border-warn/35 bg-warn/10 px-4 py-3 text-sm text-text">
-                Lockdown mode enabled. Tab switches, copy/paste, and session anomalies are logged for review.
+                {config.open_notes_allowed
+                  ? "Open-notes integrity mode enabled. Activity is monitored, but notes are allowed for this exam."
+                  : "Strict lockdown mode enabled. Keep this tab focused and avoid duplicate exam tabs to continue."}
               </div>
             ) : null}
 
@@ -403,14 +453,8 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
           <CardBody className="space-y-4 p-7">
             <h1 className="font-display text-4xl font-semibold tracking-tight">Exam submitted</h1>
             <p className="text-sm text-muted">
-              Status: <span className="font-semibold text-text">{submittedResult.status}</span> • Suspicion score:{" "}
-              <span className="font-semibold text-text">{submittedResult.suspicionScore}</span>
+              Status: <span className="font-semibold text-text">{submittedResult.status}</span>
             </p>
-            {flagged ? (
-              <p className="rounded-xl border border-warn/35 bg-warn/10 px-4 py-3 text-sm text-warn">
-                This attempt has been flagged for review by your professor.
-              </p>
-            ) : null}
 
             {submittedResult.resultsAvailable ? (
               <div className="space-y-2 rounded-xl border border-borderc bg-soft p-4">
@@ -484,9 +528,7 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
   return (
     <div className="space-y-4">
       <div
-        className={`rounded-xl border px-4 py-3 text-sm ${
-          flagged ? "border-warn/40 bg-warn/10 text-warn" : "border-borderc bg-soft text-text"
-        }`}
+        className="rounded-xl border border-borderc bg-soft px-4 py-3 text-sm text-text"
         role="status"
         aria-live="polite"
       >
@@ -496,7 +538,6 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
             Time remaining: {secondsToClock(timeRemaining)}
           </span>
           <span className="text-xs text-muted">Status: {statusText}</span>
-          <span className="text-xs text-muted">Suspicion: {suspicionScore}</span>
           {activeSessions > 1 ? (
             <span className="inline-flex items-center gap-1 text-warn">
               <AlertTriangle className="h-3.5 w-3.5" />
@@ -504,15 +545,19 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
             </span>
           ) : null}
         </div>
-        {flagged ? (
-          <p className="mt-2 text-xs text-warn">
-            This attempt has crossed the review threshold and is flagged for professor review.
-          </p>
-        ) : null}
+        <p className="mt-2 text-xs text-muted">Integrity monitoring is active.</p>
       </div>
 
+      {interactionBlocked ? (
+        <div className="rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-text">
+          {activeSessions > 1
+            ? "Close other open exam tabs for this attempt, then continue here."
+            : "Return to this exam tab and keep it focused to continue."}
+        </div>
+      ) : null}
+
       <Card>
-        <CardBody className="space-y-5 p-6">
+        <CardBody className={`space-y-5 p-6 ${interactionBlocked ? "opacity-80" : ""}`}>
           <div className="flex items-center justify-between">
             <p className="text-xs uppercase tracking-[0.14em] text-muted">
               Question {currentIndex + 1} of {order.length}
@@ -534,6 +579,7 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
                     key={`${currentQuestion.id}:${optionIndex}`}
                     type="button"
                     onClick={() => onToggleOption(optionIndex)}
+                    disabled={interactionBlocked}
                     className={`w-full rounded-xl border px-3 py-2 text-left text-sm transition ${
                       selected
                         ? "border-accent/60 bg-accent-subtle text-text"
@@ -554,19 +600,22 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
             <Button
               variant="secondary"
               onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
-              disabled={currentIndex === 0}
+              disabled={currentIndex === 0 || interactionBlocked}
             >
               <ArrowLeft className="h-4 w-4" />
               Previous
             </Button>
             <div className="flex gap-2">
               {currentIndex < order.length - 1 ? (
-                <Button onClick={() => setCurrentIndex((prev) => Math.min(order.length - 1, prev + 1))}>
+                <Button
+                  onClick={() => setCurrentIndex((prev) => Math.min(order.length - 1, prev + 1))}
+                  disabled={interactionBlocked}
+                >
                   Next
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               ) : (
-                <Button loading={submitting} onClick={onSubmitExam}>
+                <Button loading={submitting} onClick={onSubmitExam} disabled={interactionBlocked}>
                   Submit exam
                 </Button>
               )}
