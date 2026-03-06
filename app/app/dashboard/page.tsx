@@ -185,32 +185,34 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="animate-fade-rise space-y-8 md:space-y-10">
-      <section className="grid gap-5 xl:grid-cols-[1.2fr_1fr]">
+    <div className="animate-fade-rise space-y-6 md:space-y-10">
+      <section className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
         <Card className="mesh-hero overflow-hidden">
-          <CardBody className="space-y-5 p-7 md:p-8">
+          <CardBody className="space-y-5 p-5 sm:p-6 md:p-8">
             <div className="inline-flex items-center gap-2">
-              <span className="text-[11px] font-bold tracking-[5px] text-accent uppercase">Continue studying</span>
+              <span className="text-[10px] font-bold tracking-[0.28em] text-accent uppercase sm:text-[11px] sm:tracking-[5px]">
+                Continue studying
+              </span>
             </div>
-            <h1 className="max-w-[22ch] text-display-lg font-display font-extrabold tracking-tight text-accent-fg">
+            <h1 className="max-w-[14ch] text-4xl font-display font-extrabold leading-[0.98] tracking-tight text-accent-fg sm:max-w-[18ch] sm:text-display-lg">
               Build mastery with one focused sprint.
             </h1>
-            <p className="max-w-xl text-[15px] leading-relaxed text-muted text-text-secondary">
+            <p className="max-w-xl text-sm leading-relaxed text-muted text-text-secondary sm:text-[15px]">
               Pick up where you left off. One quality attempt keeps momentum alive.
             </p>
 
             {continueQuiz ? (
-              <div className="rounded-[14px] border border-borderc bg-soft p-5 backdrop-blur-sm">
+              <div className="rounded-[18px] border border-borderc bg-soft/90 p-4 backdrop-blur-sm sm:p-5">
                 <p className="text-[10px] font-bold tracking-[1.5px] text-faint uppercase">Continue with</p>
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xl font-bold text-accent-fg">{continueQuiz.title}</p>
-                    <p className="mt-1 text-[14px] text-muted text-text-secondary">{continueQuiz.description}</p>
+                <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-lg font-bold text-accent-fg sm:text-xl">{continueQuiz.title}</p>
+                    <p className="mt-1 text-sm text-muted text-text-secondary">{continueQuiz.description}</p>
                     <p className="mt-1 text-xs text-faint">
                       Last attempt: {continueQuizLast ? formatRelativeDate(continueQuizLast.date) : "No attempts yet"}
                     </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 text-right">
+                  <div className="grid w-full grid-cols-2 gap-3 text-right md:w-auto">
                     <div className="rounded-[10px] border border-borderc bg-soft px-4 py-3">
                       <p className="text-[10px] font-bold tracking-[1.5px] text-faint uppercase">Best</p>
                       <p className="font-mono text-2xl font-bold text-accent">{continueQuizBest}%</p>
@@ -237,14 +239,14 @@ export default function DashboardPage() {
                   </div>
                 ) : null}
 
-                <div className="mt-5 flex flex-wrap gap-3">
-                  <Button asChild className="px-7">
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                  <Button asChild className="w-full px-7 sm:w-auto">
                     <Link href={`/quiz/${continueQuiz.id}`}>
                       Start quiz
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
-                  <Button variant="secondary" asChild>
+                  <Button variant="secondary" asChild className="w-full sm:w-auto">
                     <Link href={`/app/courses/${continueQuiz.courseId}`}>View course</Link>
                   </Button>
                 </div>
@@ -252,13 +254,13 @@ export default function DashboardPage() {
             ) : null}
 
             {homeworkDraftSet ? (
-              <div className="rounded-[14px] border border-success/30 bg-success/10 p-4">
+              <div className="rounded-[18px] border border-success/30 bg-success/10 p-4">
                 <p className="text-[10px] font-bold tracking-[1.5px] text-success uppercase">Resume homework</p>
                 <p className="mt-2 text-sm font-semibold text-text">{homeworkDraftSet.title}</p>
                 <p className="mt-1 text-xs text-muted text-text-secondary">
                   Draft started {formatRelativeDate(homeworkDraft?.created_at ?? new Date().toISOString())}
                 </p>
-                <Button asChild className="mt-3">
+                <Button asChild className="mt-3 w-full sm:w-auto">
                   <Link href={`/app/homework/${homeworkDraftSet.id}`}>
                     Resume now
                     <ArrowRight className="h-4 w-4" />
@@ -270,17 +272,19 @@ export default function DashboardPage() {
         </Card>
 
         <Card>
-          <CardBody className="space-y-5 p-6">
+          <CardBody className="space-y-5 p-5 sm:p-6">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold tracking-[5px] text-accent uppercase">Study streak</span>
+              <span className="text-[10px] font-bold tracking-[0.28em] text-accent uppercase sm:text-[11px] sm:tracking-[5px]">
+                Study streak
+              </span>
               <span className="rounded-full bg-accent-subtle px-3 py-1 text-[11px] font-mono font-bold text-accent">
                 {points} pts
               </span>
             </div>
 
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-4">
               <ProgressRing value={streakGoalPct} size={92} stroke={9} label="7d goal" />
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <Flame className="h-5 w-5 text-warn" />
                   <span className="font-mono text-4xl font-bold text-text">{streak.current}</span>
@@ -327,7 +331,7 @@ export default function DashboardPage() {
         </Card>
       </section>
 
-      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {courses.map((course, i) => {
           const progress = courseProgress(attempts, course.id);
           const courseQuizzes = quizSets.filter((quiz) => quiz.courseId === course.id);
@@ -346,7 +350,7 @@ export default function DashboardPage() {
               href={`/app/courses/${course.id}`}
               className={`group animate-fade-rise ${stagger} rounded-[20px] border border-borderc bg-soft shadow-subtle backdrop-blur-xl transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent hover:bg-overlay`}
             >
-              <div className="space-y-4 p-5">
+              <div className="space-y-4 p-5 sm:p-6">
                 <div>
                   <span className="text-[10px] font-bold tracking-[1.5px] text-accent uppercase">{course.code}</span>
                   <h2 className="mt-1 font-display text-[16px] font-bold text-text">{course.name}</h2>
@@ -381,10 +385,10 @@ export default function DashboardPage() {
         })}
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-[1.4fr_1fr]">
+      <section className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
         <Card>
           <CardHeader>
-            <h2 className="text-display-md font-display font-bold text-text">Recent attempts</h2>
+            <h2 className="text-2xl font-display font-bold text-text sm:text-display-md">Recent attempts</h2>
           </CardHeader>
           <CardBody>
             {recent.length === 0 ? (
@@ -400,7 +404,7 @@ export default function DashboardPage() {
                 {recent.map((attempt, i) => (
                   <div
                     key={attempt.id}
-                    className={`flex items-center justify-between rounded-[10px] border border-borderc bg-soft px-4 py-3 animate-fade-rise stagger-${i + 1}`}
+                    className={`flex flex-col gap-2 rounded-[14px] border border-borderc bg-soft px-4 py-3 animate-fade-rise sm:flex-row sm:items-center sm:justify-between stagger-${i + 1}`}
                   >
                     <div>
                       <p className="text-[14px] font-semibold text-text">{attempt.quizTitle}</p>
@@ -425,7 +429,7 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <h2 className="inline-flex items-center gap-2 text-display-md font-display font-bold text-text">
+              <h2 className="inline-flex items-center gap-2 text-2xl font-display font-bold text-text sm:text-display-md">
                 <TrendingUp className="h-5 w-5 text-accent" />
                 Focus lane
               </h2>

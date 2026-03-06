@@ -60,10 +60,10 @@ export function HomeworkIndexContent({
   }, [search, sets]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       <section>
-        <h1 className="text-display-lg font-semibold tracking-tight">{title}</h1>
-        <p className="mt-2 text-muted text-text-secondary">{subtitle}</p>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-display-lg">{title}</h1>
+        <p className="mt-2 max-w-2xl text-sm text-muted text-text-secondary sm:text-base">{subtitle}</p>
       </section>
 
       <Card>
@@ -92,7 +92,7 @@ export function HomeworkIndexContent({
             const questionCount = set.questions.length || set.questionCountTarget || 0;
             return (
               <Card key={set.id} className={`transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-${(idx % 6) + 1}`}>
-                <CardHeader className="flex flex-wrap items-center justify-between gap-3">
+                <CardHeader className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
                   <div>
                     <p className="text-xs uppercase tracking-[0.14em] text-muted">{course?.code ?? set.courseId}</p>
                     <h2 className="text-heading font-semibold text-text">{set.title}</h2>
@@ -104,7 +104,7 @@ export function HomeworkIndexContent({
                     <Badge tone="brand"><span className="font-mono">{questionCount}</span> questions</Badge>
                   </div>
                 </CardHeader>
-                <CardBody className="space-y-3">
+                <CardBody className="space-y-3 p-5 sm:p-6">
                   <div className="flex flex-wrap gap-2 text-xs text-muted">
                     <span className="inline-flex items-center gap-1 rounded-full border border-borderc px-2 py-1">
                       <Clock3 className="h-3 w-3" />
@@ -116,12 +116,12 @@ export function HomeworkIndexContent({
                       </span>
                     ))}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button asChild>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    <Button asChild className="w-full sm:w-auto">
                       <Link href={withPrefix(routePrefix, `/homework/${set.id}`)}>Start Homework</Link>
                     </Button>
                     {course ? (
-                      <Button variant="secondary" asChild>
+                      <Button variant="secondary" asChild className="w-full sm:w-auto">
                         <Link href={withPrefix(routePrefix, `/courses/${course.id}`)}>Open course hub</Link>
                       </Button>
                     ) : null}

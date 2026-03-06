@@ -7,23 +7,21 @@ import { ConstellationPattern } from "@/components/ui/constellation-pattern";
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen bg-bg">
-      {/* Navigation progress bar */}
       <NavigationProgress />
-
-      {/* Ambient glow — atmospheric background */}
       <div className="ambient-glow" />
-
-      {/* Constellation pattern — structural decoration */}
       <ConstellationPattern className="fixed" opacity={0.025} variant="sparse" />
 
       <Sidebar />
 
       <div className="relative z-[1] flex min-w-0 flex-1 flex-col">
         <Topbar />
-        <main id="main" className="mx-auto w-full max-w-[1360px] flex-1 px-5 py-8 md:px-8 lg:px-10">
+        <main
+          id="main"
+          className="mx-auto w-full max-w-[1360px] flex-1 px-4 py-5 pb-28 sm:px-5 md:px-8 md:py-8 lg:px-10 lg:pb-10"
+        >
           <div className="animate-fade-in">{children}</div>
         </main>
-        <footer className="mx-auto w-full max-w-[1360px] border-t border-borderc px-5 py-4 text-center text-sm text-muted md:px-8">
+        <footer className="mx-auto w-full max-w-[1360px] border-t border-borderc px-4 py-5 pb-28 text-center text-sm text-muted sm:px-5 md:px-8 lg:pb-4">
           © {new Date().getFullYear()}{" "}
           <a
             href="https://imagicaststudios.com"

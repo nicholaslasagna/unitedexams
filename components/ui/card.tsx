@@ -23,13 +23,13 @@ export function Card({ className, interactive, ...props }: CardProps) {
 }
 
 export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("border-b border-borderc px-6 py-4", className)} {...props} />;
+  return <div className={cn("border-b border-borderc px-5 py-4 sm:px-6", className)} {...props} />;
 }
 
 export function CardBody({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("px-6 py-5", className)} {...props} />;
+  return <div className={cn("px-5 py-5 sm:px-6", className)} {...props} />;
 }
 
 export function CardFooter({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("border-t border-borderc px-6 py-4", className)} {...props} />;
+  return <div className={cn("border-t border-borderc px-5 py-4 sm:px-6", className)} {...props} />;
 }

@@ -92,10 +92,10 @@ export function CoursesIndexContent({
   }, [search, difficulty]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       <section>
-        <h1 className="text-display-lg font-semibold tracking-tight">{title}</h1>
-        <p className="mt-2 text-muted text-text-secondary">{subtitle}</p>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-display-lg">{title}</h1>
+        <p className="mt-2 max-w-2xl text-sm text-muted text-text-secondary sm:text-base">{subtitle}</p>
       </section>
 
       <Card>
@@ -128,6 +128,7 @@ export function CoursesIndexContent({
 
           <Button
             variant="ghost"
+            className="w-full md:w-auto"
             onClick={() => {
               setSearch("");
               setDifficulty("all");
@@ -164,22 +165,36 @@ export function CoursesIndexContent({
           const artworkSrc = courseArtworkById[course.id] ?? "/images/courses/default-course.svg";
           return (
             <Card key={course.id} className={`group overflow-hidden transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-${(idx % 6) + 1}`}>
-              <CardBody className="space-y-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-muted">{course.code}</p>
-                    <h2 className="text-heading font-semibold text-text">{course.name}</h2>
+              <CardBody className="space-y-5 p-5 sm:p-6">
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs uppercase tracking-[0.14em] text-muted">{course.code}</p>
+                      <h2 className="text-heading font-semibold text-text">{course.name}</h2>
+                    </div>
+                    <div className="hidden shrink-0 sm:block">
+                      <Image
+                        src={artworkSrc}
+                        alt={`${course.name} course artwork`}
+                        width={88}
+                        height={56}
+                        className="h-12 w-[5.5rem] rounded-lg border border-borderc object-cover"
+                      />
+                    </div>
                   </div>
-                  <Image
-                    src={artworkSrc}
-                    alt={`${course.name} course artwork`}
-                    width={88}
-                    height={56}
-                    className="h-12 w-[5.5rem] rounded-lg border border-borderc object-cover"
-                  />
-                </div>
 
-                <p className="text-sm leading-relaxed text-muted text-text-secondary">{course.description}</p>
+                  <div className="overflow-hidden rounded-[1.1rem] border border-borderc sm:hidden">
+                    <Image
+                      src={artworkSrc}
+                      alt={`${course.name} course artwork`}
+                      width={640}
+                      height={240}
+                      className="h-28 w-full object-cover"
+                    />
+                  </div>
+
+                  <p className="text-sm leading-relaxed text-muted text-text-secondary">{course.description}</p>
+                </div>
 
                 <div className="flex flex-wrap gap-2">
                   <Badge tone={course.difficulty === "Advanced" ? "warn" : "default"}>{course.difficulty}</Badge>
@@ -198,11 +213,11 @@ export function CoursesIndexContent({
                 </div>
 
                 {hasCourseSections ? (
-                  <div className="space-y-2 rounded-xl border border-brand-2/30 bg-brand-2/10 p-3">
+                  <div className="space-y-2 rounded-[1.2rem] border border-brand-2/30 bg-brand-2/10 p-3">
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-2">
                       Your class sections
                     </p>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-col gap-2">
                       <select
                         value={selectedSectionId}
                         onChange={(event) =>
@@ -211,7 +226,7 @@ export function CoursesIndexContent({
                             [course.id]: event.target.value
                           }))
                         }
-                        className="min-w-[14rem] flex-1 rounded-lg border border-borderc bg-surface px-3 py-2 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-brand-2/60"
+                        className="min-w-0 flex-1 rounded-xl border border-borderc bg-surface px-3 py-3 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-brand-2/60"
                         aria-label={`${course.name} sections`}
                       >
                         {courseSections.map((section) => (
@@ -220,7 +235,7 @@ export function CoursesIndexContent({
                           </option>
                         ))}
                       </select>
-                      <Button variant="secondary" asChild>
+                      <Button variant="secondary" asChild className="w-full">
                         <Link href={sectionMaterialHref}>Open selected section</Link>
                       </Button>
                     </div>
