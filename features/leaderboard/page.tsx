@@ -11,7 +11,13 @@ import type { LeaderboardRpcRow } from "@/lib/supabase/types";
 import { getLeaderboard } from "@/features/leaderboard/api";
 import { LeaderboardList } from "@/features/leaderboard/components/leaderboard-list";
 
-export function LeaderboardPageContent({ publicMode = false }: { publicMode?: boolean }) {
+export function LeaderboardPageContent({
+  publicMode = false,
+  showHeader = true
+}: {
+  publicMode?: boolean;
+  showHeader?: boolean;
+}) {
   const { supabase, user } = useAppData();
   const [rows, setRows] = useState<LeaderboardRpcRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -63,18 +69,20 @@ export function LeaderboardPageContent({ publicMode = false }: { publicMode?: bo
 
   return (
     <div className="space-y-6">
-      <section className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-display-lg font-semibold tracking-tight">Leaderboard</h1>
-          <p className="mt-2 text-sm text-muted text-text-secondary">Real users only. Privacy controls are respected.</p>
-        </div>
-
-        {myRow && !publicMode ? (
-          <div className="rounded-xl border border-brand-2/40 bg-brand-2/10 px-4 py-2 text-sm text-text">
-            Your rank: <span className="font-mono font-bold">#{myRow.rank}</span> · <span className="font-mono">{myRow.points}</span> pts
+      {showHeader ? (
+        <section className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-display-lg font-semibold tracking-tight">Leaderboard</h1>
+            <p className="mt-2 text-sm text-muted text-text-secondary">Real users only. Privacy controls are respected.</p>
           </div>
-        ) : null}
-      </section>
+
+          {myRow && !publicMode ? (
+            <div className="rounded-xl border border-brand-2/40 bg-brand-2/10 px-4 py-2 text-sm text-text">
+              Your rank: <span className="font-mono font-bold">#{myRow.rank}</span> · <span className="font-mono">{myRow.points}</span> pts
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       <Card>
         <CardBody className="p-4">

@@ -19,11 +19,13 @@ function withPrefix(routePrefix: string, path: string) {
 export function HomeworkIndexContent({
   routePrefix,
   title = "Homework Mode",
-  subtitle = "Work assignments one question at a time with hints, full solutions, and mastery-first feedback."
+  subtitle = "Work assignments one question at a time with hints, full solutions, and mastery-first feedback.",
+  showHeader = true
 }: {
   routePrefix: string;
   title?: string;
   subtitle?: string;
+  showHeader?: boolean;
 }) {
   const [search, setSearch] = useState("");
   const [sets, setSets] = useState<QuizSet[]>([]);
@@ -61,10 +63,12 @@ export function HomeworkIndexContent({
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <section>
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-display-lg">{title}</h1>
-        <p className="mt-2 max-w-2xl text-sm text-muted text-text-secondary sm:text-base">{subtitle}</p>
-      </section>
+      {showHeader ? (
+        <section>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-display-lg">{title}</h1>
+          <p className="mt-2 max-w-2xl text-sm text-muted text-text-secondary sm:text-base">{subtitle}</p>
+        </section>
+      ) : null}
 
       <Card>
         <CardBody className="p-4">

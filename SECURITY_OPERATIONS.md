@@ -146,7 +146,7 @@ Minimum gate:
 - pull request review
 - passing typecheck and lint
 - CI dependency audit
-- CodeQL scan enabled
+- CodeQL available in repository settings or explicitly skipped by preflight with an alternate SAST plan
 
 ## Deployment Gate
 

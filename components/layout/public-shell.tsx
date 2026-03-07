@@ -191,16 +191,70 @@ export function PublicShell({ children }: { children: ReactNode }) {
         <div className="animate-fade-in">{children}</div>
       </main>
 
-      <footer className="mx-auto w-full max-w-[1200px] border-t border-borderc px-4 py-5 text-center text-sm text-muted sm:px-5 md:px-8">
-        © {new Date().getFullYear()}{" "}
-        <a
-          href="https://imagicaststudios.com"
-          target="_blank"
-          rel="noreferrer"
-          className="font-semibold text-accent transition-colors duration-150 hover:text-text"
-        >
-          Imagicast Studios
-        </a>
+      <footer className="mx-auto w-full max-w-[1200px] px-4 pb-6 pt-2 sm:px-5 md:px-8">
+        <div className="overflow-hidden rounded-[1.75rem] border border-borderc bg-surface/80 backdrop-blur-xl">
+          <div className="grid gap-6 px-5 py-6 sm:px-6 md:grid-cols-[1.2fr_0.8fr_0.8fr] md:px-8">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-3">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-gradient text-accent-fg shadow-soft">
+                  <GraduationCap className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="font-display text-lg font-semibold text-text">United Exams</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">Study with structure</p>
+                </div>
+              </div>
+              <p className="max-w-md text-sm leading-relaxed text-text-secondary">
+                Quizzes, homework review, notes, section material, and progress tracking in one focused academic workspace.
+              </p>
+            </div>
+
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-accent">Explore</p>
+              <div className="mt-3 grid gap-2">
+                <Link href="/courses" className="text-sm text-text-secondary transition-colors duration-150 hover:text-text">
+                  Courses
+                </Link>
+                <Link href="/homework" className="text-sm text-text-secondary transition-colors duration-150 hover:text-text">
+                  Homework
+                </Link>
+                <Link href="/leaderboard" className="text-sm text-text-secondary transition-colors duration-150 hover:text-text">
+                  Leaderboard
+                </Link>
+                <Link href="/contact" className="text-sm text-text-secondary transition-colors duration-150 hover:text-text">
+                  Contact
+                </Link>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-accent">Start here</p>
+              <p className="text-sm leading-relaxed text-text-secondary">
+                Browse the public study library now, or create an account to unlock progress, sections, and instructor workflows.
+              </p>
+              <div className="flex flex-col gap-2 sm:flex-row md:flex-col">
+                <Button asChild variant="secondary" className="justify-center">
+                  <Link href="/courses">Browse materials</Link>
+                </Button>
+                <Button asChild className="justify-center">
+                  <Link href="/signup">Create account</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-borderc px-5 py-4 text-center text-sm text-muted sm:px-6 md:px-8">
+            © {new Date().getFullYear()}{" "}
+            <a
+              href="https://imagicaststudios.com"
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-accent transition-colors duration-150 hover:text-text"
+            >
+              Imagicast Studios
+            </a>
+          </div>
+        </div>
       </footer>
 
       {mobileMenuOpen ? (

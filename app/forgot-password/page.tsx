@@ -3,14 +3,13 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
+import { Inbox, KeyRound, ShieldCheck } from "lucide-react";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import {
-  isTurnstileClientEnabled
-} from "@/lib/security/turnstile-client";
+import { isTurnstileClientEnabled } from "@/lib/security/turnstile-client";
 
 function mapAuthError(message: string, captchaEnabled: boolean) {
   if (!message) return "Unable to send reset link.";
@@ -71,7 +70,6 @@ export default function ForgotPasswordPage() {
       return;
     }
 
-    // Mark reset-required flag without revealing if account exists.
     await supabase.rpc("request_password_reset", { target_email: email.trim() });
 
     setLoading(false);
@@ -81,7 +79,48 @@ export default function ForgotPasswordPage() {
   return (
     <AuthShell
       title="Forgot password"
-      subtitle="We’ll send a reset link if an account exists for this email."
+      subtitle="Request a secure reset link without exposing whether the account exists."
+      eyebrow="Account recovery"
+      heroTitle={<>Recover access without losing your place.</>}
+      heroDescription="Recovery keeps the account workflow private. If the email exists, the user gets a reset link and can return directly to the app." 
+      heroStats={[
+        { label: "Delivery", value: "Email link", detail: "Sent only if the account exists" },
+        { label: "Privacy", value: "Quiet", detail: "No account enumeration on the page" },
+        { label: "Return", value: "Reset + login", detail: "Back into the app after password update" }
+      ]}
+      heroAside={
+        <div className="grid gap-3">
+          {[
+            {
+              icon: Inbox,
+              title: "Request the reset",
+              detail: "Enter the email tied to the account. The response stays neutral either way."
+            },
+            {
+              icon: KeyRound,
+              title: "Use the secure link",
+              detail: "The reset flow routes the user into the password update page without extra guesswork."
+            },
+            {
+              icon: ShieldCheck,
+              title: "Bot-resistant by default",
+              detail: "Turnstile verification protects recovery flows from automated abuse."
+            }
+          ].map((item) => (
+            <div key={item.title} className="rounded-[1.2rem] border border-borderc bg-surface/75 p-4 backdrop-blur-sm">
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-brand-2/35 bg-brand-2/10 text-brand-2">
+                  <item.icon className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-text">{item.title}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-text-secondary">{item.detail}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      }
       footer={
         <p>
           Remembered it?{" "}
@@ -92,11 +131,35 @@ export default function ForgotPasswordPage() {
       }
     >
       {done ? (
-        <div className="rounded-xl border border-success/30 bg-success/10 p-4 text-sm text-text-secondary">
-          If an account exists for <span className="font-semibold text-text">{email}</span>, a reset link is on the way.
+        <div className="space-y-4 rounded-[1.35rem] border border-success/30 bg-success/10 p-5">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-success">Request accepted</p>
+            <p className="mt-2 text-lg font-semibold text-text">Check your inbox</p>
+          </div>
+          <p className="text-sm leading-relaxed text-text-secondary">
+            If an account exists for <span className="font-semibold text-text">{email}</span>, a reset link is on the way.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <div className="rounded-[1rem] border border-borderc bg-surface/70 px-4 py-3 text-sm text-text-secondary">
+              Open the email and use the reset link.
+            </div>
+            <div className="rounded-[1rem] border border-borderc bg-surface/70 px-4 py-3 text-sm text-text-secondary">
+              After updating the password, return to sign in.
+            </div>
+          </div>
+          <Button asChild className="w-full sm:w-auto">
+            <Link href="/login">Go to sign in</Link>
+          </Button>
         </div>
       ) : (
-        <form className="space-y-4" onSubmit={onSubmit}>
+        <form className="space-y-5" onSubmit={onSubmit}>
+          <div className="rounded-[1rem] border border-borderc bg-soft px-4 py-3">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Recovery behavior</p>
+            <p className="mt-2 text-sm text-text-secondary">
+              We do not reveal whether the email is registered. If the account exists, the reset message will be sent.
+            </p>
+          </div>
+
           <div className="space-y-1.5">
             <label htmlFor="email" className="text-xs font-semibold uppercase tracking-[0.14em] text-faint">
               Email
@@ -119,7 +182,7 @@ export default function ForgotPasswordPage() {
               tabIndex={-1}
               role="alert"
               aria-live="assertive"
-              className="rounded-lg border border-danger/35 bg-danger/10 px-3 py-2 text-sm text-danger outline-none"
+              className="rounded-[1rem] border border-danger/35 bg-danger/10 px-4 py-3 text-sm text-danger outline-none"
             >
               {error}
             </p>
@@ -133,7 +196,7 @@ export default function ForgotPasswordPage() {
               describedBy={error ? errorId : undefined}
             />
           ) : (
-            <p className="rounded-lg border border-warn/35 bg-warn/10 px-3 py-2 text-xs text-warn">
+            <p className="rounded-[1rem] border border-warn/35 bg-warn/10 px-4 py-3 text-xs text-warn">
               Human verification is not configured. Set `NEXT_PUBLIC_TURNSTILE_SITE_KEY` in Vercel and redeploy.
             </p>
           )}
@@ -142,6 +205,7 @@ export default function ForgotPasswordPage() {
             type="submit"
             className="w-full"
             loading={loading}
+            loadingLabel="Sending reset link..."
             disabled={turnstileEnabled && !turnstileToken}
           >
             Send reset link
