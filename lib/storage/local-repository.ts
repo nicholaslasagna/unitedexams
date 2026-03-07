@@ -10,6 +10,7 @@ import {
   validateDisplayName,
   validateRealName
 } from "@/lib/auth/display-name";
+import { getPaletteById, resolvePaletteSelection } from "@/lib/theme/palettes";
 import type { AppDataDump, AppPreferences, Attempt, UserProfile } from "@/lib/types";
 
 function parse<T>(raw: string | null, fallback: T): T {
@@ -26,6 +27,39 @@ function storage() {
     return null;
   }
   return window.localStorage;
+}
+
+function normalizePreferences(preferences: AppPreferences): AppPreferences {
+  const next = { ...defaultPreferences, ...preferences };
+  const requestedPalette = next.palette || next.accentPreset || "custom";
+  const resolvedPalette = resolvePaletteSelection(
+    requestedPalette,
+    next.accentHue,
+    next.accentSaturation,
+    next.accentLightness,
+    next.accentStrength
+  );
+
+  if (resolvedPalette !== "custom") {
+    const preset = getPaletteById(resolvedPalette);
+    if (preset) {
+      return {
+        ...next,
+        palette: preset.id,
+        accentPreset: preset.id,
+        accentHue: preset.hue,
+        accentSaturation: preset.saturation,
+        accentLightness: preset.lightness,
+        accentStrength: preset.strength
+      };
+    }
+  }
+
+  return {
+    ...next,
+    palette: "custom",
+    accentPreset: "custom"
+  };
 }
 
 export class LocalRepository implements DataRepository {
@@ -80,16 +114,15 @@ export class LocalRepository implements DataRepository {
   async getPreferences(): Promise<AppPreferences> {
     const store = storage();
     if (!store) return defaultPreferences;
-    return {
-      ...defaultPreferences,
-      ...parse<AppPreferences>(store.getItem(STORAGE_KEYS.preferences), defaultPreferences)
-    };
+    return normalizePreferences(
+      parse<AppPreferences>(store.getItem(STORAGE_KEYS.preferences), defaultPreferences)
+    );
   }
 
   async savePreferences(preferences: AppPreferences): Promise<void> {
     const store = storage();
     if (!store) return;
-    store.setItem(STORAGE_KEYS.preferences, JSON.stringify(preferences));
+    store.setItem(STORAGE_KEYS.preferences, JSON.stringify(normalizePreferences(preferences)));
   }
 
   async exportData(): Promise<AppDataDump> {
@@ -107,7 +140,7 @@ export class LocalRepository implements DataRepository {
     store.setItem(STORAGE_KEYS.profile, JSON.stringify(data.profile ?? defaultProfile));
     store.setItem(
       STORAGE_KEYS.preferences,
-      JSON.stringify({ ...defaultPreferences, ...(data.preferences ?? {}) })
+      JSON.stringify(normalizePreferences({ ...defaultPreferences, ...(data.preferences ?? {}) }))
     );
   }
 }

@@ -10,7 +10,7 @@ import {
   validateRealName,
   validateDisplayName
 } from "@/lib/auth/display-name";
-import { findClosestPalette } from "@/lib/theme/palettes";
+import { getPaletteById, resolvePaletteSelection } from "@/lib/theme/palettes";
 import type {
   AppDataDump,
   AppPreferences,
@@ -59,6 +59,39 @@ interface AttemptRow {
   total_count: number;
   time_spent_seconds: number;
   settings: Record<string, unknown> | null;
+}
+
+function normalizePreferences(preferences: AppPreferences): AppPreferences {
+  const next = { ...defaultPreferences, ...preferences };
+  const requestedPalette = next.palette || next.accentPreset || "custom";
+  const resolvedPalette = resolvePaletteSelection(
+    requestedPalette,
+    next.accentHue,
+    next.accentSaturation,
+    next.accentLightness,
+    next.accentStrength
+  );
+
+  if (resolvedPalette !== "custom") {
+    const preset = getPaletteById(resolvedPalette);
+    if (preset) {
+      return {
+        ...next,
+        palette: preset.id,
+        accentPreset: preset.id,
+        accentHue: preset.hue,
+        accentSaturation: preset.saturation,
+        accentLightness: preset.lightness,
+        accentStrength: preset.strength
+      };
+    }
+  }
+
+  return {
+    ...next,
+    palette: "custom",
+    accentPreset: "custom"
+  };
 }
 
 function asTopicBreakdown(value: unknown): Attempt["topicBreakdown"] {
@@ -452,34 +485,35 @@ export class SupabaseRepository implements DataRepository {
     if (error || !data) return defaultPreferences;
 
     const row = data as unknown as PreferencesRow;
-    return {
+    return normalizePreferences({
       theme: row.theme_mode,
       reducedMotion: row.reduce_motion,
       confettiEnabled: true,
-      accentPreset: row.accent_preset ?? findClosestPalette(row.accent_hue, row.accent_strength),
+      accentPreset: row.accent_preset ?? "custom",
       accentHue: row.accent_hue,
       accentSaturation: Number(row.accent_saturation ?? defaultPreferences.accentSaturation),
       accentLightness: Number(row.accent_lightness ?? defaultPreferences.accentLightness),
       accentStrength: row.accent_strength,
-      palette: row.accent_preset ?? findClosestPalette(row.accent_hue, row.accent_strength),
+      palette: row.accent_preset ?? "custom",
       dashboardLayout: defaultPreferences.dashboardLayout,
       extraSigninProtection: Boolean(row.extra_signin_protection)
-    };
+    });
   }
 
   async savePreferences(preferences: AppPreferences): Promise<void> {
     await this.ensureBaseRows();
+    const normalized = normalizePreferences(preferences);
 
     let { error } = await this.client.from("user_preferences").upsert({
       user_id: this.user.id,
-      theme_mode: preferences.theme,
-      accent_preset: preferences.accentPreset,
-      accent_hue: preferences.accentHue,
-      accent_saturation: preferences.accentSaturation,
-      accent_lightness: preferences.accentLightness,
-      accent_strength: preferences.accentStrength,
-      reduce_motion: preferences.reducedMotion,
-      extra_signin_protection: preferences.extraSigninProtection
+      theme_mode: normalized.theme,
+      accent_preset: normalized.accentPreset,
+      accent_hue: normalized.accentHue,
+      accent_saturation: normalized.accentSaturation,
+      accent_lightness: normalized.accentLightness,
+      accent_strength: normalized.accentStrength,
+      reduce_motion: normalized.reducedMotion,
+      extra_signin_protection: normalized.extraSigninProtection
     });
 
     if (
@@ -491,14 +525,14 @@ export class SupabaseRepository implements DataRepository {
       error = (
         await this.client.from("user_preferences").upsert({
           user_id: this.user.id,
-          theme_mode: preferences.theme,
-          accent_preset: preferences.accentPreset,
-          accent_hue: preferences.accentHue,
-          accent_saturation: preferences.accentSaturation,
-          accent_lightness: preferences.accentLightness,
-          accent_strength: preferences.accentStrength,
-          reduce_motion: preferences.reducedMotion,
-          extra_signin_protection: preferences.extraSigninProtection
+          theme_mode: normalized.theme,
+          accent_preset: normalized.accentPreset,
+          accent_hue: normalized.accentHue,
+          accent_saturation: normalized.accentSaturation,
+          accent_lightness: normalized.accentLightness,
+          accent_strength: normalized.accentStrength,
+          reduce_motion: normalized.reducedMotion,
+          extra_signin_protection: normalized.extraSigninProtection
         })
       ).error;
     }
@@ -510,11 +544,11 @@ export class SupabaseRepository implements DataRepository {
       error = (
         await this.client.from("user_preferences").upsert({
           user_id: this.user.id,
-          theme_mode: preferences.theme,
-          accent_hue: preferences.accentHue,
-          accent_strength: preferences.accentStrength,
-          reduce_motion: preferences.reducedMotion,
-          extra_signin_protection: preferences.extraSigninProtection
+          theme_mode: normalized.theme,
+          accent_hue: normalized.accentHue,
+          accent_strength: normalized.accentStrength,
+          reduce_motion: normalized.reducedMotion,
+          extra_signin_protection: normalized.extraSigninProtection
         })
       ).error;
     }

@@ -44,6 +44,92 @@ export function findClosestPalette(hue: number, strength: number): string {
   return closest;
 }
 
+function circularHueDiff(a: number, b: number) {
+  return Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
+}
+
+function paletteDistance(
+  palette: ThemePalette,
+  hue: number,
+  saturation: number,
+  lightness: number,
+  strength: number
+) {
+  const hueDiff = circularHueDiff(palette.hue, hue);
+  const saturationDiff = Math.abs(palette.saturation - saturation);
+  const lightnessDiff = Math.abs(palette.lightness - lightness);
+  const strengthDiff = Math.abs(palette.strength - strength);
+
+  return hueDiff * 1.35 + saturationDiff * 0.85 + lightnessDiff * 0.85 + strengthDiff * 0.65;
+}
+
+export function findClosestPaletteByValues(
+  hue: number,
+  saturation: number,
+  lightness: number,
+  strength: number
+): string {
+  let closest = "custom";
+  let minDist = Infinity;
+
+  for (const palette of THEME_PALETTES) {
+    const dist = paletteDistance(palette, hue, saturation, lightness, strength);
+    if (dist < minDist) {
+      minDist = dist;
+      closest = palette.id;
+    }
+  }
+
+  return minDist <= 18 ? closest : "custom";
+}
+
+export function paletteMatchesValues(
+  paletteId: string,
+  hue: number,
+  saturation: number,
+  lightness: number,
+  strength: number
+) {
+  const palette = getPaletteById(paletteId);
+  if (!palette) return false;
+
+  return (
+    circularHueDiff(palette.hue, hue) <= 2 &&
+    Math.abs(palette.saturation - saturation) <= 3 &&
+    Math.abs(palette.lightness - lightness) <= 3 &&
+    Math.abs(palette.strength - strength) <= 3
+  );
+}
+
+export function resolvePaletteSelection(
+  paletteId: string | null | undefined,
+  hue: number,
+  saturation: number,
+  lightness: number,
+  strength: number
+): string {
+  const requested = paletteId?.trim() || null;
+
+  if (requested === "custom") {
+    return "custom";
+  }
+
+  if (requested && paletteMatchesValues(requested, hue, saturation, lightness, strength)) {
+    return requested;
+  }
+
+  const matchedByValues = findClosestPaletteByValues(hue, saturation, lightness, strength);
+  if (matchedByValues !== "custom") {
+    return matchedByValues;
+  }
+
+  if (requested && getPaletteById(requested)) {
+    return requested;
+  }
+
+  return "custom";
+}
+
 export function getPaletteValues(paletteId: string): { hue: number; strength: number } | null {
   const palette = THEME_PALETTES.find((p) => p.id === paletteId);
   return palette ? { hue: palette.hue, strength: palette.strength } : null;
