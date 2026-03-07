@@ -17,6 +17,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PublicShell } from "@/components/layout/public-shell";
+import { PublicAuthActions } from "@/components/public/public-auth-actions";
 import { courses, quizSets } from "@/data/seed";
 import { resolveQuizSetMode } from "@/lib/study/set-mode";
 
@@ -112,17 +113,7 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <Button asChild size="lg" className="justify-between px-6">
-                  <Link href="/signup">
-                    Create account
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button asChild variant="secondary" size="lg">
-                  <Link href="/courses">Explore study materials</Link>
-                </Button>
-              </div>
+              <PublicAuthActions variant="hero" />
 
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="rounded-[1.25rem] border border-borderc bg-surface/70 p-4">
@@ -418,17 +409,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Button asChild size="lg" className="w-full justify-between">
-                <Link href="/courses">
-                  Browse courses
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="secondary" className="w-full">
-                <Link href="/signup">Create account</Link>
-              </Button>
-            </div>
+            <PublicAuthActions variant="closing" />
           </div>
         </div>
       </section>

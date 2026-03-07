@@ -710,12 +710,318 @@ const differentialEquationReviewReplacementsRaw: QuizSet[] = [
         tags: ["homework-4", "ivp", "nonhomogeneous"]
       }
     ]
+  },
+  {
+    id: "de-exam2-review",
+    courseId: "differential-equations",
+    title: "Differential Equations Exam 2 Review",
+    description:
+      "Exam 2 review covering homogeneous and nonhomogeneous second-order equations, IVPs, and spring-mass motion.",
+    difficulty: "Advanced",
+    estMinutes: 92,
+    tags: ["exam", "exam-2", "test-review", "free-response", "second-order", "spring-mass"],
+    mode: "exam",
+    questionCountTarget: 13,
+    isExamSimulation: true,
+    timerDefaultMinutes: 90,
+    questions: [
+      {
+        id: "de-exam2-review-q1",
+        type: "free",
+        prompt: "Solve `y'' + 5y' + 4y = 0`.",
+        explanation: "Use the characteristic equation and two distinct real roots.",
+        sampleAnswer: "`y(t)=C_1e^{-t}+C_2e^{-4t}`.",
+        hintSteps: [
+          "Form the characteristic equation `r^2+5r+4=0`.",
+          "Factor the quadratic.",
+          "Use one exponential term for each distinct real root."
+        ],
+        walkthroughSteps: [
+          "Characteristic equation: `r^2+5r+4=0`.",
+          "Factor: `(r+1)(r+4)=0`, so the roots are `r=-1` and `r=-4`.",
+          "With distinct real roots, the general solution is `y(t)=C_1e^{-t}+C_2e^{-4t}`."
+        ],
+        references: ["review2_1.pdf Problem 1(a)"],
+        tags: ["exam-2", "homogeneous", "distinct-real-roots"]
+      },
+      {
+        id: "de-exam2-review-q2",
+        type: "free",
+        prompt: "Solve `y'' + 12y' + 36y = 0`.",
+        explanation: "The characteristic equation has a repeated root.",
+        sampleAnswer: "`y(t)=(C_1+C_2t)e^{-6t}`.",
+        hintSteps: [
+          "Write the characteristic polynomial.",
+          "Check whether it factors as a perfect square.",
+          "For a repeated root `r`, use `y=(C_1+C_2t)e^{rt}`."
+        ],
+        walkthroughSteps: [
+          "Characteristic equation: `r^2+12r+36=0`.",
+          "This factors as `(r+6)^2=0`, so `r=-6` is a double root.",
+          "For a repeated root, `y(t)=(C_1+C_2t)e^{-6t}`."
+        ],
+        references: ["review2_1.pdf Problem 1(b)"],
+        tags: ["exam-2", "homogeneous", "repeated-root"]
+      },
+      {
+        id: "de-exam2-review-q3",
+        type: "free",
+        prompt: "Solve `y'' + 4y' + 5y = 0`.",
+        explanation: "This characteristic equation has complex roots.",
+        sampleAnswer: "`y(t)=e^{-2t}(C_1\\cos t+C_2\\sin t)`.",
+        hintSteps: [
+          "Solve `r^2+4r+5=0` with the quadratic formula.",
+          "Write the roots as `a\\pm bi`.",
+          "Use the complex-root template `e^{at}(C_1\\cos bt+C_2\\sin bt)`."
+        ],
+        walkthroughSteps: [
+          "Characteristic equation: `r^2+4r+5=0`.",
+          "Quadratic formula gives `r=(-4\\pm\\sqrt{16-20})/2=-2\\pm i`.",
+          "So `a=-2` and `b=1`.",
+          "The general solution is `y(t)=e^{-2t}(C_1\\cos t+C_2\\sin t)`."
+        ],
+        references: ["review2_1.pdf Problem 1(c)"],
+        tags: ["exam-2", "homogeneous", "complex-roots"]
+      },
+      {
+        id: "de-exam2-review-q4",
+        type: "free",
+        prompt: "Solve the IVP `y'' - 6y' + 8y = 0`, `y(0)=2`, `y'(0)=5`.",
+        explanation: "Solve the homogeneous equation first, then use the two initial conditions to determine the constants.",
+        sampleAnswer: "`y(t)=\\frac32 e^{2t}+\\frac12 e^{4t}`.",
+        hintSteps: [
+          "Factor the characteristic polynomial `r^2-6r+8`.",
+          "Write `y=C_1e^{2t}+C_2e^{4t}`.",
+          "Use `y(0)=2` and `y'(0)=5` to solve for `C_1` and `C_2`."
+        ],
+        walkthroughSteps: [
+          "Characteristic equation: `r^2-6r+8=0=(r-2)(r-4)`.",
+          "So `y(t)=C_1e^{2t}+C_2e^{4t}`.",
+          "From `y(0)=2`, get `C_1+C_2=2`.",
+          "Differentiate: `y'(t)=2C_1e^{2t}+4C_2e^{4t}`. Then `y'(0)=5` gives `2C_1+4C_2=5`.",
+          "Solving the system gives `C_2=1/2` and `C_1=3/2`.",
+          "Final answer: `y(t)=\\frac32 e^{2t}+\\frac12 e^{4t}`."
+        ],
+        references: ["review2_1.pdf Problem 2(a)"],
+        tags: ["exam-2", "ivp", "distinct-real-roots"]
+      },
+      {
+        id: "de-exam2-review-q5",
+        type: "free",
+        prompt: "Solve the IVP `y'' - 6y' + 9y = 0`, `y(0)=4`, `y'(0)=-1`.",
+        explanation: "This is a repeated-root IVP.",
+        sampleAnswer: "`y(t)=(4-13t)e^{3t}`.",
+        hintSteps: [
+          "Factor `r^2-6r+9`.",
+          "Use repeated-root form `y=(C_1+C_2t)e^{3t}`.",
+          "Apply the initial conditions after differentiating carefully."
+        ],
+        walkthroughSteps: [
+          "Characteristic equation: `r^2-6r+9=0=(r-3)^2`, so `r=3` is a double root.",
+          "Thus `y(t)=(C_1+C_2t)e^{3t}`.",
+          "From `y(0)=4`, get `C_1=4`.",
+          "Differentiate: `y'(t)=(C_2+3C_1+3C_2t)e^{3t}`.",
+          "Then `y'(0)=C_2+3C_1=-1`, so `C_2+12=-1` and `C_2=-13`.",
+          "Final answer: `y(t)=(4-13t)e^{3t}`."
+        ],
+        references: ["review2_1.pdf Problem 2(b)"],
+        tags: ["exam-2", "ivp", "repeated-root"]
+      },
+      {
+        id: "de-exam2-review-q6",
+        type: "free",
+        prompt: "Solve `y'' - 2y' + y = t + e^t`.",
+        explanation: "Use the repeated-root homogeneous solution plus undetermined coefficients for the polynomial and resonant exponential forcing.",
+        sampleAnswer: "`y(t)=e^t\\left(C_1+C_2t+\\frac12 t^2\\right)+t+2`.",
+        hintSteps: [
+          "The homogeneous equation is `(r-1)^2=0`.",
+          "For the `t` forcing, try `At+B`.",
+          "For the resonant `e^t` forcing, multiply by `t^2` and try `Ct^2e^t`."
+        ],
+        walkthroughSteps: [
+          "Homogeneous equation: `r^2-2r+1=0=(r-1)^2`, so `y_h=(C_1+C_2t)e^t`.",
+          "For the polynomial term, try `y_{p1}=At+B`. Substituting gives `At+(B-2A)=t`, so `A=1` and `B=2`.",
+          "For the exponential term, try `y_{p2}=Ct^2e^t` because `e^t` is resonant with multiplicity 2.",
+          "Substituting `y_{p2}` into `y''-2y'+y` gives `2Ce^t`, so `2C=1` and `C=1/2`.",
+          "Combine all parts: `y(t)=(C_1+C_2t)e^t+t+2+\\frac12 t^2e^t`.",
+          "Equivalent grouped form: `y(t)=e^t\\left(C_1+C_2t+\\frac12 t^2\\right)+t+2`."
+        ],
+        references: ["review2_1.pdf Problem 3(a)"],
+        tags: ["exam-2", "nonhomogeneous", "undetermined-coefficients"]
+      },
+      {
+        id: "de-exam2-review-q7",
+        type: "free",
+        prompt: "Solve `y'' - 7y' + 12y = \\sin(2t)`.",
+        explanation: "Use the distinct-root homogeneous solution and a trigonometric particular.",
+        sampleAnswer: "`y(t)=C_1e^{3t}+C_2e^{4t}+\\frac{7}{130}\\cos(2t)+\\frac{2}{65}\\sin(2t)`.",
+        hintSteps: [
+          "Factor the characteristic polynomial for the homogeneous part.",
+          "For the forcing, try `A\\cos(2t)+B\\sin(2t)`.",
+          "Match cosine and sine coefficients after substitution."
+        ],
+        walkthroughSteps: [
+          "Homogeneous equation: `r^2-7r+12=0=(r-3)(r-4)`, so `y_h=C_1e^{3t}+C_2e^{4t}`.",
+          "Try `y_p=A\\cos(2t)+B\\sin(2t)`.",
+          "Then `y_p'=-2A\\sin(2t)+2B\\cos(2t)` and `y_p''=-4A\\cos(2t)-4B\\sin(2t)`.",
+          "Substitute into `y''-7y'+12y`: cosine coefficient `8A-14B`, sine coefficient `14A+8B`.",
+          "Match with `\\sin(2t)`: `8A-14B=0`, `14A+8B=1`.",
+          "Solving gives `A=7/130` and `B=2/65`.",
+          "Final answer: `y(t)=C_1e^{3t}+C_2e^{4t}+\\frac{7}{130}\\cos(2t)+\\frac{2}{65}\\sin(2t)`."
+        ],
+        references: ["review2_1.pdf Problem 3(b)"],
+        tags: ["exam-2", "nonhomogeneous", "trig-forcing"]
+      },
+      {
+        id: "de-exam2-review-q8",
+        type: "free",
+        prompt: "Solve `y'' + 2y' + 2y = \\cos t`.",
+        explanation: "The homogeneous part has complex roots; use a trigonometric particular for the forcing.",
+        sampleAnswer: "`y(t)=e^{-t}(C_1\\cos t+C_2\\sin t)+\\frac15\\cos t+\\frac25\\sin t`.",
+        hintSteps: [
+          "Solve the homogeneous equation first.",
+          "Try `A\\cos t+B\\sin t` for the forcing term.",
+          "Match the cosine and sine coefficients after substitution."
+        ],
+        walkthroughSteps: [
+          "Homogeneous equation: `r^2+2r+2=0` gives `r=-1\\pm i`.",
+          "So `y_h=e^{-t}(C_1\\cos t+C_2\\sin t)`.",
+          "Try `y_p=A\\cos t+B\\sin t`.",
+          "Then `y_p'=-A\\sin t+B\\cos t` and `y_p''=-A\\cos t-B\\sin t`.",
+          "Substitute into `y''+2y'+2y`: cosine coefficient `A+2B`, sine coefficient `B-2A`.",
+          "Match with `\\cos t`: `A+2B=1`, `B-2A=0`.",
+          "Solve to get `A=1/5` and `B=2/5`.",
+          "Final answer: `y(t)=e^{-t}(C_1\\cos t+C_2\\sin t)+\\frac15\\cos t+\\frac25\\sin t`."
+        ],
+        references: ["review2_1.pdf Problem 3(c)"],
+        tags: ["exam-2", "nonhomogeneous", "complex-roots"]
+      },
+      {
+        id: "de-exam2-review-q9",
+        type: "free",
+        prompt: "Solve `y'' + 9y = 9\\sec^2(3t)`.",
+        explanation: "Use variation of parameters with the homogeneous basis `\\cos(3t), \\sin(3t)`.",
+        sampleAnswer:
+          "`y(t)=C_1\\cos(3t)+C_2\\sin(3t)-1+\\sin(3t)\\ln|\\sec(3t)+\\tan(3t)|`.",
+        hintSteps: [
+          "The homogeneous solution comes from `r^2+9=0`.",
+          "Use `y_1=\\cos(3t)` and `y_2=\\sin(3t)`.",
+          "Compute `u_1'=-y_2g/W` and `u_2'=y_1g/W` for `g(t)=9\\sec^2(3t)`."
+        ],
+        walkthroughSteps: [
+          "Homogeneous equation: `r^2+9=0`, so `y_h=C_1\\cos(3t)+C_2\\sin(3t)`.",
+          "Take `y_1=\\cos(3t)`, `y_2=\\sin(3t)`, with Wronskian `W=3`.",
+          "Then `u_1'=-y_2g/W=-3\\tan(3t)\\sec(3t)` and `u_2'=y_1g/W=3\\sec(3t)`.",
+          "Integrate: `u_1=-\\sec(3t)` and `u_2=\\ln|\\sec(3t)+\\tan(3t)|`.",
+          "The particular solution is `y_p=u_1y_1+u_2y_2=-1+\\sin(3t)\\ln|\\sec(3t)+\\tan(3t)|`.",
+          "So the general solution is `y(t)=C_1\\cos(3t)+C_2\\sin(3t)-1+\\sin(3t)\\ln|\\sec(3t)+\\tan(3t)|`."
+        ],
+        references: ["review2_1.pdf Problem 3(d)"],
+        tags: ["exam-2", "nonhomogeneous", "variation-of-parameters"]
+      },
+      {
+        id: "de-exam2-review-q10",
+        type: "free",
+        prompt: "Solve `y'' - 4y' + 4y = (t+1)e^{2t}`.",
+        explanation: "Use the repeated-root homogeneous solution and a resonant particular; the substitution `y=e^{2t}u` makes the forcing especially clean.",
+        sampleAnswer: "`y(t)=e^{2t}\\left(C_1+C_2t+\\frac12 t^2+\\frac16 t^3\\right)`.",
+        hintSteps: [
+          "The homogeneous operator is `(D-2)^2`.",
+          "Try the substitution `y=e^{2t}u`.",
+          "After substitution, solve the much simpler equation for `u`."
+        ],
+        walkthroughSteps: [
+          "Homogeneous equation: `r^2-4r+4=0=(r-2)^2`, so `y_h=(C_1+C_2t)e^{2t}`.",
+          "Let `y=e^{2t}u`. Then `(D-2)^2y=e^{2t}u''`.",
+          "The ODE becomes `e^{2t}u''=(t+1)e^{2t}`, so `u''=t+1`.",
+          "Integrate twice: `u'=\\frac12 t^2+t+C` and `u=\\frac16 t^3+\\frac12 t^2+C_1+C_2t`.",
+          "Multiply back by `e^{2t}`.",
+          "Final answer: `y(t)=e^{2t}\\left(C_1+C_2t+\\frac12 t^2+\\frac16 t^3\\right)`."
+        ],
+        references: ["review2_1.pdf Problem 3(e)"],
+        tags: ["exam-2", "nonhomogeneous", "repeated-root", "resonance"]
+      },
+      {
+        id: "de-exam2-review-q11",
+        type: "free",
+        prompt:
+          "A 2 kg mass oscillates on a spring with extreme displacement `0.1` m and period `2` s. Find the spring constant, then find the position half a second after the mass passes through equilibrium.",
+        explanation: "Use simple harmonic motion: `\\omega=2\\pi/T`, `k=m\\omega^2`, and quarter-period timing from equilibrium to an extreme point.",
+        sampleAnswer: "`k=2\\pi^2\\text{ N/m}` and `|x(0.5)|=0.1\\text{ m}`; taking the positive direction to match the initial crossing gives `x(0.5)=0.1\\text{ m}`.",
+        hintSteps: [
+          "Compute angular frequency from the period: `\\omega=2\\pi/T`.",
+          "Use `k=m\\omega^2`.",
+          "Half a second is one quarter of the 2-second period."
+        ],
+        walkthroughSteps: [
+          "The period is `T=2`, so `\\omega=2\\pi/T=\\pi` rad/s.",
+          "For a spring-mass system, `\\omega=\\sqrt{k/m}`, so `k=m\\omega^2=2\\pi^2` N/m.",
+          "A quarter of the period is `T/4=0.5` s.",
+          "Starting at equilibrium and moving toward one side, after a quarter period the mass is at an extreme displacement.",
+          "So the displacement magnitude is `0.1` m.",
+          "If positive direction is chosen along the motion as it crosses equilibrium, then `x(0.5)=0.1` m."
+        ],
+        references: ["review2_1.pdf Problem 4"],
+        tags: ["exam-2", "spring-mass", "simple-harmonic-motion"]
+      },
+      {
+        id: "de-exam2-review-q12",
+        type: "free",
+        prompt:
+          "A `20` g mass stretches a spring `5` cm. A viscous damper exerts `5` N when the velocity is `2` m/s. If the mass is pulled down `2` cm and released, find the position `u(t)`.",
+        explanation: "Compute `m`, `k`, and `c`, write the damped spring equation, then solve the overdamped IVP.",
+        sampleAnswer:
+          "`u(t)=C_1e^{r_1t}+C_2e^{r_2t}`, where `r_{1,2}=\\frac{-125\\pm3\\sqrt{1649}}{2}`. With `u(0)=0.02`, `u'(0)=0`, one convenient form is `u(t)\\approx0.02026e^{-1.5885t}-0.0002618e^{-123.4115t}` meters.",
+        hintSteps: [
+          "Convert the data to SI units: `m=0.02` kg and stretch `0.05` m.",
+          "Use `k=mg/\\Delta L` and `c=F/v`.",
+          "Solve the characteristic equation of the homogeneous damped system."
+        ],
+        walkthroughSteps: [
+          "Mass `m=0.02` kg, stretch `\\Delta L=0.05` m, so `k=mg/\\Delta L=(0.02)(9.8)/0.05=3.92` N/m.",
+          "The damping force is proportional to velocity, so `c=5/2=2.5` N·s/m.",
+          "The motion equation is `0.02u''+2.5u'+3.92u=0` with `u(0)=0.02`, `u'(0)=0`.",
+          "Divide by `0.02`: `u''+125u'+196u=0`.",
+          "Characteristic equation: `r^2+125r+196=0`, so `r_{1,2}=\\frac{-125\\pm\\sqrt{14841}}{2}=\\frac{-125\\pm3\\sqrt{1649}}{2}`.",
+          "Thus `u(t)=C_1e^{r_1t}+C_2e^{r_2t}`.",
+          "Use `u(0)=0.02` and `u'(0)=0` to solve for the constants.",
+          "An exact coefficient form is `C_1=\\frac{125+3\\sqrt{1649}}{300\\sqrt{1649}}` and `C_2=\\frac{3\\sqrt{1649}-125}{300\\sqrt{1649}}`.",
+          "Numerically, `u(t)\\approx0.02026e^{-1.5885t}-0.0002618e^{-123.4115t}` meters."
+        ],
+        references: ["review2_1.pdf Problem 5"],
+        tags: ["exam-2", "spring-mass", "damped-motion", "overdamped"]
+      },
+      {
+        id: "de-exam2-review-q13",
+        type: "free",
+        prompt:
+          "A `0.5` kg mass is attached to a nearly frictionless spring with constant `8` N/m and external force `3\\cos(4t)` N. What is the equation of motion?",
+        explanation: "This is a forced undamped system, and the forcing frequency matches the natural frequency, so the system is resonant.",
+        sampleAnswer: "`u(t)=C_1\\cos(4t)+C_2\\sin(4t)+\\frac34 t\\sin(4t)`.",
+        hintSteps: [
+          "Write the equation `mu''+ku=F(t)`.",
+          "Simplify to standard form by dividing through by the mass.",
+          "Since the forcing frequency equals the natural frequency, use a resonant particular."
+        ],
+        walkthroughSteps: [
+          "The equation is `0.5u''+8u=3\\cos(4t)`.",
+          "Multiply by `2` to get `u''+16u=6\\cos(4t)`.",
+          "The homogeneous solution is `u_h=C_1\\cos(4t)+C_2\\sin(4t)`.",
+          "Because the forcing frequency `4` matches the natural frequency `\\sqrt{16}=4`, the system is resonant.",
+          "Use a resonant particular of the form `u_p=At\\sin(4t)`.",
+          "Substituting gives `8A\\cos(4t)=6\\cos(4t)`, so `A=3/4`.",
+          "Final equation of motion: `u(t)=C_1\\cos(4t)+C_2\\sin(4t)+\\frac34 t\\sin(4t)`."
+        ],
+        references: ["review2_1.pdf Problem 6"],
+        tags: ["exam-2", "forced-motion", "resonance", "spring-mass"]
+      }
+    ]
   }
 ];
 
 export const differentialEquationReviewReplacements: QuizSet[] = differentialEquationReviewReplacementsRaw.map(
   (set) => ({
     ...set,
-    mode: "homework"
+    mode: set.mode ?? "homework"
   }),
 );
