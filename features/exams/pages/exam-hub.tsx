@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { FilePenLine, GraduationCap, ShieldAlert } from "lucide-react";
+import { GraduationCap, ShieldAlert } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -141,79 +141,45 @@ export function ExamHubPage() {
 
   return (
     <div className="space-y-5 md:space-y-6">
-      <section className="mesh-hero overflow-hidden rounded-[1.55rem] border border-borderc/80 bg-surface/65 shadow-[0_16px_48px_hsl(var(--bg)/0.28)] backdrop-blur-xl">
-        <div className="grid gap-3.5 p-4 sm:p-[1.125rem] xl:grid-cols-[1.15fr_0.85fr] xl:p-5">
-          <div className="space-y-4">
-            <span className="inline-flex rounded-full border border-brand-2/35 bg-brand-2/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-2">
-              Professor exams
-            </span>
-            <div className="space-y-2">
-              <h1 className="max-w-[13ch] text-[2.15rem] font-display font-semibold leading-[0.95] tracking-tight text-text sm:text-[2.8rem]">
-                {introCopy.title}
-              </h1>
-              <p className="max-w-[34rem] text-[14px] leading-relaxed text-text-secondary">
-                {introCopy.description}
+      <section className="space-y-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-1.5">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-2">Timed assessment</p>
+            <h1 className="text-[1.9rem] font-display font-semibold tracking-tight text-text sm:text-[2.2rem]">Exams</h1>
+            <p className="max-w-[42rem] text-[14px] leading-relaxed text-text-secondary">
+              {isProfessor
+                ? "Choose a section, open its exam studio, and manage timing, proctoring, and release settings there."
+                : introCopy.description}
+            </p>
+          </div>
+          <Button variant="secondary" asChild className="w-full lg:w-auto">
+            <Link href="/app/sections">Open professor sections</Link>
+          </Button>
+        </div>
+
+        <Card>
+          <CardBody className="grid gap-2.5 p-3.5 md:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-[0.95rem] border border-borderc bg-soft px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Sections</p>
+              <p className="mt-1 font-mono text-[1.35rem] font-bold leading-none text-text">{sections.length}</p>
+            </div>
+            <div className="rounded-[0.95rem] border border-borderc bg-soft px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Published</p>
+              <p className="mt-1 font-mono text-[1.35rem] font-bold leading-none text-text">
+                {Object.values(examCounts).reduce((sum, item) => sum + item.published, 0)}
               </p>
             </div>
-            <div className="grid gap-2.5 sm:grid-cols-3">
-              <div className="rounded-[1rem] border border-borderc bg-surface/70 px-4 py-3">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Sections</p>
-                <div className="mt-1 flex items-end justify-between gap-3">
-                  <p className="font-mono text-[1.55rem] font-bold leading-none text-text">{sections.length}</p>
-                  <p className="text-[11px] text-text-secondary">Available now</p>
-                </div>
-              </div>
-              <div className="rounded-[1rem] border border-borderc bg-surface/70 px-4 py-3">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Published</p>
-                <div className="mt-1 flex items-end justify-between gap-3">
-                  <p className="font-mono text-[1.55rem] font-bold leading-none text-text">
-                    {Object.values(examCounts).reduce((sum, item) => sum + item.published, 0)}
-                  </p>
-                  <p className="text-[11px] text-text-secondary">Live now</p>
-                </div>
-              </div>
-              <div className="rounded-[1rem] border border-borderc bg-surface/70 px-4 py-3">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Total exams</p>
-                <div className="mt-1 flex items-end justify-between gap-3">
-                  <p className="font-mono text-[1.55rem] font-bold leading-none text-text">
-                    {Object.values(examCounts).reduce((sum, item) => sum + item.total, 0)}
-                  </p>
-                  <p className="text-[11px] text-text-secondary">All sections</p>
-                </div>
-              </div>
+            <div className="rounded-[0.95rem] border border-borderc bg-soft px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Total exams</p>
+              <p className="mt-1 font-mono text-[1.35rem] font-bold leading-none text-text">
+                {Object.values(examCounts).reduce((sum, item) => sum + item.total, 0)}
+              </p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" asChild>
-                <Link href="/app/sections">Open professor sections</Link>
-              </Button>
+            <div className="rounded-[0.95rem] border border-borderc bg-soft px-4 py-3 text-[13px] text-text-secondary">
+              Each section keeps its own exam queue, monitoring view, and proctor settings.
             </div>
-          </div>
-
-          <Card className="overflow-hidden border-borderc/80 bg-[linear-gradient(180deg,hsl(var(--surface)/0.92),hsl(var(--surface-raised)/0.82))]">
-            <CardBody className="space-y-3.5 p-4">
-              <div className="inline-flex h-10 w-10 items-center justify-center rounded-[1rem] border border-brand-2/35 bg-brand-2/10 text-brand-2">
-                <FilePenLine className="h-[18px] w-[18px]" />
-              </div>
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">Builder workflow</p>
-                <p className="mt-1.5 text-[1.1rem] font-semibold text-text">Pick a class, open its exam studio.</p>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
-                  The section exam studio is where you attach a quiz bank, set the window, pick open-notes vs lockdown, and publish when ready.
-                </p>
-              </div>
-              <div className="space-y-2 rounded-[0.95rem] border border-borderc bg-soft px-4 py-3 text-[13px] text-text-secondary">
-                <div className="flex items-center gap-2">
-                  <GraduationCap className="h-4 w-4 text-brand-2" />
-                  <span>Each section gets its own exam queue and monitoring view.</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <ShieldAlert className="h-4 w-4 text-warn" />
-                  <span>Proctor controls, network lock, and open-notes policy are configured per exam.</span>
-                </div>
-              </div>
-            </CardBody>
-          </Card>
-        </div>
+          </CardBody>
+        </Card>
       </section>
 
       {loading ? (
