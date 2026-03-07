@@ -228,17 +228,31 @@ export function PublicShell({ children }: { children: ReactNode }) {
             </div>
 
             <div className="space-y-3">
-              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-accent">Start here</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-accent">
+                {authReady && isAuthenticated ? "Continue in app" : "Start here"}
+              </p>
               <p className="text-sm leading-relaxed text-text-secondary">
-                Browse the public study library now, or create an account to unlock progress, sections, and instructor workflows.
+                {authReady && isAuthenticated
+                  ? "You are already signed in. Jump back into your dashboard or open the study library from the app flow."
+                  : "Browse the public study library now, or create an account to unlock progress, sections, and instructor workflows."}
               </p>
               <div className="flex flex-col gap-2 sm:flex-row md:flex-col">
                 <Button asChild variant="secondary" className="justify-center">
-                  <Link href="/courses">Browse materials</Link>
+                  <Link href={authReady && isAuthenticated ? "/app/courses" : "/courses"}>
+                    {authReady && isAuthenticated ? "Open courses" : "Browse materials"}
+                  </Link>
                 </Button>
-                <Button asChild className="justify-center">
-                  <Link href="/signup">Create account</Link>
-                </Button>
+                {!authReady ? (
+                  <Button className="justify-center" disabled>
+                    Checking session...
+                  </Button>
+                ) : (
+                  <Button asChild className="justify-center">
+                    <Link href={isAuthenticated ? "/app/dashboard" : "/signup"}>
+                      {isAuthenticated ? "Open dashboard" : "Create account"}
+                    </Link>
+                  </Button>
+                )}
               </div>
             </div>
           </div>

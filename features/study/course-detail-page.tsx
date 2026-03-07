@@ -65,6 +65,21 @@ function withPrefix(routePrefix: string, path: string) {
   return `${routePrefix}${path}`;
 }
 
+function mergeCourseSets(localSets: QuizSet[], remoteSets: QuizSet[]) {
+  const merged = new Map(localSets.map((set) => [set.id, set] as const));
+
+  for (const remoteSet of remoteSets) {
+    const existing = merged.get(remoteSet.id);
+    merged.set(remoteSet.id, {
+      ...(existing ?? {}),
+      ...remoteSet,
+      questions: remoteSet.questions.length > 0 ? remoteSet.questions : existing?.questions ?? []
+    });
+  }
+
+  return Array.from(merged.values());
+}
+
 export function CourseDetailContent({
   courseId,
   routePrefix
@@ -89,17 +104,16 @@ export function CourseDetailContent({
     }
 
     let active = true;
-    setSets(getCourseQuizSets(course.id));
+    const localSets = getCourseQuizSets(course.id);
+    setSets(localSets);
     fetchPublishedSetsByCourse(course.id)
       .then((remoteSets) => {
         if (!active) return;
-        if (remoteSets.length > 0) {
-          setSets(remoteSets);
-        }
+        setSets(mergeCourseSets(localSets, remoteSets));
       })
       .catch(() => {
         if (!active) return;
-        setSets(getCourseQuizSets(course.id));
+        setSets(localSets);
       });
 
     return () => {
