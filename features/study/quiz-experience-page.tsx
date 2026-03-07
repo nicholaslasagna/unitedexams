@@ -214,7 +214,7 @@ export function QuizExperiencePageContent({
         randomizeQuestions: true,
         explanationMode: "end",
         questionCount: "all",
-        includeFreeResponse: false
+        includeFreeResponse: true
       });
     }
   }, [searchParams, quiz]);
@@ -312,6 +312,12 @@ export function QuizExperiencePageContent({
       .filter((question) => includeFreeResponse || !isOpenResponseQuestion(question))
       .map((question) => question.id);
 
+    // Exam simulations and custom banks can be entirely open-response.
+    // If a filter would empty the run, fall back to the full set instead.
+    if (selectedQuestionIds.length === 0) {
+      selectedQuestionIds = quiz.questions.map((question) => question.id);
+    }
+
     if (setMode === "exam") {
       const targetCount = Math.min(
         selectedQuestionIds.length,
@@ -404,12 +410,12 @@ export function QuizExperiencePageContent({
   const startExamMode = () => {
     startQuiz(
       {
-        timed: settings.timed,
+        timed: true,
         timerMinutes: quiz?.timerDefaultMinutes ?? settings.timerMinutes,
         randomizeQuestions: true,
         explanationMode: "end",
         questionCount: "all",
-        includeFreeResponse: settings.includeFreeResponse ?? false
+        includeFreeResponse: true
       },
       "exam"
     );

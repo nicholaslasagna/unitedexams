@@ -35,14 +35,14 @@ function hslToHex(h: number, s: number, l: number) {
 
 function hexToHue(hex: string) {
   const clean = hex.replace("#", "");
-  if (clean.length !== 6) return 265;
+  if (clean.length !== 6) return 38;
   const r = parseInt(clean.slice(0, 2), 16) / 255;
   const g = parseInt(clean.slice(2, 4), 16) / 255;
   const b = parseInt(clean.slice(4, 6), 16) / 255;
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   const delta = max - min;
-  if (delta === 0) return 265;
+  if (delta === 0) return 38;
   let hue = 0;
   if (max === r) hue = ((g - b) / delta) % 6;
   else if (max === g) hue = (b - r) / delta + 2;
@@ -83,9 +83,9 @@ export function ThemePalettePicker({
   }, [palette]);
 
   const activePalette = THEME_PALETTES.find((p) => p.id === palette);
-  const activeHue = palette === "custom" ? customHue : (activePalette?.hue ?? 265);
-  const activeSaturation = palette === "custom" ? customSaturation : (activePalette?.saturation ?? 72);
-  const activeLightness = palette === "custom" ? customLightness : (activePalette?.lightness ?? (isDark ? 62 : 50));
+  const activeHue = palette === "custom" ? customHue : (activePalette?.hue ?? 38);
+  const activeSaturation = palette === "custom" ? customSaturation : (activePalette?.saturation ?? 92);
+  const activeLightness = palette === "custom" ? customLightness : (activePalette?.lightness ?? 50);
 
   const contrastCheck = palette === "custom"
     ? checkAccentContrast(customHue, customSaturation, customLightness, isDark)

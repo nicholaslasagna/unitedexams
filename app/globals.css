@@ -11,10 +11,10 @@
 
 :root {
   /* ── Dynamic accent (user-customizable) ── */
-  --accent-hue: 265;
-  --accent-sat: 72;
+  --accent-hue: 38;
+  --accent-sat: 92;
   --accent-lit: 50;
-  --accent-strength: 60;
+  --accent-strength: 56;
 
   /* ── Surfaces — warm paper ── */
   --bg:             228 20% 97%;

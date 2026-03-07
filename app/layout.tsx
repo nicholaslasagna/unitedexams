@@ -38,10 +38,10 @@ const themeBootScript = `
     var prefs = raw ? JSON.parse(raw) : null;
     var theme = prefs && prefs.theme ? prefs.theme : 'system';
     var reduced = !!(prefs && prefs.reducedMotion);
-    var accentHue = prefs && typeof prefs.accentHue === 'number' ? ((prefs.accentHue % 360) + 360) % 360 : 265;
-    var accentSaturation = prefs && typeof prefs.accentSaturation === 'number' ? Math.max(38, Math.min(88, prefs.accentSaturation)) : 72;
-    var accentLightness = prefs && typeof prefs.accentLightness === 'number' ? Math.max(38, Math.min(76, prefs.accentLightness)) : 62;
-    var accentStrength = prefs && typeof prefs.accentStrength === 'number' ? Math.max(0, Math.min(100, prefs.accentStrength)) : 60;
+    var accentHue = prefs && typeof prefs.accentHue === 'number' ? ((prefs.accentHue % 360) + 360) % 360 : 38;
+    var accentSaturation = prefs && typeof prefs.accentSaturation === 'number' ? Math.max(38, Math.min(95, prefs.accentSaturation)) : 92;
+    var accentLightness = prefs && typeof prefs.accentLightness === 'number' ? Math.max(38, Math.min(76, prefs.accentLightness)) : 50;
+    var accentStrength = prefs && typeof prefs.accentStrength === 'number' ? Math.max(0, Math.min(100, prefs.accentStrength)) : 56;
     var resolved = theme === 'system'
       ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
       : theme;
