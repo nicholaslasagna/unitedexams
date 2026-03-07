@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   Clock3,
-  Flame,
   Target,
   TrendingUp,
   Trophy
@@ -189,139 +188,95 @@ export default function DashboardPage() {
 
   return (
     <div className="animate-fade-rise space-y-5 md:space-y-6">
-      <section className="mesh-hero overflow-hidden rounded-[1.55rem] border border-borderc/80 bg-surface/65 shadow-[0_16px_48px_hsl(var(--bg)/0.28)] backdrop-blur-xl">
-        <div className="grid gap-3.5 p-4 sm:p-[1.125rem] xl:grid-cols-[1.1fr_0.9fr] xl:p-5">
-          <div className="space-y-4">
-            <span className="inline-flex rounded-full border border-brand-2/35 bg-brand-2/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-2">
-              Next move
-            </span>
-            <div className="space-y-2">
-              <h1 className="max-w-[13ch] text-[2.15rem] font-display font-semibold leading-[0.95] tracking-tight text-text sm:text-[2.8rem]">
-                Choose the right next move.
-              </h1>
-              <p className="max-w-[36rem] text-[14px] leading-relaxed text-text-secondary">
-                Resume a quiz, keep the streak alive, or jump back into the course that needs attention.
+      <section className="space-y-3">
+        <div className="space-y-1.5">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-2">Workspace</p>
+          <h1 className="text-[1.9rem] font-display font-semibold tracking-tight text-text sm:text-[2.2rem]">Dashboard</h1>
+          <p className="max-w-[42rem] text-[14px] leading-relaxed text-text-secondary">
+            Quick access to the next quiz, your current pace, and the course that needs attention.
+          </p>
+        </div>
+
+        <Card>
+          <CardBody className="grid gap-2.5 p-3.5 md:grid-cols-2 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto] xl:items-center">
+            <div className="rounded-[0.95rem] border border-borderc bg-soft px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Points</p>
+              <p className="mt-1 font-mono text-[1.35rem] font-bold leading-none text-text">{points}</p>
+            </div>
+            <div className="rounded-[0.95rem] border border-borderc bg-soft px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Streak</p>
+              <p className="mt-1 text-[13px] font-semibold text-text">
+                <span className="font-mono text-[1.35rem] font-bold leading-none">{streak.current}d</span>
+                <span className="ml-2 text-text-secondary">best {streak.best}d</span>
               </p>
             </div>
-
-            <div className="grid gap-2.5 sm:grid-cols-3">
-              <div className="rounded-[1rem] border border-borderc bg-surface/70 px-4 py-3">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Points</p>
-                <div className="mt-1 flex items-end justify-between gap-3">
-                  <p className="font-mono text-[1.55rem] font-bold leading-none text-text">{points}</p>
-                  <p className="text-[11px] text-text-secondary">Attempts done</p>
-                </div>
-              </div>
-              <div className="rounded-[1rem] border border-borderc bg-surface/70 px-4 py-3">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Current streak</p>
-                <div className="mt-1 flex items-end justify-between gap-3">
-                  <p className="font-mono text-[1.55rem] font-bold leading-none text-text">{streak.current}d</p>
-                  <p className="text-[11px] text-text-secondary">Best {streak.best}d</p>
-                </div>
-              </div>
-              <div className="rounded-[1rem] border border-borderc bg-surface/70 px-4 py-3">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Recommended</p>
-                <div className="mt-1 flex items-end justify-between gap-3">
-                  <p className="font-mono text-[1.55rem] font-bold leading-none text-text">{recommendations.length}</p>
-                  <p className="text-[11px] text-text-secondary">Ready now</p>
-                </div>
-              </div>
+            <div className="rounded-[0.95rem] border border-borderc bg-soft px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Recommended</p>
+              <p className="mt-1 font-mono text-[1.35rem] font-bold leading-none text-text">{recommendations.length}</p>
             </div>
+            <div className="rounded-[0.95rem] border border-borderc bg-soft px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Today</p>
+              <p className="mt-1 text-[13px] font-semibold text-text">{studiedToday ? "Goal complete" : "Need 1 session"}</p>
+            </div>
+            <Button asChild variant={studiedToday ? "secondary" : "primary"} className="h-10 w-full xl:w-auto">
+              <Link href={continueQuiz ? `/quiz/${continueQuiz.id}` : "/app/courses"}>
+                {studiedToday ? "Run a quick review" : "Start today’s sprint"}
+              </Link>
+            </Button>
+          </CardBody>
+        </Card>
+      </section>
 
-            {continueQuiz ? (
-              <div className={`relative overflow-hidden rounded-[1.2rem] border border-borderc bg-surface/78 p-3.5 ${continueVisual.glowClass}`}>
-                <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${continueVisual.surfaceClass}`} />
-                <div className="relative grid gap-3.5 lg:grid-cols-[1.2fr_0.8fr]">
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {continueCourse ? <Badge tone="brand">{continueCourse.code}</Badge> : null}
-                      <Badge>{continueQuiz.difficulty}</Badge>
-                      <Badge tone="success">Best {continueQuizBest}%</Badge>
-                    </div>
-                    <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Continue</p>
-                      <h2 className="mt-1.5 text-[1.55rem] font-display font-semibold leading-tight text-text">{continueQuiz.title}</h2>
-                      <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-text-secondary">{continueQuiz.description}</p>
-                    </div>
-                    <div className="grid gap-2.5 sm:grid-cols-2">
-                      <div className="rounded-[0.9rem] border border-borderc bg-surface/70 px-3.5 py-2.5">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Last attempt</p>
-                        <p className="mt-1.5 text-sm font-semibold text-text">{continueQuizLast ? formatRelativeDate(continueQuizLast.date) : "No attempts yet"}</p>
-                      </div>
-                      <div className="rounded-[0.9rem] border border-borderc bg-surface/70 px-3.5 py-2.5">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Estimated sprint</p>
-                        <p className="mt-1.5 text-sm font-semibold text-text">{continueQuiz.estMinutes} minutes</p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                      <Button asChild>
-                        <Link href={`/quiz/${continueQuiz.id}`}>
-                          Start quiz
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                      <Button variant="secondary" asChild>
-                        <Link href={`/app/courses/${continueQuiz.courseId}`}>Open course lane</Link>
-                      </Button>
-                    </div>
+      {continueQuiz ? (
+        <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+          <Card className="overflow-hidden">
+            <CardBody className="grid gap-4 p-4 lg:grid-cols-[1.15fr_0.85fr]">
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  {continueCourse ? <Badge tone="brand">{continueCourse.code}</Badge> : null}
+                  <Badge>{continueQuiz.difficulty}</Badge>
+                  <Badge tone="success">Best {continueQuizBest}%</Badge>
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Continue</p>
+                  <h2 className="mt-1.5 text-[1.5rem] font-display font-semibold leading-tight text-text">{continueQuiz.title}</h2>
+                  <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-text-secondary">{continueQuiz.description}</p>
+                </div>
+                <div className="grid gap-2.5 sm:grid-cols-2">
+                  <div className="rounded-[0.9rem] border border-borderc bg-soft px-3.5 py-2.5">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Last attempt</p>
+                    <p className="mt-1.5 text-sm font-semibold text-text">{continueQuizLast ? formatRelativeDate(continueQuizLast.date) : "No attempts yet"}</p>
                   </div>
-
-                  <div className="space-y-2.5">
-                    <div className="overflow-hidden rounded-[1rem] border border-borderc bg-surface/70">
-                      <div className={`relative h-28 bg-gradient-to-br ${continueVisual.surfaceClass}`}>
-                        <Image
-                          src={continueVisual.artworkSrc}
-                          alt={`${continueQuiz.title} course artwork`}
-                          fill
-                          className="object-cover opacity-95"
-                        />
-                      </div>
-                    </div>
-                    {recentCompletedQuizzes.length > 1 ? (
-                      <div className="space-y-2">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Also active</p>
-                        {recentCompletedQuizzes.slice(1).map((set) => (
-                          <Link
-                            key={set.id}
-                            href={`/quiz/${set.id}`}
-                            className="flex items-center justify-between rounded-[0.9rem] border border-borderc bg-surface/70 px-3.5 py-2 text-sm font-semibold text-text transition-all duration-200 ease-out-expo hover:border-border-accent hover:shadow-card-hover"
-                          >
-                            <span>{set.title}</span>
-                            <ArrowRight className="h-4 w-4 text-faint" />
-                          </Link>
-                        ))}
-                      </div>
-                    ) : null}
+                  <div className="rounded-[0.9rem] border border-borderc bg-soft px-3.5 py-2.5">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Estimated sprint</p>
+                    <p className="mt-1.5 text-sm font-semibold text-text">{continueQuiz.estMinutes} minutes</p>
                   </div>
+                </div>
+                <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
+                  <Button asChild>
+                    <Link href={`/quiz/${continueQuiz.id}`}>
+                      Start quiz
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button variant="secondary" asChild>
+                    <Link href={`/app/courses/${continueQuiz.courseId}`}>Open course lane</Link>
+                  </Button>
                 </div>
               </div>
-            ) : null}
-          </div>
 
-          <div className="space-y-3">
-            <Card>
-              <CardBody className="space-y-3.5 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">Streak console</p>
-                    <p className="mt-1 text-[15px] font-semibold text-text">Keep the daily rhythm visible.</p>
-                  </div>
-                  <span className="rounded-full bg-accent-subtle px-3 py-1 text-[11px] font-mono font-bold text-accent">
-                    {studiedToday ? "Goal complete" : "Need 1 session"}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-3 rounded-[0.95rem] border border-borderc bg-soft px-3.5 py-2.5">
-                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-[0.95rem] border border-warn/35 bg-warn/10 text-warn">
-                    <Flame className="h-[18px] w-[18px]" />
-                  </span>
-                  <div>
-                    <p className="font-mono text-[1.45rem] font-bold leading-none text-text">{streak.current}</p>
-                    <p className="mt-1 text-[13px] text-text-secondary">Current streak · best {streak.best} days</p>
+              <div className="space-y-2.5">
+                <div className="overflow-hidden rounded-[1rem] border border-borderc bg-soft">
+                  <div className={`relative h-28 bg-gradient-to-br ${continueVisual.surfaceClass}`}>
+                    <Image
+                      src={continueVisual.artworkSrc}
+                      alt={`${continueQuiz.title} course artwork`}
+                      fill
+                      className="object-cover opacity-95"
+                    />
                   </div>
                 </div>
-
-                <div className="rounded-[0.95rem] border border-borderc bg-soft p-3">
+                <div className="rounded-[0.95rem] border border-borderc bg-soft px-3.5 py-3">
                   <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Last 28 days</p>
                   <div className="mt-2.5 grid grid-cols-7 gap-1">
                     {heatmap.map((cell) => (
@@ -342,41 +297,60 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 </div>
+                {recentCompletedQuizzes.length > 1 ? (
+                  <div className="space-y-2">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Also active</p>
+                    {recentCompletedQuizzes.slice(1).map((set) => (
+                      <Link
+                        key={set.id}
+                        href={`/quiz/${set.id}`}
+                        className="flex items-center justify-between rounded-[0.9rem] border border-borderc bg-soft px-3.5 py-2 text-sm font-semibold text-text transition-all duration-200 ease-out-expo hover:border-border-accent hover:shadow-card-hover"
+                      >
+                        <span>{set.title}</span>
+                        <ArrowRight className="h-4 w-4 text-faint" />
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </CardBody>
+          </Card>
 
-                <div className="rounded-[0.95rem] border border-borderc bg-soft p-3">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Today&apos;s goal</p>
-                  <p className="mt-2 text-[13px] font-medium leading-relaxed text-text">
-                    {studiedToday ? "Goal complete. Run one more review pass if you want extra reps." : "Finish one focused 20-minute quiz sprint."}
-                  </p>
-                  <Button asChild variant={studiedToday ? "secondary" : "primary"} className="mt-3 h-9 w-full">
-                    <Link href={continueQuiz ? `/quiz/${continueQuiz.id}` : "/app/courses"}>
-                      {studiedToday ? "Run a quick review" : "Start today's sprint"}
-                    </Link>
-                  </Button>
-                </div>
+          {homeworkDraftSet ? (
+            <Card>
+              <CardBody className="space-y-2 p-3.5">
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-success">Homework draft</p>
+                <p className="text-[15px] font-semibold text-text">{homeworkDraftSet.title}</p>
+                <p className="text-[13px] leading-relaxed text-text-secondary">
+                  Draft started {formatRelativeDate(homeworkDraft?.created_at ?? new Date().toISOString())}
+                </p>
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href={`/app/homework/${homeworkDraftSet.id}`}>
+                    Resume now
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
               </CardBody>
             </Card>
-
-            {homeworkDraftSet ? (
-              <Card>
-                <CardBody className="space-y-2 p-3.5">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-success">Homework draft</p>
-                  <p className="text-[15px] font-semibold text-text">{homeworkDraftSet.title}</p>
-                  <p className="text-[13px] leading-relaxed text-text-secondary">
-                    Draft started {formatRelativeDate(homeworkDraft?.created_at ?? new Date().toISOString())}
-                  </p>
-                  <Button asChild className="w-full sm:w-auto">
-                    <Link href={`/app/homework/${homeworkDraftSet.id}`}>
-                      Resume now
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </CardBody>
-              </Card>
-            ) : null}
-          </div>
-        </div>
-      </section>
+          ) : null}
+        </section>
+      ) : homeworkDraftSet ? (
+        <Card>
+          <CardBody className="space-y-2 p-3.5">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-success">Homework draft</p>
+            <p className="text-[15px] font-semibold text-text">{homeworkDraftSet.title}</p>
+            <p className="text-[13px] leading-relaxed text-text-secondary">
+              Draft started {formatRelativeDate(homeworkDraft?.created_at ?? new Date().toISOString())}
+            </p>
+            <Button asChild className="w-full sm:w-auto">
+              <Link href={`/app/homework/${homeworkDraftSet.id}`}>
+                Resume now
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </CardBody>
+        </Card>
+      ) : null}
 
       <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <Card>
