@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, ChevronDown, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { THEME_PALETTES } from "@/lib/theme/palettes";
@@ -77,6 +77,10 @@ export function ThemePalettePicker({
   onCustomChange,
 }: ThemePalettePickerProps) {
   const [showCustom, setShowCustom] = useState(palette === "custom");
+
+  useEffect(() => {
+    setShowCustom(palette === "custom");
+  }, [palette]);
 
   const activePalette = THEME_PALETTES.find((p) => p.id === palette);
   const activeHue = palette === "custom" ? customHue : (activePalette?.hue ?? 265);
