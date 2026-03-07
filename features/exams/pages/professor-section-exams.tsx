@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { Plus, ShieldCheck } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,11 @@ import { Input } from "@/components/ui/input";
 import { useAppData } from "@/lib/app-data-context";
 import { isVerifiedProfessor } from "@/lib/auth/roles";
 import { useToast } from "@/lib/hooks/use-toast";
-import { listProfessorSections } from "@/features/professor/api";
+import {
+  listCourseQuizSetsForProfessorTools,
+  listProfessorSections,
+  type SectionQuizSetOption
+} from "@/features/professor/api";
 import {
   createExam,
   listSectionExams,
@@ -19,14 +23,11 @@ import {
   type ShowResultsAfter
 } from "@/features/exams/api";
 
-interface QuizSetLite {
-  id: string;
-  title: string;
-}
-
 export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } = {}) {
+  const searchParams = useSearchParams();
   const params = useParams<{ sectionId?: string; id?: string }>();
   const resolvedSectionId = sectionId ?? params.sectionId ?? params.id ?? "";
+  const createdQuizSetId = searchParams.get("newQuizSet") ?? "";
   const { supabase, user, profile } = useAppData();
   const { push } = useToast();
   const isProfessor = isVerifiedProfessor(profile);
@@ -45,7 +46,7 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
       show_results_after: string;
     }>
   >([]);
-  const [quizSets, setQuizSets] = useState<QuizSetLite[]>([]);
+  const [quizSets, setQuizSets] = useState<SectionQuizSetOption[]>([]);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -86,21 +87,23 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
       setExams(examRows);
 
       if (section) {
-        const { data, error } = await supabase
-          .from("quiz_sets")
-          .select("id, title")
-          .eq("course_id", section.course_id)
-          .order("created_at", { ascending: false });
-        if (!error && data) {
-          const mapped = (data as QuizSetLite[]).map((row) => ({
-            id: String(row.id),
-            title: row.title
-          }));
+        try {
+          const mapped = await listCourseQuizSetsForProfessorTools(
+            supabase,
+            section.course_id,
+            resolvedSectionId
+          );
           setQuizSets(mapped);
-          if (!quizSetId && mapped[0]) {
-            setQuizSetId(mapped[0].id);
-          }
-        } else {
+          setQuizSetId((current) => {
+            if (createdQuizSetId && mapped.some((row) => row.id === createdQuizSetId)) {
+              return createdQuizSetId;
+            }
+            if (current && mapped.some((row) => row.id === current)) {
+              return current;
+            }
+            return mapped[0]?.id ?? "";
+          });
+        } catch {
           setQuizSets([]);
         }
       }
@@ -116,7 +119,12 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
   useEffect(() => {
     void refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedSectionId, supabase, user?.id, isProfessor]);
+  }, [createdQuizSetId, resolvedSectionId, supabase, user?.id, isProfessor]);
+
+  const highlightedQuizSet = useMemo(
+    () => quizSets.find((set) => set.id === createdQuizSetId) ?? null,
+    [quizSets, createdQuizSetId]
+  );
 
   if (!isProfessor) {
     return (
@@ -153,6 +161,14 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
           <h2 className="font-display text-2xl font-semibold">Create timed exam</h2>
         </CardHeader>
         <CardBody className="space-y-4">
+          {highlightedQuizSet ? (
+            <div className="rounded-xl border border-accent/45 bg-accent/10 px-4 py-3 text-sm text-text">
+              <p className="font-semibold">New set ready for exam design</p>
+              <p className="mt-1 text-xs text-muted">
+                {highlightedQuizSet.title} has been selected below so you can turn it into an exam immediately.
+              </p>
+            </div>
+          ) : null}
           <div className="grid gap-3 md:grid-cols-2">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Title</label>
@@ -167,7 +183,7 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
               >
                 {quizSets.map((set) => (
                   <option key={set.id} value={set.id}>
-                    {set.title}
+                    {set.title} ({set.mode ?? "quiz"} · {set.est_minutes}m)
                   </option>
                 ))}
               </select>
@@ -368,6 +384,53 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
             <Plus className="h-4 w-4" />
             Create exam
           </Button>
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <h2 className="font-display text-2xl font-semibold">Available exam and quiz sets</h2>
+        </CardHeader>
+        <CardBody className="space-y-3">
+          {quizSets.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-borderc bg-soft px-4 py-3 text-sm text-muted">
+              Build a quiz, homework, or exam set first. It will appear here as soon as it saves.
+            </p>
+          ) : (
+            quizSets.map((set) => {
+              const isHighlighted = set.id === createdQuizSetId;
+              return (
+                <article
+                  key={set.id}
+                  className={`rounded-xl border px-4 py-3 ${
+                    isHighlighted ? "border-accent/55 bg-accent/10" : "border-borderc bg-soft"
+                  }`}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-base font-semibold text-text">{set.title}</p>
+                      <p className="mt-1 text-xs text-muted">
+                        {(set.mode ?? "quiz").toUpperCase()} · {set.est_minutes}m
+                        {set.professorBuilt ? " · Professor-built" : " · Study library"}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        variant={quizSetId === set.id ? "primary" : "secondary"}
+                        onClick={() => setQuizSetId(set.id)}
+                      >
+                        {quizSetId === set.id ? "Selected for exam" : "Use for exam"}
+                      </Button>
+                      <Button size="sm" variant="secondary" asChild>
+                        <Link href={`/quiz/${set.id}?section=${resolvedSectionId}`}>Preview set</Link>
+                      </Button>
+                    </div>
+                  </div>
+                </article>
+              );
+            })
+          )}
         </CardBody>
       </Card>
 

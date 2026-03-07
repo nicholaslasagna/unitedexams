@@ -288,7 +288,7 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
   const [previewMode, setPreviewMode] = useState(false);
   const [section, setSection] = useState<SectionSummary | null>(null);
 
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState("Quiz 1");
   const [description, setDescription] = useState("");
   const [difficulty, setDifficulty] = useState<"intro" | "medium" | "hard">("medium");
   const [estMinutes, setEstMinutes] = useState("20");
@@ -329,6 +329,8 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
 
   const questionCount = questions.length;
   const modeLabel = useMemo(() => (mode === "quiz" ? "Quiz" : mode === "exam" ? "Exam" : "Homework"), [mode]);
+  const titlePlaceholder = `${modeLabel} 1`;
+  const saveLabel = `Save ${modeLabel.toLowerCase()} set`;
 
   if (!isProfessor) {
     return (
@@ -368,7 +370,7 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
             <ArrowLeft className="h-4 w-4" />
             Back to section
           </Link>
-          <h1 className="font-display text-4xl font-semibold tracking-tight">Professor Quiz Builder</h1>
+          <h1 className="font-display text-4xl font-semibold tracking-tight">Professor {modeLabel} Builder</h1>
           <p className="text-sm text-muted">
             {section.name} • {section.course_id}
           </p>
@@ -377,14 +379,14 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={() => setPreviewMode((prev) => !prev)}>
             {previewMode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            {previewMode ? "Back to editor" : "Preview quiz"}
+            {previewMode ? "Back to editor" : `Preview ${modeLabel.toLowerCase()}`}
           </Button>
           <Button
             loading={saving}
             onClick={async () => {
               if (!supabase) return;
               if (!title.trim()) {
-                push({ title: "Quiz set title is required", tone: "error" });
+                push({ title: `${modeLabel} title is required`, tone: "error" });
                 return;
               }
 
@@ -458,8 +460,19 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
               setSaving(true);
               try {
                 const quizSetId = await createProfessorQuizSet(supabase, payload);
-                push({ title: "Quiz set created", description: "It is now available for assignments.", tone: "success" });
-                router.push(`/app/sections/${resolvedSectionId}?newQuizSet=${quizSetId}`);
+                push({
+                  title: `${modeLabel} set created`,
+                  description:
+                    mode === "exam"
+                      ? "It is now available in this section's exam tools."
+                      : "It is now available in this section's assignment tools.",
+                  tone: "success"
+                });
+                router.push(
+                  mode === "exam"
+                    ? `/app/professor/sections/${resolvedSectionId}/exams?newQuizSet=${quizSetId}`
+                    : `/app/sections/${resolvedSectionId}?newQuizSet=${quizSetId}`
+                );
               } catch (error) {
                 push({ title: "Unable to create quiz set", description: (error as Error).message, tone: "error" });
               } finally {
@@ -467,19 +480,19 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
               }
             }}
           >
-            Save quiz set
+            {saveLabel}
           </Button>
         </div>
       </section>
 
       <Card>
         <CardHeader>
-          <h2 className="font-display text-2xl font-semibold">Quiz Set Details</h2>
+          <h2 className="font-display text-2xl font-semibold">{modeLabel} Set Details</h2>
         </CardHeader>
         <CardBody className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1.5 md:col-span-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Title</label>
-            <Input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Unit 3 Review" />
+            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">{modeLabel} title</label>
+            <Input value={title} onChange={(event) => setTitle(event.target.value)} placeholder={titlePlaceholder} />
           </div>
           <div className="space-y-1.5 md:col-span-2">
             <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Description</label>
@@ -490,7 +503,20 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
             <select
               className="h-11 w-full rounded-[10px] border border-borderc bg-soft px-3 text-sm text-text"
               value={mode}
-              onChange={(event) => setMode(event.target.value as typeof mode)}
+              onChange={(event) => {
+                const nextMode = event.target.value as typeof mode;
+                const nextModeLabel =
+                  nextMode === "quiz" ? "Quiz" : nextMode === "exam" ? "Exam" : "Homework";
+                const currentDefaultTitle = `${modeLabel} 1`;
+                setMode(nextMode);
+                setTitle((current) => {
+                  const trimmed = current.trim();
+                  if (trimmed === "" || trimmed === currentDefaultTitle) {
+                    return `${nextModeLabel} 1`;
+                  }
+                  return current;
+                });
+              }}
             >
               <option value="quiz">Quiz</option>
               <option value="homework">Homework</option>

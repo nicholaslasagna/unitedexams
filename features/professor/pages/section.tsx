@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,27 +13,25 @@ import {
   deleteProfessorSection,
   createSectionAssignment,
   getSectionAnalytics,
+  listCourseQuizSetsForProfessorTools,
   listProfessorSections,
   listSectionAssignments,
   listSectionMembers,
   submitAssignment,
   type AssignmentRow,
+  type SectionQuizSetOption,
   type SectionAnalytics,
   type SectionMemberRow,
   type SectionSummary
 } from "@/features/professor/api";
 import { listSectionExams, type ExamRow } from "@/features/exams/api";
 
-interface QuizSetOption {
-  id: string;
-  title: string;
-  est_minutes: number;
-}
-
 export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {}) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const params = useParams<{ id?: string; sectionId?: string }>();
   const resolvedSectionId = sectionId ?? params.sectionId ?? params.id ?? "";
+  const createdQuizSetId = searchParams.get("newQuizSet") ?? "";
 
   const { profile, supabase, user } = useAppData();
   const { push } = useToast();
@@ -43,7 +41,7 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
   const [analytics, setAnalytics] = useState<SectionAnalytics | null>(null);
   const [members, setMembers] = useState<SectionMemberRow[]>([]);
   const [sectionExams, setSectionExams] = useState<ExamRow[]>([]);
-  const [availableQuizSets, setAvailableQuizSets] = useState<QuizSetOption[]>([]);
+  const [availableQuizSets, setAvailableQuizSets] = useState<SectionQuizSetOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [submittingAssignmentId, setSubmittingAssignmentId] = useState<string | null>(null);
 
@@ -78,26 +76,23 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
       setSectionExams(sectionExamRows);
 
       if (foundSection) {
-        const { data: setRows, error } = await supabase
-          .from("quiz_sets")
-          .select("id, title, est_minutes")
-          .eq("course_id", foundSection.course_id)
-          .eq("is_published", true)
-          .order("created_at", { ascending: false });
-
-        if (!error && setRows) {
-          const mapped = (setRows as QuizSetOption[]).map((row) => ({
-            id: String(row.id),
-            title: row.title,
-            est_minutes: row.est_minutes
-          }));
+        try {
+          const mapped = await listCourseQuizSetsForProfessorTools(
+            supabase,
+            foundSection.course_id,
+            resolvedSectionId
+          );
           setAvailableQuizSets(mapped);
-          if (!quizSetId && mapped[0]) {
-            setQuizSetId(mapped[0].id);
-          } else if (mapped.length === 0) {
-            setQuizSetId("");
-          }
-        } else {
+          setQuizSetId((current) => {
+            if (createdQuizSetId && mapped.some((row) => row.id === createdQuizSetId)) {
+              return createdQuizSetId;
+            }
+            if (current && mapped.some((row) => row.id === current)) {
+              return current;
+            }
+            return mapped[0]?.id ?? "";
+          });
+        } catch {
           setAvailableQuizSets([]);
           setQuizSetId("");
         }
@@ -125,11 +120,16 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
     }
     void refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedSectionId, supabase]);
+  }, [createdQuizSetId, resolvedSectionId, supabase]);
 
   const studentCount = useMemo(
     () => members.filter((member) => member.role === "student").length,
     [members]
+  );
+
+  const highlightedQuizSet = useMemo(
+    () => availableQuizSets.find((set) => set.id === createdQuizSetId) ?? null,
+    [availableQuizSets, createdQuizSetId]
   );
 
   if (loading) {
@@ -232,6 +232,14 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
           {isProfessor ? (
             <div className="space-y-3 rounded-xl border border-borderc bg-soft p-4">
               <h2 className="font-display text-2xl font-semibold">Create assignment</h2>
+              {highlightedQuizSet ? (
+                <div className="rounded-xl border border-accent/45 bg-accent/10 px-4 py-3 text-sm text-text">
+                  <p className="font-semibold">New set ready</p>
+                  <p className="mt-1 text-xs text-muted">
+                    {highlightedQuizSet.title} is now selected below and ready to use for assignments.
+                  </p>
+                </div>
+              ) : null}
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-borderc bg-surface p-4">
                 <div>
                   <h3 className="text-base font-semibold text-text">Quiz Builder</h3>
@@ -265,7 +273,7 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
                     ) : null}
                     {availableQuizSets.map((set) => (
                       <option key={set.id} value={set.id}>
-                        {set.title} ({set.est_minutes}m)
+                        {set.title} ({set.mode ?? "quiz"} · {set.est_minutes}m)
                       </option>
                     ))}
                   </select>
@@ -363,6 +371,57 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
               Complete assigned quizzes and submit attempts here. Auto-gradable question types are scored instantly.
             </p>
           )}
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold text-text">Available quiz sets</p>
+              {isProfessor ? (
+                <Button size="sm" variant="secondary" asChild>
+                  <Link href={`/app/professor/sections/${resolvedSectionId}/quiz-builder`}>Build another set</Link>
+                </Button>
+              ) : null}
+            </div>
+            {availableQuizSets.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-borderc bg-soft px-4 py-3 text-sm text-muted">
+                No quiz sets available for this section yet.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {availableQuizSets.map((set) => {
+                  const isHighlighted = set.id === createdQuizSetId;
+                  return (
+                    <div
+                      key={set.id}
+                      className={`rounded-xl border px-4 py-3 text-sm ${
+                        isHighlighted
+                          ? "border-accent/55 bg-accent/10"
+                          : "border-borderc bg-soft"
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <p className="font-semibold text-text">{set.title}</p>
+                          <p className="mt-1 text-xs text-muted">
+                            {(set.mode ?? "quiz").toUpperCase()} · {set.est_minutes}m
+                            {set.professorBuilt ? " · Professor-built" : " · Study library"}
+                          </p>
+                        </div>
+                        {isProfessor ? (
+                          <Button size="sm" variant={isHighlighted ? "primary" : "secondary"} onClick={() => setQuizSetId(set.id)}>
+                            Use for assignment
+                          </Button>
+                        ) : (
+                          <Button size="sm" variant="secondary" asChild>
+                            <Link href={`/quiz/${set.id}?section=${resolvedSectionId}`}>Open set</Link>
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
           <div className="space-y-2">
             <p className="text-sm font-semibold text-text">Assignments</p>
