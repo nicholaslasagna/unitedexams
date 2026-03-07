@@ -1,5 +1,5 @@
-import { StudentExamListPage } from "@/features/exams/pages/student-exam-list";
+import { ExamHubPage } from "@/features/exams/pages/exam-hub";
 
 export default function AppExamListRoutePage() {
-  return <StudentExamListPage />;
+  return <ExamHubPage />;
 }
