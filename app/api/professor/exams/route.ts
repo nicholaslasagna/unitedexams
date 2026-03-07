@@ -81,6 +81,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error?.message || "Unable to create exam." }, { status: 400 });
     }
 
+    if (payload.quizSetId) {
+      const { data: professorQuestion } = await supabase
+        .from("questions")
+        .select("quiz_set_id")
+        .eq("quiz_set_id", payload.quizSetId)
+        .eq("from_professor", true)
+        .limit(1)
+        .maybeSingle();
+
+      if (professorQuestion) {
+        const linkResult = await supabase.from("section_quiz_sets").upsert(
+          {
+            section_id: payload.sectionId,
+            quiz_set_id: payload.quizSetId,
+            created_by: context.user.id
+          },
+          {
+            onConflict: "section_id,quiz_set_id",
+            ignoreDuplicates: false
+          }
+        );
+
+        if (linkResult.error && !linkResult.error.message.toLowerCase().includes("section_quiz_sets")) {
+          return NextResponse.json({ error: linkResult.error.message }, { status: 400 });
+        }
+      }
+    }
+
     await safeWriteAuditLog(supabase, request, {
       action: "exam.create",
       targetType: "exam",

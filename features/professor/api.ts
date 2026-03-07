@@ -390,6 +390,13 @@ export async function createSectionAssignment(
   return result.assignment;
 }
 
+export async function deleteSectionAssignment(_client: SupabaseClient, assignmentId: string) {
+  const response = await fetch(`/api/professor/assignments/${assignmentId}`, {
+    method: "DELETE"
+  });
+  await parseJsonResponse<{ ok: true }>(response, "Unable to delete assignment.");
+}
+
 export async function listSectionMembers(client: SupabaseClient, sectionId: string) {
   const { data, error } = await client
     .from("section_members")
@@ -444,6 +451,13 @@ export async function createSectionMaterial(
     ...row,
     attachments: Array.isArray(row.attachments) ? row.attachments.map((item) => String(item)) : []
   } satisfies SectionMaterialRow;
+}
+
+export async function deleteProfessorQuizSet(_client: SupabaseClient, quizSetId: string) {
+  const response = await fetch(`/api/professor/quiz-sets/${quizSetId}`, {
+    method: "DELETE"
+  });
+  await parseJsonResponse<{ ok: true }>(response, "Unable to delete quiz set.");
 }
 
 export async function deleteSectionMaterial(_client: SupabaseClient, materialId: string) {

@@ -100,6 +100,34 @@ export async function PATCH(
       return NextResponse.json({ error: error?.message || "Unable to update exam." }, { status: 400 });
     }
 
+    if (payload.quizSetId) {
+      const { data: professorQuestion } = await supabase
+        .from("questions")
+        .select("quiz_set_id")
+        .eq("quiz_set_id", payload.quizSetId)
+        .eq("from_professor", true)
+        .limit(1)
+        .maybeSingle();
+
+      if (professorQuestion) {
+        const linkResult = await supabase.from("section_quiz_sets").upsert(
+          {
+            section_id: exam.section_id,
+            quiz_set_id: payload.quizSetId,
+            created_by: routeContext.user.id
+          },
+          {
+            onConflict: "section_id,quiz_set_id",
+            ignoreDuplicates: false
+          }
+        );
+
+        if (linkResult.error && !linkResult.error.message.toLowerCase().includes("section_quiz_sets")) {
+          return NextResponse.json({ error: linkResult.error.message }, { status: 400 });
+        }
+      }
+    }
+
     await safeWriteAuditLog(supabase, request, {
       action: "exam.update",
       targetType: "exam",
@@ -110,6 +138,74 @@ export async function PATCH(
     return NextResponse.json({ ok: true, exam: data });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to update exam.";
+    const status = /unauthorized/i.test(message) ? 401 : /professor access/i.test(message) ? 403 : 400;
+    return NextResponse.json({ error: message }, { status });
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ examId: string }> }
+) {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) {
+    return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
+  }
+
+  try {
+    const routeContext = await requireAuthenticatedRouteContext(supabase);
+    requireVerifiedProfessor(routeContext);
+    const { examId } = paramsSchema.parse(await context.params);
+
+    const { data: exam, error: examLookupError } = await supabase
+      .from("exams")
+      .select("id, section_id, quiz_set_id")
+      .eq("id", examId)
+      .maybeSingle();
+
+    if (examLookupError || !exam) {
+      return NextResponse.json({ error: examLookupError?.message || "Exam not found." }, { status: 404 });
+    }
+
+    const { data: canManage, error: roleError } = await supabase.rpc("section_professor_exists", {
+      section_id_input: exam.section_id,
+      user_id_input: routeContext.user.id
+    });
+
+    if (roleError || !canManage) {
+      await safeWriteAuditLog(supabase, request, {
+        action: "exam.delete",
+        targetType: "exam",
+        targetId: examId,
+        outcome: "denied",
+        metadata: { sectionId: exam.section_id, message: roleError?.message || "Section access denied" }
+      });
+      return NextResponse.json({ error: "Only section professors can delete exams." }, { status: 403 });
+    }
+
+    const { error } = await supabase.from("exams").delete().eq("id", examId);
+
+    if (error) {
+      await safeWriteAuditLog(supabase, request, {
+        action: "exam.delete",
+        targetType: "exam",
+        targetId: examId,
+        outcome: "error",
+        metadata: { sectionId: exam.section_id, message: error.message }
+      });
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    await safeWriteAuditLog(supabase, request, {
+      action: "exam.delete",
+      targetType: "exam",
+      targetId: examId,
+      metadata: { sectionId: exam.section_id, quizSetId: exam.quiz_set_id }
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to delete exam.";
     const status = /unauthorized/i.test(message) ? 401 : /professor access/i.test(message) ? 403 : 400;
     return NextResponse.json({ error: message }, { status });
   }

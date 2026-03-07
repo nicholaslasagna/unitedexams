@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
-import { Plus, ShieldCheck } from "lucide-react";
+import { Plus, ShieldCheck, Trash2 } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,12 +11,14 @@ import { useAppData } from "@/lib/app-data-context";
 import { isVerifiedProfessor } from "@/lib/auth/roles";
 import { useToast } from "@/lib/hooks/use-toast";
 import {
+  deleteProfessorQuizSet,
   listCourseQuizSetsForProfessorTools,
   listProfessorSections,
   type SectionQuizSetOption
 } from "@/features/professor/api";
 import {
   createExam,
+  deleteExam,
   listSectionExams,
   upsertExamAccessRules,
   type ExamMode,
@@ -35,6 +37,8 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
   const [sectionName, setSectionName] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deletingExamId, setDeletingExamId] = useState<string | null>(null);
+  const [deletingQuizSetId, setDeletingQuizSetId] = useState<string | null>(null);
   const [exams, setExams] = useState<
     Array<{
       id: string;
@@ -425,6 +429,41 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
                       <Button size="sm" variant="secondary" asChild>
                         <Link href={`/quiz/${set.id}?section=${resolvedSectionId}`}>Preview set</Link>
                       </Button>
+                      {set.professorBuilt ? (
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          loading={deletingQuizSetId === set.id}
+                          loadingLabel="Deleting..."
+                          onClick={async () => {
+                            if (!supabase) return;
+                            const confirmed = window.confirm(
+                              "Delete this set? This removes its questions and any linked assignments, attempts, and timed exams."
+                            );
+                            if (!confirmed) return;
+                            setDeletingQuizSetId(set.id);
+                            try {
+                              await deleteProfessorQuizSet(supabase, set.id);
+                              push({ title: "Quiz set deleted", tone: "success" });
+                              if (quizSetId === set.id) {
+                                setQuizSetId("");
+                              }
+                              await refresh();
+                            } catch (error) {
+                              push({
+                                title: "Unable to delete quiz set",
+                                description: (error as Error).message,
+                                tone: "error"
+                              });
+                            } finally {
+                              setDeletingQuizSetId(null);
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete set
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
                 </article>
@@ -472,6 +511,36 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
                       <ShieldCheck className="h-4 w-4" />
                       Student view
                     </Link>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    loading={deletingExamId === exam.id}
+                    loadingLabel="Deleting..."
+                    onClick={async () => {
+                      if (!supabase) return;
+                      const confirmed = window.confirm(
+                        "Delete this exam? Attempts, monitoring events, and access rules will be removed."
+                      );
+                      if (!confirmed) return;
+                      setDeletingExamId(exam.id);
+                      try {
+                        await deleteExam(supabase, exam.id);
+                        push({ title: "Exam deleted", tone: "success" });
+                        await refresh();
+                      } catch (error) {
+                        push({
+                          title: "Unable to delete exam",
+                          description: (error as Error).message,
+                          tone: "error"
+                        });
+                      } finally {
+                        setDeletingExamId(null);
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
                   </Button>
                 </div>
               </article>
