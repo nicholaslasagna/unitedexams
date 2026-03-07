@@ -140,40 +140,46 @@ export function ExamHubPage() {
   }
 
   return (
-    <div className="space-y-6 md:space-y-8">
-      <section className="mesh-hero overflow-hidden rounded-[2rem] border border-borderc/80 bg-surface/65 shadow-[0_24px_80px_hsl(var(--bg)/0.4)] backdrop-blur-xl">
-        <div className="grid gap-5 p-5 sm:p-6 xl:grid-cols-[1.15fr_0.85fr] xl:p-8">
-          <div className="space-y-5">
-            <span className="inline-flex rounded-full border border-brand-2/35 bg-brand-2/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-2">
-              Professor exam studio
+    <div className="space-y-5 md:space-y-6">
+      <section className="mesh-hero overflow-hidden rounded-[1.55rem] border border-borderc/80 bg-surface/65 shadow-[0_16px_48px_hsl(var(--bg)/0.28)] backdrop-blur-xl">
+        <div className="grid gap-3.5 p-4 sm:p-[1.125rem] xl:grid-cols-[1.15fr_0.85fr] xl:p-5">
+          <div className="space-y-4">
+            <span className="inline-flex rounded-full border border-brand-2/35 bg-brand-2/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-2">
+              Professor exams
             </span>
-            <div className="space-y-3">
-              <h1 className="max-w-[12ch] text-4xl font-display font-semibold leading-[0.96] tracking-tight text-text sm:text-5xl">
+            <div className="space-y-2">
+              <h1 className="max-w-[13ch] text-[2.15rem] font-display font-semibold leading-[0.95] tracking-tight text-text sm:text-[2.8rem]">
                 {introCopy.title}
               </h1>
-              <p className="max-w-2xl text-sm leading-relaxed text-text-secondary sm:text-base">
+              <p className="max-w-[34rem] text-[14px] leading-relaxed text-text-secondary">
                 {introCopy.description}
               </p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-[1.25rem] border border-borderc bg-surface/70 p-4">
-                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary">Sections</p>
-                <p className="mt-2 font-mono text-3xl font-bold text-text">{sections.length}</p>
-                <p className="mt-1 text-xs text-text-secondary">Classes available for exam authoring.</p>
+            <div className="grid gap-2.5 sm:grid-cols-3">
+              <div className="rounded-[1rem] border border-borderc bg-surface/70 px-4 py-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Sections</p>
+                <div className="mt-1 flex items-end justify-between gap-3">
+                  <p className="font-mono text-[1.55rem] font-bold leading-none text-text">{sections.length}</p>
+                  <p className="text-[11px] text-text-secondary">Available now</p>
+                </div>
               </div>
-              <div className="rounded-[1.25rem] border border-borderc bg-surface/70 p-4">
-                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary">Published</p>
-                <p className="mt-2 font-mono text-3xl font-bold text-text">
-                  {Object.values(examCounts).reduce((sum, item) => sum + item.published, 0)}
-                </p>
-                <p className="mt-1 text-xs text-text-secondary">Exams live to students right now.</p>
+              <div className="rounded-[1rem] border border-borderc bg-surface/70 px-4 py-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Published</p>
+                <div className="mt-1 flex items-end justify-between gap-3">
+                  <p className="font-mono text-[1.55rem] font-bold leading-none text-text">
+                    {Object.values(examCounts).reduce((sum, item) => sum + item.published, 0)}
+                  </p>
+                  <p className="text-[11px] text-text-secondary">Live now</p>
+                </div>
               </div>
-              <div className="rounded-[1.25rem] border border-borderc bg-surface/70 p-4">
-                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary">Drafts + live</p>
-                <p className="mt-2 font-mono text-3xl font-bold text-text">
-                  {Object.values(examCounts).reduce((sum, item) => sum + item.total, 0)}
-                </p>
-                <p className="mt-1 text-xs text-text-secondary">All exams across your sections.</p>
+              <div className="rounded-[1rem] border border-borderc bg-surface/70 px-4 py-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Total exams</p>
+                <div className="mt-1 flex items-end justify-between gap-3">
+                  <p className="font-mono text-[1.55rem] font-bold leading-none text-text">
+                    {Object.values(examCounts).reduce((sum, item) => sum + item.total, 0)}
+                  </p>
+                  <p className="text-[11px] text-text-secondary">All sections</p>
+                </div>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -184,18 +190,18 @@ export function ExamHubPage() {
           </div>
 
           <Card className="overflow-hidden border-borderc/80 bg-[linear-gradient(180deg,hsl(var(--surface)/0.92),hsl(var(--surface-raised)/0.82))]">
-            <CardBody className="space-y-4 p-5 sm:p-6">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-brand-2/35 bg-brand-2/10 text-brand-2">
-                <FilePenLine className="h-5 w-5" />
+            <CardBody className="space-y-3.5 p-4">
+              <div className="inline-flex h-10 w-10 items-center justify-center rounded-[1rem] border border-brand-2/35 bg-brand-2/10 text-brand-2">
+                <FilePenLine className="h-[18px] w-[18px]" />
               </div>
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">Builder workflow</p>
-                <p className="mt-2 text-xl font-semibold text-text">Pick a class, then open its exam studio.</p>
-                <p className="mt-2 text-sm leading-relaxed text-text-secondary">
+                <p className="mt-1.5 text-[1.1rem] font-semibold text-text">Pick a class, open its exam studio.</p>
+                <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
                   The section exam studio is where you attach a quiz bank, set the window, pick open-notes vs lockdown, and publish when ready.
                 </p>
               </div>
-              <div className="space-y-2 rounded-[1rem] border border-borderc bg-soft px-4 py-4 text-sm text-text-secondary">
+              <div className="space-y-2 rounded-[0.95rem] border border-borderc bg-soft px-4 py-3 text-[13px] text-text-secondary">
                 <div className="flex items-center gap-2">
                   <GraduationCap className="h-4 w-4 text-brand-2" />
                   <span>Each section gets its own exam queue and monitoring view.</span>
@@ -232,10 +238,10 @@ export function ExamHubPage() {
           </CardBody>
         </Card>
       ) : (
-        <section className="space-y-4">
+        <section className="space-y-3.5">
           <div>
-            <h2 className="text-heading font-semibold">Choose a class</h2>
-            <p className="mt-1 text-sm text-text-secondary">
+            <h2 className="text-[1.75rem] font-display font-semibold text-text">Choose a class</h2>
+            <p className="mt-1 text-[14px] text-text-secondary">
               Open any section below to start building or managing exams for that class.
             </p>
           </div>
@@ -251,7 +257,7 @@ export function ExamHubPage() {
                   key={section.id}
                   className={`overflow-hidden transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-${(index % 6) + 1}`}
                 >
-                  <div className={`relative h-40 overflow-hidden border-b border-borderc bg-gradient-to-br ${visual.surfaceClass}`}>
+                  <div className={`relative h-32 overflow-hidden border-b border-borderc bg-gradient-to-br ${visual.surfaceClass}`}>
                     <Image
                       src={visual.artworkSrc}
                       alt={`${section.name} artwork`}
@@ -259,7 +265,7 @@ export function ExamHubPage() {
                       className="object-cover opacity-90"
                     />
                   </div>
-                  <CardBody className="space-y-4 p-5 sm:p-6">
+                  <CardBody className="space-y-3.5 p-4">
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge tone="brand">{section.course_id}</Badge>
                       {section.term ? <Badge>{section.term}</Badge> : null}
@@ -269,20 +275,20 @@ export function ExamHubPage() {
                     </div>
 
                     <div>
-                      <h3 className="text-xl font-semibold text-text">{section.name}</h3>
-                      <p className="mt-1 text-sm text-text-secondary">
+                      <h3 className="text-lg font-semibold text-text">{section.name}</h3>
+                      <p className="mt-1 text-[13px] text-text-secondary">
                         {course?.name ?? section.course_id}
                       </p>
                     </div>
 
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-[1rem] border border-borderc bg-soft px-4 py-3">
+                    <div className="grid gap-2.5 sm:grid-cols-2">
+                      <div className="rounded-[0.95rem] border border-borderc bg-soft px-4 py-2.5">
                         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Exams</p>
-                        <p className="mt-2 font-mono text-2xl font-bold text-text">{counts.total}</p>
+                        <p className="mt-1.5 font-mono text-[1.35rem] font-bold text-text">{counts.total}</p>
                       </div>
-                      <div className="rounded-[1rem] border border-borderc bg-soft px-4 py-3">
+                      <div className="rounded-[0.95rem] border border-borderc bg-soft px-4 py-2.5">
                         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Join code</p>
-                        <p className="mt-2 font-mono text-sm font-bold text-text">{section.join_code}</p>
+                        <p className="mt-1.5 font-mono text-sm font-bold text-text">{section.join_code}</p>
                       </div>
                     </div>
 

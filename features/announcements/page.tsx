@@ -177,64 +177,68 @@ export function AnnouncementsPageContent() {
   };
 
   return (
-    <div className="space-y-6 md:space-y-8">
-      <section className="mesh-hero overflow-hidden rounded-[2rem] border border-borderc/80 bg-surface/65 shadow-[0_24px_80px_hsl(var(--bg)/0.4)] backdrop-blur-xl">
-        <div className="grid gap-5 p-5 sm:p-6 xl:grid-cols-[1.2fr_0.8fr] xl:p-8">
-          <div className="space-y-5">
-            <span className="inline-flex rounded-full border border-brand-2/35 bg-brand-2/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-2">
-              Section communication
+    <div className="space-y-5 md:space-y-6">
+      <section className="mesh-hero overflow-hidden rounded-[1.55rem] border border-borderc/80 bg-surface/65 shadow-[0_16px_48px_hsl(var(--bg)/0.28)] backdrop-blur-xl">
+        <div className="grid gap-3.5 p-4 sm:p-[1.125rem] xl:grid-cols-[1.2fr_0.8fr] xl:p-5">
+          <div className="space-y-4">
+            <span className="inline-flex rounded-full border border-brand-2/35 bg-brand-2/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-2">
+              Section updates
             </span>
-            <div className="space-y-3">
-              <h1 className="max-w-[12ch] text-4xl font-display font-semibold leading-[0.96] tracking-tight text-text sm:text-5xl">
-                Announcements that feel attached to the actual class.
+            <div className="space-y-2">
+              <h1 className="max-w-[13ch] text-[2.15rem] font-display font-semibold leading-[0.95] tracking-tight text-text sm:text-[2.8rem]">
+                Announcements that stay with the class.
               </h1>
-              <p className="max-w-2xl text-sm leading-relaxed text-text-secondary sm:text-base">
+              <p className="max-w-[36rem] text-[14px] leading-relaxed text-text-secondary">
                 {isProfessor
-                  ? "Post updates to a specific section, decide whether students get an email, and keep the feed tied to the class it belongs to."
-                  : "Track course-specific updates from instructors without digging through unrelated notifications or generic inbox noise."}
+                  ? "Post to one section, decide whether students get an email, and keep the feed tied to the class it belongs to."
+                  : "Track course-specific updates without digging through unrelated notifications."}
               </p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-[1.25rem] border border-borderc bg-surface/70 p-4">
-                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary">Feed items</p>
-                <p className="mt-2 font-mono text-3xl font-bold text-text">{items.length}</p>
-                <p className="mt-1 text-xs text-text-secondary">Recent updates in your accessible sections.</p>
+            <div className="grid gap-2.5 sm:grid-cols-3">
+              <div className="rounded-[1rem] border border-borderc bg-surface/70 px-4 py-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Feed items</p>
+                <div className="mt-1 flex items-end justify-between gap-3">
+                  <p className="font-mono text-[1.55rem] font-bold leading-none text-text">{items.length}</p>
+                  <p className="text-[11px] text-text-secondary">Recent updates</p>
+                </div>
               </div>
-              <div className="rounded-[1.25rem] border border-borderc bg-surface/70 p-4">
-                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary">Sections</p>
-                <p className="mt-2 font-mono text-3xl font-bold text-text">{announcementPreviewCount(items)}</p>
-                <p className="mt-1 text-xs text-text-secondary">Distinct section feeds represented here.</p>
+              <div className="rounded-[1rem] border border-borderc bg-surface/70 px-4 py-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Sections</p>
+                <div className="mt-1 flex items-end justify-between gap-3">
+                  <p className="font-mono text-[1.55rem] font-bold leading-none text-text">{announcementPreviewCount(items)}</p>
+                  <p className="text-[11px] text-text-secondary">Distinct feeds</p>
+                </div>
               </div>
-              <div className="rounded-[1.25rem] border border-borderc bg-surface/70 p-4">
-                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary">Mode</p>
-                <p className="mt-2 font-mono text-3xl font-bold text-text">{isProfessor ? "Post" : "Read"}</p>
-                <p className="mt-1 text-xs text-text-secondary">
-                  {isProfessor ? "Compose and remove section updates you own." : "Follow updates across your enrolled courses."}
-                </p>
+              <div className="rounded-[1rem] border border-borderc bg-surface/70 px-4 py-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Mode</p>
+                <div className="mt-1 flex items-end justify-between gap-3">
+                  <p className="font-mono text-[1.55rem] font-bold leading-none text-text">{isProfessor ? "Post" : "Read"}</p>
+                  <p className="text-[11px] text-text-secondary">{isProfessor ? "Owner tools" : "Feed view"}</p>
+                </div>
               </div>
             </div>
           </div>
 
           <Card className="overflow-hidden border-borderc/80 bg-[linear-gradient(180deg,hsl(var(--surface)/0.92),hsl(var(--surface-raised)/0.82))]">
-            <CardBody className="space-y-4 p-5 sm:p-6">
+            <CardBody className="space-y-3.5 p-4">
               <div className="flex items-center gap-3">
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-brand-2/35 bg-brand-2/10 text-brand-2">
-                  <Megaphone className="h-5 w-5" />
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-[1rem] border border-brand-2/35 bg-brand-2/10 text-brand-2">
+                  <Megaphone className="h-[18px] w-[18px]" />
                 </span>
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">Feed posture</p>
-                  <p className="text-lg font-semibold text-text">One stream, section-aware.</p>
+                  <p className="text-[1.05rem] font-semibold text-text">One feed, section-aware.</p>
                 </div>
               </div>
 
-              <div className="grid gap-3 text-sm text-text-secondary">
-                <div className="rounded-[1rem] border border-borderc bg-soft px-4 py-3">
+              <div className="grid gap-2.5 text-[13px] text-text-secondary">
+                <div className="rounded-[0.95rem] border border-borderc bg-soft px-4 py-3">
                   Professors post to one section at a time so announcements do not bleed across unrelated classes.
                 </div>
-                <div className="rounded-[1rem] border border-borderc bg-soft px-4 py-3">
+                <div className="rounded-[0.95rem] border border-borderc bg-soft px-4 py-3">
                   Students get a course-specific feed instead of a generic global message center.
                 </div>
-                <div className="rounded-[1rem] border border-borderc bg-soft px-4 py-3">
+                <div className="rounded-[0.95rem] border border-borderc bg-soft px-4 py-3">
                   Email delivery can be enabled when the message needs immediate attention.
                 </div>
               </div>
