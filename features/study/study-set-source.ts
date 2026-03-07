@@ -126,19 +126,67 @@ async function isProfessorSet(
 async function canAccessProfessorSetFromSection(
   client: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>,
   setId: string,
-  sectionId?: string
+  sectionId?: string,
+  quizCourseId?: string
 ) {
   if (!sectionId) return false;
 
-  const { data, error } = await client
+  const { data: assignmentRows, error: assignmentError } = await client
     .from("assignments")
     .select("id")
     .eq("quiz_set_id", setId)
     .eq("section_id", sectionId)
     .limit(1);
 
-  if (error) return false;
-  return (data?.length ?? 0) > 0;
+  if (!assignmentError && (assignmentRows?.length ?? 0) > 0) return true;
+
+  const { data: examRows, error: examError } = await client
+    .from("exams")
+    .select("id")
+    .eq("quiz_set_id", setId)
+    .eq("section_id", sectionId)
+    .limit(1);
+
+  if (!examError && (examRows?.length ?? 0) > 0) return true;
+
+  const { data: linkedRows, error: linkError } = await client
+    .from("section_quiz_sets")
+    .select("quiz_set_id")
+    .eq("section_id", sectionId)
+    .eq("quiz_set_id", setId)
+    .limit(1);
+
+  if (!linkError && (linkedRows?.length ?? 0) > 0) return true;
+
+  if (!quizCourseId) return false;
+
+  const [{ data: authData }, { data: sectionRow, error: sectionError }] = await Promise.all([
+    client.auth.getUser(),
+    client
+      .from("class_sections")
+      .select("course_id, created_by, owner_id")
+      .eq("id", sectionId)
+      .maybeSingle()
+  ]);
+
+  const userId = authData.user?.id;
+  if (!userId || sectionError || !sectionRow || sectionRow.course_id !== quizCourseId) {
+    return false;
+  }
+
+  if (sectionRow.created_by === userId || sectionRow.owner_id === userId) {
+    return true;
+  }
+
+  const { data: membershipRow, error: membershipError } = await client
+    .from("section_members")
+    .select("role")
+    .eq("section_id", sectionId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (membershipError || !membershipRow) return false;
+  return membershipRow.role === "professor" || membershipRow.role === "ta";
 }
 
 export async function fetchPublishedStudySet(
@@ -161,7 +209,12 @@ export async function fetchPublishedStudySet(
 
   const professorOwned = await isProfessorSet(client, setId);
   if (professorOwned) {
-    const allowed = await canAccessProfessorSetFromSection(client, setId, options?.sectionId);
+    const allowed = await canAccessProfessorSetFromSection(
+      client,
+      setId,
+      options?.sectionId,
+      quizRow.course_id
+    );
     if (!allowed) return null;
   }
 
