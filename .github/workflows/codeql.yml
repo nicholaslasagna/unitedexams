@@ -15,7 +15,43 @@ permissions:
   security-events: write
 
 jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code_scanning_enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - name: Check code scanning availability
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.request("GET /repos/{owner}/{repo}/code-scanning/alerts", {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 1
+              });
+              core.info("GitHub code scanning API is available for this repository.");
+              core.setOutput("enabled", "true");
+            } catch (error) {
+              const status = error?.status ?? 0;
+              const message = String(error?.message ?? "");
+
+              if (status === 403 || status === 404) {
+                core.notice(
+                  "Skipping CodeQL upload because GitHub code scanning is not enabled or not available to this workflow. Enable code scanning in repository settings if you want SARIF results published."
+                );
+                core.setOutput("enabled", "false");
+                return;
+              }
+
+              throw error;
+            }
+
   analyze:
+    needs: preflight
+    if: needs.preflight.outputs.code_scanning_enabled == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -30,12 +66,23 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@v4
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
+
+  skipped:
+    needs: preflight
+    if: needs.preflight.outputs.code_scanning_enabled != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: CodeQL skipped
+        run: |
+          echo "CodeQL was skipped because GitHub code scanning is not enabled or not available to this workflow."
+          echo "Enable code scanning in repository settings to publish SARIF results."

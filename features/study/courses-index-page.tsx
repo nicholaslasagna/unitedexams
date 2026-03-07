@@ -29,11 +29,13 @@ function withPrefix(routePrefix: string, path: string) {
 export function CoursesIndexContent({
   routePrefix,
   title = "Course Catalog",
-  subtitle = "Structured quiz sets, notes, cheat sheets, and resources across your core classes."
+  subtitle = "Structured quiz sets, notes, cheat sheets, and resources across your core classes.",
+  showHeader = true
 }: {
   routePrefix: string;
   title?: string;
   subtitle?: string;
+  showHeader?: boolean;
 }) {
   const { attempts, isAuthenticated, supabase, user, profile } = useAppData();
   const [search, setSearch] = useState("");
@@ -93,10 +95,12 @@ export function CoursesIndexContent({
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <section>
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-display-lg">{title}</h1>
-        <p className="mt-2 max-w-2xl text-sm text-muted text-text-secondary sm:text-base">{subtitle}</p>
-      </section>
+      {showHeader ? (
+        <section>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-display-lg">{title}</h1>
+          <p className="mt-2 max-w-2xl text-sm text-muted text-text-secondary sm:text-base">{subtitle}</p>
+        </section>
+      ) : null}
 
       <Card>
         <CardBody className="grid gap-3 p-4 md:grid-cols-[1fr_auto_auto] md:items-center">

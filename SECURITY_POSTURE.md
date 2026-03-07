@@ -255,7 +255,7 @@ Recommended direction:
 
 ### 5. No evidence of CI/CD security automation
 
-There is no `.github/` pipeline in this repo and no visible CodeQL, secret scanning, dependency scanning, Semgrep, or container/image scanning configuration.
+This was true before the 2026-03-06 hardening pass. The repository now includes GitHub Actions for lint, typecheck, dependency audit, Dependabot, and a conditional CodeQL workflow. CodeQL publishing still depends on GitHub code scanning being enabled and available for the repository plan.
 
 Risk:
 

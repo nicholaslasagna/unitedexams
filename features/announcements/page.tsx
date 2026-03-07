@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Trash2 } from "lucide-react";
+import { BellRing, Mail, Megaphone, Send, Trash2 } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Markdown } from "@/components/ui/markdown";
 import { useAppData } from "@/lib/app-data-context";
 import { isVerifiedProfessor } from "@/lib/auth/roles";
@@ -17,6 +18,10 @@ import {
   type AnnouncementFeedItem
 } from "@/features/announcements/api";
 import { listProfessorSections, type SectionSummary } from "@/features/professor/api";
+
+function announcementPreviewCount(items: AnnouncementFeedItem[]) {
+  return new Set(items.map((item) => item.section_id)).size;
+}
 
 export function AnnouncementsPageContent() {
   const { supabase, profile } = useAppData();
@@ -43,7 +48,33 @@ export function AnnouncementsPageContent() {
     if (!feedSectionId || feedSectionId === "all") return sorted;
     return sorted.filter((item) => item.section_id === feedSectionId);
   }, [feedSectionId, items]);
+
   const manageableSectionIds = useMemo(() => new Set(sections.map((section) => section.id)), [sections]);
+  const sectionOptions = useMemo(() => {
+    const byId = new Map<string, { id: string; label: string }>();
+
+    for (const section of sections) {
+      byId.set(section.id, {
+        id: section.id,
+        label: `${section.name} (${section.course_id})`
+      });
+    }
+
+    for (const item of items) {
+      if (!byId.has(item.section_id)) {
+        byId.set(item.section_id, {
+          id: item.section_id,
+          label: `${item.section_name} (${item.course_id})`
+        });
+      }
+    }
+
+    return Array.from(byId.values());
+  }, [items, sections]);
+  const selectedSection = useMemo(
+    () => sections.find((section) => section.id === selectedSectionId) ?? null,
+    [sections, selectedSectionId]
+  );
 
   const refresh = async () => {
     if (!supabase) {
@@ -59,6 +90,10 @@ export function AnnouncementsPageContent() {
         getMyAnnouncements(supabase, 120),
         listProfessorSections(supabase)
       ]);
+      const accessibleIds = new Set([
+        ...accessibleSections.map((section) => section.id),
+        ...feed.map((item) => item.section_id)
+      ]);
 
       setItems(feed);
       setSections(accessibleSections);
@@ -72,10 +107,10 @@ export function AnnouncementsPageContent() {
       }
 
       setFeedSectionId((current) => {
-        if (current !== "all" && accessibleSections.some((row) => row.id === current)) {
+        if (current !== "all" && accessibleIds.has(current)) {
           return current;
         }
-        if (sectionFromQuery && accessibleSections.some((row) => row.id === sectionFromQuery)) {
+        if (sectionFromQuery && accessibleIds.has(sectionFromQuery)) {
           return sectionFromQuery;
         }
         return "all";
@@ -142,21 +177,87 @@ export function AnnouncementsPageContent() {
   };
 
   return (
-    <div className="space-y-6">
-      <section>
-        <h1 className="text-display-lg font-semibold tracking-tight">Announcements</h1>
-        <p className="mt-2 text-sm text-text-secondary">
-          Section updates from your instructors and grade notifications.
-        </p>
+    <div className="space-y-6 md:space-y-8">
+      <section className="mesh-hero overflow-hidden rounded-[2rem] border border-borderc/80 bg-surface/65 shadow-[0_24px_80px_hsl(var(--bg)/0.4)] backdrop-blur-xl">
+        <div className="grid gap-5 p-5 sm:p-6 xl:grid-cols-[1.2fr_0.8fr] xl:p-8">
+          <div className="space-y-5">
+            <span className="inline-flex rounded-full border border-brand-2/35 bg-brand-2/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-2">
+              Section communication
+            </span>
+            <div className="space-y-3">
+              <h1 className="max-w-[12ch] text-4xl font-display font-semibold leading-[0.96] tracking-tight text-text sm:text-5xl">
+                Announcements that feel attached to the actual class.
+              </h1>
+              <p className="max-w-2xl text-sm leading-relaxed text-text-secondary sm:text-base">
+                {isProfessor
+                  ? "Post updates to a specific section, decide whether students get an email, and keep the feed tied to the class it belongs to."
+                  : "Track course-specific updates from instructors without digging through unrelated notifications or generic inbox noise."}
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-[1.25rem] border border-borderc bg-surface/70 p-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary">Feed items</p>
+                <p className="mt-2 font-mono text-3xl font-bold text-text">{items.length}</p>
+                <p className="mt-1 text-xs text-text-secondary">Recent updates in your accessible sections.</p>
+              </div>
+              <div className="rounded-[1.25rem] border border-borderc bg-surface/70 p-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary">Sections</p>
+                <p className="mt-2 font-mono text-3xl font-bold text-text">{announcementPreviewCount(items)}</p>
+                <p className="mt-1 text-xs text-text-secondary">Distinct section feeds represented here.</p>
+              </div>
+              <div className="rounded-[1.25rem] border border-borderc bg-surface/70 p-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary">Mode</p>
+                <p className="mt-2 font-mono text-3xl font-bold text-text">{isProfessor ? "Post" : "Read"}</p>
+                <p className="mt-1 text-xs text-text-secondary">
+                  {isProfessor ? "Compose and remove section updates you own." : "Follow updates across your enrolled courses."}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <Card className="overflow-hidden border-borderc/80 bg-[linear-gradient(180deg,hsl(var(--surface)/0.92),hsl(var(--surface-raised)/0.82))]">
+            <CardBody className="space-y-4 p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-brand-2/35 bg-brand-2/10 text-brand-2">
+                  <Megaphone className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">Feed posture</p>
+                  <p className="text-lg font-semibold text-text">One stream, section-aware.</p>
+                </div>
+              </div>
+
+              <div className="grid gap-3 text-sm text-text-secondary">
+                <div className="rounded-[1rem] border border-borderc bg-soft px-4 py-3">
+                  Professors post to one section at a time so announcements do not bleed across unrelated classes.
+                </div>
+                <div className="rounded-[1rem] border border-borderc bg-soft px-4 py-3">
+                  Students get a course-specific feed instead of a generic global message center.
+                </div>
+                <div className="rounded-[1rem] border border-borderc bg-soft px-4 py-3">
+                  Email delivery can be enabled when the message needs immediate attention.
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+        </div>
       </section>
 
-      {isProfessor ? (
-        <Card>
-          <CardHeader>
-            <h2 className="text-heading font-semibold">Post announcement</h2>
-          </CardHeader>
-          <CardBody className="space-y-3">
-            <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
+        {isProfessor ? (
+          <Card className="overflow-hidden">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-brand-2/35 bg-brand-2/10 text-brand-2">
+                  <Send className="h-4 w-4" />
+                </span>
+                <div>
+                  <h2 className="text-heading font-semibold">Post to a section</h2>
+                  <p className="mt-1 text-sm text-text-secondary">Choose the exact section, then decide whether the same message should also go out by email.</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardBody className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Section</label>
                 <select
@@ -173,6 +274,13 @@ export function AnnouncementsPageContent() {
                 </select>
               </div>
 
+              {selectedSection ? (
+                <div className="rounded-[1rem] border border-brand-2/30 bg-brand-2/10 px-4 py-3 text-sm text-text-secondary">
+                  Posting to <span className="font-semibold text-text">{selectedSection.name}</span>
+                  {selectedSection.term ? ` · ${selectedSection.term}` : ""}.
+                </div>
+              ) : null}
+
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Title</label>
                 <Input
@@ -182,113 +290,132 @@ export function AnnouncementsPageContent() {
                   maxLength={160}
                 />
               </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Message</label>
+                <textarea
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
+                  className="min-h-40 w-full rounded-[14px] border border-borderc bg-surface px-3 py-3 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
+                  placeholder="Please bring a calculator. Homework 4 is now due Friday at 5 PM."
+                />
+              </div>
+
+              <label className="flex items-center gap-2 rounded-[1rem] border border-borderc bg-soft px-3 py-3 text-sm text-muted">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-[hsl(var(--brand-2))]"
+                  checked={sendEmail}
+                  onChange={(event) => setSendEmail(event.target.checked)}
+                />
+                <Mail className="h-4 w-4 text-brand-2" />
+                Email enrolled students in this section
+              </label>
+
+              <Button onClick={submitAnnouncement} loading={posting} loadingLabel="Posting announcement...">
+                Post announcement
+              </Button>
+            </CardBody>
+          </Card>
+        ) : null}
+
+        <Card className="overflow-hidden">
+          <CardHeader>
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 className="text-heading font-semibold">Recent announcements</h2>
+                <p className="mt-1 text-sm text-text-secondary">Filter by section when you want the feed scoped to one class.</p>
+              </div>
+              {sectionOptions.length > 0 ? (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Section filter</label>
+                  <select
+                    value={feedSectionId}
+                    onChange={(event) => setFeedSectionId(event.target.value)}
+                    className="h-10 min-w-64 rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
+                  >
+                    <option value="all">All sections</option>
+                    {sectionOptions.map((section) => (
+                      <option key={section.id} value={section.id}>
+                        {section.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
             </div>
+          </CardHeader>
+          <CardBody className="space-y-4">
+            {loading ? (
+              <p className="text-sm text-muted">Loading announcements…</p>
+            ) : visibleItems.length === 0 ? (
+              <div className="rounded-[1.1rem] border border-borderc bg-soft p-6 text-sm text-muted">
+                No announcements yet. New section updates will appear here.
+              </div>
+            ) : (
+              visibleItems.map((item, idx) => (
+                <article
+                  key={item.announcement_id}
+                  className={`rounded-[1.25rem] border border-borderc bg-soft p-4 transition-all duration-200 ease-out-expo hover:border-border-accent hover:shadow-card-hover stagger-${(idx % 6) + 1}`}
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        <Badge tone="brand">{item.course_id}</Badge>
+                        <Badge>{item.section_name}</Badge>
+                      </div>
+                      <div>
+                        <p className="text-lg font-semibold text-text">{item.title}</p>
+                        <p className="mt-1 text-xs text-text-secondary">
+                          Posted by {item.posted_by_name} · {new Date(item.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-borderc bg-surface/70 text-brand-2">
+                        <BellRing className="h-4 w-4" />
+                      </span>
+                      {isProfessor && manageableSectionIds.has(item.section_id) ? (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          loading={deletingId === item.announcement_id}
+                          loadingLabel="Removing"
+                          disabled={Boolean(deletingId)}
+                          onClick={async () => {
+                            if (deletingId) return;
+                            setDeletingId(item.announcement_id);
+                            try {
+                              await deleteSectionAnnouncement(item.announcement_id);
+                              push({ title: "Announcement removed", tone: "success" });
+                              await refresh();
+                            } catch (error) {
+                              push({
+                                title: "Unable to remove announcement",
+                                description: (error as Error).message,
+                                tone: "error"
+                              });
+                            } finally {
+                              setDeletingId(null);
+                            }
+                          }}
+                          aria-label="Remove announcement"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      ) : null}
+                    </div>
+                  </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Message</label>
-              <textarea
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
-                className="min-h-32 w-full rounded-[10px] border border-borderc bg-surface px-3 py-2 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
-                placeholder="Please bring a calculator. Homework 4 is now due Friday at 5 PM."
-              />
-            </div>
-
-            <label className="flex items-center gap-2 text-sm text-muted">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-[hsl(var(--brand-2))]"
-                checked={sendEmail}
-                onChange={(event) => setSendEmail(event.target.checked)}
-              />
-              Email enrolled students
-            </label>
-
-            <Button onClick={submitAnnouncement} loading={posting}>
-              Post announcement
-            </Button>
+                  <div className="mt-4 rounded-[1rem] border border-borderc bg-surface/70 p-4 text-sm text-text-secondary">
+                    <Markdown content={item.message_md} />
+                  </div>
+                </article>
+              ))
+            )}
           </CardBody>
         </Card>
-      ) : null}
-
-      <Card>
-        <CardHeader>
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <h2 className="text-heading font-semibold">Recent announcements</h2>
-            {sections.length > 0 ? (
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Section filter</label>
-                <select
-                  value={feedSectionId}
-                  onChange={(event) => setFeedSectionId(event.target.value)}
-                  className="h-10 min-w-64 rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
-                >
-                  <option value="all">All sections</option>
-                  {sections.map((section) => (
-                    <option key={section.id} value={section.id}>
-                      {section.name} ({section.course_id})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : null}
-          </div>
-        </CardHeader>
-        <CardBody className="space-y-3">
-          {loading ? (
-            <p className="text-sm text-muted">Loading announcements…</p>
-          ) : visibleItems.length === 0 ? (
-            <p className="text-sm text-muted">
-              No announcements yet. New section updates will appear here.
-            </p>
-          ) : (
-            visibleItems.map((item) => (
-              <article key={item.announcement_id} className="rounded-xl border border-borderc bg-soft p-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-text">{item.title}</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted">{new Date(item.created_at).toLocaleString()}</span>
-                    {isProfessor && manageableSectionIds.has(item.section_id) ? (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        loading={deletingId === item.announcement_id}
-                        disabled={Boolean(deletingId)}
-                        onClick={async () => {
-                          if (deletingId) return;
-                          setDeletingId(item.announcement_id);
-                          try {
-                            await deleteSectionAnnouncement(item.announcement_id);
-                            push({ title: "Announcement removed", tone: "success" });
-                            await refresh();
-                          } catch (error) {
-                            push({
-                              title: "Unable to remove announcement",
-                              description: (error as Error).message,
-                              tone: "error"
-                            });
-                          } finally {
-                            setDeletingId(null);
-                          }
-                        }}
-                        aria-label="Remove announcement"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    ) : null}
-                  </div>
-                </div>
-                <p className="mt-1 text-xs text-muted">
-                  {item.section_name} · {item.course_id} · {item.posted_by_name}
-                </p>
-                <div className="prose prose-sm mt-3 max-w-none text-text prose-p:my-2">
-                  <Markdown content={item.message_md} />
-                </div>
-              </article>
-            ))
-          )}
-        </CardBody>
-      </Card>
+      </div>
     </div>
   );
 }

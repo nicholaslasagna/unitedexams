@@ -1,70 +1,148 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { ShieldCheck, Sparkles } from "lucide-react";
 import { ConstellationPattern } from "@/components/ui/constellation-pattern";
+import { cn } from "@/lib/utils";
+
+interface AuthHeroStat {
+  label: string;
+  value: string;
+  detail?: string;
+}
 
 export function AuthShell({
   title,
   subtitle,
   children,
-  footer
+  footer,
+  eyebrow = "Focused academic workspace",
+  heroTitle = (
+    <>
+      Study smarter. Test <span className="text-gradient">stronger.</span>
+    </>
+  ),
+  heroDescription = "Guided walkthroughs, rigorous exam practice, and progress analytics with a calm, high-focus experience.",
+  heroStats = [
+    { label: "Modes", value: "Study + Timed", detail: "Quizzes, homework, and exam prep" },
+    { label: "Momentum", value: "Streak-ready", detail: "Progress stays visible every day" },
+    { label: "Security", value: "Verified", detail: "Protected sign-in and gated workflows" }
+  ],
+  heroAside,
+  heroFooter,
+  className
 }: {
   title: string;
   subtitle: string;
   children: ReactNode;
   footer?: ReactNode;
+  eyebrow?: string;
+  heroTitle?: ReactNode;
+  heroDescription?: string;
+  heroStats?: AuthHeroStat[];
+  heroAside?: ReactNode;
+  heroFooter?: ReactNode;
+  className?: string;
 }) {
+  const defaultAside = (
+    <div className="space-y-4">
+      <div className="rounded-[1.35rem] border border-borderc bg-surface/80 p-4 shadow-subtle backdrop-blur-sm">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-2">Session posture</p>
+            <p className="mt-2 text-lg font-semibold text-text">Quiet, fast, and account-aware.</p>
+          </div>
+          <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-brand-2/35 bg-brand-2/10 text-brand-2">
+            <ShieldCheck className="h-5 w-5" />
+          </span>
+        </div>
+        <div className="mt-4 grid gap-2 text-sm text-text-secondary">
+          <div className="rounded-xl border border-borderc bg-soft px-3 py-2">University-scoped access and verified professor workflows.</div>
+          <div className="rounded-xl border border-borderc bg-soft px-3 py-2">Adaptive study modes, notes, homework, and exam simulations in one place.</div>
+          <div className="rounded-xl border border-borderc bg-soft px-3 py-2">Low-friction recovery and approval flows when security checks are triggered.</div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-bg px-4 py-10 text-text">
-      {/* Background layers */}
+    <div className="relative min-h-screen overflow-hidden bg-bg px-4 py-6 text-text sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       <div className="ambient-glow" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,hsl(var(--brand-1)/0.18),transparent_48%),radial-gradient(circle_at_bottom_right,hsl(var(--brand-3)/0.12),transparent_42%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,hsl(var(--brand-1)/0.18),transparent_44%),radial-gradient(circle_at_bottom_right,hsl(var(--brand-3)/0.14),transparent_40%),linear-gradient(180deg,hsl(var(--bg)),hsl(var(--bg)/0.96))]" />
       <ConstellationPattern className="fixed" opacity={0.03} variant="default" />
 
-      <div className="relative z-[1] mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-[1180px] items-center justify-center">
-        <div className="grid w-full max-w-[980px] gap-6 rounded-[28px] border border-borderc bg-surface/90 p-4 shadow-elevated backdrop-blur-2xl animate-scale-spring lg:grid-cols-[1.1fr_0.9fr] lg:p-8">
+      <div className="relative z-[1] mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-[1280px] items-center justify-center">
+        <div className={cn("grid w-full gap-5 rounded-[2rem] border border-borderc/80 bg-surface/70 p-3 shadow-[0_24px_90px_hsl(var(--bg)/0.48)] backdrop-blur-2xl lg:grid-cols-[1.08fr_0.92fr] lg:p-5", className)}>
+          <section className="mesh-hero relative overflow-hidden rounded-[1.7rem] border border-borderc/70 bg-[linear-gradient(145deg,hsl(var(--surface-raised)/0.95),hsl(var(--surface)/0.8))] p-5 sm:p-6 lg:p-8">
+            <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,hsl(var(--brand-2)/0.18),transparent_70%)]" />
+            <div className="relative flex h-full flex-col justify-between gap-6">
+              <div className="space-y-6">
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-3 rounded-2xl border border-borderc/70 bg-surface/75 px-3 py-2 transition-colors duration-150 hover:bg-overlay"
+                >
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-gradient text-accent-fg shadow-soft">
+                    <Sparkles className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <p className="font-display text-base font-semibold text-text">United Exams</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted">Academic Premium</p>
+                  </span>
+                </Link>
 
-          {/* Branded sidebar — desktop only */}
-          <section className="hidden rounded-[22px] border border-borderc bg-gradient-to-br from-[hsl(var(--brand-1)/0.22)] via-[hsl(var(--brand-2)/0.16)] to-transparent p-8 lg:flex lg:flex-col lg:justify-between">
-            <div>
-              <Link href="/" className="inline-flex items-center gap-2 rounded-xl border border-border-bright bg-soft px-3 py-2 transition-colors duration-150 hover:bg-overlay">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand-gradient text-accent-fg shadow-soft">
-                  <Sparkles className="h-4 w-4" />
+                <div className="space-y-4">
+                  <span className="inline-flex rounded-full border border-brand-2/35 bg-brand-2/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-2">
+                    {eyebrow}
+                  </span>
+                  <h1 className="max-w-[13ch] text-4xl font-display font-semibold leading-[0.96] tracking-tight text-text sm:max-w-[11ch] sm:text-5xl lg:text-6xl">
+                    {heroTitle}
+                  </h1>
+                  <p className="max-w-[34rem] text-sm leading-relaxed text-text-secondary sm:text-base">
+                    {heroDescription}
+                  </p>
+                </div>
+
+                {heroStats?.length ? (
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    {heroStats.map((stat) => (
+                      <div key={stat.label} className="rounded-[1.25rem] border border-borderc bg-surface/70 p-4 backdrop-blur-sm">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary">{stat.label}</p>
+                        <p className="mt-2 font-mono text-2xl font-bold text-text sm:text-3xl">{stat.value}</p>
+                        {stat.detail ? <p className="mt-1 text-xs text-text-secondary">{stat.detail}</p> : null}
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="space-y-4">
+                {heroAside ?? defaultAside}
+                {heroFooter ? <div className="text-xs text-text-secondary">{heroFooter}</div> : null}
+                <p className="text-center text-xs text-faint">© {new Date().getFullYear()} Imagicast Studios</p>
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-[1.7rem] border border-borderc/70 bg-[linear-gradient(180deg,hsl(var(--surface)/0.92),hsl(var(--surface-raised)/0.82))] p-5 shadow-subtle backdrop-blur-xl sm:p-6 lg:p-8">
+            <div className="mb-5 lg:hidden">
+              <Link href="/" className="inline-flex items-center gap-2 rounded-xl border border-borderc bg-soft px-3 py-2">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-brand-gradient text-accent-fg">
+                  <Sparkles className="h-3.5 w-3.5" />
                 </span>
                 <span>
                   <p className="font-display text-base font-semibold text-text">United Exams</p>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted">Academic Premium</p>
                 </span>
               </Link>
-              <h1 className="mt-8 max-w-[14ch] font-display text-4xl font-semibold leading-tight text-text">
-                Study smarter. Test{" "}
-                <span className="text-gradient">stronger.</span>
-              </h1>
-              <p className="mt-4 max-w-[34ch] text-sm leading-relaxed text-text-secondary">
-                Guided walkthroughs, rigorous exam practice, and progress analytics with a calm, high-focus experience.
-              </p>
             </div>
-            <p className="text-center text-xs text-faint">© {new Date().getFullYear()} Imagicast Studios</p>
-          </section>
 
-          {/* Form area */}
-          <section className="rounded-[22px] border border-borderc bg-surface/80 p-6 backdrop-blur-xl md:p-8">
-            {/* Mobile logo */}
-            <Link href="/" className="mb-4 inline-flex items-center gap-2 lg:hidden">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-brand-gradient text-accent-fg">
-                <Sparkles className="h-3.5 w-3.5" />
-              </span>
-              <span className="font-display text-base font-semibold text-text">United Exams</span>
-            </Link>
-
-            <h2 className="font-display text-display-lg tracking-tight text-text">{title}</h2>
-            <p className="mt-2 text-sm text-text-secondary">{subtitle}</p>
+            <div className="space-y-3">
+              <h2 className="font-display text-3xl font-semibold tracking-tight text-text sm:text-display-lg">{title}</h2>
+              <p className="max-w-[34rem] text-sm leading-relaxed text-text-secondary sm:text-base">{subtitle}</p>
+            </div>
 
             <div className="mt-6 space-y-4">{children}</div>
 
-            {footer ? (
-              <div className="mt-6 border-t border-borderc pt-4 text-sm text-muted">{footer}</div>
-            ) : null}
+            {footer ? <div className="mt-6 border-t border-borderc pt-4 text-sm text-muted">{footer}</div> : null}
           </section>
         </div>
       </div>
