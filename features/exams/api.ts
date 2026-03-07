@@ -227,6 +227,13 @@ export async function updateExam(
   return result.exam;
 }
 
+export async function deleteExam(_client: SupabaseClient, examId: string) {
+  const response = await fetch(`/api/professor/exams/${examId}`, {
+    method: "DELETE"
+  });
+  await parseJsonResponse<{ ok: true }>(response, "Unable to delete exam.");
+}
+
 export async function upsertExamAccessRules(
   _client: SupabaseClient,
   payload: {

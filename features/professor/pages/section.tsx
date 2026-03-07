@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { Trash2 } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,8 @@ import { isVerifiedProfessor } from "@/lib/auth/roles";
 import { useToast } from "@/lib/hooks/use-toast";
 import {
   deleteProfessorSection,
+  deleteProfessorQuizSet,
+  deleteSectionAssignment,
   createSectionAssignment,
   getSectionAnalytics,
   listCourseQuizSetsForProfessorTools,
@@ -25,6 +28,7 @@ import {
   type SectionSummary
 } from "@/features/professor/api";
 import { listSectionExams, type ExamRow } from "@/features/exams/api";
+import { deleteExam } from "@/features/exams/api";
 
 export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {}) {
   const router = useRouter();
@@ -44,6 +48,9 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
   const [availableQuizSets, setAvailableQuizSets] = useState<SectionQuizSetOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [submittingAssignmentId, setSubmittingAssignmentId] = useState<string | null>(null);
+  const [deletingAssignmentId, setDeletingAssignmentId] = useState<string | null>(null);
+  const [deletingQuizSetId, setDeletingQuizSetId] = useState<string | null>(null);
+  const [deletingExamId, setDeletingExamId] = useState<string | null>(null);
 
   const [quizSetId, setQuizSetId] = useState("");
   const [assignmentTitle, setAssignmentTitle] = useState("");
@@ -407,9 +414,46 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
                           </p>
                         </div>
                         {isProfessor ? (
-                          <Button size="sm" variant={isHighlighted ? "primary" : "secondary"} onClick={() => setQuizSetId(set.id)}>
-                            Use for assignment
-                          </Button>
+                          <div className="flex flex-wrap gap-2">
+                            <Button size="sm" variant={isHighlighted ? "primary" : "secondary"} onClick={() => setQuizSetId(set.id)}>
+                              Use for assignment
+                            </Button>
+                            {set.professorBuilt ? (
+                              <Button
+                                size="sm"
+                                variant="danger"
+                                loading={deletingQuizSetId === set.id}
+                                loadingLabel="Deleting..."
+                                onClick={async () => {
+                                  if (!supabase) return;
+                                  const confirmed = window.confirm(
+                                    "Delete this set? This removes its questions and any linked assignments, attempts, and timed exams."
+                                  );
+                                  if (!confirmed) return;
+                                  setDeletingQuizSetId(set.id);
+                                  try {
+                                    await deleteProfessorQuizSet(supabase, set.id);
+                                    push({ title: "Quiz set deleted", tone: "success" });
+                                    if (quizSetId === set.id) {
+                                      setQuizSetId("");
+                                    }
+                                    await refresh();
+                                  } catch (error) {
+                                    push({
+                                      title: "Unable to delete quiz set",
+                                      description: (error as Error).message,
+                                      tone: "error"
+                                    });
+                                  } finally {
+                                    setDeletingQuizSetId(null);
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Delete set
+                              </Button>
+                            ) : null}
+                          </div>
                         ) : (
                           <Button size="sm" variant="secondary" asChild>
                             <Link href={`/quiz/${set.id}?section=${resolvedSectionId}`}>Open set</Link>
@@ -469,7 +513,38 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
                       >
                         Submit latest attempt
                       </Button>
-                    ) : null}
+                    ) : (
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        loading={deletingAssignmentId === assignment.id}
+                        loadingLabel="Deleting..."
+                        onClick={async () => {
+                          if (!supabase) return;
+                          const confirmed = window.confirm(
+                            "Delete this assignment? Student submissions tied to it will be removed."
+                          );
+                          if (!confirmed) return;
+                          setDeletingAssignmentId(assignment.id);
+                          try {
+                            await deleteSectionAssignment(supabase, assignment.id);
+                            push({ title: "Assignment deleted", tone: "success" });
+                            await refresh();
+                          } catch (error) {
+                            push({
+                              title: "Unable to delete assignment",
+                              description: (error as Error).message,
+                              tone: "error"
+                            });
+                          } finally {
+                            setDeletingAssignmentId(null);
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete assignment
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))
@@ -512,6 +587,36 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
                         </Button>
                         <Button size="sm" variant="secondary" asChild>
                           <Link href={`/app/professor/exams/${exam.id}/monitor`}>Monitor</Link>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          loading={deletingExamId === exam.id}
+                          loadingLabel="Deleting..."
+                          onClick={async () => {
+                            if (!supabase) return;
+                            const confirmed = window.confirm(
+                              "Delete this exam? Attempts, monitoring events, and access rules will be removed."
+                            );
+                            if (!confirmed) return;
+                            setDeletingExamId(exam.id);
+                            try {
+                              await deleteExam(supabase, exam.id);
+                              push({ title: "Exam deleted", tone: "success" });
+                              await refresh();
+                            } catch (error) {
+                              push({
+                                title: "Unable to delete exam",
+                                description: (error as Error).message,
+                                tone: "error"
+                              });
+                            } finally {
+                              setDeletingExamId(null);
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete
                         </Button>
                       </>
                     ) : null}
