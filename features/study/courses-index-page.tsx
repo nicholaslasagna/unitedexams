@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Filter, Search } from "lucide-react";
 import { courses, quizSets } from "@/data/seed";
@@ -37,6 +38,7 @@ export function CoursesIndexContent({
   subtitle?: string;
   showHeader?: boolean;
 }) {
+  const router = useRouter();
   const { attempts, isAuthenticated, supabase, user, profile } = useAppData();
   const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState<string>("all");
@@ -167,9 +169,27 @@ export function CoursesIndexContent({
             ? `/app/sections/${selectedSectionId}/materials`
             : withPrefix(routePrefix, `/courses/${course.id}`);
           const artworkSrc = courseArtworkById[course.id] ?? "/images/courses/default-course.svg";
+          const openPrimary = () => {
+            router.push(primaryHref);
+          };
           return (
-            <Card key={course.id} className={`group overflow-hidden transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-${(idx % 6) + 1}`}>
-              <CardBody className="space-y-5 p-5 sm:p-6">
+            <Card
+              key={course.id}
+              className={`group cursor-pointer overflow-hidden transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent focus-within:border-border-accent focus-within:shadow-card-hover stagger-${(idx % 6) + 1}`}
+              onClick={openPrimary}
+            >
+              <CardBody
+                className="space-y-5 p-5 sm:p-6"
+                role="link"
+                tabIndex={0}
+                aria-label={`${primaryLabel} for ${course.name}`}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    openPrimary();
+                  }
+                }}
+              >
                 <div className="space-y-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -217,7 +237,10 @@ export function CoursesIndexContent({
                 </div>
 
                 {hasCourseSections ? (
-                  <div className="space-y-2 rounded-[1.2rem] border border-brand-2/30 bg-brand-2/10 p-3">
+                  <div
+                    className="space-y-2 rounded-[1.2rem] border border-brand-2/30 bg-brand-2/10 p-3"
+                    onClick={(event) => event.stopPropagation()}
+                  >
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-2">
                       Your class sections
                     </p>
@@ -249,8 +272,11 @@ export function CoursesIndexContent({
                   </div>
                 ) : null}
 
-                <Button className="w-full justify-between transition-all duration-200 ease-out-expo" asChild>
-                  <Link href={primaryHref}>
+                <Button
+                  className="w-full justify-between transition-all duration-200 ease-out-expo"
+                  asChild
+                >
+                  <Link href={primaryHref} onClick={(event) => event.stopPropagation()}>
                     {primaryLabel}
                     <span aria-hidden>→</span>
                   </Link>

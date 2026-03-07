@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAppData } from "@/lib/app-data-context";
 import { listEnrolledPublishedExams, type ExamRow } from "@/features/exams/api";
 
 export function StudentExamListPage() {
+  const router = useRouter();
   const { supabase } = useAppData();
   const [loading, setLoading] = useState(true);
   const [exams, setExams] = useState<ExamRow[]>([]);
@@ -52,7 +54,20 @@ export function StudentExamListPage() {
             </p>
           ) : (
             exams.map((exam, index) => (
-              <article key={exam.id} className={`rounded-xl border border-borderc bg-soft px-4 py-3 transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-${Math.min(index + 1, 8)}`}>
+              <article
+                key={exam.id}
+                className={`cursor-pointer rounded-xl border border-borderc bg-soft px-4 py-3 transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent focus-within:border-border-accent focus-within:shadow-card-hover stagger-${Math.min(index + 1, 8)}`}
+                role="link"
+                tabIndex={0}
+                aria-label={`Open exam ${exam.title}`}
+                onClick={() => router.push(`/app/exams/${exam.id}`)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    router.push(`/app/exams/${exam.id}`);
+                  }
+                }}
+              >
                 <p className="text-base font-semibold text-text">{exam.title}</p>
                 <p className="mt-1 text-xs text-muted text-text-secondary">
                   Window: {new Date(exam.starts_at).toLocaleString()} → {new Date(exam.ends_at).toLocaleString()}
@@ -62,7 +77,9 @@ export function StudentExamListPage() {
                 </p>
                 <div className="mt-3">
                   <Button asChild>
-                    <Link href={`/app/exams/${exam.id}`}>Open exam</Link>
+                    <Link href={`/app/exams/${exam.id}`} onClick={(event) => event.stopPropagation()}>
+                      Open exam
+                    </Link>
                   </Button>
                 </div>
               </article>
