@@ -25,7 +25,7 @@ export function applyThemeCssVars(input: ThemeVarInput) {
   const saturation = clamp(
     input.accentSaturation ?? THEME_DEFAULTS.accentSaturation,
     38,
-    88
+    95
   );
   const lightness = clamp(
     input.accentLightness ?? THEME_DEFAULTS.accentLightness,

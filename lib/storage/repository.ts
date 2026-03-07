@@ -30,12 +30,12 @@ export const defaultPreferences: AppPreferences = {
   theme: "dark",
   reducedMotion: false,
   confettiEnabled: true,
-  accentHue: 265,
-  accentSaturation: 72,
-  accentLightness: 62,
-  accentStrength: 60,
-  palette: "amethyst",
-  accentPreset: "amethyst",
+  accentHue: 38,
+  accentSaturation: 92,
+  accentLightness: 50,
+  accentStrength: 56,
+  palette: "amber",
+  accentPreset: "amber",
   dashboardLayout: "default",
   extraSigninProtection: false
 };
