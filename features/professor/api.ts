@@ -30,6 +30,14 @@ export interface ProfessorQuizQuestionPayload {
   tags?: string[];
 }
 
+export interface SectionQuizSetOption {
+  id: string;
+  title: string;
+  est_minutes: number;
+  mode: "quiz" | "exam" | "homework" | null;
+  professorBuilt: boolean;
+}
+
 export interface AssignmentRow {
   id: string;
   section_id: string;
@@ -263,6 +271,77 @@ export async function createProfessorQuizSet(
     "Unable to create quiz set."
   );
   return result.quizSetId;
+}
+
+export async function listCourseQuizSetsForProfessorTools(
+  client: SupabaseClient,
+  courseId: string,
+  sectionId?: string
+) {
+  const { data, error } = await client
+    .from("quiz_sets")
+    .select("id, title, est_minutes, mode, created_at")
+    .eq("course_id", courseId)
+    .eq("is_published", true)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+
+  const rows = (data ?? []) as Array<{
+    id: string;
+    title: string;
+    est_minutes: number;
+    mode: "quiz" | "exam" | "homework" | null;
+  }>;
+
+  const setIds = rows.map((row) => row.id);
+  let professorBuiltSetIds = new Set<string>();
+  let linkedSectionSetIds = new Set<string>();
+  let canApplySectionFilter = false;
+
+  if (setIds.length > 0) {
+    const { data: questionRows, error: questionError } = await client
+      .from("questions")
+      .select("quiz_set_id")
+      .in("quiz_set_id", setIds)
+      .eq("from_professor", true);
+
+    if (!questionError && questionRows) {
+      professorBuiltSetIds = new Set(
+        (questionRows as Array<{ quiz_set_id: string }>).map((row) => row.quiz_set_id)
+      );
+    }
+
+    if (sectionId) {
+      const { data: linkedRows, error: linkedError } = await client
+        .from("section_quiz_sets")
+        .select("quiz_set_id")
+        .eq("section_id", sectionId);
+
+      if (!linkedError && linkedRows) {
+        canApplySectionFilter = true;
+        linkedSectionSetIds = new Set(
+          (linkedRows as Array<{ quiz_set_id: string }>).map((row) => row.quiz_set_id)
+        );
+      }
+    }
+  }
+
+  return rows
+    .filter((row) => {
+      const id = String(row.id);
+      const professorBuilt = professorBuiltSetIds.has(id);
+      if (!professorBuilt) return true;
+      if (!sectionId || !canApplySectionFilter) return true;
+      return linkedSectionSetIds.has(id);
+    })
+    .map((row) => ({
+      id: String(row.id),
+      title: row.title,
+      est_minutes: row.est_minutes,
+      mode: row.mode,
+      professorBuilt: professorBuiltSetIds.has(String(row.id))
+    })) satisfies SectionQuizSetOption[];
 }
 
 export async function listSectionAssignments(client: SupabaseClient, sectionId: string) {
