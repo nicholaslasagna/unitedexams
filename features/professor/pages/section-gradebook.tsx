@@ -6,18 +6,54 @@ import { useParams } from "next/navigation";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Markdown } from "@/components/ui/markdown";
 import { useAppData } from "@/lib/app-data-context";
 import { isVerifiedProfessor } from "@/lib/auth/roles";
 import { useToast } from "@/lib/hooks/use-toast";
 import { sendGradeChangeEmailNotice } from "@/features/announcements/api";
 import { getExamMonitor, listSectionExams } from "@/features/exams/api";
 import {
+  getAssignmentSubmissionReview,
   getSectionGradebook,
   listProfessorSections,
   upsertManualGrade,
+  type AssignmentSubmissionReview,
   type SectionGradebookRow,
   type SectionSummary
 } from "@/features/professor/api";
+
+function formatQuestionType(type: string) {
+  switch (type) {
+    case "single":
+      return "Multiple choice";
+    case "multi":
+      return "Multiple answer";
+    case "fill":
+      return "Short response";
+    case "free":
+      return "Free response";
+    default:
+      return type;
+  }
+}
+
+function coerceNumberArray(values: Array<number | string>) {
+  return values
+    .map((value) => (typeof value === "number" ? value : Number.parseInt(String(value), 10)))
+    .filter((value) => Number.isFinite(value));
+}
+
+function optionLabelsFromIndexes(options: string[], values: Array<number | string>) {
+  return coerceNumberArray(values)
+    .map((index) => options[index])
+    .filter((label): label is string => Boolean(label));
+}
+
+function textAnswers(values: Array<number | string>) {
+  return values
+    .map((value) => String(value).trim())
+    .filter((value) => value.length > 0);
+}
 
 export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: string } = {}) {
   const params = useParams<{ id?: string; sectionId?: string }>();
@@ -35,6 +71,9 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
   const [editPointsPossible, setEditPointsPossible] = useState("100");
   const [editFeedback, setEditFeedback] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
+  const [openReviewKey, setOpenReviewKey] = useState<string | null>(null);
+  const [loadingReviewKey, setLoadingReviewKey] = useState<string | null>(null);
+  const [reviewByRowKey, setReviewByRowKey] = useState<Record<string, AssignmentSubmissionReview | undefined>>({});
   const [integrityRows, setIntegrityRows] = useState<
     Array<{
       examId: string;
@@ -181,6 +220,41 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
     setEditPointsEarned(String(roundTwo((percent / 100) * possible)));
   }, []);
 
+  const loadSubmissionReview = useCallback(
+    async (row: SectionGradebookRow, rowKey: string) => {
+      if (!supabase) {
+        push({
+          title: "Unable to load submitted work",
+          description: "Not connected to database.",
+          tone: "error"
+        });
+        return;
+      }
+
+      setLoadingReviewKey(rowKey);
+      try {
+        const review = await getAssignmentSubmissionReview(supabase, {
+          assignmentId: row.assignment_id,
+          studentId: row.student_id
+        });
+        setReviewByRowKey((current) => ({
+          ...current,
+          [rowKey]: review
+        }));
+        setOpenReviewKey(rowKey);
+      } catch (error) {
+        push({
+          title: "Unable to load submitted work",
+          description: (error as Error).message,
+          tone: "error"
+        });
+      } finally {
+        setLoadingReviewKey(null);
+      }
+    },
+    [push, supabase]
+  );
+
   if (!isProfessor) {
     return (
       <Card>
@@ -241,6 +315,26 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
                             {row.latest_score !== null ? ` · ${row.latest_score}%` : ""}
                             {row.submitted_at ? ` · ${new Date(row.submitted_at).toLocaleString()}` : ""}
                           </span>
+                          {row.latest_submission_id ? (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              disabled={loadingReviewKey === rowKey}
+                              onClick={() => {
+                                if (openReviewKey === rowKey) {
+                                  setOpenReviewKey(null);
+                                  return;
+                                }
+                                void loadSubmissionReview(row, rowKey);
+                              }}
+                            >
+                              {loadingReviewKey === rowKey
+                                ? "Loading work…"
+                                : openReviewKey === rowKey
+                                  ? "Hide work"
+                                  : "View work"}
+                            </Button>
+                          ) : null}
                           <Button
                             size="sm"
                             variant="secondary"
@@ -264,6 +358,146 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
                           </Button>
                         </div>
                       </div>
+
+                      {openReviewKey === rowKey ? (
+                        <div className="mt-3 space-y-3 rounded-lg border border-borderc bg-surface p-3">
+                          {loadingReviewKey === rowKey ? (
+                            <p className="text-sm text-muted">Loading student work…</p>
+                          ) : reviewByRowKey[rowKey]?.submission ? (
+                            <>
+                              <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.14em] text-muted">
+                                <span>Status: {reviewByRowKey[rowKey]?.submission?.status ?? "submitted"}</span>
+                                {reviewByRowKey[rowKey]?.submission?.score !== null ? (
+                                  <span>Score: {reviewByRowKey[rowKey]?.submission?.score}%</span>
+                                ) : null}
+                                {reviewByRowKey[rowKey]?.attempt?.completedAt ? (
+                                  <span>
+                                    Submitted:{" "}
+                                    {new Date(reviewByRowKey[rowKey]?.attempt?.completedAt ?? "").toLocaleString()}
+                                  </span>
+                                ) : null}
+                                {reviewByRowKey[rowKey]?.attempt?.timeSpentSeconds ? (
+                                  <span>
+                                    Time spent: {Math.max(1, Math.round((reviewByRowKey[rowKey]?.attempt?.timeSpentSeconds ?? 0) / 60))} min
+                                  </span>
+                                ) : null}
+                              </div>
+
+                              {reviewByRowKey[rowKey]?.submission?.feedback ? (
+                                <div className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm text-text-secondary">
+                                  <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                                    Current feedback
+                                  </p>
+                                  <p className="whitespace-pre-wrap">{reviewByRowKey[rowKey]?.submission?.feedback}</p>
+                                </div>
+                              ) : null}
+
+                              {reviewByRowKey[rowKey]?.questions?.length ? (
+                                <div className="space-y-3">
+                                  {reviewByRowKey[rowKey]?.questions.map((question, index) => {
+                                    const selectedLabels = optionLabelsFromIndexes(question.options, question.selected);
+                                    const correctOptionLabels = optionLabelsFromIndexes(question.options, question.correct);
+                                    const acceptedText = textAnswers(question.correct);
+
+                                    return (
+                                      <div
+                                        key={`${rowKey}:${question.questionId}:${index}`}
+                                        className="rounded-lg border border-borderc bg-soft px-3 py-3"
+                                      >
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                          <p className="text-sm font-semibold text-text">
+                                            Question {index + 1} · {formatQuestionType(question.questionType)}
+                                          </p>
+                                          <span className="text-xs text-muted">
+                                            {question.isCorrect ? "Marked correct" : "Needs review"}
+                                            {question.selfMarked !== null
+                                              ? ` · Self-check: ${question.selfMarked ? "I got this" : "Need review"}`
+                                              : ""}
+                                          </span>
+                                        </div>
+
+                                        <div className="mt-2 text-sm text-text">
+                                          <Markdown content={question.prompt} promoteMathInInlineCode />
+                                        </div>
+
+                                        {question.responseText ? (
+                                          <div className="mt-3 rounded-lg border border-borderc bg-surface px-3 py-2">
+                                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                                              Student response
+                                            </p>
+                                            <p className="mt-2 whitespace-pre-wrap font-mono text-sm text-text">
+                                              {question.responseText}
+                                            </p>
+                                          </div>
+                                        ) : null}
+
+                                        {selectedLabels.length > 0 ? (
+                                          <div className="mt-3">
+                                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                                              Selected options
+                                            </p>
+                                            <ul className="mt-2 space-y-1 text-sm text-text-secondary">
+                                              {selectedLabels.map((label) => (
+                                                <li key={`${question.questionId}:${label}`}>• {label}</li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        ) : null}
+
+                                        {correctOptionLabels.length > 0 || acceptedText.length > 0 ? (
+                                          <details className="mt-3 rounded-lg border border-borderc bg-surface px-3 py-2">
+                                            <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                                              Expected answer
+                                            </summary>
+                                            <div className="mt-2 space-y-2 text-sm text-text-secondary">
+                                              {correctOptionLabels.length > 0 ? (
+                                                <ul className="space-y-1">
+                                                  {correctOptionLabels.map((label) => (
+                                                    <li key={`${question.questionId}:correct:${label}`}>• {label}</li>
+                                                  ))}
+                                                </ul>
+                                              ) : null}
+                                              {acceptedText.length > 0 ? (
+                                                <ul className="space-y-1">
+                                                  {acceptedText.map((value) => (
+                                                    <li key={`${question.questionId}:accepted:${value}`}>• {value}</li>
+                                                  ))}
+                                                </ul>
+                                              ) : null}
+                                            </div>
+                                          </details>
+                                        ) : null}
+
+                                        {question.solutionMd || question.explanation ? (
+                                          <details className="mt-3 rounded-lg border border-borderc bg-surface px-3 py-2">
+                                            <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                                              Solution / explanation
+                                            </summary>
+                                            <div className="mt-2 space-y-3 text-sm text-text">
+                                              {question.solutionMd ? (
+                                                <Markdown content={question.solutionMd} promoteMathInInlineCode />
+                                              ) : null}
+                                              {question.explanation ? (
+                                                <Markdown content={question.explanation} promoteMathInInlineCode />
+                                              ) : null}
+                                            </div>
+                                          </details>
+                                        ) : null}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-muted">
+                                  This grade entry does not have a linked attempt with saved answers.
+                                </p>
+                              )}
+                            </>
+                          ) : (
+                            <p className="text-sm text-muted">No submitted work is attached to this assignment entry.</p>
+                          )}
+                        </div>
+                      ) : null}
 
                       {editingRowKey === rowKey ? (
                         <div className="mt-3 space-y-2 rounded-lg border border-borderc bg-surface p-3">
