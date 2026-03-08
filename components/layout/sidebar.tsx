@@ -41,7 +41,7 @@ const baseItems: NavItem[] = [
   { href: "/app/homework", label: "Homework", icon: ListChecks },
   { href: "/app/exams", label: "Exams", icon: Timer },
   { href: "/app/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/app/notes/software-engineering", label: "Notes", icon: NotebookTabs },
+  { href: "/app/notes", label: "Notes", icon: NotebookTabs },
   { href: "/app/account", label: "Account", icon: UserRound },
   { href: "/app/settings", label: "Settings", icon: Settings }
 ];
