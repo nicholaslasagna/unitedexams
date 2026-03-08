@@ -95,6 +95,45 @@ export interface SectionGradebookRow {
   submitted_at: string | null;
 }
 
+export interface AssignmentSubmissionReviewQuestion {
+  questionId: string;
+  questionType: "single" | "multi" | "fill" | "free" | string;
+  prompt: string;
+  options: string[];
+  correct: Array<number | string>;
+  explanation: string;
+  solutionMd: string | null;
+  tags: string[];
+  isCorrect: boolean;
+  selected: Array<number | string>;
+  responseText: string | null;
+  selfMarked: boolean | null;
+}
+
+export interface AssignmentSubmissionReview {
+  submission: {
+    id: string;
+    assignmentId: string;
+    studentId: string;
+    attemptId: string | null;
+    status: "submitted" | "graded" | "needs_review";
+    score: number | null;
+    feedback: string | null;
+    gradedAt: string | null;
+    createdAt: string;
+  } | null;
+  attempt: {
+    id: string;
+    score: number;
+    correctCount: number;
+    totalCount: number;
+    timeSpentSeconds: number;
+    completedAt: string | null;
+    startedAt: string;
+  } | null;
+  questions: AssignmentSubmissionReviewQuestion[];
+}
+
 export interface SectionAnalytics {
   avg_score: number;
   completion_count: number;
@@ -526,6 +565,46 @@ export async function upsertManualGrade(
     "Unable to save grade."
   );
   return { submissionId: result.submissionId };
+}
+
+export async function getAssignmentSubmissionReview(
+  _client: SupabaseClient,
+  payload: { assignmentId: string; studentId: string }
+) {
+  const response = await fetch("/api/professor/submissions/review", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  const result = await parseJsonResponse<{ ok: true; review: AssignmentSubmissionReview | null }>(
+    response,
+    "Unable to load submitted work."
+  );
+
+  const review = result.review;
+  if (!review) {
+    return {
+      submission: null,
+      attempt: null,
+      questions: []
+    } satisfies AssignmentSubmissionReview;
+  }
+
+  return {
+    submission: review.submission,
+    attempt: review.attempt,
+    questions: Array.isArray(review.questions)
+      ? review.questions.map((question) => ({
+          ...question,
+          options: Array.isArray(question.options) ? question.options.map((item) => String(item)) : [],
+          correct: Array.isArray(question.correct) ? question.correct.map((item) => item as number | string) : [],
+          tags: Array.isArray(question.tags) ? question.tags.map((item) => String(item)) : [],
+          selected: Array.isArray(question.selected)
+            ? question.selected.map((item) => item as number | string)
+            : []
+        }))
+      : []
+  } satisfies AssignmentSubmissionReview;
 }
 
 export async function getSectionAnalytics(client: SupabaseClient, sectionId: string) {
