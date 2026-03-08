@@ -29,6 +29,7 @@ interface QuestionCardProps {
   studyMode?: boolean;
   showHintsBeforeSubmit?: boolean;
   revealCorrectness?: boolean;
+  interactionNotice?: string;
 }
 
 const optionKeys = ["A", "B", "C", "D", "E", "F"];
@@ -52,7 +53,8 @@ export function QuestionCard({
   onToggleExplanation,
   studyMode = false,
   showHintsBeforeSubmit = true,
-  revealCorrectness = true
+  revealCorrectness = true,
+  interactionNotice
 }: QuestionCardProps) {
   const [showWalkthrough, setShowWalkthrough] = useState(false);
   const [revealedSteps, setRevealedSteps] = useState(0);
@@ -291,13 +293,17 @@ export function QuestionCard({
         {!submitted ? (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-borderc bg-soft p-3">
             <p className="text-xs text-text-secondary">
-              {isTextResponse
+              {interactionNotice
+                ? interactionNotice
+                : isTextResponse
                 ? "Work through the problem step by step, then submit. Use hints if stuck."
                 : "Keyboard: A/B/C/D choose • Enter submit • Arrow keys navigate"}
             </p>
-            <Button onClick={onSubmitQuestion} disabled={!canSubmit}>
-              Submit Answer
-            </Button>
+            {lockInteraction ? null : (
+              <Button onClick={onSubmitQuestion} disabled={!canSubmit || lockInteraction}>
+                Submit Answer
+              </Button>
+            )}
           </div>
         ) : (
           /* Post-submit feedback banner */
