@@ -50,8 +50,9 @@ function buildItems(params: {
   showSchoolAdmin: boolean;
   showSections: boolean;
   showAnnouncements: boolean;
+  showGrades: boolean;
 }) {
-  const { showProfessor, showSchoolAdmin, showSections, showAnnouncements } = params;
+  const { showProfessor, showSchoolAdmin, showSections, showAnnouncements, showGrades } = params;
 
   if (showSchoolAdmin) {
     return [
@@ -65,6 +66,11 @@ function buildItems(params: {
     href: "/app/announcements",
     label: "Announcements",
     icon: Megaphone
+  };
+  const gradesItem = {
+    href: "/app/grades",
+    label: "Grades",
+    icon: ClipboardList
   };
 
   const studentItems = showAnnouncements
@@ -86,6 +92,7 @@ function buildItems(params: {
           { href: "/app/sections/homework", label: "Homework", icon: ListChecks }
         ]
       },
+      ...(showGrades ? [gradesItem] : []),
       ...studentItems.slice(2)
     ];
   }
@@ -313,6 +320,7 @@ export function Sidebar() {
 
   const showAnnouncements = showProfessor || hasJoinedSection;
   const showSections = showProfessor || hasJoinedSection;
+  const showGrades = !showProfessor && !showSchoolAdmin && profile.role !== "professor" && hasJoinedSection;
 
   const items = useMemo(
     () =>
@@ -320,9 +328,10 @@ export function Sidebar() {
         showProfessor,
         showSchoolAdmin,
         showSections,
-        showAnnouncements
+        showAnnouncements,
+        showGrades
       }),
-    [showAnnouncements, showProfessor, showSchoolAdmin, showSections]
+    [showAnnouncements, showGrades, showProfessor, showSchoolAdmin, showSections]
   );
 
   const dockItems = useMemo(() => {
