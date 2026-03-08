@@ -4,15 +4,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, ClipboardList, FolderOpen } from "lucide-react";
-import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { ProgressBar } from "@/components/ui/progress";
 import { useAppData } from "@/lib/app-data-context";
+import { useToast } from "@/lib/hooks/use-toast";
 import { formatRelativeDate } from "@/lib/utils";
 import { isUniversityAdmin, isVerifiedProfessor } from "@/lib/auth/roles";
 import { getCourseVisual } from "@/features/study/course-branding";
 import { listStudentCourseGrades, type StudentCourseGradeSummary, type StudentGradeItem } from "@/features/grades/api";
+import { getSubmissionReview, type SubmissionReview } from "@/features/submissions/api";
+import { SubmissionReviewContent } from "@/features/submissions/review-content";
 
 function toneForScore(score: number | null) {
   if (score === null) return "default" as const;
@@ -48,8 +52,14 @@ function statusTone(item: StudentGradeItem) {
 
 export function StudentGradesPage() {
   const { supabase, user, profile } = useAppData();
+  const { push } = useToast();
   const [rows, setRows] = useState<StudentCourseGradeSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewSelectionLoadingId, setReviewSelectionLoadingId] = useState<string | null>(null);
+  const [activeReviewItem, setActiveReviewItem] = useState<StudentGradeItem | null>(null);
+  const [activeReview, setActiveReview] = useState<SubmissionReview | null>(null);
 
   const isProfessor = profile.role === "professor" || isVerifiedProfessor(profile);
   const isSchoolAdmin = isUniversityAdmin(profile);
@@ -142,6 +152,29 @@ export function StudentGradesPage() {
       </Card>
     );
   }
+
+  const loadReview = async (item: StudentGradeItem, reviewId?: string | null) => {
+    setReviewLoading(true);
+    setActiveReviewItem(item);
+    try {
+      const review = await getSubmissionReview({
+        kind: item.kind,
+        sourceId: item.sourceId,
+        reviewId: reviewId ?? item.reviewId
+      });
+      setActiveReview(review);
+      setReviewModalOpen(true);
+    } catch (error) {
+      push({
+        title: "Unable to load submitted work",
+        description: (error as Error).message,
+        tone: "error"
+      });
+    } finally {
+      setReviewLoading(false);
+      setReviewSelectionLoadingId(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -236,7 +269,7 @@ export function StudentGradesPage() {
                         No assignments or section exam attempts have been graded yet.
                       </div>
                     ) : (
-                      course.items.slice(0, 5).map((item) => (
+                      course.items.map((item) => (
                         <div key={item.key} className="flex items-start justify-between gap-3 rounded-[1rem] border border-borderc bg-soft px-4 py-3">
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
@@ -255,7 +288,21 @@ export function StudentGradesPage() {
                               {item.updatedAt ? ` · ${formatRelativeDate(item.updatedAt)}` : ""}
                             </p>
                           </div>
-                          <Badge tone={statusTone(item)}>{statusLabel(item)}</Badge>
+                          <div className="flex shrink-0 items-center gap-2">
+                            <Badge tone={statusTone(item)}>{statusLabel(item)}</Badge>
+                            {item.reviewId ? (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                disabled={reviewLoading && activeReviewItem?.key === item.key}
+                                onClick={() => {
+                                  void loadReview(item);
+                                }}
+                              >
+                                {reviewLoading && activeReviewItem?.key === item.key ? "Loading…" : "View work"}
+                              </Button>
+                            ) : null}
+                          </div>
                         </div>
                       ))
                     )}
@@ -281,6 +328,35 @@ export function StudentGradesPage() {
           );
         })}
       </div>
+
+      <Modal
+        open={reviewModalOpen}
+        onClose={() => {
+          setReviewModalOpen(false);
+          setActiveReview(null);
+          setActiveReviewItem(null);
+          setReviewSelectionLoadingId(null);
+        }}
+        title={activeReview?.source.title ?? activeReviewItem?.title ?? "Submitted work"}
+        description={activeReview?.studentName ? `${activeReview.studentName} · ${activeReview.source.sectionName}` : undefined}
+        size="lg"
+      >
+        <SubmissionReviewContent
+          review={activeReview}
+          loading={reviewLoading}
+          emptyMessage="No submitted work is attached to this grade item yet."
+          selectedHistoryId={activeReview?.submission?.id ?? activeReview?.attempt?.id ?? null}
+          selectingHistoryId={reviewSelectionLoadingId}
+          onSelectHistory={
+            activeReview && activeReview.history.length > 1 && activeReviewItem
+              ? async (historyId) => {
+                  setReviewSelectionLoadingId(historyId);
+                  await loadReview(activeReviewItem, historyId);
+                }
+              : undefined
+          }
+        />
+      </Modal>
     </div>
   );
 }

@@ -37,6 +37,8 @@ type ExamAttemptLite = {
 export interface StudentGradeItem {
   key: string;
   kind: "assignment" | "exam";
+  sourceId: string;
+  reviewId: string | null;
   title: string;
   sectionId: string;
   sectionName: string;
@@ -196,6 +198,8 @@ export async function listStudentCourseGrades(client: SupabaseClient, userId: st
     ensureCourse(section.courseId).items.push({
       key: `assignment:${assignment.id}`,
       kind: "assignment",
+      sourceId: assignment.id,
+      reviewId: submission?.id ?? null,
       title: assignment.title?.trim() || "Assignment",
       sectionId: section.sectionId,
       sectionName: section.sectionName,
@@ -215,6 +219,8 @@ export async function listStudentCourseGrades(client: SupabaseClient, userId: st
     ensureCourse(section.courseId).items.push({
       key: `exam:${exam.id}`,
       kind: "exam",
+      sourceId: exam.id,
+      reviewId: attempt.id,
       title: exam.title,
       sectionId: section.sectionId,
       sectionName: section.sectionName,

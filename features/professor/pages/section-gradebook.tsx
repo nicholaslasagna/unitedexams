@@ -6,53 +6,68 @@ import { useParams } from "next/navigation";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Markdown } from "@/components/ui/markdown";
+import { Modal } from "@/components/ui/modal";
+import { Badge } from "@/components/ui/badge";
 import { useAppData } from "@/lib/app-data-context";
 import { isVerifiedProfessor } from "@/lib/auth/roles";
 import { useToast } from "@/lib/hooks/use-toast";
 import { sendGradeChangeEmailNotice } from "@/features/announcements/api";
-import { getExamMonitor, listSectionExams } from "@/features/exams/api";
 import {
-  getAssignmentSubmissionReview,
+  getExamMonitor,
+  listSectionExams,
+  type ExamMonitorRow,
+  type ExamRow
+} from "@/features/exams/api";
+import {
   getSectionGradebook,
   listProfessorSections,
   upsertManualGrade,
-  type AssignmentSubmissionReview,
   type SectionGradebookRow,
   type SectionSummary
 } from "@/features/professor/api";
+import { getSubmissionReview, type SubmissionReview, type SubmissionReviewKind } from "@/features/submissions/api";
+import { SubmissionReviewContent } from "@/features/submissions/review-content";
 
-function formatQuestionType(type: string) {
-  switch (type) {
-    case "single":
-      return "Multiple choice";
-    case "multi":
-      return "Multiple answer";
-    case "fill":
-      return "Short response";
-    case "free":
-      return "Free response";
+type ReviewRequest = {
+  kind: SubmissionReviewKind;
+  sourceId: string;
+  studentId: string;
+  reviewId?: string | null;
+  buttonKey: string;
+};
+
+type IntegritySummaryRow = {
+  examId: string;
+  examTitle: string;
+  attemptCount: number;
+  flaggedCount: number;
+  topFlags: Array<{ student: string; suspicion: number }>;
+};
+
+type SectionExamGroup = {
+  exam: ExamRow;
+  attempts: ExamMonitorRow[];
+};
+
+function formatStatusLabel(status: string | null | undefined) {
+  switch (status) {
+    case "graded":
+      return "Graded";
+    case "needs_review":
+      return "Needs review";
+    case "submitted":
+      return "Submitted";
+    case "in_progress":
+      return "In progress";
+    case "expired":
+      return "Expired";
     default:
-      return type;
+      return "Not submitted";
   }
 }
 
-function coerceNumberArray(values: Array<number | string>) {
-  return values
-    .map((value) => (typeof value === "number" ? value : Number.parseInt(String(value), 10)))
-    .filter((value) => Number.isFinite(value));
-}
-
-function optionLabelsFromIndexes(options: string[], values: Array<number | string>) {
-  return coerceNumberArray(values)
-    .map((index) => options[index])
-    .filter((label): label is string => Boolean(label));
-}
-
-function textAnswers(values: Array<number | string>) {
-  return values
-    .map((value) => String(value).trim())
-    .filter((value) => value.length > 0);
+function formatAttemptMeta(value: string | null | undefined) {
+  return value ? new Date(value).toLocaleString() : null;
 }
 
 export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: string } = {}) {
@@ -63,6 +78,7 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
 
   const [section, setSection] = useState<SectionSummary | null>(null);
   const [rows, setRows] = useState<SectionGradebookRow[]>([]);
+  const [examGroups, setExamGroups] = useState<SectionExamGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingRowKey, setEditingRowKey] = useState<string | null>(null);
   const [editStatus, setEditStatus] = useState<"submitted" | "graded" | "needs_review">("graded");
@@ -71,18 +87,13 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
   const [editPointsPossible, setEditPointsPossible] = useState("100");
   const [editFeedback, setEditFeedback] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
-  const [openReviewKey, setOpenReviewKey] = useState<string | null>(null);
-  const [loadingReviewKey, setLoadingReviewKey] = useState<string | null>(null);
-  const [reviewByRowKey, setReviewByRowKey] = useState<Record<string, AssignmentSubmissionReview | undefined>>({});
-  const [integrityRows, setIntegrityRows] = useState<
-    Array<{
-      examId: string;
-      examTitle: string;
-      attemptCount: number;
-      flaggedCount: number;
-      topFlags: Array<{ student: string; suspicion: number }>;
-    }>
-  >([]);
+  const [integrityRows, setIntegrityRows] = useState<IntegritySummaryRow[]>([]);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewButtonLoadingKey, setReviewButtonLoadingKey] = useState<string | null>(null);
+  const [reviewSelectionLoadingId, setReviewSelectionLoadingId] = useState<string | null>(null);
+  const [activeReviewRequest, setActiveReviewRequest] = useState<ReviewRequest | null>(null);
+  const [activeReview, setActiveReview] = useState<SubmissionReview | null>(null);
 
   const isProfessor = isVerifiedProfessor(profile);
 
@@ -94,48 +105,56 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
 
     setLoading(true);
     try {
-      const [sections, gradebookRows, examRows] = await Promise.all([
+      const [sections, gradebookRows, sectionExamRows] = await Promise.all([
         listProfessorSections(supabase),
         getSectionGradebook(supabase, resolvedSectionId),
         listSectionExams(supabase, resolvedSectionId)
       ]);
+
       setSection(sections.find((item) => item.id === resolvedSectionId) ?? null);
-      setRows(
-        gradebookRows.filter((row) => row.student_id !== profile?.id)
-      );
+      setRows(gradebookRows.filter((row) => row.student_id !== profile?.id));
 
       const monitorRows = await Promise.all(
-        examRows.map(async (exam) => {
+        sectionExamRows.map(async (exam) => {
           try {
-            const monitor = await getExamMonitor(supabase, exam.id);
-            const flagged = monitor
-              .filter((attempt) => attempt.flagged)
-              .sort((a, b) => b.suspicion_score - a.suspicion_score);
+            const attempts = (await getExamMonitor(supabase, exam.id)).filter((attempt) => attempt.student_id !== profile?.id);
+            const flagged = attempts.filter((attempt) => attempt.flagged).sort((a, b) => b.suspicion_score - a.suspicion_score);
             return {
-              examId: exam.id,
-              examTitle: exam.title,
-              attemptCount: monitor.length,
-              flaggedCount: flagged.length,
-              topFlags: flagged.slice(0, 3).map((attempt) => ({
-                student: attempt.student_display_name,
-                suspicion: attempt.suspicion_score
-              }))
+              exam,
+              attempts,
+              integrity: {
+                examId: exam.id,
+                examTitle: exam.title,
+                attemptCount: attempts.length,
+                flaggedCount: flagged.length,
+                topFlags: flagged.slice(0, 3).map((attempt) => ({
+                  student: attempt.student_display_name,
+                  suspicion: attempt.suspicion_score
+                }))
+              } satisfies IntegritySummaryRow
             };
           } catch {
             return {
-              examId: exam.id,
-              examTitle: exam.title,
-              attemptCount: 0,
-              flaggedCount: 0,
-              topFlags: [] as Array<{ student: string; suspicion: number }>
+              exam,
+              attempts: [] as ExamMonitorRow[],
+              integrity: {
+                examId: exam.id,
+                examTitle: exam.title,
+                attemptCount: 0,
+                flaggedCount: 0,
+                topFlags: []
+              } satisfies IntegritySummaryRow
             };
           }
         })
       );
-      setIntegrityRows(monitorRows);
+
+      setExamGroups(monitorRows.map((item) => ({ exam: item.exam, attempts: item.attempts })));
+      setIntegrityRows(monitorRows.map((item) => item.integrity));
     } catch {
       setSection(null);
       setRows([]);
+      setExamGroups([]);
       setIntegrityRows([]);
     } finally {
       setLoading(false);
@@ -146,20 +165,13 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
     let active = true;
     if (!active) return;
     void refreshGradebook();
-
     return () => {
       active = false;
     };
   }, [refreshGradebook]);
 
-  const grouped = useMemo(() => {
-    const byAssignment = new Map<
-      string,
-      {
-        assignmentTitle: string;
-        rows: SectionGradebookRow[];
-      }
-    >();
+  const groupedAssignments = useMemo(() => {
+    const byAssignment = new Map<string, { assignmentTitle: string; rows: SectionGradebookRow[] }>();
 
     const compareRowFreshness = (candidate: SectionGradebookRow, existing: SectionGradebookRow) => {
       const candidateTime = candidate.submitted_at ? new Date(candidate.submitted_at).getTime() : -1;
@@ -199,7 +211,6 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
   }, [rows]);
 
   const normalizeNumberInput = (value: string) => value.replace(/[^0-9.]/g, "");
-
   const roundTwo = (value: number) => Math.round(value * 100) / 100;
 
   const syncPercentFromPoints = useCallback((earnedRaw: string, possibleRaw: string) => {
@@ -222,28 +233,29 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
     setEditPointsEarned(String(roundTwo((percent / 100) * possible)));
   }, []);
 
-  const loadSubmissionReview = useCallback(
-    async (row: SectionGradebookRow, rowKey: string) => {
-      if (!supabase) {
-        push({
-          title: "Unable to load submitted work",
-          description: "Not connected to database.",
-          tone: "error"
-        });
-        return;
+  const loadReview = useCallback(
+    async (request: ReviewRequest, reviewId?: string | null) => {
+      const nextReviewId = reviewId ?? request.reviewId ?? null;
+      const selectingHistory = Boolean(reviewModalOpen && nextReviewId && activeReviewRequest);
+
+      if (selectingHistory) {
+        setReviewSelectionLoadingId(nextReviewId);
+      } else {
+        setReviewButtonLoadingKey(request.buttonKey);
+        setReviewLoading(true);
       }
 
-      setLoadingReviewKey(rowKey);
       try {
-        const review = await getAssignmentSubmissionReview(supabase, {
-          assignmentId: row.assignment_id,
-          studentId: row.student_id
+        const review = await getSubmissionReview({
+          kind: request.kind,
+          sourceId: request.sourceId,
+          studentId: request.studentId,
+          reviewId: nextReviewId
         });
-        setReviewByRowKey((current) => ({
-          ...current,
-          [rowKey]: review
-        }));
-        setOpenReviewKey(rowKey);
+
+        setActiveReviewRequest({ ...request, reviewId: nextReviewId });
+        setActiveReview(review);
+        setReviewModalOpen(true);
       } catch (error) {
         push({
           title: "Unable to load submitted work",
@@ -251,10 +263,12 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
           tone: "error"
         });
       } finally {
-        setLoadingReviewKey(null);
+        setReviewLoading(false);
+        setReviewButtonLoadingKey(null);
+        setReviewSelectionLoadingId(null);
       }
     },
-    [push, supabase]
+    [activeReviewRequest, push, reviewModalOpen]
   );
 
   if (!isProfessor) {
@@ -293,419 +307,342 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
         </Button>
       </section>
 
-      {grouped.length === 0 ? (
+      {groupedAssignments.length === 0 ? (
         <Card>
-          <CardBody className="p-6 text-sm text-muted">No submissions yet.</CardBody>
+          <CardBody className="p-6 text-sm text-muted">No assignment submissions yet.</CardBody>
         </Card>
       ) : (
-        grouped.map(({ assignmentId, assignmentTitle, rows: gradeRows }) => {
-          return (
-            <Card key={assignmentId}>
-              <CardHeader>
-                <h2 className="font-display text-2xl font-semibold">{assignmentTitle}</h2>
-              </CardHeader>
-              <CardBody className="space-y-2">
-                {gradeRows.map((row) => {
-                  const rowKey = `${row.assignment_id}:${row.student_id}`;
-                  return (
-                    <div key={rowKey} className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="font-medium text-text">{row.display_name}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-muted">
-                            {row.latest_status ? row.latest_status : "Not submitted"}
-                            {row.latest_score !== null ? ` · ${row.latest_score}%` : ""}
-                            {row.submitted_at ? ` · ${new Date(row.submitted_at).toLocaleString()}` : ""}
-                          </span>
-                          {row.latest_submission_id ? (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              disabled={loadingReviewKey === rowKey}
-                              onClick={() => {
-                                if (openReviewKey === rowKey) {
-                                  setOpenReviewKey(null);
-                                  return;
-                                }
-                                void loadSubmissionReview(row, rowKey);
-                              }}
-                            >
-                              {loadingReviewKey === rowKey
-                                ? "Loading work…"
-                                : openReviewKey === rowKey
-                                  ? "Hide work"
-                                  : "View work"}
-                            </Button>
-                          ) : null}
+        groupedAssignments.map(({ assignmentId, assignmentTitle, rows: gradeRows }) => (
+          <Card key={assignmentId}>
+            <CardHeader>
+              <h2 className="font-display text-2xl font-semibold">{assignmentTitle}</h2>
+            </CardHeader>
+            <CardBody className="space-y-2">
+              {gradeRows.map((row) => {
+                const rowKey = `${row.assignment_id}:${row.student_id}`;
+                const submittedLabel = formatAttemptMeta(row.submitted_at);
+
+                return (
+                  <div key={rowKey} className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-medium text-text">{row.display_name}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted">
+                          {formatStatusLabel(row.latest_status)}
+                          {row.latest_score !== null ? ` · ${row.latest_score}%` : ""}
+                          {submittedLabel ? ` · ${submittedLabel}` : ""}
+                        </span>
+                        {row.latest_submission_id ? (
                           <Button
                             size="sm"
-                            variant="secondary"
+                            variant="ghost"
+                            disabled={reviewButtonLoadingKey === rowKey}
                             onClick={() => {
-                              setEditingRowKey(rowKey);
-                              setEditStatus(
-                                row.latest_status === "submitted" || row.latest_status === "needs_review"
-                                  ? row.latest_status
-                                  : "graded"
-                              );
-                              const nextScore = row.latest_score === null ? "" : String(row.latest_score);
-                              setEditScore(nextScore);
-                              setEditPointsPossible("100");
-                              setEditPointsEarned(
-                                row.latest_score === null ? "" : String(Math.round(row.latest_score * 100) / 100)
-                              );
-                              setEditFeedback("");
+                              void loadReview({
+                                kind: "assignment",
+                                sourceId: row.assignment_id,
+                                studentId: row.student_id,
+                                reviewId: row.latest_submission_id,
+                                buttonKey: rowKey
+                              });
                             }}
                           >
-                            {row.latest_submission_id ? "Edit grade" : "Set grade"}
+                            {reviewButtonLoadingKey === rowKey ? "Loading work…" : "View work"}
                           </Button>
-                        </div>
+                        ) : null}
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => {
+                            setEditingRowKey(rowKey);
+                            setEditStatus(
+                              row.latest_status === "submitted" || row.latest_status === "needs_review"
+                                ? row.latest_status
+                                : "graded"
+                            );
+                            const nextScore = row.latest_score === null ? "" : String(row.latest_score);
+                            setEditScore(nextScore);
+                            setEditPointsPossible("100");
+                            setEditPointsEarned(row.latest_score === null ? "" : String(Math.round(row.latest_score * 100) / 100));
+                            setEditFeedback("");
+                          }}
+                        >
+                          {row.latest_submission_id ? "Edit grade" : "Set grade"}
+                        </Button>
                       </div>
+                    </div>
 
-                      {openReviewKey === rowKey ? (
-                        <div className="mt-3 space-y-3 rounded-lg border border-borderc bg-surface p-3">
-                          {loadingReviewKey === rowKey ? (
-                            <p className="text-sm text-muted">Loading student work…</p>
-                          ) : reviewByRowKey[rowKey]?.submission ? (
-                            <>
-                              <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.14em] text-muted">
-                                <span>Status: {reviewByRowKey[rowKey]?.submission?.status ?? "submitted"}</span>
-                                {reviewByRowKey[rowKey]?.submission?.score !== null ? (
-                                  <span>Score: {reviewByRowKey[rowKey]?.submission?.score}%</span>
-                                ) : null}
-                                {reviewByRowKey[rowKey]?.attempt?.completedAt ? (
-                                  <span>
-                                    Submitted:{" "}
-                                    {new Date(reviewByRowKey[rowKey]?.attempt?.completedAt ?? "").toLocaleString()}
-                                  </span>
-                                ) : null}
-                                {reviewByRowKey[rowKey]?.attempt?.timeSpentSeconds ? (
-                                  <span>
-                                    Time spent: {Math.max(1, Math.round((reviewByRowKey[rowKey]?.attempt?.timeSpentSeconds ?? 0) / 60))} min
-                                  </span>
-                                ) : null}
-                              </div>
-
-                              {reviewByRowKey[rowKey]?.submission?.feedback ? (
-                                <div className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm text-text-secondary">
-                                  <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-                                    Current feedback
-                                  </p>
-                                  <p className="whitespace-pre-wrap">{reviewByRowKey[rowKey]?.submission?.feedback}</p>
-                                </div>
-                              ) : null}
-
-                              {reviewByRowKey[rowKey]?.questions?.length ? (
-                                <div className="space-y-3">
-                                  {reviewByRowKey[rowKey]?.questions.map((question, index) => {
-                                    const selectedLabels = optionLabelsFromIndexes(question.options, question.selected);
-                                    const correctOptionLabels = optionLabelsFromIndexes(question.options, question.correct);
-                                    const acceptedText = textAnswers(question.correct);
-
-                                    return (
-                                      <div
-                                        key={`${rowKey}:${question.questionId}:${index}`}
-                                        className="rounded-lg border border-borderc bg-soft px-3 py-3"
-                                      >
-                                        <div className="flex flex-wrap items-center justify-between gap-2">
-                                          <p className="text-sm font-semibold text-text">
-                                            Question {index + 1} · {formatQuestionType(question.questionType)}
-                                          </p>
-                                          <span className="text-xs text-muted">
-                                            {question.isCorrect ? "Marked correct" : "Needs review"}
-                                            {question.selfMarked !== null
-                                              ? ` · Self-check: ${question.selfMarked ? "I got this" : "Need review"}`
-                                              : ""}
-                                          </span>
-                                        </div>
-
-                                        <div className="mt-2 text-sm text-text">
-                                          <Markdown content={question.prompt} promoteMathInInlineCode />
-                                        </div>
-
-                                        {question.responseText ? (
-                                          <div className="mt-3 rounded-lg border border-borderc bg-surface px-3 py-2">
-                                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-                                              Student response
-                                            </p>
-                                            <p className="mt-2 whitespace-pre-wrap font-mono text-sm text-text">
-                                              {question.responseText}
-                                            </p>
-                                          </div>
-                                        ) : null}
-
-                                        {selectedLabels.length > 0 ? (
-                                          <div className="mt-3">
-                                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-                                              Selected options
-                                            </p>
-                                            <ul className="mt-2 space-y-1 text-sm text-text-secondary">
-                                              {selectedLabels.map((label) => (
-                                                <li key={`${question.questionId}:${label}`}>• {label}</li>
-                                              ))}
-                                            </ul>
-                                          </div>
-                                        ) : null}
-
-                                        {correctOptionLabels.length > 0 || acceptedText.length > 0 ? (
-                                          <details className="mt-3 rounded-lg border border-borderc bg-surface px-3 py-2">
-                                            <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-                                              Expected answer
-                                            </summary>
-                                            <div className="mt-2 space-y-2 text-sm text-text-secondary">
-                                              {correctOptionLabels.length > 0 ? (
-                                                <ul className="space-y-1">
-                                                  {correctOptionLabels.map((label) => (
-                                                    <li key={`${question.questionId}:correct:${label}`}>• {label}</li>
-                                                  ))}
-                                                </ul>
-                                              ) : null}
-                                              {acceptedText.length > 0 ? (
-                                                <ul className="space-y-1">
-                                                  {acceptedText.map((value) => (
-                                                    <li key={`${question.questionId}:accepted:${value}`}>• {value}</li>
-                                                  ))}
-                                                </ul>
-                                              ) : null}
-                                            </div>
-                                          </details>
-                                        ) : null}
-
-                                        {question.solutionMd || question.explanation ? (
-                                          <details className="mt-3 rounded-lg border border-borderc bg-surface px-3 py-2">
-                                            <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-                                              Solution / explanation
-                                            </summary>
-                                            <div className="mt-2 space-y-3 text-sm text-text">
-                                              {question.solutionMd ? (
-                                                <Markdown content={question.solutionMd} promoteMathInInlineCode />
-                                              ) : null}
-                                              {question.explanation ? (
-                                                <Markdown content={question.explanation} promoteMathInInlineCode />
-                                              ) : null}
-                                            </div>
-                                          </details>
-                                        ) : null}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              ) : (
-                                <p className="text-sm text-muted">
-                                  This grade entry does not have a linked attempt with saved answers.
-                                </p>
-                              )}
-                            </>
-                          ) : (
-                            <p className="text-sm text-muted">No submitted work is attached to this assignment entry.</p>
-                          )}
-                        </div>
-                      ) : null}
-
-                      {editingRowKey === rowKey ? (
-                        <div className="mt-3 space-y-2 rounded-lg border border-borderc bg-surface p-3">
-                          <div className="grid gap-2 md:grid-cols-4">
-                            <div className="space-y-1">
-                              <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Status</label>
-                              <select
-                                className="h-10 w-full rounded-[10px] border border-borderc bg-soft px-3 text-sm text-text"
-                                value={editStatus}
-                                onChange={(event) =>
-                                  setEditStatus(event.target.value as "submitted" | "graded" | "needs_review")
-                                }
-                              >
-                                <option value="graded">graded</option>
-                                <option value="needs_review">needs_review</option>
-                                <option value="submitted">submitted</option>
-                              </select>
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Score (%)</label>
-                              <Input
-                                value={editScore}
-                                onChange={(event) => {
-                                  const nextValue = normalizeNumberInput(event.target.value);
-                                  setEditScore(nextValue);
-                                  syncPointsFromPercent(nextValue, editPointsPossible);
-                                }}
-                                placeholder={editStatus === "graded" ? "0-100" : "Optional"}
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Points earned</label>
-                              <Input
-                                value={editPointsEarned}
-                                onChange={(event) => {
-                                  const nextValue = normalizeNumberInput(event.target.value);
-                                  setEditPointsEarned(nextValue);
-                                  syncPercentFromPoints(nextValue, editPointsPossible);
-                                }}
-                                placeholder="e.g. 10"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Points possible</label>
-                              <Input
-                                value={editPointsPossible}
-                                onChange={(event) => {
-                                  const nextValue = normalizeNumberInput(event.target.value);
-                                  setEditPointsPossible(nextValue);
-                                  if ((editPointsEarned || "").trim().length > 0) {
-                                    syncPercentFromPoints(editPointsEarned, nextValue);
-                                  } else {
-                                    syncPointsFromPercent(editScore, nextValue);
-                                  }
-                                }}
-                                placeholder="e.g. 10"
-                              />
-                            </div>
-                          </div>
-                          <p className="text-xs text-muted">
-                            Enter either percent or points. Values auto-convert both ways.
-                          </p>
-
+                    {editingRowKey === rowKey ? (
+                      <div className="mt-3 space-y-2 rounded-lg border border-borderc bg-surface p-3">
+                        <div className="grid gap-2 md:grid-cols-4">
                           <div className="space-y-1">
-                            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Feedback</label>
-                            <textarea
-                              value={editFeedback}
-                              onChange={(event) => setEditFeedback(event.target.value)}
-                              className="min-h-20 w-full rounded-[10px] border border-borderc bg-soft px-3 py-2 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
-                              placeholder="Optional note to student"
+                            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Status</label>
+                            <select
+                              className="h-10 w-full rounded-[10px] border border-borderc bg-soft px-3 text-sm text-text"
+                              value={editStatus}
+                              onChange={(event) => setEditStatus(event.target.value as "submitted" | "graded" | "needs_review")}
+                            >
+                              <option value="graded">graded</option>
+                              <option value="needs_review">needs_review</option>
+                              <option value="submitted">submitted</option>
+                            </select>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Score (%)</label>
+                            <Input
+                              value={editScore}
+                              onChange={(event) => {
+                                const nextValue = normalizeNumberInput(event.target.value);
+                                setEditScore(nextValue);
+                                syncPointsFromPercent(nextValue, editPointsPossible);
+                              }}
+                              placeholder={editStatus === "graded" ? "0-100" : "Optional"}
                             />
                           </div>
-
-                          <div className="flex gap-2">
-                            <Button
-                              loading={savingEdit}
-                              disabled={savingEdit}
-                              onClick={async () => {
-                                if (savingEdit) return;
-                                if (!supabase) {
-                                  push({
-                                    title: "Unable to update grade",
-                                    description: "Not connected to database.",
-                                    tone: "error"
-                                  });
-                                  return;
-                                }
-
-                                const numericScore =
-                                  editScore.trim().length === 0 ? null : Number.parseFloat(editScore.trim());
-
-                                if (
-                                  editStatus === "graded" &&
-                                  (numericScore === null ||
-                                    Number.isNaN(numericScore) ||
-                                    numericScore < 0 ||
-                                    numericScore > 100)
-                                ) {
-                                  push({
-                                    title: "Score must be between 0 and 100",
-                                    tone: "error"
-                                  });
-                                  return;
-                                }
-
-                                setSavingEdit(true);
-                                try {
-                                  const { submissionId } = await upsertManualGrade(supabase, {
-                                    assignmentId: row.assignment_id,
-                                    studentId: row.student_id,
-                                    status: editStatus,
-                                    score: editStatus === "graded" ? numericScore : null,
-                                    feedback: editFeedback.trim() || null
-                                  });
-
-                                  let warning: string | undefined;
-                                  if (editStatus === "graded" && submissionId) {
-                                    try {
-                                      const emailResult = await sendGradeChangeEmailNotice(submissionId);
-                                      warning = emailResult.warning;
-                                    } catch (emailError) {
-                                      warning = (emailError as Error).message;
-                                    }
-                                  }
-
-                                  push({
-                                    title: "Grade updated",
-                                    description: warning,
-                                    tone: warning ? "default" : "success"
-                                  });
-                                  setEditingRowKey(null);
-                                  setEditFeedback("");
-                                  setEditScore("");
-                                  setEditPointsEarned("");
-                                  setEditPointsPossible("100");
-                                  await refreshGradebook();
-                                } catch (error) {
-                                  push({
-                                    title: "Unable to update grade",
-                                    description: (error as Error).message,
-                                    tone: "error"
-                                  });
-                                } finally {
-                                  setSavingEdit(false);
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Points earned</label>
+                            <Input
+                              value={editPointsEarned}
+                              onChange={(event) => {
+                                const nextValue = normalizeNumberInput(event.target.value);
+                                setEditPointsEarned(nextValue);
+                                syncPercentFromPoints(nextValue, editPointsPossible);
+                              }}
+                              placeholder="e.g. 10"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Points possible</label>
+                            <Input
+                              value={editPointsPossible}
+                              onChange={(event) => {
+                                const nextValue = normalizeNumberInput(event.target.value);
+                                setEditPointsPossible(nextValue);
+                                if ((editPointsEarned || "").trim().length > 0) {
+                                  syncPercentFromPoints(editPointsEarned, nextValue);
+                                } else {
+                                  syncPointsFromPercent(editScore, nextValue);
                                 }
                               }}
-                            >
-                              Save grade
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              onClick={() => {
+                              placeholder="e.g. 10"
+                            />
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted">Enter either percent or points. Values auto-convert both ways.</p>
+
+                        <div className="space-y-1">
+                          <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Feedback</label>
+                          <textarea
+                            value={editFeedback}
+                            onChange={(event) => setEditFeedback(event.target.value)}
+                            className="min-h-20 w-full rounded-[10px] border border-borderc bg-soft px-3 py-2 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
+                            placeholder="Optional note to student"
+                          />
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button
+                            loading={savingEdit}
+                            disabled={savingEdit}
+                            onClick={async () => {
+                              if (savingEdit) return;
+                              if (!supabase) {
+                                push({
+                                  title: "Unable to update grade",
+                                  description: "Not connected to database.",
+                                  tone: "error"
+                                });
+                                return;
+                              }
+
+                              const numericScore = editScore.trim().length === 0 ? null : Number.parseFloat(editScore.trim());
+
+                              if (
+                                editStatus === "graded" &&
+                                (numericScore === null || Number.isNaN(numericScore) || numericScore < 0 || numericScore > 100)
+                              ) {
+                                push({
+                                  title: "Score must be between 0 and 100",
+                                  tone: "error"
+                                });
+                                return;
+                              }
+
+                              setSavingEdit(true);
+                              try {
+                                const { submissionId } = await upsertManualGrade(supabase, {
+                                  assignmentId: row.assignment_id,
+                                  studentId: row.student_id,
+                                  status: editStatus,
+                                  score: editStatus === "graded" ? numericScore : null,
+                                  feedback: editFeedback.trim() || null
+                                });
+
+                                let warning: string | undefined;
+                                if (editStatus === "graded" && submissionId) {
+                                  try {
+                                    const emailResult = await sendGradeChangeEmailNotice(submissionId);
+                                    warning = emailResult.warning;
+                                  } catch (emailError) {
+                                    warning = (emailError as Error).message;
+                                  }
+                                }
+
+                                push({
+                                  title: "Grade updated",
+                                  description: warning,
+                                  tone: warning ? "default" : "success"
+                                });
                                 setEditingRowKey(null);
                                 setEditFeedback("");
                                 setEditScore("");
                                 setEditPointsEarned("");
                                 setEditPointsPossible("100");
-                              }}
-                              disabled={savingEdit}
-                            >
-                              Cancel
-                            </Button>
-                          </div>
+                                await refreshGradebook();
+                              } catch (error) {
+                                push({
+                                  title: "Unable to update grade",
+                                  description: (error as Error).message,
+                                  tone: "error"
+                                });
+                              } finally {
+                                setSavingEdit(false);
+                              }
+                            }}
+                          >
+                            Save grade
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            onClick={() => {
+                              setEditingRowKey(null);
+                              setEditFeedback("");
+                              setEditScore("");
+                              setEditPointsEarned("");
+                              setEditPointsPossible("100");
+                            }}
+                            disabled={savingEdit}
+                          >
+                            Cancel
+                          </Button>
                         </div>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </CardBody>
-            </Card>
-          );
-        })
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </CardBody>
+          </Card>
+        ))
       )}
 
-      {integrityRows.length > 0 ? (
+      {examGroups.length > 0 ? (
         <Card>
           <CardHeader>
-            <h2 className="font-display text-2xl font-semibold">Integrity checks</h2>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 className="font-display text-2xl font-semibold">Exam attempts</h2>
+                <p className="mt-1 text-sm text-muted">Open any submitted exam attempt to review exactly what the student turned in.</p>
+              </div>
+            </div>
           </CardHeader>
-          <CardBody className="space-y-2">
-            {integrityRows.map((row) => (
-              <div key={row.examId} className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="font-medium text-text">{row.examTitle}</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted">
-                      {row.flaggedCount} flagged / {row.attemptCount} attempts
-                    </span>
+          <CardBody className="space-y-4">
+            {examGroups.map(({ exam, attempts }) => {
+              const integrity = integrityRows.find((row) => row.examId === exam.id);
+              return (
+                <div key={exam.id} className="rounded-xl border border-borderc bg-soft p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-lg font-semibold text-text">{exam.title}</p>
+                        <Badge tone={exam.published ? "success" : "default"}>{exam.published ? "Published" : "Draft"}</Badge>
+                        <Badge tone="warn">{attempts.length} attempt{attempts.length === 1 ? "" : "s"}</Badge>
+                        {integrity && integrity.flaggedCount > 0 ? <Badge tone="danger">{integrity.flaggedCount} flagged</Badge> : null}
+                      </div>
+                      <p className="mt-1 text-sm text-muted">
+                        {exam.starts_at ? `${new Date(exam.starts_at).toLocaleString()} → ${new Date(exam.ends_at).toLocaleString()}` : "Exam window unavailable"}
+                      </p>
+                    </div>
                     <Button size="sm" variant="secondary" asChild>
-                      <Link href={`/app/professor/exams/${row.examId}/monitor`}>Open monitor</Link>
+                      <Link href={`/app/professor/exams/${exam.id}/monitor`}>Open monitor</Link>
                     </Button>
                   </div>
+
+                  {attempts.length === 0 ? (
+                    <p className="mt-3 text-sm text-muted">No attempts recorded for this exam yet.</p>
+                  ) : (
+                    <div className="mt-3 space-y-2">
+                      {attempts.map((attempt) => {
+                        const rowKey = `exam:${attempt.attempt_id}`;
+                        return (
+                          <div key={attempt.attempt_id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-borderc bg-surface px-3 py-2 text-sm">
+                            <div>
+                              <p className="font-medium text-text">{attempt.student_display_name}</p>
+                              <p className="text-muted">
+                                {formatStatusLabel(attempt.status)}
+                                {attempt.score !== null ? ` · ${attempt.score}%` : ""}
+                                {attempt.submitted_at ? ` · ${new Date(attempt.submitted_at).toLocaleString()}` : ""}
+                                {attempt.flagged ? ` · Integrity ${attempt.suspicion_score}` : ""}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {attempt.flagged ? <Badge tone="danger">Flagged</Badge> : null}
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                disabled={reviewButtonLoadingKey === rowKey}
+                                onClick={() => {
+                                  void loadReview({
+                                    kind: "exam",
+                                    sourceId: exam.id,
+                                    studentId: attempt.student_id,
+                                    reviewId: attempt.attempt_id,
+                                    buttonKey: rowKey
+                                  });
+                                }}
+                              >
+                                {reviewButtonLoadingKey === rowKey ? "Loading work…" : "View work"}
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-                {row.topFlags.length > 0 ? (
-                  <p className="mt-1 text-xs text-muted">
-                    Highest flags:{" "}
-                    {row.topFlags.map((flag) => `${flag.student} (${flag.suspicion})`).join(", ")}
-                  </p>
-                ) : (
-                  <p className="mt-1 text-xs text-muted">No flagged attempts.</p>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </CardBody>
         </Card>
       ) : null}
+
+      <Modal
+        open={reviewModalOpen}
+        onClose={() => {
+          setReviewModalOpen(false);
+          setActiveReview(null);
+          setActiveReviewRequest(null);
+          setReviewSelectionLoadingId(null);
+        }}
+        title={activeReview?.source.title ?? "Submitted work"}
+        description={activeReview ? `${activeReview.studentName} · ${activeReview.source.sectionName}` : undefined}
+        size="lg"
+      >
+        <SubmissionReviewContent
+          review={activeReview}
+          loading={reviewLoading}
+          emptyMessage="No submitted work is attached to this record yet."
+          selectedHistoryId={activeReview?.submission?.id ?? activeReview?.attempt?.id ?? null}
+          selectingHistoryId={reviewSelectionLoadingId}
+          onSelectHistory={
+            activeReview && activeReviewRequest && activeReview.history.length > 1
+              ? async (historyId) => {
+                  await loadReview(activeReviewRequest, historyId);
+                }
+              : undefined
+          }
+        />
+      </Modal>
     </div>
   );
 }
