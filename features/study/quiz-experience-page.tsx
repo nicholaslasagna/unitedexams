@@ -214,7 +214,7 @@ export function QuizExperiencePageContent({
         timed: true,
         timerMinutes: quiz.timerDefaultMinutes,
         randomizeQuestions: true,
-        explanationMode: "end",
+        explanationMode: quiz.isExamSimulation ? "afterEach" : "end",
         questionCount: "all",
         includeFreeResponse: true
       });
@@ -248,6 +248,10 @@ export function QuizExperiencePageContent({
   const course = quiz ? getCourse(quiz.courseId) : null;
   const setMode = quiz ? resolveQuizSetMode(quiz) : "quiz";
   const examQuestionTarget = quiz ? resolveQuestionCountTarget(quiz) : null;
+  const supportsGuidedExamReview = Boolean(quiz?.isExamSimulation);
+  const guidedExamSimulation = attemptMode === "exam" && supportsGuidedExamReview;
+  const immediateReviewMode = attemptMode === "study" || guidedExamSimulation;
+  const hideLiveExamFeedback = attemptMode === "exam" && !guidedExamSimulation;
 
   const latestAttempt = useMemo(() => {
     if (!quiz) return null;
@@ -422,7 +426,7 @@ export function QuizExperiencePageContent({
         timed: true,
         timerMinutes: quiz?.timerDefaultMinutes ?? settings.timerMinutes,
         randomizeQuestions: true,
-        explanationMode: "end",
+        explanationMode: quiz?.isExamSimulation ? "afterEach" : "end",
         questionCount: "all",
         includeFreeResponse: true
       },
@@ -672,7 +676,7 @@ export function QuizExperiencePageContent({
           submitCurrentQuestion();
         } else {
           if (
-            attemptMode !== "exam" &&
+            !hideLiveExamFeedback &&
             requiresSelfMark(currentQuestion) &&
             selfMarkedByQuestion[currentQuestion.id] === undefined
           ) {
@@ -697,7 +701,7 @@ export function QuizExperiencePageContent({
           return;
         }
         if (
-          attemptMode !== "exam" &&
+          !hideLiveExamFeedback &&
           requiresSelfMark(currentQuestion) &&
           submittedByQuestion[currentQuestion.id] &&
           selfMarkedByQuestion[currentQuestion.id] === undefined
@@ -880,7 +884,10 @@ export function QuizExperiencePageContent({
                   <span className="font-semibold text-text">Rule 1:</span> one question at a time with exam pacing.
                 </div>
                 <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-text-secondary stagger-2">
-                  <span className="font-semibold text-text">Rule 2:</span> explanations default to end-of-exam review.
+                  <span className="font-semibold text-text">Rule 2:</span>{" "}
+                  {supportsGuidedExamReview
+                    ? "walkthroughs and explanations unlock after each answer so the simulation still teaches."
+                    : "explanations default to end-of-exam review."}
                 </div>
                 <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-text-secondary stagger-3">
                   <span className="font-semibold text-text">Rule 3:</span> professor-priority items are always included.
@@ -1134,7 +1141,7 @@ export function QuizExperiencePageContent({
   const questionSubmitted = currentQuestion ? submittedByQuestion[currentQuestion.id] : false;
   const pendingSelfMark =
     currentQuestion && requiresSelfMark(currentQuestion) && questionSubmitted
-      ? attemptMode !== "exam" && selfMarkedByQuestion[currentQuestion.id] === undefined
+      ? !hideLiveExamFeedback && selfMarkedByQuestion[currentQuestion.id] === undefined
       : false;
   const canMoveForward =
     assignmentSubmissionLocked
@@ -1170,10 +1177,14 @@ export function QuizExperiencePageContent({
           {attemptMode === "study"
             ? `Study walkthrough • ${minutesSeconds(timeSpent)} elapsed`
             : attemptMode === "exam"
-              ? settings.timed
-                ? `Exam simulation • ${minutesSeconds(timeLeft)} left`
-                : `Exam simulation • ${minutesSeconds(timeSpent)} elapsed`
-            : settings.timed
+              ? guidedExamSimulation
+                ? settings.timed
+                  ? `Guided exam simulation • ${minutesSeconds(timeLeft)} left`
+                  : `Guided exam simulation • ${minutesSeconds(timeSpent)} elapsed`
+                : settings.timed
+                  ? `Exam simulation • ${minutesSeconds(timeLeft)} left`
+                  : `Exam simulation • ${minutesSeconds(timeSpent)} elapsed`
+              : settings.timed
               ? `Timed exam • ${minutesSeconds(timeLeft)} left`
               : `Test mode • ${minutesSeconds(timeSpent)} elapsed`}
         </div>
@@ -1185,7 +1196,7 @@ export function QuizExperiencePageContent({
           currentIndex={currentIndex}
           ids={order}
           answered={answeredSet}
-          correctness={attemptMode === "exam" ? new Map() : new Map(Object.entries(correctByQuestion))}
+          correctness={hideLiveExamFeedback ? new Map() : new Map(Object.entries(correctByQuestion))}
           onJump={setCurrentIndex}
         />
 
@@ -1211,11 +1222,11 @@ export function QuizExperiencePageContent({
               selfMarked={selfMarkedByQuestion[currentQuestion.id]}
               onSelfMark={markCurrentFreeQuestion}
               lockInteraction={assignmentSubmissionLocked || Boolean(submittedByQuestion[currentQuestion.id])}
-              disableSelfMark={attemptMode === "exam"}
-              studyMode={attemptMode === "study"}
-              showHintsBeforeSubmit={attemptMode === "study"}
-              showExplanation={attemptMode === "study" ? true : Boolean(showExplanation[currentQuestion.id])}
-              revealCorrectness={attemptMode !== "exam"}
+              disableSelfMark={hideLiveExamFeedback}
+              studyMode={immediateReviewMode}
+              showHintsBeforeSubmit={immediateReviewMode}
+              showExplanation={immediateReviewMode ? true : Boolean(showExplanation[currentQuestion.id])}
+              revealCorrectness={!hideLiveExamFeedback}
               interactionNotice={
                 assignmentSubmissionLocked
                   ? "This assignment is past due. Review the question content, but submissions are locked."
@@ -1259,7 +1270,7 @@ export function QuizExperiencePageContent({
           answeredCount={answeredCount}
           timerEnabled={settings.timed}
           timeLeft={timeLeft}
-          scorePreview={attemptMode === "exam" ? undefined : scorePreview}
+          scorePreview={hideLiveExamFeedback ? undefined : scorePreview}
         />
       </div>
     </div>
