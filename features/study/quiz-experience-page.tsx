@@ -48,6 +48,7 @@ interface SectionAssignmentPolicy {
   assignmentTitle: string;
   gradingMode: "auto" | "manual" | "mixed";
   dueAt: string | null;
+  allowLate: boolean;
 }
 
 const keyMap = ["a", "b", "c", "d", "e", "f"];
@@ -149,7 +150,7 @@ export function QuizExperiencePageContent({
       try {
         const { data, error } = await supabase
           .from("assignments")
-          .select("id, title, grading_mode, due_at")
+          .select("id, title, grading_mode, due_at, allow_late")
           .eq("section_id", sectionParam)
           .eq("quiz_set_id", quiz.id)
           .order("created_at", { ascending: false })
@@ -165,7 +166,8 @@ export function QuizExperiencePageContent({
           assignmentId: String(data.id),
           assignmentTitle: (data.title || "Assignment").toString(),
           gradingMode: (data.grading_mode as "auto" | "manual" | "mixed") ?? "auto",
-          dueAt: (data.due_at as string | null) ?? null
+          dueAt: (data.due_at as string | null) ?? null,
+          allowLate: Boolean(data.allow_late)
         });
       } catch {
         if (!active) return;
@@ -251,6 +253,13 @@ export function QuizExperiencePageContent({
     if (!quiz) return null;
     return latestAttemptForQuiz(attempts, quiz.id);
   }, [attempts, quiz]);
+
+  const assignmentSubmissionLocked = useMemo(() => {
+    if (!sectionAssignmentPolicy?.dueAt) return false;
+    if (sectionAssignmentPolicy.allowLate) return false;
+    const dueTime = new Date(sectionAssignmentPolicy.dueAt).getTime();
+    return Number.isFinite(dueTime) && Date.now() > dueTime;
+  }, [sectionAssignmentPolicy]);
 
   const bestScore = useMemo(() => {
     if (!quiz) return 0;
@@ -421,6 +430,19 @@ export function QuizExperiencePageContent({
     );
   };
 
+  const startReadOnlyAssignmentView = () => {
+    startQuiz(
+      {
+        timed: false,
+        randomizeQuestions: false,
+        explanationMode: "end",
+        questionCount: "all",
+        includeFreeResponse: true
+      },
+      setMode === "exam" ? "exam" : "study"
+    );
+  };
+
   const toggleOption = (index: number) => {
     if (!currentQuestion) return;
     if (submittedByQuestion[currentQuestion.id]) return;
@@ -456,6 +478,13 @@ export function QuizExperiencePageContent({
   };
 
   const submitCurrentQuestion = () => {
+    if (assignmentSubmissionLocked) {
+      push({
+        title: "Assignment is closed",
+        description: "The due date has passed. You can still view the assignment, but you cannot submit work."
+      });
+      return;
+    }
     if (!currentQuestion) return;
     if (submittedByQuestion[currentQuestion.id]) return;
 
@@ -505,6 +534,14 @@ export function QuizExperiencePageContent({
   };
 
   const finalizeAttempt = async () => {
+    if (assignmentSubmissionLocked) {
+      setStage("overview");
+      push({
+        title: "Assignment is closed",
+        description: "The due date has passed. This assignment is now view-only."
+      });
+      return;
+    }
     if (!quiz) return;
     if (finalizingRef.current) return;
     finalizingRef.current = true;
@@ -623,6 +660,14 @@ export function QuizExperiencePageContent({
 
       if (key === "enter") {
         event.preventDefault();
+        if (assignmentSubmissionLocked) {
+          if (currentIndex < order.length - 1) {
+            gotoNext();
+          } else {
+            setStage("overview");
+          }
+          return;
+        }
         if (!submittedByQuestion[currentQuestion.id]) {
           submitCurrentQuestion();
         } else {
@@ -642,6 +687,15 @@ export function QuizExperiencePageContent({
       }
 
       if (key === "arrowright") {
+        if (assignmentSubmissionLocked) {
+          event.preventDefault();
+          if (currentIndex < order.length - 1) {
+            gotoNext();
+          } else {
+            setStage("overview");
+          }
+          return;
+        }
         if (
           attemptMode !== "exam" &&
           requiresSelfMark(currentQuestion) &&
@@ -764,7 +818,22 @@ export function QuizExperiencePageContent({
               </div>
             </div>
 
-            {setMode === "homework" ? (
+            {assignmentSubmissionLocked ? (
+              <div className="rounded-xl border border-danger/35 bg-danger/10 p-4 text-sm text-text">
+                <p className="font-semibold">This assignment is past due.</p>
+                <p className="mt-1 text-text-secondary">
+                  You can still open it in read-only mode, but you cannot submit answers or finish an attempt for grading.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button onClick={startReadOnlyAssignmentView}>Open read-only view</Button>
+                  {sectionPath ? (
+                    <Button variant="secondary" asChild>
+                      <Link href={sectionPath}>Back to section</Link>
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            ) : setMode === "homework" ? (
               <div className="rounded-xl border border-success/30 bg-success/10 p-4 text-sm text-text">
                 This set is configured for one-by-one Homework Mode.
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -1068,7 +1137,9 @@ export function QuizExperiencePageContent({
       ? attemptMode !== "exam" && selfMarkedByQuestion[currentQuestion.id] === undefined
       : false;
   const canMoveForward =
-    currentQuestion && requiresSelfMark(currentQuestion)
+    assignmentSubmissionLocked
+      ? true
+      : currentQuestion && requiresSelfMark(currentQuestion)
       ? questionSubmitted && !pendingSelfMark
       : questionSubmitted;
 
@@ -1080,6 +1151,12 @@ export function QuizExperiencePageContent({
           <Link href={signUpPath} className="font-semibold text-accent hover:text-text">
             Save progress
           </Link>
+        </div>
+      ) : null}
+
+      {assignmentSubmissionLocked ? (
+        <div className="rounded-xl border border-danger/35 bg-danger/10 px-4 py-3 text-sm text-text">
+          This assignment is past due. You are in read-only mode and cannot submit answers or finish this attempt for grading.
         </div>
       ) : null}
 
@@ -1133,12 +1210,17 @@ export function QuizExperiencePageContent({
               }
               selfMarked={selfMarkedByQuestion[currentQuestion.id]}
               onSelfMark={markCurrentFreeQuestion}
-              lockInteraction={Boolean(submittedByQuestion[currentQuestion.id])}
+              lockInteraction={assignmentSubmissionLocked || Boolean(submittedByQuestion[currentQuestion.id])}
               disableSelfMark={attemptMode === "exam"}
               studyMode={attemptMode === "study"}
               showHintsBeforeSubmit={attemptMode === "study"}
               showExplanation={attemptMode === "study" ? true : Boolean(showExplanation[currentQuestion.id])}
               revealCorrectness={attemptMode !== "exam"}
+              interactionNotice={
+                assignmentSubmissionLocked
+                  ? "This assignment is past due. Review the question content, but submissions are locked."
+                  : undefined
+              }
               onToggleExplanation={() =>
                 setShowExplanation((prev) => ({
                   ...prev,
@@ -1155,9 +1237,13 @@ export function QuizExperiencePageContent({
             </Button>
 
             {currentIndex === order.length - 1 ? (
-              <Button onClick={finalizeAttempt} disabled={!canMoveForward}>
-                Finish Quiz
-              </Button>
+              assignmentSubmissionLocked ? (
+                <Button onClick={() => setStage("overview")}>Back to assignment overview</Button>
+              ) : (
+                <Button onClick={finalizeAttempt} disabled={!canMoveForward}>
+                  Finish Quiz
+                </Button>
+              )
             ) : (
               <Button onClick={gotoNext} disabled={!canMoveForward}>
                 Next
