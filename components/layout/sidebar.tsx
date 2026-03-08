@@ -322,7 +322,7 @@ export function Sidebar() {
 
   const showAnnouncements = showProfessor || hasJoinedSection;
   const showSections = showProfessor || hasJoinedSection;
-  const showGrades = !showProfessor && !showSchoolAdmin && profile.role !== "professor" && hasJoinedSection;
+  const showGrades = !showProfessor && !showSchoolAdmin && profile.role === "student";
 
   const items = useMemo(
     () =>
