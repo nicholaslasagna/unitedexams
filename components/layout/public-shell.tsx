@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ConstellationPattern } from "@/components/ui/constellation-pattern";
 import { useAppData } from "@/lib/app-data-context";
 import { isUniversityAdmin, isVerifiedProfessor } from "@/lib/auth/roles";
+import { resolveProfileInternalName } from "@/lib/profile-name";
 import { cn } from "@/lib/utils";
 
 const guestNavItems = [
@@ -41,6 +42,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
 
   const isProfessor = isVerifiedProfessor(profile);
   const isSchoolAdmin = isUniversityAdmin(profile);
+  const accountName = resolveProfileInternalName(profile, "Account");
 
   useEffect(() => {
     if (!isAuthenticated || !supabase || !user || isProfessor || isSchoolAdmin) {
@@ -151,7 +153,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
                   Sign out
                 </Button>
                 <span className="hidden rounded-lg border border-borderc bg-soft px-2 py-1 text-xs text-muted lg:inline">
-                  {profile.name || "Account"}
+                  {accountName}
                 </span>
               </>
             ) : (

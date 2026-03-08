@@ -14,7 +14,9 @@ import { courses } from "@/data/seed";
 import {
   fetchUniversities,
   fetchUserCourses,
+  getMyProfileNameChangeRequests,
   onboardingStatus,
+  requestProfileNameChange,
   saveUserCourses
 } from "@/features/account/api";
 import {
@@ -30,6 +32,7 @@ import {
   normalizeRealName,
   validateRealName
 } from "@/lib/auth/display-name";
+import type { ProfileNameChangeRequestRow } from "@/features/account/api";
 
 function parseOnboardingParam() {
   if (typeof window === "undefined") return false;
@@ -68,6 +71,7 @@ export function AccountPageContent() {
 
   const [saving, setSaving] = useState(false);
   const [savingCourses, setSavingCourses] = useState(false);
+  const [savingNameRequest, setSavingNameRequest] = useState(false);
   const [privacyError, setPrivacyError] = useState<string | null>(null);
   const [joiningSection, setJoiningSection] = useState(false);
   const [leavingSectionId, setLeavingSectionId] = useState<string | null>(null);
@@ -81,6 +85,7 @@ export function AccountPageContent() {
   const [showUserId, setShowUserId] = useState(false);
   const [joinedSections, setJoinedSections] = useState<JoinedSectionSummary[]>([]);
   const [loadingJoinedSections, setLoadingJoinedSections] = useState(false);
+  const [nameChangeRequests, setNameChangeRequests] = useState<ProfileNameChangeRequestRow[]>([]);
   const staffUniversityLocked = profile.role === "professor" || profile.role === "admin";
 
   const selectedUniversity = useMemo(
@@ -94,6 +99,11 @@ export function AccountPageContent() {
     return universities.filter((item) => item.name.toLowerCase().includes(q));
   }, [universities, search]);
 
+  const pendingNameChangeRequest = useMemo(
+    () => nameChangeRequests.find((request) => request.status === "pending") ?? null,
+    [nameChangeRequests]
+  );
+
   useEffect(() => {
     setDisplayName(profile.name || "");
     setRealName(profile.realName || "");
@@ -101,6 +111,12 @@ export function AccountPageContent() {
     setShowUniversity(Boolean(profile.showUniversity));
     setSelectedUniversityId(profile.universityId);
   }, [profile]);
+
+  useEffect(() => {
+    if (!pendingNameChangeRequest) return;
+    if (normalizeRealName(realName) !== normalizeRealName(profile.realName || "")) return;
+    setRealName(pendingNameChangeRequest.requested_real_name);
+  }, [pendingNameChangeRequest, profile.realName, realName]);
 
   useEffect(() => {
     setOnboardingMode(parseOnboardingParam());
@@ -126,6 +142,19 @@ export function AccountPageContent() {
     }
   }, [supabase, user]);
 
+  const loadNameChangeRequests = useCallback(async () => {
+    if (!supabase || !user) {
+      setNameChangeRequests([]);
+      return;
+    }
+    try {
+      const rows = await getMyProfileNameChangeRequests(supabase);
+      setNameChangeRequests(rows);
+    } catch {
+      setNameChangeRequests([]);
+    }
+  }, [supabase, user]);
+
   useEffect(() => {
     if (!supabase || !user) {
       setJoinedSections([]);
@@ -141,7 +170,8 @@ export function AccountPageContent() {
       .catch(() => setSelectedCourses([]));
 
     void loadJoinedSections();
-  }, [loadJoinedSections, supabase, user]);
+    void loadNameChangeRequests();
+  }, [loadJoinedSections, loadNameChangeRequests, supabase, user]);
 
   useEffect(() => {
     if (!onboardingMode || !supabase || !user) return;
@@ -185,7 +215,7 @@ export function AccountPageContent() {
   };
 
   const persistProfileChanges = async ({
-    nextRealName = realName,
+    nextRealName = profile.realName || "",
     nextShowRealName = showRealName,
     nextShowUniversity = showUniversity,
     nextUniversityId = selectedUniversityId,
@@ -201,7 +231,7 @@ export function AccountPageContent() {
   }): Promise<boolean> => {
     setPrivacyError(null);
 
-    // Display name stays permanent; real name remains editable for legal/personal updates.
+    // Display name stays permanent; real-name changes are routed through university approval.
     const safeDisplayName = profile.name;
     const safeRealName = nextRealName;
 
@@ -228,7 +258,7 @@ export function AccountPageContent() {
       await saveProfile({
         ...profile,
         name: safeDisplayName.trim() || "Student",
-        realName: normalizedRealName || undefined,
+        realName: profile.realName,
         showRealName: nextShowRealName,
         showUniversity: nextShowUniversity,
         universityId: nextUniversityId
@@ -249,7 +279,13 @@ export function AccountPageContent() {
   };
 
   const saveAccount = async () => {
+    const currentRealName = normalizeRealName(profile.realName || "");
+    const requestedRealName = normalizeRealName(realName);
+    const hasRealNameChange = requestedRealName !== currentRealName;
+    let submittedNameRequest = false;
+
     const profileSaved = await persistProfileChanges({
+      nextRealName: profile.realName || "",
       showSuccessToast: false
     });
     if (!profileSaved) return;
@@ -257,7 +293,36 @@ export function AccountPageContent() {
     const coursesSaved = await persistCourses(selectedCourses);
     if (!coursesSaved) return;
 
-    push({ title: "Account updated", tone: "success" });
+    if (hasRealNameChange) {
+      if (!requestedRealName) {
+        setPrivacyError("Real name changes require a valid full name.");
+        return;
+      }
+
+      setSavingNameRequest(true);
+      try {
+        await requestProfileNameChange(requestedRealName);
+        await loadNameChangeRequests();
+        submittedNameRequest = true;
+      } catch (error) {
+        push({
+          title: "Name change not submitted",
+          description: (error as Error).message,
+          tone: "error"
+        });
+        return;
+      } finally {
+        setSavingNameRequest(false);
+      }
+    }
+
+    push({
+      title: "Account updated",
+      description: submittedNameRequest
+        ? "Profile changes were saved and your real-name update was sent for university approval."
+        : undefined,
+      tone: "success"
+    });
   };
 
   const nextOnboardingStep = async () => {
@@ -383,7 +448,17 @@ export function AccountPageContent() {
                 onChange={(event) => setRealName(event.target.value)}
                 placeholder="Your legal/full name"
               />
-              <p className="text-xs text-text-secondary">You can update this if your legal name changes.</p>
+              <p className="text-xs text-text-secondary">
+                Real-name changes require approval from your university admin.
+              </p>
+              {pendingNameChangeRequest ? (
+                <p className="text-xs text-accent">
+                  Pending approval: {pendingNameChangeRequest.requested_real_name}
+                  {pendingNameChangeRequest.created_at
+                    ? ` · requested ${new Date(pendingNameChangeRequest.created_at).toLocaleString()}`
+                    : ""}
+                </p>
+              ) : null}
             </div>
           </div>
 
@@ -494,7 +569,7 @@ export function AccountPageContent() {
             ) : null}
           </div>
 
-          <Button onClick={saveAccount} loading={saving || savingCourses}>
+          <Button onClick={saveAccount} loading={saving || savingCourses || savingNameRequest}>
             Save changes
           </Button>
         </CardBody>

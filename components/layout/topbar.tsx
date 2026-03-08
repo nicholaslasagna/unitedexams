@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { courses, quizSets } from "@/data/seed";
 import { useAppData } from "@/lib/app-data-context";
 import { useToast } from "@/lib/hooks/use-toast";
+import { resolveProfileInternalName } from "@/lib/profile-name";
 
 function labelForPath(pathname: string) {
   const segment = pathname.split("/").filter(Boolean)[1] ?? "dashboard";
@@ -75,7 +76,8 @@ export function Topbar() {
     }, 350);
   };
 
-  const initials = (profile.name || "S").slice(0, 1).toUpperCase();
+  const accountName = resolveProfileInternalName(profile);
+  const initials = accountName.slice(0, 1).toUpperCase();
 
   return (
     <header className="sticky top-0 z-40 border-b border-borderc bg-surface/90 backdrop-blur-xl">
@@ -107,7 +109,7 @@ export function Topbar() {
                 </summary>
                 <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-borderc bg-surface p-3 shadow-elevated backdrop-blur-xl animate-fade-rise">
                   <p className="text-caption font-bold uppercase tracking-[1.5px] text-faint">Account</p>
-                  <p className="mt-1 text-sm font-semibold text-text">{profile.name || "Student"}</p>
+                  <p className="mt-1 text-sm font-semibold text-text">{accountName}</p>
                   <p className="text-xs text-faint">{user.email || profile.email || "No email"}</p>
                   <div className="mt-3 space-y-1 border-t border-borderc pt-2">
                     <button
@@ -206,11 +208,11 @@ export function Topbar() {
                   <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-subtle text-xs font-bold text-accent">
                     {initials}
                   </span>
-                  <span>{profile.name || "Student"}</span>
+                  <span>{accountName}</span>
                 </summary>
                 <div className="absolute right-0 mt-2 w-60 rounded-xl border border-borderc bg-surface p-3 shadow-elevated backdrop-blur-xl animate-fade-rise">
                   <p className="text-caption font-bold uppercase tracking-[1.5px] text-faint">Account</p>
-                  <p className="mt-1 text-sm font-semibold text-text">{profile.name || "Student"}</p>
+                  <p className="mt-1 text-sm font-semibold text-text">{accountName}</p>
                   <p className="text-xs text-faint">{user.email || profile.email || "No email"}</p>
                   <div className="mt-3 space-y-0.5 border-t border-borderc pt-2">
                     <button

@@ -57,6 +57,7 @@ export interface SectionMemberRow {
   joined_at: string;
   profiles?: {
     display_name: string;
+    real_name: string | null;
     email: string | null;
   }[] | null;
 }
@@ -439,7 +440,7 @@ export async function deleteSectionAssignment(_client: SupabaseClient, assignmen
 export async function listSectionMembers(client: SupabaseClient, sectionId: string) {
   const { data, error } = await client
     .from("section_members")
-    .select("user_id, role, joined_at, profiles(display_name, email)")
+    .select("user_id, role, joined_at, profiles(display_name, real_name, email)")
     .eq("section_id", sectionId)
     .order("joined_at", { ascending: true });
 

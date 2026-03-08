@@ -24,6 +24,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppData } from "@/lib/app-data-context";
 import { isUniversityAdmin, isVerifiedProfessor } from "@/lib/auth/roles";
+import { resolveProfileInternalName } from "@/lib/profile-name";
 import type { LucideIcon } from "lucide-react";
 
 interface NavItem {
@@ -275,6 +276,7 @@ function NavigationList({
 export function Sidebar() {
   const pathname = usePathname();
   const { profile, isAuthenticated, supabase, user } = useAppData();
+  const accountName = resolveProfileInternalName(profile);
   const showProfessor = isVerifiedProfessor(profile);
   const showSchoolAdmin = isUniversityAdmin(profile);
   const [hasJoinedSection, setHasJoinedSection] = useState(false);
@@ -446,7 +448,7 @@ export function Sidebar() {
 
                 <div className="mt-4 rounded-[1.4rem] border border-borderc bg-[linear-gradient(135deg,hsl(var(--brand-1)/0.18),hsl(var(--surface)),hsl(var(--brand-3)/0.14))] p-4">
                   <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-accent">Workspace</p>
-                  <p className="mt-2 text-base font-semibold text-text">{profile.name || "Student"}</p>
+                  <p className="mt-2 text-base font-semibold text-text">{accountName}</p>
                   <p className="mt-1 text-sm text-text-secondary">
                     {showSchoolAdmin
                       ? "University administration tools"

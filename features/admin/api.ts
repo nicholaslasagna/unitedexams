@@ -3,10 +3,27 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export interface ManagedProfessorRow {
   professor_id: string;
   display_name: string;
+  real_name: string | null;
   email: string | null;
   professor_verified: boolean;
   professor_verified_at: string | null;
   created_at: string;
+}
+
+export interface ManagedProfileNameChangeRequestRow {
+  request_id: string;
+  user_id: string;
+  account_role: "student" | "professor" | "admin";
+  email: string | null;
+  display_name: string;
+  real_name: string | null;
+  current_name: string;
+  requested_real_name: string;
+  status: "pending" | "approved" | "rejected" | "cancelled";
+  reviewed_at: string | null;
+  rejection_reason: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ProfessorCodeStatusRow {
@@ -29,6 +46,12 @@ export async function getManagedProfessors(client: SupabaseClient) {
   const { data, error } = await client.rpc("get_managed_professors");
   if (error) throw error;
   return (data ?? []) as ManagedProfessorRow[];
+}
+
+export async function getManagedProfileNameChangeRequests(client: SupabaseClient) {
+  const { data, error } = await client.rpc("get_managed_profile_name_change_requests");
+  if (error) throw error;
+  return (data ?? []) as ManagedProfileNameChangeRequestRow[];
 }
 
 export async function getProfessorVerificationCodeStatus(client: SupabaseClient) {
@@ -59,4 +82,19 @@ export async function setManagedProfessorVerification(
     body: JSON.stringify({ approved: payload.approved })
   });
   await parseJsonResponse<{ ok: true }>(response, "Unable to update professor status.");
+}
+
+export async function reviewManagedProfileNameChangeRequest(
+  _client: SupabaseClient,
+  payload: { requestId: string; approved: boolean; rejectionReason?: string }
+) {
+  const response = await fetch(`/api/admin/name-change-requests/${payload.requestId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      approved: payload.approved,
+      rejectionReason: payload.rejectionReason ?? null
+    })
+  });
+  await parseJsonResponse<{ ok: true }>(response, "Unable to review name change request.");
 }

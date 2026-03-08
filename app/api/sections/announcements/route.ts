@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { escapeHtml, sendMailerSendEmail } from "@/lib/email/mailer";
+import { resolveInternalName } from "@/lib/profile-name";
 
 const inputSchema = z.object({
   sectionId: z.string().uuid(),
@@ -121,7 +122,7 @@ export async function POST(request: NextRequest) {
       .select("name, section_name, course_id")
       .eq("id", payload.sectionId)
       .maybeSingle(),
-    supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle(),
+    supabase.from("profiles").select("display_name, real_name").eq("id", user.id).maybeSingle(),
     supabase.rpc("get_section_notification_recipients", { section_id_input: payload.sectionId })
   ]);
 
@@ -135,7 +136,11 @@ export async function POST(request: NextRequest) {
     (sectionRow?.section_name && sectionRow.section_name.trim()) ||
     "Untitled Section";
   const courseId = sectionRow?.course_id || "course";
-  const postedBy = profileRow?.display_name || "Instructor";
+  const postedBy = resolveInternalName({
+    realName: profileRow?.real_name,
+    displayName: profileRow?.display_name,
+    fallback: "Instructor"
+  });
   const siteUrl = resolveSiteUrl(request);
 
   const { data: studentMembers } = await supabase
