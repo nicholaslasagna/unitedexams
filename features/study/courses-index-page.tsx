@@ -14,6 +14,7 @@ import { useAppData } from "@/lib/app-data-context";
 import { courseProgress } from "@/features/progress/metrics";
 import { resolveQuizSetMode } from "@/lib/study/set-mode";
 import { listJoinedSections } from "@/features/professor/api";
+import { listStudentCourseGrades, type StudentCourseGradeSummary } from "@/features/grades/api";
 import type { JoinedSectionSummary } from "@/features/professor/api";
 
 const courseArtworkById: Record<string, string> = {
@@ -44,6 +45,7 @@ export function CoursesIndexContent({
   const [difficulty, setDifficulty] = useState<string>("all");
   const [studentSectionsByCourseId, setStudentSectionsByCourseId] = useState<Record<string, JoinedSectionSummary[]>>({});
   const [selectedSectionByCourseId, setSelectedSectionByCourseId] = useState<Record<string, string>>({});
+  const [courseGradesById, setCourseGradesById] = useState<Record<string, StudentCourseGradeSummary>>({});
 
   const isStudent = profile.role === "student";
 
@@ -51,20 +53,29 @@ export function CoursesIndexContent({
     if (!isAuthenticated || !supabase || !user || !isStudent) {
       setStudentSectionsByCourseId({});
       setSelectedSectionByCourseId({});
+      setCourseGradesById({});
       return;
     }
 
     let active = true;
-    listJoinedSections(supabase, user.id)
-      .then((rows) => {
+    Promise.all([listJoinedSections(supabase, user.id), listStudentCourseGrades(supabase, user.id)])
+      .then(([rows, gradeRows]) => {
         if (!active) return;
+
         const nextByCourse: Record<string, JoinedSectionSummary[]> = {};
         for (const row of rows) {
           if (row.role !== "student") continue;
           if (row.isOwner) continue;
           nextByCourse[row.courseId] = [...(nextByCourse[row.courseId] ?? []), row];
         }
+
+        const nextGrades: Record<string, StudentCourseGradeSummary> = {};
+        for (const gradeRow of gradeRows) {
+          nextGrades[gradeRow.courseId] = gradeRow;
+        }
+
         setStudentSectionsByCourseId(nextByCourse);
+        setCourseGradesById(nextGrades);
         setSelectedSectionByCourseId((prev) => {
           const nextSelected: Record<string, string> = {};
           for (const [courseId, sections] of Object.entries(nextByCourse)) {
@@ -78,6 +89,7 @@ export function CoursesIndexContent({
         if (!active) return;
         setStudentSectionsByCourseId({});
         setSelectedSectionByCourseId({});
+        setCourseGradesById({});
       });
 
     return () => {
@@ -160,6 +172,7 @@ export function CoursesIndexContent({
             : withPrefix(routePrefix, `/courses/${course.id}`);
           const primaryLabel = hasCourseSections ? "Open class materials" : "Study materials";
           const selectedSection = courseSections.find((section) => section.sectionId === selectedSectionId);
+          const gradeSummary = courseGradesById[course.id];
           const selectedSectionLabel = selectedSection
             ? selectedSection.term
               ? `${selectedSection.sectionName} (${selectedSection.term})`
@@ -226,7 +239,36 @@ export function CoursesIndexContent({
                     {quizCount} quiz • {examCount} exam • {homeworkCount} hw
                   </Badge>
                   <Badge tone="success"><span className="font-mono">{progress}%</span> mastery</Badge>
+                  {isStudent ? (
+                    gradeSummary?.average !== null && gradeSummary?.average !== undefined ? (
+                      <Badge tone={gradeSummary.average >= 90 ? "success" : gradeSummary.average >= 75 ? "brand" : gradeSummary.average >= 60 ? "warn" : "danger"}>
+                        {gradeSummary.average}% overall
+                      </Badge>
+                    ) : (
+                      <Badge tone="default">No grade yet</Badge>
+                    )
+                  ) : null}
                 </div>
+
+                {isStudent ? (
+                  <div className="rounded-[1rem] border border-borderc bg-soft px-3 py-2 text-xs text-text-secondary">
+                    {gradeSummary ? (
+                      <>
+                        <span className="font-semibold text-text">{gradeSummary.gradedCount}</span> graded
+                        {gradeSummary.pendingCount > 0 ? (
+                          <>
+                            {" · "}
+                            <span className="font-semibold text-text">{gradeSummary.pendingCount}</span> pending
+                          </>
+                        ) : null}
+                      </>
+                    ) : hasCourseSections ? (
+                      "Joined section, but no graded work has posted yet."
+                    ) : (
+                      "No joined section yet."
+                    )}
+                  </div>
+                ) : null}
 
                 <div className="flex flex-wrap gap-2">
                   {course.tags.map((tag) => (
