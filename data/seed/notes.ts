@@ -4,6 +4,287 @@ export interface CourseContent {
   resources: { label: string; href: string; type: "video" | "article" | "book" | "tool" }[];
 }
 
+const computerArchitectureMidtermNotes = `## Computer Architecture Midterm Master Notes (CS 3375)
+
+Built directly around the **Spring 2025 midterm** you provided.
+
+> **What the actual exam tested:** C-to-RISC-V translation, procedure calls + stack frames, machine-code encode/decode, 5-stage pipeline hazards/timing, and 2-bit branch prediction.
+
+## Exact Midterm Map
+
+### A1. C to RISC-V
+
+You must be able to convert:
+
+  - a simple \`if/else\`
+  - a counted \`for\` loop
+  - array indexing with scaled offsets
+
+**Solve pattern**
+
+  - Write the C control-flow shape first: compare, branch target, fall-through path, merge point.
+  - For \`if (i == j)\`, branch on equality, let the \`else\` body be fall-through, and jump over the \`if\` body after the else path.
+  - For integer arrays, remember:
+    - \`A[i]\` offset = \`4*i\`
+    - \`A[2*i]\` offset = \`8*i\`
+  - Replace multiplication by powers of two with \`slli\`.
+  - For \`i <= 100\`, a clean branch-exit form is to compare against \`101\` and exit when \`i >= 101\`.
+
+### A2. Procedure Calls + Stack
+
+You must know the difference between:
+
+  - **leaf procedure**: does not call another function
+  - **non-leaf procedure**: calls another function and must preserve what it needs
+
+**Calling convention anchors**
+
+  - arguments: \`a0-a7\`
+  - return value: \`a0\`
+  - return address: \`ra\`
+  - saved registers: \`s0-s11\`
+
+**Solve pattern**
+
+  - If the function calls another function, save \`ra\`.
+  - Save any \`s\` registers you decide to use.
+  - Preserve the first result before making the second call.
+  - Restore registers and deallocate stack before returning.
+
+### A3. Assembly to Machine Code
+
+For \`addi t0, zero, -101\`:
+
+  - format: **I-type**
+  - opcode for \`addi\`: \`0010011\`
+  - \`rd = x5 (t0)\`
+  - \`rs1 = x0 (zero)\`
+  - \`funct3 = 000\`
+  - 12-bit two's complement of \`-101\` = \`0xF9B\`
+  - final hex: **\`0xF9B00293\`**
+
+**Solve pattern**
+
+  - Identify instruction format.
+  - Write fields in exact bit order.
+  - Convert signed immediate carefully before assembling hex.
+
+### A4. Machine Code to Assembly
+
+For \`0x4168_0FB3\`:
+
+  - opcode \`0110011\` -> **R-type**
+  - \`rd = x31 = t6\`
+  - \`rs1 = x16 = a6\`
+  - \`rs2 = x22 = s6\`
+  - \`funct3 = 000\`
+  - \`funct7 = 0100000\`
+  - final instruction: **\`sub t6, a6, s6\`**
+
+**Solve pattern**
+
+  - Extract opcode first.
+  - If R-type, decode \`rd | funct3 | rs1 | rs2 | funct7\`.
+  - Use \`funct3 + funct7\` together to distinguish operations like \`add\` vs \`sub\`.
+
+### A5. RAW Hazards + Pipeline Timing
+
+Code:
+
+\`\`\`
+lw  sp, 20(ra)
+and tp, sp, t0
+or  s0, sp, t1
+add s1, tp, t0
+beq s0, s1, label
+\`\`\`
+
+**RAW dependencies**
+
+  - \`lw -> and\` on \`sp\`
+  - \`lw -> or\` on \`sp\`
+  - \`and -> add\` on \`tp\`
+  - \`or -> beq\` on \`s0\`
+  - \`add -> beq\` on \`s1\`
+
+**Pipeline timing numbers**
+
+Assuming the standard 5-stage class model with:
+
+  - \`IF, ID, EX, MEM, WB\`
+  - normal register-file write/read timing
+  - forwarding into later pipeline stages
+  - branch comparison resolved in the pipeline datapath rather than counting only fetch
+
+Then the full pipeline-drain counts are:
+
+  - **No forwarding:** \`14\` clock cycles
+  - **With forwarding:** \`10\` clock cycles
+
+If your instructor instead stops counting at **branch resolution in EX** rather than draining the remaining empty stages, the same schedule is often reported as:
+
+  - **No forwarding:** \`12\`
+  - **With forwarding:** \`8\`
+
+State your timing assumption clearly on the exam. The stall logic is the main thing being graded.
+
+**Why**
+
+  - Without forwarding, \`lw -> and\` causes the biggest early delay.
+  - \`and -> add\` still forces waiting in the no-forwarding case.
+  - With forwarding, almost everything clears except the classic load-use penalty.
+
+### A6. 5-Stage Pipeline + 2-Bit Predictor
+
+You need both:
+
+  - the **block diagram / stage explanation**
+  - the **control-hazard explanation with 2-bit predictor FSM**
+
+**Stage responsibilities**
+
+  - \`IF\`: fetch instruction, advance/select next PC
+  - \`ID\`: decode, read registers, generate immediate/control
+  - \`EX\`: ALU op, address calc, branch compare/target
+  - \`MEM\`: load/store memory access
+  - \`WB\`: write final result back to register file
+
+**Hazard difference**
+
+  - **Data hazard**: an instruction needs a value that is not ready yet
+  - **Control hazard**: the next PC is uncertain because branch outcome/target is not yet known
+
+**2-bit predictor states**
+
+  - Strongly Not Taken
+  - Weakly Not Taken
+  - Weakly Taken
+  - Strongly Taken
+
+Prediction rule:
+
+  - predict **Not Taken** in the two not-taken states
+  - predict **Taken** in the two taken states
+
+Update rule:
+
+  - a correct outcome strengthens the current state
+  - a wrong outcome weakens it
+  - it takes **two opposite outcomes** to flip a strong prediction
+
+## Exact Exam-Day Workflow
+
+When you see a problem, classify it immediately:
+
+  - branch / loop translation
+  - procedure + stack
+  - encoding
+  - decoding
+  - hazard list
+  - pipeline timing
+  - branch prediction
+
+Then use the smallest reliable template you know.
+
+## What You Should Memorize Cold
+
+  - RISC-V register names used often in class: \`zero, ra, sp, t0-t6, s0-s11, a0-a7\`
+  - R/I/S/B/U/J formats
+  - \`addi\` is I-type
+  - array offsets for \`int\` arrays are multiples of 4
+  - 5 pipeline stages in order
+  - 4 states of the 2-bit predictor
+
+## Common Midterm Mistakes
+
+  - forgetting to multiply array index by 4 bytes
+  - missing the unconditional jump after the \`else\` body
+  - not saving \`ra\` in a non-leaf procedure
+  - confusing \`add\`/\`sub\` decode because funct3 is the same and funct7 changes
+  - listing dependencies but not labeling the actual RAW hazard edges
+  - giving a branch-predictor definition without the state transitions
+
+## Best Study Plan Right Now
+
+  1. Do one full timed run of the new midterm simulation.
+  2. Rework every missed part without looking at the answer for 10 minutes.
+  3. Drill A3/A4 encoding-decoding by hand until it feels routine.
+  4. Redraw the A5 timing table twice: once no forwarding, once with forwarding.
+  5. Recite the 2-bit predictor FSM out loud from memory.
+`;
+
+const computerArchitectureMidtermCheatSheet = `## Computer Architecture Midterm Cheat Sheet (CS 3375)
+
+Built from the **Spring 2025 midterm**.
+
+> **If you can do these six things cleanly, you are aligned to the exam.**
+
+## 1. C to RISC-V
+
+  - \`if/else\`: compare -> branch -> fall-through else -> jump -> merge
+  - \`A[i]\` offset = \`4*i\`
+  - \`A[2*i]\` offset = \`8*i\`
+  - \`i <= 100\` can be written as exit when \`i >= 101\`
+
+## 2. Procedure + Stack
+
+  - non-leaf function saves \`ra\`
+  - save any \`s\` registers you use
+  - return value always in \`a0\`
+
+## 3. Encode \`addi t0, zero, -101\`
+
+  - I-type
+  - immediate = \`0xF9B\`
+  - final hex = **\`0xF9B00293\`**
+
+## 4. Decode \`0x4168_0FB3\`
+
+  - R-type
+  - final instruction = **\`sub t6, a6, s6\`**
+
+## 5. Hazards for the Given Pipeline Question
+
+RAW edges:
+
+  - \`lw -> and\` on \`sp\`
+  - \`lw -> or\` on \`sp\`
+  - \`and -> add\` on \`tp\`
+  - \`or -> beq\` on \`s0\`
+  - \`add -> beq\` on \`s1\`
+
+Timing under the standard full-drain count:
+
+  - no forwarding = **14**
+  - forwarding = **10**
+
+If counting only to branch EX resolution:
+
+  - no forwarding = **12**
+  - forwarding = **8**
+
+## 6. 2-Bit Predictor
+
+States:
+
+  - Strongly Not Taken
+  - Weakly Not Taken
+  - Weakly Taken
+  - Strongly Taken
+
+Rules:
+
+  - weak states flip easily
+  - strong states need two opposite outcomes to fully flip
+
+## Last-Minute Memory Checks
+
+  - 5 pipeline stages: \`IF -> ID -> EX -> MEM -> WB\`
+  - data hazard = missing operand timing
+  - control hazard = uncertain next PC
+  - \`addi\` uses a **signed 12-bit immediate**
+`;
+
 export const notesByCourse: Record<string, CourseContent> = {
   "software-engineering": {
     "notes": "## Software Engineering Test 1 Cheat Sheet\n\nUse this as a high-signal review before quiz attempts. Focus on **concept contrasts**, not just definitions.\n\n> **Exam pattern:** Most misses come from mixing similar concepts (e.g., *user vs system requirements*, *validation vs verification*, *waterfall vs incremental*).\n\n### Core Product Attributes\n\n  - **Maintainability**: can evolve with changing needs.\n\n  - **Dependability & security**: safe, reliable, and trusted behavior.\n\n  - **Efficiency**: does not waste compute/memory resources.\n\n  - **Acceptability**: understandable, usable, and compatible for users.\n\n### Process Models\n\n  - **Waterfall**: sequential, plan-driven, strong documentation, weak flexibility.\n\n  - **Incremental**: delivers in slices, supports change, early feedback.\n\n  - **Agile (Scrum/XP)**: short cycles, continuous collaboration, frequent delivery.\n\n### Requirements Engineering\n\n  - **Elicitation**: interviews, scenarios, ethnography, workshops.\n\n  - **Specification**: user requirements (high-level) and system requirements (detailed).\n\n  - **Validation checks**: validity, consistency, completeness, realism, verifiability.\n\n### Agile Manifesto Values\n\n  - Individuals and interactions over processes and tools.\n\n  - Working software over comprehensive documentation.\n\n  - Customer collaboration over contract negotiation.\n\n  - Responding to change over following a plan.\n\n### Quick Traps\n\n  - Prototypes are often **throw-away**; not production-ready by default.\n\n  - Maintenance usually exceeds initial development cost in long-lived systems.\n\n  - Non-functional requirements are not optional; they define quality constraints.\n",
@@ -48,8 +329,8 @@ export const notesByCourse: Record<string, CourseContent> = {
     ]
   },
   "computer-architecture": {
-    "notes": "## Computer Architecture Exam Notes (CS 3375)\n\nThese notes mirror your **Midterm Spring 2025**, Topic 1/2 slides, RISC-V handout, and assembly drills.\n\n> **Exam focus pattern:** code translation, machine-code encoding/decoding, hazard analysis on a 5-stage pipeline, and branch prediction behavior.\n\n### Topic 1 Fundamentals\n\n  - Performance metrics: **response time** vs **throughput**.\n\n  - Speedup = execution time old / execution time new.\n\n  - Processor equation: `CPU time = IC x CPI x cycle time`.\n\n  - Architecture design balances performance with cost, power, and availability.\n\n### RISC-V Essentials\n\n  - 32 integer registers; `x0 = 0` always.\n\n  - Common formats: R, I, S, B, U, J.\n\n  - Load/store use base+offset addressing.\n\n  - Calling convention quick anchors: args in `a0-a7`, return in `a0`, return address in `ra`.\n\n### Assembly and Machine Code\n\n  - Array indexing: for int arrays, byte offset = index x 4.\n\n  - `A[2*i]` offset is `8*i` (shift left by 3).\n\n  - Sign-immediate sanity: `addi` uses 12-bit signed immediate.\n\n  - Practice both directions: assembly -> hex and hex -> assembly.\n\n### 5-Stage Pipeline (IF, ID, EX, MEM, WB)\n\n  - **RAW hazards**: consumer reads before producer writeback.\n\n  - Forwarding removes many ALU-to-ALU stalls.\n\n  - Load-use usually still needs at least one bubble.\n\n  - Control hazards come from branch outcome/target uncertainty.\n\n### Branch Prediction\n\n  - Predicted-not-taken is simple baseline.\n\n  - 2-bit predictor uses Strong/Weak Taken and Strong/Weak Not-Taken states.\n\n  - Hysteresis lowers mispredictions for strongly biased branches.\n\n### What to Drill Before Quiz\n\n  - Translate `if/else` and `for` loops into clean RISC-V.\n\n  - Decode one R-type and one I-type instruction from hex by hand.\n\n  - Draw a 5-stage timing chart and mark RAW/control hazards + stalls/forwarding.\n",
-    "cheatSheet": "## Computer Architecture Exam Notes (CS 3375)\n\nThese notes mirror your **Midterm Spring 2025**, Topic 1/2 slides, RISC-V handout, and assembly drills.\n\n> **Exam focus pattern:** code translation, machine-code encoding/decoding, hazard analysis on a 5-stage pipeline, and branch prediction behavior.\n\n### Topic 1 Fundamentals\n\n  - Performance metrics: **response time** vs **throughput**.\n\n  - Speedup = execution time old / execution time new.\n\n  - Processor equation: `CPU time = IC x CPI x cycle time`.\n\n  - Architecture design balances performance with cost, power, and availability.\n\n### RISC-V Essentials\n\n  - 32 integer registers; `x0 = 0` always.\n\n  - Common formats: R, I, S, B, U, J.\n\n  - Load/store use base+offset addressing.\n\n  - Calling convention quick anchors: args in `a0-a7`, return in `a0`, return address in `ra`.\n\n### Assembly and Machine Code\n\n  - Array indexing: for int arrays, byte offset = index x 4.\n\n  - `A[2*i]` offset is `8*i` (shift left by 3).\n\n  - Sign-immediate sanity: `addi` uses 12-bit signed immediate.\n\n  - Practice both directions: assembly -> hex and hex -> assembly.\n\n### 5-Stage Pipeline (IF, ID, EX, MEM, WB)\n\n  - **RAW hazards**: consumer reads before producer writeback.\n\n  - Forwarding removes many ALU-to-ALU stalls.\n\n  - Load-use usually still needs at least one bubble.\n\n  - Control hazards come from branch outcome/target uncertainty.\n\n### Branch Prediction\n\n  - Predicted-not-taken is simple baseline.\n\n  - 2-bit predictor uses Strong/Weak Taken and Strong/Weak Not-Taken states.\n\n  - Hysteresis lowers mispredictions for strongly biased branches.\n\n### What to Drill Before Quiz\n\n  - Translate `if/else` and `for` loops into clean RISC-V.\n\n  - Decode one R-type and one I-type instruction from hex by hand.\n\n  - Draw a 5-stage timing chart and mark RAW/control hazards + stalls/forwarding.\n",
+    "notes": computerArchitectureMidtermNotes,
+    "cheatSheet": computerArchitectureMidtermCheatSheet,
     "resources": [
       {
         "label": "RISC-V ISA Manual",
