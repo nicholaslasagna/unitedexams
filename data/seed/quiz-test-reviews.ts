@@ -407,6 +407,166 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
     ]
   },
   {
+    id: "ca-midterm-s2025-sim",
+    courseId: "computer-architecture",
+    title: "Computer Architecture Midterm Simulation (Spring 2025)",
+    description:
+      "An 80-minute exam simulation built directly from the standard midterm. The real test asked students to answer any five out of six prompt groups; this version includes all six so you can overprepare.",
+    difficulty: "Advanced",
+    estMinutes: 80,
+    mode: "exam",
+    isExamSimulation: true,
+    questionCountTarget: 6,
+    tags: ["midterm", "exam-simulation", "midterm-practice", "risc-v", "pipeline"],
+    timerDefaultMinutes: 80,
+    questions: [
+      {
+        id: "ca-midterm-s2025-sim-q1",
+        type: "free",
+        prompt:
+          "Midterm Practice A1. Do both parts.\n\n(a) Convert to RISC-V assembly: `if (i == j) a = b + c; else a = b - c;` assuming `a, b, c, i, j` are in `a0, a1, a2, s6, s7`.\n\n(b) Convert to RISC-V assembly: `for (i = 0; i <= 100; i++) { A[2*i] = a + A[i]; }` assuming `i` is in `a0`, `a` is already in `s0`, and base address of `A` is `0xEA38_257C` stored in `s2`.",
+        explanation:
+          "This problem checks branch structure, loop structure, base+offset addressing, and shift-based index scaling.",
+        sampleAnswer:
+          "### (a)\n\n```asm\nbeq  s6, s7, equal\nsub  a0, a1, a2\nbeq  zero, zero, exit\n\nequal:\nadd  a0, a1, a2\n\nexit:\n```\n\n### (b)\n\n```asm\nlui  s2, 0xEA382\nori  s2, s2, 0x57C\naddi a0, zero, 0\naddi t0, zero, 101\n\nloop:\nbge  a0, t0, exit\nslli t1, a0, 2\nadd  t2, s2, t1\nlw   t3, 0(t2)\nadd  t4, s0, t3\nslli t5, a0, 3\nadd  t6, s2, t5\nsw   t4, 0(t6)\naddi a0, a0, 1\nbeq  zero, zero, loop\n\nexit:\n```",
+        hintSteps: [
+          "For part (a), branch on equality and keep the else path in fall-through.",
+          "For part (b), turn `i <= 100` into an exit condition using `101`.",
+          "Use `4*i` for `A[i]` and `8*i` for `A[2*i]`.",
+          "Load, compute, store, increment, then loop."
+        ],
+        walkthroughSteps: [
+          "Part (a): compare `s6` and `s7`; if equal, branch to the add case. Otherwise subtract in the fall-through path and jump to the merge label.",
+          "Part (b): load `0xEA38_257C` into `s2` with `lui` plus `ori`, initialize `i = 0`, and use `101` as the loop limit.",
+          "Compute the address of `A[i]` with `slli i, 2`; compute the address of `A[2*i]` with `slli i, 3`.",
+          "The core pattern is: `lw A[i]`, add `a`, `sw` to `A[2*i]`, increment `i`, and branch back."
+        ],
+        references: ["Midterm Practice - A1"],
+        tags: ["midterm", "assembly", "branching", "loops", "arrays"]
+      },
+      {
+        id: "ca-midterm-s2025-sim-q2",
+        type: "free",
+        prompt:
+          "Midterm Practice A2. Convert the following C functions to RISC-V assembly by properly using the standard RISC-V procedure-call convention and stack. Use `a0` and `a1` to pass `a` and `b`, and use `a0` for the return value.\n\n```c\nint sumofsq (int a, int b) {\n  return square(a) + square(b);\n}\n\nint square (int a) {\n  return a * a;\n}\n```",
+        explanation:
+          "This is a calling-convention problem. `sumofsq` is non-leaf, so it must save `ra` and whatever saved registers it uses.",
+        sampleAnswer:
+          "```asm\nsumofsq:\n  addi sp, sp, -16\n  sw   ra, 12(sp)\n  sw   s0, 8(sp)\n  sw   s1, 4(sp)\n  sw   s2, 0(sp)\n\n  mv   s0, a0\n  mv   s1, a1\n\n  mv   a0, s0\n  jal  ra, square\n  mv   s2, a0\n\n  mv   a0, s1\n  jal  ra, square\n  add  a0, a0, s2\n\n  lw   s2, 0(sp)\n  lw   s1, 4(sp)\n  lw   s0, 8(sp)\n  lw   ra, 12(sp)\n  addi sp, sp, 16\n  jalr zero, 0(ra)\n\nsquare:\n  mul  a0, a0, a0\n  jalr zero, 0(ra)\n```",
+        hintSteps: [
+          "Decide first which function is leaf and which is non-leaf.",
+          "Save `ra` in `sumofsq` because it calls `square`.",
+          "Preserve one square result before making the second call.",
+          "Return the final sum in `a0`."
+        ],
+        walkthroughSteps: [
+          "`square` is leaf, so it can simply compute `a0 * a0` and return.",
+          "`sumofsq` is non-leaf, so it allocates a stack frame and saves `ra` plus the `s` registers it uses.",
+          "Call `square(a)`, preserve that return value, then call `square(b)`.",
+          "Add the two return values into `a0`, restore the frame, and return."
+        ],
+        references: ["Midterm Practice - A2"],
+        tags: ["midterm", "procedures", "stack", "calling-convention"]
+      },
+      {
+        id: "ca-midterm-s2025-sim-q3",
+        type: "free",
+        prompt:
+          "Midterm Practice A3. Translate the assembly instruction `addi t0, zero, -101` into 32-bit RISC-V machine code in hex. Show the field mapping.",
+        explanation:
+          "This is an I-type encoding problem. The main trap is getting the signed 12-bit immediate wrong.",
+        sampleAnswer:
+          "Instruction format: **I-type**\n\n- immediate = `-101` -> 12-bit two's complement = `0xF9B`\n- `rs1 = zero = x0 = 00000`\n- `funct3 = 000`\n- `rd = t0 = x5 = 00101`\n- opcode for `addi` = `0010011`\n\nFinal hex: **`0xF9B00293`**",
+        hintSteps: [
+          "Start with the instruction format: `addi` is I-type.",
+          "Convert `-101` to 12-bit two's complement before filling the instruction.",
+          "Map `t0` to `x5` and `zero` to `x0`.",
+          "Assemble the fields in I-type bit order."
+        ],
+        walkthroughSteps: [
+          "The 12-bit signed immediate for `-101` is `0xF9B`.",
+          "The field order is `imm[11:0] | rs1 | funct3 | rd | opcode`.",
+          "Here that becomes `F9B | 00000 | 000 | 00101 | 0010011`.",
+          "Converting the full 32-bit pattern to hex gives `0xF9B00293`."
+        ],
+        references: ["Midterm Practice - A3"],
+        tags: ["midterm", "machine-code", "encoding", "i-type"]
+      },
+      {
+        id: "ca-midterm-s2025-sim-q4",
+        type: "free",
+        prompt:
+          "Midterm Practice A4. Translate the machine code `0x4168_0FB3` into a 32-bit RISC-V assembly instruction. Show the opcode/funct decomposition.",
+        explanation:
+          "This is an R-type decode. The trap is remembering that `funct7 = 0100000` with `funct3 = 000` means `sub`, not `add`.",
+        sampleAnswer:
+          "- opcode `0110011` -> R-type\n- `rd = x31 = t6`\n- `rs1 = x16 = a6`\n- `rs2 = x22 = s6`\n- `funct3 = 000`\n- `funct7 = 0100000`\n\nFinal instruction: **`sub t6, a6, s6`**",
+        hintSteps: [
+          "Extract the opcode first to identify the format.",
+          "For an R-type instruction, decode `rd`, `funct3`, `rs1`, `rs2`, and `funct7`.",
+          "Map register numbers to ABI names only after the bit fields are correct.",
+          "Use `funct7` plus `funct3` together to choose the ALU operation."
+        ],
+        walkthroughSteps: [
+          "Opcode `0110011` says the instruction is R-type.",
+          "The decoded fields are `rd = x31`, `rs1 = x16`, `rs2 = x22`, `funct3 = 000`, `funct7 = 0100000`.",
+          "Register ABI names are `t6`, `a6`, and `s6` respectively.",
+          "The `0100000 / 000` combination selects `sub`, so the instruction is `sub t6, a6, s6`."
+        ],
+        references: ["Midterm Practice - A4"],
+        tags: ["midterm", "machine-code", "decode", "r-type"]
+      },
+      {
+        id: "ca-midterm-s2025-sim-q5",
+        type: "free",
+        prompt:
+          "Midterm Practice A5. For the following RISC-V instructions, do both parts.\n\n```asm\nlw  sp, 20(ra)\nand tp, sp, t0\nor  s0, sp, t1\nadd s1, tp, t0\nbeq s0, s1, label\n```\n\n(a) Identify all RAW dependencies and hazards.\n\n(b) Determine the minimum number of clock cycles required for a 5-stage RISC-V pipeline with (i) no forwarding hardware and (ii) forwarding hardware.",
+        explanation:
+          "This question checks whether you can separate dependency identification from actual timing, then state your counting assumptions clearly.",
+        sampleAnswer:
+          "### (a) RAW dependencies\n\n- `lw -> and` on `sp`\n- `lw -> or` on `sp`\n- `and -> add` on `tp`\n- `or -> beq` on `s0`\n- `add -> beq` on `s1`\n\n### (b) Timing\n\nUnder the standard full pipeline-drain count used in a 5-stage timing chart:\n\n- **No forwarding:** `14` cycles\n- **With forwarding:** `10` cycles\n\nIf your instructor instead stops counting at **branch EX resolution** rather than draining the remaining stages, the same schedule is commonly reported as:\n\n- **No forwarding:** `12`\n- **With forwarding:** `8`\n\nState your assumption explicitly and keep the stall logic consistent.",
+        hintSteps: [
+          "List the destination register of each instruction first, then scan later readers.",
+          "Separate dependency identification from cycle counting.",
+          "Without forwarding, consumers wait for register writeback.",
+          "With forwarding, the major unavoidable stall is the load-use case."
+        ],
+        walkthroughSteps: [
+          "The RAW edges are `lw -> and`, `lw -> or`, `and -> add`, `or -> beq`, and `add -> beq`.",
+          "Without forwarding, the first load-use dependency causes the biggest early stall, and later consumers must still wait for writeback.",
+          "With forwarding, most ALU dependencies clear through bypass paths; the classic remaining issue is the load-use delay after `lw`.",
+          "If your class counts full pipeline drain, use `14` and `10`. If it stops at branch EX resolution, use `12` and `8`. Write the assumption so the grader knows what you counted."
+        ],
+        references: ["Midterm Practice - A5"],
+        tags: ["midterm", "pipeline", "hazards", "forwarding", "timing"]
+      },
+      {
+        id: "ca-midterm-s2025-sim-q6",
+        type: "free",
+        prompt:
+          "Midterm Practice A6. Do both parts.\n\n(a) Draw a block diagram of a 5-stage pipeline processor and explain how instructions are processed by each stage.\n\n(b) What is a control hazard? How is it different from a data hazard? How does a 2-bit dynamic branch predictor work? Explain with a finite-state machine.",
+        explanation:
+          "This is the architecture-concepts question. The grader is usually looking for stage responsibilities, hazard contrast, and the four 2-bit predictor states with correct transitions.",
+        sampleAnswer:
+          "### (a) 5-stage pipeline overview\n\n- **IF**: fetch instruction from instruction memory and choose next PC\n- **ID**: decode instruction, read register operands, generate immediate/control\n- **EX**: perform ALU operation, compute address, compare branch operands, compute branch target\n- **MEM**: access data memory for loads/stores\n- **WB**: write result back to the register file\n\nA correct diagram should show the main blocks and the pipeline registers between stages: `IF/ID`, `ID/EX`, `EX/MEM`, and `MEM/WB`.\n\n### (b) Hazards + 2-bit predictor\n\n- **Data hazard**: an instruction needs an operand value that has not been produced yet.\n- **Control hazard**: the processor does not yet know the correct next PC because a branch outcome/target is unresolved.\n\n2-bit predictor states:\n\n- Strongly Not Taken\n- Weakly Not Taken\n- Weakly Taken\n- Strongly Taken\n\nPrediction:\n\n- predict not taken in the first two states\n- predict taken in the second two states\n\nTransition idea:\n\n- a correct outcome strengthens the current state\n- one opposite outcome weakens confidence\n- it takes two opposite outcomes to move from strong taken to strong not taken, or vice versa",
+        hintSteps: [
+          "Name the five stages in order before explaining them.",
+          "Mention the pipeline registers between stages.",
+          "Define data hazard and control hazard by root cause, not just example.",
+          "List all four 2-bit predictor states and explain how the state moves on taken vs not-taken outcomes."
+        ],
+        walkthroughSteps: [
+          "For the diagram, include instruction memory, register file, ALU, data memory, and the pipeline registers `IF/ID`, `ID/EX`, `EX/MEM`, and `MEM/WB`.",
+          "Explain stage behavior in order: fetch, decode/register read, execute/address/compare, memory, writeback.",
+          "Data hazards are about operand readiness; control hazards are about uncertainty in the next instruction address.",
+          "The 2-bit predictor uses four saturating states so one wrong branch does not instantly flip a strong prediction."
+        ],
+        references: ["Midterm Practice - A6"],
+        tags: ["midterm", "pipeline", "branch-prediction", "control-hazard", "data-hazard"]
+      }
+    ]
+  },
+  {
     id: "ca-core-legacy",
     courseId: "computer-architecture",
     title: "Computer Architecture Test Review I (Free Response)",
