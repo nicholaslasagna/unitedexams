@@ -100,7 +100,9 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
         listSectionExams(supabase, resolvedSectionId)
       ]);
       setSection(sections.find((item) => item.id === resolvedSectionId) ?? null);
-      setRows(gradebookRows);
+      setRows(
+        gradebookRows.filter((row) => row.student_id !== profile?.id)
+      );
 
       const monitorRows = await Promise.all(
         examRows.map(async (exam) => {
@@ -138,7 +140,7 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
     } finally {
       setLoading(false);
     }
-  }, [resolvedSectionId, supabase]);
+  }, [profile?.id, resolvedSectionId, supabase]);
 
   useEffect(() => {
     let active = true;
