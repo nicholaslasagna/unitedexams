@@ -7,11 +7,15 @@ import { Input } from "@/components/ui/input";
 import { useAppData } from "@/lib/app-data-context";
 import { isUniversityAdmin } from "@/lib/auth/roles";
 import { useToast } from "@/lib/hooks/use-toast";
+import { resolveInternalName } from "@/lib/profile-name";
 import {
+  getManagedProfileNameChangeRequests,
   getManagedProfessors,
   getProfessorVerificationCodeStatus,
+  reviewManagedProfileNameChangeRequest,
   rotateProfessorVerificationCode,
   setManagedProfessorVerification,
+  type ManagedProfileNameChangeRequestRow,
   type ManagedProfessorRow,
   type ProfessorCodeStatusRow
 } from "@/features/admin/api";
@@ -22,16 +26,36 @@ export function ProfessorStaffAdminPage() {
   const [loading, setLoading] = useState(true);
   const [savingCode, setSavingCode] = useState(false);
   const [savingProfessorId, setSavingProfessorId] = useState<string | null>(null);
+  const [savingNameRequestId, setSavingNameRequestId] = useState<string | null>(null);
   const [status, setStatus] = useState<ProfessorCodeStatusRow | null>(null);
   const [professors, setProfessors] = useState<ManagedProfessorRow[]>([]);
+  const [nameChangeRequests, setNameChangeRequests] = useState<ManagedProfileNameChangeRequestRow[]>([]);
   const [nextCode, setNextCode] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
 
   const isAdmin = isUniversityAdmin(profile);
 
   const sortedProfessors = useMemo(
-    () => [...professors].sort((a, b) => a.display_name.localeCompare(b.display_name)),
+    () =>
+      [...professors].sort((a, b) =>
+        resolveInternalName({
+          realName: a.real_name,
+          displayName: a.display_name,
+          fallback: "Professor"
+        }).localeCompare(
+          resolveInternalName({
+            realName: b.real_name,
+            displayName: b.display_name,
+            fallback: "Professor"
+          })
+        )
+      ),
     [professors]
+  );
+
+  const pendingNameChangeRequests = useMemo(
+    () => nameChangeRequests.filter((request) => request.status === "pending"),
+    [nameChangeRequests]
   );
 
   const refresh = async () => {
@@ -42,12 +66,14 @@ export function ProfessorStaffAdminPage() {
 
     setLoading(true);
     try {
-      const [nextStatus, nextProfessors] = await Promise.all([
+      const [nextStatus, nextProfessors, nextNameChangeRequests] = await Promise.all([
         getProfessorVerificationCodeStatus(supabase),
-        getManagedProfessors(supabase)
+        getManagedProfessors(supabase),
+        getManagedProfileNameChangeRequests(supabase)
       ]);
       setStatus(nextStatus);
       setProfessors(nextProfessors);
+      setNameChangeRequests(nextNameChangeRequests);
     } catch (error) {
       push({
         title: "Unable to load professor staff",
@@ -56,6 +82,7 @@ export function ProfessorStaffAdminPage() {
       });
       setStatus(null);
       setProfessors([]);
+      setNameChangeRequests([]);
     } finally {
       setLoading(false);
     }
@@ -85,7 +112,7 @@ export function ProfessorStaffAdminPage() {
       <section>
         <h1 className="text-display-lg font-semibold tracking-tight">Professor Staff</h1>
         <p className="mt-2 text-sm text-text-secondary">
-          Manage teacher verification for your university only.
+          Manage professor verification and account name approvals for your university only.
         </p>
       </section>
 
@@ -169,7 +196,13 @@ export function ProfessorStaffAdminPage() {
                 className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-borderc bg-soft px-3 py-3"
               >
                 <div>
-                  <p className="text-sm font-semibold text-text">{professor.display_name}</p>
+                  <p className="text-sm font-semibold text-text">
+                    {resolveInternalName({
+                      realName: professor.real_name,
+                      displayName: professor.display_name,
+                      fallback: "Professor"
+                    })}
+                  </p>
                   <p className="text-xs text-muted">
                     {professor.email || "No email"}
                     {professor.professor_verified
@@ -209,6 +242,103 @@ export function ProfessorStaffAdminPage() {
                     }}
                   >
                     {professor.professor_verified ? "Revoke" : "Approve"}
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <h2 className="text-heading font-semibold">Pending Name Changes</h2>
+        </CardHeader>
+        <CardBody className="space-y-2">
+          {loading ? (
+            <p className="text-sm text-muted">Loading name change requests…</p>
+          ) : pendingNameChangeRequests.length === 0 ? (
+            <p className="text-sm text-muted">No pending name change requests for this university.</p>
+          ) : (
+            pendingNameChangeRequests.map((request) => (
+              <div
+                key={request.request_id}
+                className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-borderc bg-soft px-3 py-3"
+              >
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-text">{request.current_name}</p>
+                  <p className="text-xs text-muted">
+                    {request.account_role} · {request.email || "No email"}
+                  </p>
+                  <p className="text-xs text-text-secondary">
+                    Current real name: {request.real_name || "Not set"}
+                  </p>
+                  <p className="text-xs font-medium text-text">
+                    Requested real name: {request.requested_real_name}
+                  </p>
+                  <p className="text-[11px] text-muted">
+                    Requested {new Date(request.created_at).toLocaleString()}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    loading={savingNameRequestId === request.request_id}
+                    onClick={async () => {
+                      if (!supabase) return;
+                      setSavingNameRequestId(request.request_id);
+                      try {
+                        await reviewManagedProfileNameChangeRequest(supabase, {
+                          requestId: request.request_id,
+                          approved: false
+                        });
+                        push({
+                          title: "Name change rejected",
+                          tone: "success"
+                        });
+                        await refresh();
+                      } catch (error) {
+                        push({
+                          title: "Unable to reject name change",
+                          description: (error as Error).message,
+                          tone: "error"
+                        });
+                      } finally {
+                        setSavingNameRequestId(null);
+                      }
+                    }}
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    size="sm"
+                    loading={savingNameRequestId === request.request_id}
+                    onClick={async () => {
+                      if (!supabase) return;
+                      setSavingNameRequestId(request.request_id);
+                      try {
+                        await reviewManagedProfileNameChangeRequest(supabase, {
+                          requestId: request.request_id,
+                          approved: true
+                        });
+                        push({
+                          title: "Name change approved",
+                          tone: "success"
+                        });
+                        await refresh();
+                      } catch (error) {
+                        push({
+                          title: "Unable to approve name change",
+                          description: (error as Error).message,
+                          tone: "error"
+                        });
+                      } finally {
+                        setSavingNameRequestId(null);
+                      }
+                    }}
+                  >
+                    Approve
                   </Button>
                 </div>
               </div>

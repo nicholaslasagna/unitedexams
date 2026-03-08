@@ -8,6 +8,17 @@ interface CourseCatalogRow {
   title: string | null;
 }
 
+export interface ProfileNameChangeRequestRow {
+  request_id: string;
+  current_real_name: string | null;
+  requested_real_name: string;
+  status: "pending" | "approved" | "rejected" | "cancelled";
+  reviewed_at: string | null;
+  rejection_reason: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 async function fetchCourseCatalog(client: SupabaseClient) {
   const { data, error } = await client.from("courses").select("id, code, title");
   if (error) throw error;
@@ -176,4 +187,29 @@ export async function onboardingStatus(client: SupabaseClient, userId: string) {
     hasUniversity: Boolean(profile?.university_id),
     hasCourses: (courses?.length ?? 0) > 0
   };
+}
+
+export async function getMyProfileNameChangeRequests(client: SupabaseClient) {
+  const { data, error } = await client.rpc("get_my_profile_name_change_requests");
+  if (error) throw error;
+  return (data ?? []) as ProfileNameChangeRequestRow[];
+}
+
+export async function requestProfileNameChange(requestedRealName: string) {
+  const response = await fetch("/api/profile/name-change", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ requestedRealName })
+  });
+
+  const payload = (await response.json().catch(() => ({}))) as {
+    ok?: boolean;
+    error?: string;
+  };
+
+  if (!response.ok || !payload.ok) {
+    throw new Error(payload.error || "Unable to submit name change request.");
+  }
 }
