@@ -9,6 +9,7 @@ import { getCourse, getCourseContent } from "@/data/seed";
 import { Card, CardBody } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Tabs } from "@/components/ui/tabs";
 
 const Markdown = dynamic(
   () => import("@/components/ui/markdown").then((module) => module.Markdown),
@@ -55,7 +56,8 @@ export default function NotesViewerPage() {
   const course = getCourse(params.courseId);
   const content = getCourseContent(params.courseId);
   const [search, setSearch] = useState("");
-  const notesMarkdown = content?.notes ?? "";
+  const [activeTab, setActiveTab] = useState<"notes" | "cheat-sheet">("notes");
+  const notesMarkdown = activeTab === "notes" ? content?.notes ?? "" : content?.cheatSheet ?? "";
 
   const headings = useMemo(() => extractHeadings(notesMarkdown), [notesMarkdown]);
   const filtered = useMemo(() => filterMarkdown(notesMarkdown, search), [notesMarkdown, search]);
@@ -85,7 +87,7 @@ export default function NotesViewerPage() {
               ))}
             </div>
             <Button asChild variant="ghost" className="w-full justify-between">
-              <Link href={`/app/courses/${course.id}`}>Back to {course.code}</Link>
+              <Link href="/app/notes">All notes</Link>
             </Button>
           </CardBody>
         </Card>
@@ -96,14 +98,25 @@ export default function NotesViewerPage() {
           <CardBody className="space-y-3 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">Notes viewer</p>
             <h1 className="text-display-md font-semibold">{course.name} Notes</h1>
+            <Tabs
+              tabs={[
+                { id: "notes", label: "Full notes" },
+                { id: "cheat-sheet", label: "Cheat sheet" }
+              ]}
+              value={activeTab}
+              onChange={(value) => {
+                setActiveTab(value as "notes" | "cheat-sheet");
+                setSearch("");
+              }}
+            />
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
               <Input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 className="pl-9"
-                placeholder="Search inside notes"
-                aria-label="Search within notes"
+                placeholder={activeTab === "notes" ? "Search inside notes" : "Search inside cheat sheet"}
+                aria-label={activeTab === "notes" ? "Search within notes" : "Search within cheat sheet"}
               />
             </div>
           </CardBody>
