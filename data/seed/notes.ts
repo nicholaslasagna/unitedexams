@@ -285,10 +285,316 @@ Rules:
   - \`addi\` uses a **signed 12-bit immediate**
 `;
 
+const softwareEngineeringArchitectureNotes = `## Software Engineering Exam 2 Architecture Guide (Chapter 6)
+
+Built around the **Chapter 6 Architectural Design** deck and the likely exam question your professor described: identify the architecture from a multiple-choice list **A-G**.
+
+> **What the exam is probably testing:** can you look at a scenario, pick the strongest architectural clue, and eliminate the close distractors fast.
+
+## The A-G Map
+
+Use this exact order when you drill:
+
+  - **A** = Model-View-Controller (MVC)
+  - **B** = Layered architecture
+  - **C** = Repository architecture
+  - **D** = Client-server architecture
+  - **E** = Pipe-and-filter architecture
+  - **F** = Transaction processing architecture
+  - **G** = Language processing architecture
+
+## The Fast Recognition Rule
+
+Do not start by reading every option deeply. Start by asking:
+
+  1. Is this about **UI separation**? -> **MVC**
+  2. Is this about **system levels/layers**? -> **Layered**
+  3. Is this about **one shared central data store**? -> **Repository**
+  4. Is this about **clients using network services**? -> **Client-server**
+  5. Is this about **data flowing through stages**? -> **Pipe-and-filter**
+  6. Is this about **database-backed user transactions**? -> **Transaction processing**
+  7. Is this about **translating or interpreting a formal language**? -> **Language processing**
+
+## A. Model-View-Controller (MVC)
+
+**Use it when the scenario says**
+
+  - model, view, controller
+  - multiple views of the same data
+  - user input is handled separately from data storage
+  - UI changes should not force data-model changes
+
+**Core idea**
+
+  - **Model** = system data / business state
+  - **View** = what the user sees
+  - **Controller** = input handling and control logic
+
+**Main distractor**
+
+  - **Layered** also separates concerns, but MVC is specifically about **presentation + interaction + data**.
+
+## B. Layered Architecture
+
+**Use it when the scenario says**
+
+  - layers / levels
+  - each layer provides services to the one above
+  - adjacent layer communication
+  - operating-system-like service hierarchy
+  - inner layers protect critical assets
+
+**Core idea**
+
+  - the system is broken into levels of abstraction or responsibility
+
+**Best exam clue**
+
+  - if the prompt sounds like “level 1, level 2, level 3” or “upper layer uses lower-layer services,” this is usually **Layered**.
+
+**Main distractor**
+
+  - **MVC** is a special UI/data interaction structure; **Layered** is a whole-system structural style.
+
+## C. Repository Architecture
+
+**Use it when the scenario says**
+
+  - central repository
+  - shared data store
+  - independent tools/components read and write the same data
+  - components do not talk much directly, but all depend on common stored information
+
+**Core idea**
+
+  - the repository is the center of the system
+
+**Advantages**
+
+  - components can stay relatively independent
+  - shared data is consistent and accessible
+
+**Disadvantages**
+
+  - repository can become a single point of failure
+  - repository schema changes can ripple outward
+
+**Main distractor**
+
+  - **Client-server** is about remote services across a network.
+  - **Repository** is about **shared central data**.
+
+## D. Client-Server Architecture
+
+**Use it when the scenario says**
+
+  - browser/client/mobile app talks to one or more servers
+  - distributed services over a network
+  - server provides service, client consumes it
+  - multiple shared services available remotely
+
+**Core idea**
+
+  - system functionality is distributed across clients and servers
+
+**Advantages**
+
+  - services can be shared and scaled
+  - distribution over a network is natural
+
+**Disadvantages**
+
+  - network performance matters
+  - services/servers may fail independently
+
+**Main distractor**
+
+  - if the prompt is really about business requests + database integrity, the better answer may be **Transaction processing**, not client-server.
+
+## E. Pipe-and-Filter Architecture
+
+**Use it when the scenario says**
+
+  - sequence of transformations
+  - output of one step becomes input to the next
+  - streaming or batch processing
+  - filters/stages/pipeline
+
+**Core idea**
+
+  - data moves through a chain of processing stages
+
+**Best exam clue**
+
+  - if the system sounds like “step 1 transforms, then step 2 transforms, then step 3 transforms,” that is **Pipe-and-filter**.
+
+**Main distractor**
+
+  - **Language processing** often uses phases that look pipelined, but the application type is about formal-language translation. The architectural pattern is still pipe-and-filter only if the question emphasizes the transformation chain itself.
+
+## F. Transaction Processing Architecture
+
+**Use it when the scenario says**
+
+  - users make requests against a shared database
+  - updates must preserve consistency and integrity
+  - orders, bookings, reservations, purchases, banking records
+  - transaction manager / commit / integrity / rollback
+
+**Core idea**
+
+  - process user transactions reliably against persistent shared data
+
+**Canonical examples**
+
+  - e-commerce systems
+  - banking systems
+  - hotel reservations
+
+**Main distractor**
+
+  - many transaction systems are deployed using **client-server**, but the **application architecture** being tested is transaction processing.
+
+## G. Language Processing Architecture
+
+**Use it when the scenario says**
+
+  - compiler
+  - interpreter
+  - command processor
+  - lexical analysis / parsing / semantic analysis / code generation
+  - formal language translation
+
+**Core idea**
+
+  - take a formal language as input and translate or interpret it
+
+**Main distractor**
+
+  - the internal implementation may look like **Pipe-and-filter**, but the application category is **Language processing**.
+
+## The Closest Distractor Pairs
+
+### MVC vs Layered
+
+  - **MVC** = model/view/controller around UI + data
+  - **Layered** = service levels across the whole system
+
+### Repository vs Client-server
+
+  - **Repository** = central shared data store
+  - **Client-server** = remote service interaction over a network
+
+### Pipe-and-filter vs Language processing
+
+  - **Pipe-and-filter** = transformation chain
+  - **Language processing** = compiler/interpreter style formal-language system
+
+### Client-server vs Transaction processing
+
+  - **Client-server** = distribution style
+  - **Transaction processing** = business/request/database integrity application type
+
+## Architecture and Non-Functional Requirements
+
+From the deck:
+
+  - **Performance**: localize operations; larger components can reduce communication overhead
+  - **Security**: layered architecture helps protect critical assets in inner layers
+  - **Safety**: localize safety-critical parts
+  - **Availability**: use redundancy and fault tolerance
+  - **Maintainability**: prefer self-contained fine-grained components
+
+This matters because some multiple-choice questions may ask for the architecture that best supports a non-functional goal.
+
+## Exact Exam Strategy for the A-G Question
+
+When you get the question:
+
+  1. Underline the strongest noun phrase in the scenario.
+  2. Decide whether the question is about:
+     - UI structure
+     - system levels
+     - shared data
+     - network services
+     - staged transformation
+     - user transactions
+     - language translation
+  3. Pick the matching A-G bucket.
+  4. Eliminate the nearest distractor out loud in your head.
+
+If you can name **why the second-best answer is wrong**, you usually have the right answer.
+
+## High-Yield Memory Anchors
+
+  - **MVC** -> interface/data split
+  - **Layered** -> service levels
+  - **Repository** -> shared central store
+  - **Client-server** -> network services
+  - **Pipe-and-filter** -> sequence of transforms
+  - **Transaction processing** -> user requests + DB integrity
+  - **Language processing** -> compiler/interpreter
+
+## Best Way to Study This Tonight
+
+  1. Run the **Exam 2 Architecture Recognition Simulation** once.
+  2. Run the **Focused Drill** until the A-G mapping is automatic.
+  3. Redo every missed question by explaining why the top distractor is wrong.
+  4. Memorize the seven one-line anchors above.
+`;
+
+const softwareEngineeringArchitectureCheatSheet = `## Software Engineering Exam 2 Architecture Cheat Sheet
+
+Use this right before the exam if the question is the A-G architecture recognition question.
+
+## A-G Map
+
+  - **A** = Model-View-Controller (MVC)
+  - **B** = Layered architecture
+  - **C** = Repository architecture
+  - **D** = Client-server architecture
+  - **E** = Pipe-and-filter architecture
+  - **F** = Transaction processing architecture
+  - **G** = Language processing architecture
+
+## One-Line Triggers
+
+  - **A / MVC** -> UI + input + data are separated
+  - **B / Layered** -> service levels, adjacent layers, inner protection
+  - **C / Repository** -> central shared data store
+  - **D / Client-server** -> clients use networked services
+  - **E / Pipe-and-filter** -> chained processing stages
+  - **F / Transaction processing** -> user requests + database integrity
+  - **G / Language processing** -> compiler/interpreter/formal language translation
+
+## Fast Eliminations
+
+  - UI split? -> **MVC**, not layered
+  - Shared central data? -> **Repository**, not client-server
+  - Networked services? -> **Client-server**, not repository
+  - Staged transforms? -> **Pipe-and-filter**
+  - Compiler/interpreter? -> **Language processing**
+  - Online orders/reservations/banking? -> **Transaction processing**
+
+## NFR Clues
+
+  - security with inner protected assets -> **Layered**
+  - independent tools sharing data -> **Repository**
+  - batch transformations -> **Pipe-and-filter**
+
+## What To Say In Your Head
+
+  - “What is the single strongest clue?”
+  - “What is the nearest wrong answer?”
+  - “Why is my answer more specific?”
+
+If you can answer those three fast, you are ready for the question.
+`;
+
 export const notesByCourse: Record<string, CourseContent> = {
   "software-engineering": {
-    "notes": "## Software Engineering Test 1 Cheat Sheet\n\nUse this as a high-signal review before quiz attempts. Focus on **concept contrasts**, not just definitions.\n\n> **Exam pattern:** Most misses come from mixing similar concepts (e.g., *user vs system requirements*, *validation vs verification*, *waterfall vs incremental*).\n\n### Core Product Attributes\n\n  - **Maintainability**: can evolve with changing needs.\n\n  - **Dependability & security**: safe, reliable, and trusted behavior.\n\n  - **Efficiency**: does not waste compute/memory resources.\n\n  - **Acceptability**: understandable, usable, and compatible for users.\n\n### Process Models\n\n  - **Waterfall**: sequential, plan-driven, strong documentation, weak flexibility.\n\n  - **Incremental**: delivers in slices, supports change, early feedback.\n\n  - **Agile (Scrum/XP)**: short cycles, continuous collaboration, frequent delivery.\n\n### Requirements Engineering\n\n  - **Elicitation**: interviews, scenarios, ethnography, workshops.\n\n  - **Specification**: user requirements (high-level) and system requirements (detailed).\n\n  - **Validation checks**: validity, consistency, completeness, realism, verifiability.\n\n### Agile Manifesto Values\n\n  - Individuals and interactions over processes and tools.\n\n  - Working software over comprehensive documentation.\n\n  - Customer collaboration over contract negotiation.\n\n  - Responding to change over following a plan.\n\n### Quick Traps\n\n  - Prototypes are often **throw-away**; not production-ready by default.\n\n  - Maintenance usually exceeds initial development cost in long-lived systems.\n\n  - Non-functional requirements are not optional; they define quality constraints.\n",
-    "cheatSheet": "## Software Engineering Test 1 Cheat Sheet\n\nUse this as a high-signal review before quiz attempts. Focus on **concept contrasts**, not just definitions.\n\n> **Exam pattern:** Most misses come from mixing similar concepts (e.g., *user vs system requirements*, *validation vs verification*, *waterfall vs incremental*).\n\n### Core Product Attributes\n\n  - **Maintainability**: can evolve with changing needs.\n\n  - **Dependability & security**: safe, reliable, and trusted behavior.\n\n  - **Efficiency**: does not waste compute/memory resources.\n\n  - **Acceptability**: understandable, usable, and compatible for users.\n\n### Process Models\n\n  - **Waterfall**: sequential, plan-driven, strong documentation, weak flexibility.\n\n  - **Incremental**: delivers in slices, supports change, early feedback.\n\n  - **Agile (Scrum/XP)**: short cycles, continuous collaboration, frequent delivery.\n\n### Requirements Engineering\n\n  - **Elicitation**: interviews, scenarios, ethnography, workshops.\n\n  - **Specification**: user requirements (high-level) and system requirements (detailed).\n\n  - **Validation checks**: validity, consistency, completeness, realism, verifiability.\n\n### Agile Manifesto Values\n\n  - Individuals and interactions over processes and tools.\n\n  - Working software over comprehensive documentation.\n\n  - Customer collaboration over contract negotiation.\n\n  - Responding to change over following a plan.\n\n### Quick Traps\n\n  - Prototypes are often **throw-away**; not production-ready by default.\n\n  - Maintenance usually exceeds initial development cost in long-lived systems.\n\n  - Non-functional requirements are not optional; they define quality constraints.\n",
+    "notes": softwareEngineeringArchitectureNotes,
+    "cheatSheet": softwareEngineeringArchitectureCheatSheet,
     "resources": [
       {
         "label": "IEEE SWEBOK Overview",

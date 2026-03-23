@@ -1,5 +1,6 @@
 import seExam1FullPractice from "@/content/software-engineering/se-exam1-full-practice.json";
 import type { Question, QuizSet } from "@/lib/types";
+import { softwareEngineeringArchitectureQuizSets } from "./quiz-se-architecture";
 
 interface JsonQuestion {
   id: string;
@@ -201,6 +202,7 @@ const chapterHomeworkWalkthrough: QuizSet = {
 };
 
 export const softwareEngineeringQuizSets: QuizSet[] = [
+  ...softwareEngineeringArchitectureQuizSets,
   seExam1FullSet,
   focusedDrill,
   chapterHomeworkWalkthrough
