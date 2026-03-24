@@ -39,7 +39,9 @@ export function SectionLinkIndex({ title, subtitle, variant }: SectionLinkIndexP
       term: row.term,
       course_id: row.courseId,
       join_code: "",
-      created_at: row.joinedAt
+      created_at: row.joinedAt,
+      assignment_weight: row.assignmentWeight,
+      exam_weight: row.examWeight
     });
 
     const run = isProfessor

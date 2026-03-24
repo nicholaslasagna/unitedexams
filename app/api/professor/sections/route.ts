@@ -53,7 +53,14 @@ export async function POST(request: NextRequest) {
       metadata: { courseId: payload.courseId }
     });
 
-    return NextResponse.json({ ok: true, section: data });
+    return NextResponse.json({
+      ok: true,
+      section: {
+        ...data,
+        assignment_weight: 40,
+        exam_weight: 60
+      }
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to create section.";
     const status = /unauthorized/i.test(message) ? 401 : /professor access/i.test(message) ? 403 : 400;
