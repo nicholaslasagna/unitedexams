@@ -19,7 +19,7 @@
     "clsx": "^2.1.1",
     "katex": "^0.16.11",
     "lucide-react": "^0.474.0",
-    "next": "^15.5.14",
+    "next": "^16.2.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^9.0.3",
