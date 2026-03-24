@@ -261,6 +261,9 @@ export function CoursesIndexContent({
                             <span className="font-semibold text-text">{gradeSummary.pendingCount}</span> pending
                           </>
                         ) : null}
+                        <span className="block pt-1 text-[11px] uppercase tracking-[0.12em] text-faint">
+                          {gradeSummary.policyLabel}
+                        </span>
                       </>
                     ) : hasCourseSections ? (
                       "Joined section, but no graded work has posted yet."

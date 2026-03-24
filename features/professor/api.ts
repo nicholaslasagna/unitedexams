@@ -7,6 +7,8 @@ export interface SectionSummary {
   course_id: string;
   join_code: string;
   created_at: string;
+  assignment_weight: number;
+  exam_weight: number;
 }
 
 export interface CreateProfessorQuizSetPayload {
@@ -150,6 +152,8 @@ export interface JoinedSectionSummary {
   courseId: string;
   term: string | null;
   isOwner: boolean;
+  assignmentWeight: number;
+  examWeight: number;
 }
 
 async function parseJsonResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
@@ -160,14 +164,49 @@ async function parseJsonResponse<T>(response: Response, fallbackMessage: string)
   return payload;
 }
 
+function isMissingGradingPolicyColumnsError(message: string | undefined) {
+  const normalized = (message ?? "").toLowerCase();
+  return (
+    normalized.includes("assignment_weight") ||
+    normalized.includes("exam_weight") ||
+    (normalized.includes("schema cache") && normalized.includes("class_sections"))
+  );
+}
+
+type SectionWithOptionalPolicy = Omit<SectionSummary, "assignment_weight" | "exam_weight"> &
+  Partial<Pick<SectionSummary, "assignment_weight" | "exam_weight">>;
+
+function withDefaultSectionPolicy(row: SectionWithOptionalPolicy): SectionSummary {
+  return {
+    ...row,
+    assignment_weight: typeof row.assignment_weight === "number" ? row.assignment_weight : 40,
+    exam_weight: typeof row.exam_weight === "number" ? row.exam_weight : 60
+  };
+}
+
 export async function listProfessorSections(client: SupabaseClient) {
+  const selectWithPolicy = "id, name, term, course_id, join_code, created_at, assignment_weight, exam_weight";
   const { data, error } = await client
+    .from("class_sections")
+    .select(selectWithPolicy)
+    .order("created_at", { ascending: false });
+
+  if (error && !isMissingGradingPolicyColumnsError(error.message)) throw error;
+
+  if (!error) {
+    return ((data ?? []) as Array<SectionWithOptionalPolicy>).map((row) => withDefaultSectionPolicy(row));
+  }
+
+  const fallback = await client
     .from("class_sections")
     .select("id, name, term, course_id, join_code, created_at")
     .order("created_at", { ascending: false });
 
-  if (error) throw error;
-  return (data ?? []) as SectionSummary[];
+  if (fallback.error) throw fallback.error;
+
+  return ((fallback.data ?? []) as Array<SectionWithOptionalPolicy>).map((row) =>
+    withDefaultSectionPolicy(row)
+  );
 }
 
 export async function createProfessorSection(
@@ -191,6 +230,25 @@ export async function deleteProfessorSection(_client: SupabaseClient, sectionId:
     method: "DELETE"
   });
   await parseJsonResponse<{ ok: true }>(response, "Unable to delete section.");
+}
+
+export async function updateSectionGradingPolicy(
+  _client: SupabaseClient,
+  payload: { sectionId: string; assignmentWeight: number; examWeight: number }
+) {
+  const response = await fetch(`/api/professor/sections/${payload.sectionId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      assignmentWeight: payload.assignmentWeight,
+      examWeight: payload.examWeight
+    })
+  });
+  const result = await parseJsonResponse<{ ok: true; section: SectionSummary }>(
+    response,
+    "Unable to update grading policy."
+  );
+  return withDefaultSectionPolicy(result.section);
 }
 
 export async function regenerateJoinCode(_client: SupabaseClient, sectionId: string) {
@@ -242,6 +300,8 @@ export async function listJoinedSections(client: SupabaseClient, userId: string)
           term: string | null;
           created_by: string | null;
           owner_id: string | null;
+          assignment_weight?: number | null;
+          exam_weight?: number | null;
         }
       | Array<{
           id: string;
@@ -251,21 +311,36 @@ export async function listJoinedSections(client: SupabaseClient, userId: string)
           term: string | null;
           created_by: string | null;
           owner_id: string | null;
+          assignment_weight?: number | null;
+          exam_weight?: number | null;
         }>
       | null;
   };
 
+  const selectWithPolicy =
+    "section_id, role, joined_at, class_sections(id, name, section_name, course_id, term, created_by, owner_id, assignment_weight, exam_weight)";
+
   const { data, error } = await client
     .from("section_members")
-    .select(
-      "section_id, role, joined_at, class_sections(id, name, section_name, course_id, term, created_by, owner_id)"
-    )
+    .select(selectWithPolicy)
     .eq("user_id", userId)
     .order("joined_at", { ascending: false });
 
-  if (error) throw error;
+  let rows = (data ?? null) as RawRow[] | null;
+  if (error) {
+    if (!isMissingGradingPolicyColumnsError(error.message)) throw error;
+    const fallback = await client
+      .from("section_members")
+      .select(
+        "section_id, role, joined_at, class_sections(id, name, section_name, course_id, term, created_by, owner_id)"
+      )
+      .eq("user_id", userId)
+      .order("joined_at", { ascending: false });
+    if (fallback.error) throw fallback.error;
+    rows = (fallback.data ?? null) as RawRow[] | null;
+  }
 
-  return ((data ?? []) as RawRow[])
+  return (rows ?? [])
     .map((row) => {
       const section = Array.isArray(row.class_sections) ? row.class_sections[0] : row.class_sections;
       if (!section) return null;
@@ -278,7 +353,10 @@ export async function listJoinedSections(client: SupabaseClient, userId: string)
         sectionName: (section.name || section.section_name || "Untitled Section").trim(),
         courseId: section.course_id,
         term: section.term,
-        isOwner: ownerId !== "" && ownerId === userId
+        isOwner: ownerId !== "" && ownerId === userId,
+        assignmentWeight:
+          typeof section.assignment_weight === "number" ? section.assignment_weight : 40,
+        examWeight: typeof section.exam_weight === "number" ? section.exam_weight : 60
       } satisfies JoinedSectionSummary;
     })
     .filter((value): value is JoinedSectionSummary => Boolean(value));

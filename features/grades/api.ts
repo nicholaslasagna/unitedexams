@@ -4,6 +4,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { getCourse } from "@/data/seed";
 import { listEnrolledPublishedExams, type ExamRow } from "@/features/exams/api";
 import { listJoinedSections, type JoinedSectionSummary } from "@/features/professor/api";
+import {
+  computeCourseWeightedAverage,
+  summarizeCoursePolicies
+} from "@/features/grades/metrics";
 
 type AssignmentLite = {
   id: string;
@@ -54,6 +58,8 @@ export interface StudentCourseGradeSummary {
   courseCode: string;
   sections: JoinedSectionSummary[];
   average: number | null;
+  policyLabel: string;
+  hasMixedPolicies: boolean;
   gradedCount: number;
   pendingCount: number;
   latestUpdatedAt: string | null;
@@ -241,12 +247,28 @@ export async function listStudentCourseGrades(client: SupabaseClient, userId: st
 
       const gradedItems = sortedItems.filter((item) => typeof item.score === "number");
       const pendingItems = sortedItems.filter((item) => item.score === null);
-      const average =
-        gradedItems.length > 0
-          ? Math.round(
-              (gradedItems.reduce((sum, item) => sum + Number(item.score ?? 0), 0) / gradedItems.length) * 10
-            ) / 10
-          : null;
+      const average = computeCourseWeightedAverage(
+        sortedItems.map((item) => ({
+          sectionId: item.sectionId,
+          kind: item.kind,
+          score: item.score
+        })),
+        Object.fromEntries(
+          course.sections.map((section) => [
+            section.sectionId,
+            {
+              assignmentWeight: section.assignmentWeight,
+              examWeight: section.examWeight
+            }
+          ])
+        )
+      );
+      const policySummary = summarizeCoursePolicies(
+        course.sections.map((section) => ({
+          assignmentWeight: section.assignmentWeight,
+          examWeight: section.examWeight
+        }))
+      );
 
       return {
         courseId: course.courseId,
@@ -254,6 +276,8 @@ export async function listStudentCourseGrades(client: SupabaseClient, userId: st
         courseCode: course.courseCode,
         sections: course.sections,
         average,
+        policyLabel: policySummary.policyLabel,
+        hasMixedPolicies: policySummary.hasMixedPolicies,
         gradedCount: gradedItems.length,
         pendingCount: pendingItems.length,
         latestUpdatedAt: sortedItems[0]?.updatedAt ?? null,

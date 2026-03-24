@@ -15,6 +15,7 @@ import { formatRelativeDate } from "@/lib/utils";
 import { isUniversityAdmin, isVerifiedProfessor } from "@/lib/auth/roles";
 import { getCourseVisual } from "@/features/study/course-branding";
 import { listStudentCourseGrades, type StudentCourseGradeSummary, type StudentGradeItem } from "@/features/grades/api";
+import { computeOverallAverageFromCourseSummaries } from "@/features/grades/metrics";
 import { getSubmissionReview, type SubmissionReview } from "@/features/submissions/api";
 import { SubmissionReviewContent } from "@/features/submissions/review-content";
 
@@ -107,10 +108,7 @@ export function StudentGradesPage() {
       courseCount: rows.length,
       gradedCount: graded.length,
       pendingCount: pending.length,
-      overallAverage:
-        graded.length > 0
-          ? Math.round((graded.reduce((sum, item) => sum + Number(item.score ?? 0), 0) / graded.length) * 10) / 10
-          : null
+      overallAverage: computeOverallAverageFromCourseSummaries(rows)
     };
   }, [rows]);
 
@@ -250,6 +248,7 @@ export function StudentGradesPage() {
                     <Badge>{course.sections.length} section{course.sections.length === 1 ? "" : "s"}</Badge>
                     <Badge tone="info">{course.gradedCount} graded</Badge>
                     <Badge tone={course.pendingCount > 0 ? "warn" : "default"}>{course.pendingCount} pending</Badge>
+                    <Badge tone={course.hasMixedPolicies ? "warn" : "default"}>{course.policyLabel}</Badge>
                   </div>
 
                   <div>

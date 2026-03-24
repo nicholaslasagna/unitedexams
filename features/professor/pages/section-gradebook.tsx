@@ -21,6 +21,7 @@ import {
 import {
   getSectionGradebook,
   listProfessorSections,
+  updateSectionGradingPolicy,
   upsertManualGrade,
   type SectionGradebookRow,
   type SectionSummary
@@ -77,6 +78,9 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
   const { push } = useToast();
 
   const [section, setSection] = useState<SectionSummary | null>(null);
+  const [assignmentWeight, setAssignmentWeight] = useState("40");
+  const [examWeight, setExamWeight] = useState("60");
+  const [savingPolicy, setSavingPolicy] = useState(false);
   const [rows, setRows] = useState<SectionGradebookRow[]>([]);
   const [examGroups, setExamGroups] = useState<SectionExamGroup[]>([]);
   const [loading, setLoading] = useState(true);
@@ -169,6 +173,12 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
       active = false;
     };
   }, [refreshGradebook]);
+
+  useEffect(() => {
+    if (!section) return;
+    setAssignmentWeight(String(section.assignment_weight));
+    setExamWeight(String(section.exam_weight));
+  }, [section]);
 
   const groupedAssignments = useMemo(() => {
     const byAssignment = new Map<string, { assignmentTitle: string; rows: SectionGradebookRow[] }>();
@@ -306,6 +316,120 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
           <Link href={`/app/sections/${section.id}`}>Back to section</Link>
         </Button>
       </section>
+
+      <Card>
+        <CardHeader>
+          <div>
+            <h2 className="font-display text-2xl font-semibold">Course grading policy</h2>
+            <p className="mt-1 text-sm text-muted">Student course averages in this section follow these weights.</p>
+          </div>
+        </CardHeader>
+        <CardBody className="space-y-3">
+          <div className="grid gap-3 md:grid-cols-[minmax(0,220px)_minmax(0,220px)_1fr] md:items-end">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Assignments (%)</label>
+              <Input
+                value={assignmentWeight}
+                onChange={(event) => setAssignmentWeight(normalizeNumberInput(event.target.value))}
+                placeholder="40"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Exams (%)</label>
+              <Input
+                value={examWeight}
+                onChange={(event) => setExamWeight(normalizeNumberInput(event.target.value))}
+                placeholder="60"
+              />
+            </div>
+            <div className="text-sm text-muted">
+              Current total:{" "}
+              <span className="font-semibold text-text">
+                {(Number.parseInt(assignmentWeight || "0", 10) || 0) +
+                  (Number.parseInt(examWeight || "0", 10) || 0)}
+                %
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              loading={savingPolicy}
+              disabled={savingPolicy}
+              onClick={async () => {
+                if (!supabase) {
+                  push({
+                    title: "Unable to update grading policy",
+                    description: "Not connected to database.",
+                    tone: "error"
+                  });
+                  return;
+                }
+
+                const nextAssignment = Number.parseInt(assignmentWeight, 10);
+                const nextExam = Number.parseInt(examWeight, 10);
+
+                if (
+                  Number.isNaN(nextAssignment) ||
+                  Number.isNaN(nextExam) ||
+                  nextAssignment < 0 ||
+                  nextExam < 0 ||
+                  nextAssignment > 100 ||
+                  nextExam > 100
+                ) {
+                  push({
+                    title: "Weights must be between 0 and 100",
+                    tone: "error"
+                  });
+                  return;
+                }
+
+                if (nextAssignment + nextExam !== 100) {
+                  push({
+                    title: "Weights must total 100",
+                    description: "Set assignment and exam weights so they add up to 100%.",
+                    tone: "error"
+                  });
+                  return;
+                }
+
+                setSavingPolicy(true);
+                try {
+                  const updated = await updateSectionGradingPolicy(supabase, {
+                    sectionId: section.id,
+                    assignmentWeight: nextAssignment,
+                    examWeight: nextExam
+                  });
+                  setSection(updated);
+                  push({
+                    title: "Grading policy updated",
+                    tone: "success"
+                  });
+                } catch (error) {
+                  push({
+                    title: "Unable to update grading policy",
+                    description: (error as Error).message,
+                    tone: "error"
+                  });
+                } finally {
+                  setSavingPolicy(false);
+                }
+              }}
+            >
+              Save policy
+            </Button>
+            <Button
+              variant="ghost"
+              disabled={savingPolicy}
+              onClick={() => {
+                setAssignmentWeight(String(section.assignment_weight));
+                setExamWeight(String(section.exam_weight));
+              }}
+            >
+              Reset
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
 
       {groupedAssignments.length === 0 ? (
         <Card>
