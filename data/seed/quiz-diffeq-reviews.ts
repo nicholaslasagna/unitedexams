@@ -712,6 +712,154 @@ const differentialEquationReviewReplacementsRaw: QuizSet[] = [
     ]
   },
   {
+    id: "de-hw5",
+    courseId: "differential-equations",
+    title: "Differential Equations Homework 5 Study",
+    description:
+      "Homework 5 power-series practice covering recurrence relations, initial-value data, and the first few explicit series terms.",
+    difficulty: "Advanced",
+    estMinutes: 46,
+    tags: ["homework-5", "power-series", "ivp", "free-response"],
+    timerDefaultMinutes: 44,
+    questions: [
+      {
+        id: "de-hw5-q1",
+        type: "free",
+        prompt:
+          "Use the power series method to solve `y'' - y' = 0`. Write the recurrence and the first four explicit terms.",
+        explanation:
+          "Expand `y`, `y'`, and `y''`, match coefficients, and express all higher coefficients in terms of `a_0` and `a_1`.",
+        sampleAnswer:
+          "`y(x)=a_0 + a_1x + \\frac{a_1}{2}x^2 + \\frac{a_1}{6}x^3 + \\cdots`, with recurrence `a_{n+2}=\\frac{a_{n+1}}{n+2}`.",
+        hintSteps: [
+          "Start with `y=\\sum_{n=0}^{\\infty} a_n x^n`.",
+          "Rewrite `y'` and `y''` so both sums are indexed by `x^n`.",
+          "Set the coefficient of each `x^n` equal to zero.",
+          "Use `a_0` and `a_1` as the free constants."
+        ],
+        walkthroughSteps: [
+          "Assume `y=\\sum_{n=0}^{\\infty} a_n x^n`. Then `y'=\\sum_{n=0}^{\\infty}(n+1)a_{n+1}x^n` and `y''=\\sum_{n=0}^{\\infty}(n+2)(n+1)a_{n+2}x^n`.",
+          "Substitute into `y''-y'=0`: `\\sum_{n=0}^{\\infty}[(n+2)(n+1)a_{n+2}-(n+1)a_{n+1}]x^n=0`.",
+          "For every `n\\ge 0`, `(n+2)(n+1)a_{n+2}=(n+1)a_{n+1}`, so `a_{n+2}=\\frac{a_{n+1}}{n+2}`.",
+          "Compute coefficients: `a_2=\\frac{a_1}{2}`, `a_3=\\frac{a_2}{3}=\\frac{a_1}{6}`, `a_4=\\frac{a_3}{4}=\\frac{a_1}{24}`.",
+          "Therefore `y(x)=a_0 + a_1x + \\frac{a_1}{2}x^2 + \\frac{a_1}{6}x^3 + \\cdots`.",
+          "This matches the closed-form family `C_1 + C_2 e^x`, but the series derivation is what Homework 5 is training."
+        ],
+        references: ["hwk_diff5.pdf Problem 1(a)"],
+        tags: ["homework-5", "power-series", "recurrence"]
+      },
+      {
+        id: "de-hw5-q2",
+        type: "free",
+        prompt:
+          "Use the power series method to solve `y'' + xy' + 2y = 0`. Write the recurrence and the first four explicit terms.",
+        explanation:
+          "This equation couples coefficients two apart. The even and odd coefficients are controlled separately by `a_0` and `a_1`.",
+        sampleAnswer:
+          "`y(x)=a_0 + a_1x - a_0x^2 - \\frac{a_1}{2}x^3 + \\frac{a_0}{3}x^4 + \\cdots`, with `a_2=-a_0` and `a_{n+2}=-\\frac{a_n}{n+1}` for `n\\ge1`.",
+        hintSteps: [
+          "Write `xy'` as a series in powers of `x^n`.",
+          "Treat the `n=0` coefficient separately.",
+          "After that, find a recurrence for `n\\ge 1`.",
+          "Compute `a_2`, `a_3`, and `a_4` from `a_0` and `a_1`."
+        ],
+        walkthroughSteps: [
+          "Let `y=\\sum_{n=0}^{\\infty} a_n x^n`, so `y''=\\sum_{n=0}^{\\infty}(n+2)(n+1)a_{n+2}x^n`.",
+          "Also `y'=\\sum_{n=0}^{\\infty}(n+1)a_{n+1}x^n`, hence `xy'=\\sum_{n=1}^{\\infty}n a_n x^n`.",
+          "Substitute into `y''+xy'+2y=0`.",
+          "For `n=0`, only `y''` and `2y` contribute, so `2a_2+2a_0=0`, giving `a_2=-a_0`.",
+          "For `n\\ge1`, `(n+2)(n+1)a_{n+2} + n a_n + 2a_n = 0`, so `(n+2)(n+1)a_{n+2}+(n+2)a_n=0`.",
+          "Thus `a_{n+2}=-\\frac{a_n}{n+1}` for `n\\ge1`.",
+          "Compute: `a_3=-\\frac{a_1}{2}`, `a_4=-\\frac{a_2}{3}=\\frac{a_0}{3}`, `a_5=-\\frac{a_3}{4}=\\frac{a_1}{8}`.",
+          "So the series begins `y(x)=a_0 + a_1x - a_0x^2 - \\frac{a_1}{2}x^3 + \\frac{a_0}{3}x^4 + \\cdots`."
+        ],
+        references: ["hwk_diff5.pdf Problem 1(b)"],
+        tags: ["homework-5", "power-series", "recurrence", "second-order"]
+      },
+      {
+        id: "de-hw5-q3",
+        type: "free",
+        prompt:
+          "Use the power series method to solve the IVP `y'' + 2y = 0`, `y(0)=1`, `y'(0)=1`. Give the first four terms.",
+        explanation:
+          "The initial conditions determine `a_0` and `a_1`, so the recurrence gives a single explicit series.",
+        sampleAnswer:
+          "`y(x)=1 + x - x^2 - \\frac{1}{3}x^3 + \\frac{1}{6}x^4 + \\cdots`.",
+        hintSteps: [
+          "Use the same power-series setup as for any second-order equation.",
+          "From the IVP, `a_0=y(0)=1` and `a_1=y'(0)=1`.",
+          "Find the recurrence from coefficient matching.",
+          "Generate `a_2`, `a_3`, and `a_4`."
+        ],
+        walkthroughSteps: [
+          "Assume `y=\\sum_{n=0}^{\\infty} a_n x^n`, so `y''=\\sum_{n=0}^{\\infty}(n+2)(n+1)a_{n+2}x^n`.",
+          "Substitute into `y''+2y=0`: `\\sum_{n=0}^{\\infty}[(n+2)(n+1)a_{n+2}+2a_n]x^n=0`.",
+          "Therefore `(n+2)(n+1)a_{n+2}+2a_n=0`, so `a_{n+2}=-\\frac{2a_n}{(n+2)(n+1)}`.",
+          "Initial conditions give `a_0=1` and `a_1=1`.",
+          "Then `a_2=-\\frac{2a_0}{2\\cdot1}=-1`, `a_3=-\\frac{2a_1}{3\\cdot2}=-\\frac13`, `a_4=-\\frac{2a_2}{4\\cdot3}=\\frac16`.",
+          "So the first terms are `y(x)=1 + x - x^2 - \\frac{1}{3}x^3 + \\frac{1}{6}x^4 + \\cdots`."
+        ],
+        references: ["hwk_diff5.pdf Problem 2(a)"],
+        tags: ["homework-5", "power-series", "ivp"]
+      },
+      {
+        id: "de-hw5-q4",
+        type: "free",
+        prompt:
+          "Use the power series method to solve the IVP `y' + xy = 0`, `y(0)=3`. Give the first four nonzero terms.",
+        explanation:
+          "This first-order IVP kills all odd coefficients, so the cleanest answer lists the first four nonzero terms.",
+        sampleAnswer:
+          "`y(x)=3 - \\frac{3}{2}x^2 + \\frac{3}{8}x^4 - \\frac{1}{16}x^6 + \\cdots`.",
+        hintSteps: [
+          "Write `y'` and `xy` in powers of `x^n`.",
+          "Use the `n=0` coefficient first to get `a_1`.",
+          "For `n\\ge1`, relate `a_{n+1}` to `a_{n-1}`.",
+          "Because `a_1=0`, all odd coefficients stay zero."
+        ],
+        walkthroughSteps: [
+          "Let `y=\\sum_{n=0}^{\\infty} a_n x^n`. Then `y'=\\sum_{n=0}^{\\infty}(n+1)a_{n+1}x^n` and `xy=\\sum_{n=1}^{\\infty} a_{n-1}x^n`.",
+          "Substitute into `y'+xy=0`.",
+          "From the `x^0` coefficient, `a_1=0`.",
+          "For `n\\ge1`, `(n+1)a_{n+1}+a_{n-1}=0`, so `a_{n+1}=-\\frac{a_{n-1}}{n+1}`.",
+          "Use `a_0=y(0)=3` and `a_1=0`.",
+          "Then `a_2=-\\frac{a_0}{2}=-\\frac32`, `a_3=-\\frac{a_1}{3}=0`, `a_4=-\\frac{a_2}{4}=\\frac38`, `a_5=0`, `a_6=-\\frac{a_4}{6}=-\\frac{1}{16}`.",
+          "So the first four nonzero terms are `y(x)=3 - \\frac{3}{2}x^2 + \\frac{3}{8}x^4 - \\frac{1}{16}x^6 + \\cdots`."
+        ],
+        references: ["hwk_diff5.pdf Problem 2(b)"],
+        tags: ["homework-5", "power-series", "first-order", "ivp"]
+      },
+      {
+        id: "de-hw5-q5",
+        type: "free",
+        prompt:
+          "Use the power series method to solve the IVP `y'' + xy' + y = 0`, `y(0)=1`, `y'(0)=0`. Give the first four nonzero terms.",
+        explanation:
+          "This recurrence again separates even and odd coefficients, and the IVP forces the odd branch to vanish.",
+        sampleAnswer:
+          "`y(x)=1 - \\frac12 x^2 + \\frac18 x^4 - \\frac{1}{48}x^6 + \\cdots`.",
+        hintSteps: [
+          "Handle the `x^0` coefficient separately first.",
+          "For `n\\ge1`, derive a recurrence for `a_{n+2}` in terms of `a_n`.",
+          "Use `a_0=1` and `a_1=0` from the IVP.",
+          "List the first four nonzero even terms."
+        ],
+        walkthroughSteps: [
+          "Write `y=\\sum_{n=0}^{\\infty} a_n x^n`, `y''=\\sum_{n=0}^{\\infty}(n+2)(n+1)a_{n+2}x^n`, and `xy'=\\sum_{n=1}^{\\infty}n a_n x^n`.",
+          "Substitute into `y''+xy'+y=0`.",
+          "From the `x^0` coefficient, `2a_2+a_0=0`, so `a_2=-\\frac{a_0}{2}`.",
+          "For `n\\ge1`, `(n+2)(n+1)a_{n+2} + n a_n + a_n = 0`, so `(n+2)(n+1)a_{n+2} + (n+1)a_n = 0`.",
+          "Hence `a_{n+2}=-\\frac{a_n}{n+2}` for `n\\ge1`.",
+          "The IVP gives `a_0=1` and `a_1=0`.",
+          "Then `a_2=-\\frac12`, `a_3=0`, `a_4=-\\frac{a_2}{4}=\\frac18`, `a_5=0`, `a_6=-\\frac{a_4}{6}=-\\frac{1}{48}`.",
+          "Therefore the first four nonzero terms are `y(x)=1 - \\frac12 x^2 + \\frac18 x^4 - \\frac{1}{48}x^6 + \\cdots`."
+        ],
+        references: ["hwk_diff5.pdf Problem 2(c)"],
+        tags: ["homework-5", "power-series", "ivp", "second-order"]
+      }
+    ]
+  },
+  {
     id: "de-exam2-review",
     courseId: "differential-equations",
     title: "Differential Equations Exam 2 Review",
