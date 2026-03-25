@@ -92,7 +92,7 @@ function buildItems(params: {
         children: currentSection
           ? [
               { href: "/app/sections", label: "Overview", icon: GraduationCap },
-              { href: currentSection.materialsHref, label: "Current class", icon: BookMarked },
+              { href: currentSection.materialsHref, label: "Materials", icon: BookMarked },
               { href: currentSection.announcementsHref, label: "Announcements", icon: Megaphone },
               { href: "/app/sections/homework", label: "Homework", icon: ListChecks }
             ]
@@ -122,7 +122,7 @@ function buildItems(params: {
       children: currentSection
         ? [
             { href: "/app/sections", label: "Overview", icon: GraduationCap },
-            { href: `/app/sections/${currentSection.id}`, label: "Current section", icon: BookMarked },
+            { href: `/app/sections/${currentSection.id}`, label: "Section home", icon: BookMarked },
             { href: currentSection.materialsHref, label: "Materials", icon: BookMarked },
             { href: currentSection.gradebookHref ?? "/app/sections/gradebook", label: "Gradebook", icon: ClipboardList },
             { href: currentSection.examsHref ?? "/app/exams", label: "Exams", icon: Timer }
@@ -286,7 +286,10 @@ function NavigationList({
                   <div className={cn("space-y-1 pt-1", mobile && "space-y-1.5 pt-2")}>
                     {item.children.map((child) => {
                       const ChildIcon = child.icon;
-                      const childActive = pathname.startsWith(child.href);
+                      const childActive =
+                        child.href === "/app/sections"
+                          ? parentExact
+                          : pathname.startsWith(child.href);
                       return (
                         <Link
                           key={child.href}
@@ -367,6 +370,7 @@ export function Sidebar() {
     sections,
     currentSection
   } = useWorkspaceNavigation();
+  const focusedSection = currentSection ?? sections[0] ?? null;
   const [sectionsOpen, setSectionsOpen] = useState(() => pathname.startsWith("/app/sections"));
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -383,9 +387,9 @@ export function Sidebar() {
         showSections,
         showAnnouncements,
         showGrades,
-        currentSection
+        currentSection: focusedSection
       }),
-    [currentSection, showAnnouncements, showGrades, showProfessor, showSchoolAdmin, showSections]
+    [focusedSection, showAnnouncements, showGrades, showProfessor, showSchoolAdmin, showSections]
   );
 
   const mainItems = useMemo(
@@ -442,7 +446,7 @@ export function Sidebar() {
 
           <SectionQuickList
             sections={sections}
-            currentSection={currentSection}
+            currentSection={focusedSection}
             showProfessor={showProfessor}
           />
         </div>
@@ -553,7 +557,7 @@ export function Sidebar() {
                 <div className="mt-5">
                   <SectionQuickList
                     sections={sections}
-                    currentSection={currentSection}
+                    currentSection={focusedSection}
                     showProfessor={showProfessor}
                     mobile
                     onNavigate={() => setMobileMenuOpen(false)}
