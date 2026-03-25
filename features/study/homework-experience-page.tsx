@@ -234,6 +234,44 @@ const STEP_STOP_WORDS = new Set([
   "three"
 ]);
 
+function looksLikeStandaloneMath(value: string) {
+  const text = value.trim();
+  if (!text || text.includes("$")) return false;
+
+  const longWords = text.match(/\b[a-zA-Z]{4,}\b/g) ?? [];
+  const hasLatexSignals = /\\[a-zA-Z]+|[_^{}]|∞|π|∑|√/.test(text);
+  const hasEquationSignals = /[=<>]|(?:\d|\)|\])\s*[+\-*/]\s*(?:\d|\(|\[|[a-zA-Z\\])/.test(text);
+
+  return (hasLatexSignals && longWords.length <= 3) || (hasEquationSignals && longWords.length <= 2);
+}
+
+function promoteBareMath(value: string) {
+  if (!value.trim() || value.includes("$")) return value;
+
+  return value
+    .split("\n")
+    .map((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) return line;
+
+      const colonIndex = line.lastIndexOf(":");
+      if (colonIndex >= 0) {
+        const prefix = line.slice(0, colonIndex + 1);
+        const suffix = line.slice(colonIndex + 1).trim();
+        if (looksLikeStandaloneMath(suffix)) {
+          return `${prefix} $${suffix}$`;
+        }
+      }
+
+      if (looksLikeStandaloneMath(trimmed)) {
+        return `$${trimmed}$`;
+      }
+
+      return line;
+    })
+    .join("\n");
+}
+
 function getStepKeywords(value: string) {
   const tokens = value
     .toLowerCase()
@@ -990,12 +1028,16 @@ export function HomeworkExperiencePageContent({
                                 )}
                               </div>
                               <div className="mt-2 text-sm text-text">
-                                <Markdown content={entry.step} promoteMathInInlineCode />
+                                <Markdown content={promoteBareMath(entry.step)} promoteMathInInlineCode />
                               </div>
                               {entry.review.status === "review" && entry.expected ? (
-                                <p className="mt-2 text-xs text-text-secondary">
-                                  Expected focus for step {idx + 1}: {entry.expected}
-                                </p>
+                                <div className="mt-2 text-xs text-text-secondary">
+                                  <Markdown
+                                    content={`Expected focus for step ${idx + 1}: ${promoteBareMath(entry.expected)}`}
+                                    className="text-xs"
+                                    promoteMathInInlineCode
+                                  />
+                                </div>
                               ) : null}
                               <div className="mt-2 flex justify-end">
                                 <Button variant="ghost" onClick={() => removeStudyStep(idx)}>
