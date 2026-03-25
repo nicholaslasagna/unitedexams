@@ -2,69 +2,36 @@
 
 import { useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, SunMoon, Sparkles, Command } from "lucide-react";
+import Link from "next/link";
+import { ChevronRight, Command, Search, Sparkles, SunMoon } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { courses, quizSets } from "@/data/seed";
 import { useAppData } from "@/lib/app-data-context";
 import { useToast } from "@/lib/hooks/use-toast";
 import { resolveProfileInternalName } from "@/lib/profile-name";
+import { useWorkspaceNavigation } from "@/components/layout/workspace-navigation-context";
 
-function labelForPath(pathname: string) {
-  const segment = pathname.split("/").filter(Boolean)[1] ?? "dashboard";
-  switch (segment) {
-    case "dashboard":
-      return { eyebrow: "Study workspace", title: "Dashboard" };
-    case "courses":
-      return { eyebrow: "Explore and review", title: "Courses" };
-    case "homework":
-      return { eyebrow: "Assignments and progress", title: "Homework" };
-    case "sections":
-      return { eyebrow: "Class materials", title: "Sections" };
-    case "announcements":
-      return { eyebrow: "Instructor updates", title: "Announcements" };
-    case "leaderboard":
-      return { eyebrow: "Momentum tracking", title: "Leaderboard" };
-    case "settings":
-      return { eyebrow: "Personalization and security", title: "Settings" };
-    case "account":
-      return { eyebrow: "Profile and identity", title: "Account" };
-    case "notes":
-      return { eyebrow: "Reference material", title: "Notes" };
-    case "exams":
-      return { eyebrow: "Timed assessment", title: "Exams" };
-    default:
-      return { eyebrow: "United Exams", title: "Workspace" };
-  }
-}
+const KIND_LABEL: Record<string, string> = {
+  page: "Page",
+  course: "Course",
+  section: "Section",
+  notes: "Notes",
+  quiz: "Quiz",
+  exam: "Exam",
+  homework: "Homework"
+};
 
 export function Topbar() {
   const router = useRouter();
   const pathname = usePathname();
   const { profile, preferences, savePreferences, signOut, user } = useAppData();
+  const { pageMeta, searchSuggestions } = useWorkspaceNavigation();
   const { push } = useToast();
-
-  const pageMeta = useMemo(() => labelForPath(pathname), [pathname]);
 
   const [query, setQuery] = useState("");
 
   const suggestions = useMemo(() => {
-    if (!query.trim()) return [];
-    const q = query.toLowerCase();
-    const matches = [
-      ...courses
-        .filter((course) => course.name.toLowerCase().includes(q) || course.code.toLowerCase().includes(q))
-        .map((course) => ({
-          key: course.id,
-          label: `${course.code} • ${course.name}`,
-          href: `/app/courses/${course.id}`
-        })),
-      ...quizSets
-        .filter((quiz) => quiz.title.toLowerCase().includes(q) || quiz.tags.join(" ").toLowerCase().includes(q))
-        .slice(0, 4)
-        .map((quiz) => ({ key: quiz.id, label: `Quiz: ${quiz.title}`, href: `/quiz/${quiz.id}` }))
-    ];
-    return matches.slice(0, 6);
-  }, [query]);
+    return searchSuggestions(query);
+  }, [query, searchSuggestions]);
 
   const toggleTheme = async () => {
     document.documentElement.classList.add("theme-transitioning");
@@ -152,10 +119,22 @@ export function Topbar() {
           </div>
         </div>
 
-        <div className="mt-3 flex flex-col gap-3 md:mt-0 md:flex-row md:items-center md:justify-between">
-          <div className="hidden md:block">
-            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-accent">{pageMeta.eyebrow}</p>
-            <p className="pt-1 font-display text-base font-semibold text-text">{pageMeta.title}</p>
+        <div className="mt-3 flex flex-col gap-3 md:mt-0 md:flex-row md:items-start md:justify-between">
+          <div className="hidden min-w-0 md:block">
+            <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1 text-[11px] text-faint">
+              {pageMeta.breadcrumbs.map((crumb, index) => (
+                <span key={crumb.href} className="inline-flex items-center gap-1">
+                  {index > 0 ? <ChevronRight className="h-3 w-3 text-faint/70" /> : null}
+                  <Link
+                    href={crumb.href}
+                    className="rounded-md px-1 py-0.5 transition-colors duration-150 hover:bg-soft hover:text-text"
+                  >
+                    {crumb.label}
+                  </Link>
+                </span>
+              ))}
+            </nav>
+            <p className="pt-2 font-display text-base font-semibold text-text">{pageMeta.title}</p>
           </div>
 
           <div className="relative w-full md:max-w-[620px] md:flex-1">
@@ -178,14 +157,19 @@ export function Topbar() {
                   <button
                     type="button"
                     key={item.key}
-                    className="flex w-full items-center justify-between px-4 py-3 text-left text-sm text-text transition-colors duration-100 hover:bg-soft"
+                    className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition-colors duration-100 hover:bg-soft"
                     onClick={() => {
                       router.push(item.href);
                       setQuery("");
                     }}
                   >
-                    <span>{item.label}</span>
-                    <Sparkles className="h-3.5 w-3.5 text-faint" />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm text-text">{item.label}</p>
+                      <p className="mt-0.5 text-[11px] font-medium uppercase tracking-[0.14em] text-faint">
+                        {KIND_LABEL[item.kind] ?? "Open"}
+                      </p>
+                    </div>
+                    <Sparkles className="h-3.5 w-3.5 shrink-0 text-faint" />
                   </button>
                 ))}
               </div>
@@ -254,6 +238,20 @@ export function Topbar() {
             )}
           </div>
         </div>
+
+        {pageMeta.quickActions.length ? (
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {pageMeta.quickActions.map((action) => (
+              <Link
+                key={action.href}
+                href={action.href}
+                className="shrink-0 rounded-full border border-borderc bg-soft px-3 py-1.5 text-[12px] font-semibold text-muted transition-colors duration-150 hover:border-border-bright hover:bg-overlay hover:text-text"
+              >
+                {action.label}
+              </Link>
+            ))}
+          </div>
+        ) : null}
       </div>
     </header>
   );
