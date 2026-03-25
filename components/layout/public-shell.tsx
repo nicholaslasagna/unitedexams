@@ -22,6 +22,7 @@ const guestNavItems = [
 const accountNavItems = [
   { href: "/app/dashboard", label: "Dashboard" },
   { href: "/app/courses", label: "Courses" },
+  { href: "/app/notes", label: "Notes" },
   { href: "/app/homework", label: "Homework" },
   { href: "/app/leaderboard", label: "Leaderboard" },
   { href: "/app/account", label: "Account" },
@@ -78,6 +79,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
 
   const showAnnouncements = isProfessor || hasJoinedSection;
   const showSections = isProfessor || hasJoinedSection;
+  const showGrades = !isProfessor && !isSchoolAdmin && profile.role === "student";
 
   const navItems = useMemo(() => {
     if (!isAuthenticated) return guestNavItems;
@@ -98,8 +100,17 @@ export function PublicShell({ children }: { children: ReactNode }) {
         next = [...next, { href: "/app/announcements", label: "Announcements" }];
       }
     }
+    if (showGrades) {
+      const sectionsIndex = next.findIndex((item) => item.href === "/app/sections");
+      const insertAt = sectionsIndex >= 0 ? sectionsIndex + 1 : 3;
+      next = [
+        ...next.slice(0, insertAt),
+        { href: "/app/grades", label: "Grades" },
+        ...next.slice(insertAt)
+      ];
+    }
     return next;
-  }, [isAuthenticated, isSchoolAdmin, showAnnouncements, showSections]);
+  }, [isAuthenticated, isSchoolAdmin, showAnnouncements, showGrades, showSections]);
 
   return (
     <div className="min-h-screen bg-bg text-text">

@@ -23,8 +23,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppData } from "@/lib/app-data-context";
-import { isUniversityAdmin, isVerifiedProfessor } from "@/lib/auth/roles";
 import { resolveProfileInternalName } from "@/lib/profile-name";
+import { useWorkspaceNavigation, type WorkspaceSectionLink } from "@/components/layout/workspace-navigation-context";
 import type { LucideIcon } from "lucide-react";
 
 interface NavItem {
@@ -52,8 +52,9 @@ function buildItems(params: {
   showSections: boolean;
   showAnnouncements: boolean;
   showGrades: boolean;
+  currentSection: WorkspaceSectionLink | null;
 }) {
-  const { showProfessor, showSchoolAdmin, showSections, showAnnouncements, showGrades } = params;
+  const { showProfessor, showSchoolAdmin, showSections, showAnnouncements, showGrades, currentSection } = params;
 
   if (showSchoolAdmin) {
     return [
@@ -88,10 +89,18 @@ function buildItems(params: {
         label: "Sections",
         icon: GraduationCap,
         sectionGroup: true,
-        children: [
-          { href: "/app/sections/materials", label: "Materials", icon: BookMarked },
-          { href: "/app/sections/homework", label: "Homework", icon: ListChecks }
-        ]
+        children: currentSection
+          ? [
+              { href: "/app/sections", label: "Overview", icon: GraduationCap },
+              { href: currentSection.materialsHref, label: "Current class", icon: BookMarked },
+              { href: currentSection.announcementsHref, label: "Announcements", icon: Megaphone },
+              { href: "/app/sections/homework", label: "Homework", icon: ListChecks }
+            ]
+          : [
+              { href: "/app/sections", label: "Overview", icon: GraduationCap },
+              { href: "/app/sections/materials", label: "Materials", icon: BookMarked },
+              { href: "/app/sections/homework", label: "Homework", icon: ListChecks }
+            ]
       },
       ...(showGrades ? [gradesItem] : []),
       ...studentItems.slice(2)
@@ -110,14 +119,86 @@ function buildItems(params: {
       label: "Sections",
       icon: GraduationCap,
       sectionGroup: true,
-      children: [
-        { href: "/app/sections/materials", label: "Materials", icon: BookMarked },
-        { href: "/app/sections/homework", label: "Homework", icon: ListChecks },
-        { href: "/app/sections/gradebook", label: "Gradebook", icon: ClipboardList }
-      ]
+      children: currentSection
+        ? [
+            { href: "/app/sections", label: "Overview", icon: GraduationCap },
+            { href: `/app/sections/${currentSection.id}`, label: "Current section", icon: BookMarked },
+            { href: currentSection.materialsHref, label: "Materials", icon: BookMarked },
+            { href: currentSection.gradebookHref ?? "/app/sections/gradebook", label: "Gradebook", icon: ClipboardList },
+            { href: currentSection.examsHref ?? "/app/exams", label: "Exams", icon: Timer }
+          ]
+        : [
+            { href: "/app/sections", label: "Overview", icon: GraduationCap },
+            { href: "/app/sections/materials", label: "Materials", icon: BookMarked },
+            { href: "/app/sections/homework", label: "Homework", icon: ListChecks },
+            { href: "/app/sections/gradebook", label: "Gradebook", icon: ClipboardList }
+          ]
     },
     ...professorBase.slice(3)
   ];
+}
+
+function SectionQuickList({
+  sections,
+  currentSection,
+  showProfessor,
+  mobile = false,
+  onNavigate
+}: {
+  sections: WorkspaceSectionLink[];
+  currentSection: WorkspaceSectionLink | null;
+  showProfessor: boolean;
+  mobile?: boolean;
+  onNavigate?: () => void;
+}) {
+  if (sections.length === 0) return null;
+
+  return (
+    <div className={cn("space-y-2", mobile && "space-y-2.5")}>
+      <div className="flex items-center justify-between gap-2 px-1">
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-accent">
+          {showProfessor ? "Teaching now" : "Your classes"}
+        </p>
+        <Link
+          href="/app/sections"
+          onClick={onNavigate}
+          className="text-[11px] font-semibold text-faint transition-colors duration-150 hover:text-text"
+        >
+          View all
+        </Link>
+      </div>
+
+      <div className="space-y-2">
+        {sections.slice(0, mobile ? 5 : 4).map((section) => {
+          const active = currentSection?.id === section.id;
+          return (
+            <Link
+              key={section.id}
+              href={section.primaryHref}
+              onClick={onNavigate}
+              className={cn(
+                "group flex items-center justify-between gap-3 rounded-xl border px-3 py-3 transition-all duration-150",
+                active
+                  ? "border-accent/35 bg-accent-subtle"
+                  : "border-borderc bg-soft hover:border-border-bright hover:bg-overlay"
+              )}
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-text">{section.name}</p>
+                <p className="truncate text-xs text-faint">
+                  {section.courseId}
+                  {section.term ? ` · ${section.term}` : ""}
+                </p>
+              </div>
+              <span className="shrink-0 text-[11px] font-semibold text-accent">
+                {showProfessor ? "Open" : "Materials"}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 function NavigationList({
@@ -275,54 +356,24 @@ function NavigationList({
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { profile, isAuthenticated, supabase, user } = useAppData();
+  const { profile } = useAppData();
   const accountName = resolveProfileInternalName(profile);
-  const showProfessor = isVerifiedProfessor(profile);
-  const showSchoolAdmin = isUniversityAdmin(profile);
-  const [hasJoinedSection, setHasJoinedSection] = useState(false);
+  const {
+    showProfessor,
+    showSchoolAdmin,
+    showSections,
+    showAnnouncements,
+    showGrades,
+    sections,
+    currentSection
+  } = useWorkspaceNavigation();
   const [sectionsOpen, setSectionsOpen] = useState(() => pathname.startsWith("/app/sections"));
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    if (!isAuthenticated || !supabase || !user || showProfessor || showSchoolAdmin) {
-      setHasJoinedSection(false);
-      return;
-    }
-
-    let active = true;
-    void (async () => {
-      try {
-        const { data, error } = await supabase
-          .from("section_members")
-          .select("section_id")
-          .eq("user_id", user.id)
-          .limit(1);
-
-        if (!active) return;
-        if (error) {
-          setHasJoinedSection(false);
-          return;
-        }
-        setHasJoinedSection((data?.length ?? 0) > 0);
-      } catch {
-        if (!active) return;
-        setHasJoinedSection(false);
-      }
-    })();
-
-    return () => {
-      active = false;
-    };
-  }, [isAuthenticated, showProfessor, showSchoolAdmin, supabase, user]);
 
   useEffect(() => {
     if (pathname.startsWith("/app/sections")) setSectionsOpen(true);
     setMobileMenuOpen(false);
   }, [pathname]);
-
-  const showAnnouncements = showProfessor || hasJoinedSection;
-  const showSections = showProfessor || hasJoinedSection;
-  const showGrades = !showProfessor && !showSchoolAdmin && profile.role === "student";
 
   const items = useMemo(
     () =>
@@ -331,9 +382,19 @@ export function Sidebar() {
         showSchoolAdmin,
         showSections,
         showAnnouncements,
-        showGrades
+        showGrades,
+        currentSection
       }),
-    [showAnnouncements, showGrades, showProfessor, showSchoolAdmin, showSections]
+    [currentSection, showAnnouncements, showGrades, showProfessor, showSchoolAdmin, showSections]
+  );
+
+  const mainItems = useMemo(
+    () => items.filter((item) => item.href !== "/app/account" && item.href !== "/app/settings"),
+    [items]
+  );
+  const personalItems = useMemo(
+    () => items.filter((item) => item.href === "/app/account" || item.href === "/app/settings"),
+    [items]
   );
 
   const dockItems = useMemo(() => {
@@ -354,7 +415,7 @@ export function Sidebar() {
 
   return (
     <>
-      <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 border-r border-borderc bg-surface/90 px-4 pb-5 pt-5 backdrop-blur-xl lg:block">
+      <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 flex-col border-r border-borderc bg-surface/90 px-4 pb-5 pt-5 backdrop-blur-xl lg:flex">
         <Link
           href="/"
           className="mb-10 flex items-center gap-3 rounded-xl px-2 py-2 transition-colors duration-150 hover:bg-soft"
@@ -368,17 +429,34 @@ export function Sidebar() {
           </div>
         </Link>
 
-        <NavigationList
-          items={items}
-          pathname={pathname}
-          sectionsOpen={sectionsOpen}
-          setSectionsOpen={setSectionsOpen}
-        />
+        <div className="flex-1 space-y-6 overflow-y-auto pr-1">
+          <div className="space-y-2">
+            <p className="px-2 text-[10px] font-bold uppercase tracking-[0.22em] text-accent">Navigate</p>
+            <NavigationList
+              items={mainItems}
+              pathname={pathname}
+              sectionsOpen={sectionsOpen}
+              setSectionsOpen={setSectionsOpen}
+            />
+          </div>
 
-        <div className="mt-10 rounded-xl border border-borderc bg-soft p-5 transition-colors duration-150 hover:border-border-bright">
-          <p className="text-caption font-bold uppercase tracking-[1.5px] text-accent">Today&apos;s goal</p>
-          <p className="mt-2 text-[14px] font-medium text-text">Complete one quiz set in 20 minutes.</p>
-          <p className="mt-1 text-[13px] text-faint">Low friction. Keep streak momentum.</p>
+          <SectionQuickList
+            sections={sections}
+            currentSection={currentSection}
+            showProfessor={showProfessor}
+          />
+        </div>
+
+        <div className="mt-4 border-t border-borderc pt-4">
+          <p className="px-2 text-[10px] font-bold uppercase tracking-[0.22em] text-faint">You</p>
+          <div className="mt-2">
+            <NavigationList
+              items={personalItems}
+              pathname={pathname}
+              sectionsOpen={sectionsOpen}
+              setSectionsOpen={setSectionsOpen}
+            />
+          </div>
         </div>
       </aside>
 
@@ -460,8 +538,11 @@ export function Sidebar() {
               </div>
 
               <div className="flex-1 overflow-y-auto px-4 py-4">
+                <div className="space-y-2">
+                  <p className="px-1 text-[10px] font-bold uppercase tracking-[0.22em] text-accent">Navigate</p>
+                </div>
                 <NavigationList
-                  items={items}
+                  items={mainItems}
                   pathname={pathname}
                   sectionsOpen={sectionsOpen}
                   setSectionsOpen={setSectionsOpen}
@@ -469,13 +550,31 @@ export function Sidebar() {
                   mobile
                 />
 
-                <div className="mt-5 rounded-[1.4rem] border border-borderc bg-soft p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-accent">Today&apos;s goal</p>
-                  <p className="mt-2 text-sm font-semibold text-text">Complete one quiz set in 20 minutes.</p>
-                  <p className="mt-1 text-sm text-text-secondary">
-                    Stay focused, keep momentum, and use sections for class materials.
-                  </p>
+                <div className="mt-5">
+                  <SectionQuickList
+                    sections={sections}
+                    currentSection={currentSection}
+                    showProfessor={showProfessor}
+                    mobile
+                    onNavigate={() => setMobileMenuOpen(false)}
+                  />
                 </div>
+
+                {personalItems.length ? (
+                  <div className="mt-6 border-t border-borderc pt-5">
+                    <p className="px-1 text-[10px] font-bold uppercase tracking-[0.22em] text-faint">You</p>
+                    <div className="mt-2">
+                      <NavigationList
+                        items={personalItems}
+                        pathname={pathname}
+                        sectionsOpen={sectionsOpen}
+                        setSectionsOpen={setSectionsOpen}
+                        onNavigate={() => setMobileMenuOpen(false)}
+                        mobile
+                      />
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
