@@ -407,6 +407,169 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
     ]
   },
   {
+    id: "ta-test2-s2025-sim",
+    courseId: "theory-of-automata",
+    title: "Theory of Automata Test 2 Simulation (Oct 2025)",
+    description:
+      "Exact prior Test 2 structure: one NFA construction question and one pumping-lemma proof question.",
+    difficulty: "Advanced",
+    estMinutes: 52,
+    mode: "exam",
+    isExamSimulation: true,
+    questionCountTarget: 2,
+    tags: ["test2", "past-exam", "exam-simulation", "chapter-2", "hw2", "nfa", "pumping-lemma"],
+    timerDefaultMinutes: 50,
+    questions: [
+      {
+        id: "ta-test2-s2025-sim-q1",
+        type: "free",
+        prompt:
+          "Draw the state diagram of a nondeterministic finite automaton that accepts\n\n$$((ba) \\cup b)^* \\cup ((bb) \\cup a)^*.$$",
+        explanation:
+          "Split on the top-level union. The left branch accepts strings built from tokens `b` and `ba`; the right branch accepts strings built from tokens `a` and `bb`.",
+        sampleAnswer:
+          "Use an epsilon split from the start into two accepting branch states. Left branch: accepting state qL with qL --b--> qL and qL --b--> qL1, then qL1 --a--> qL. Right branch: accepting state qR with qR --a--> qR and qR --b--> qR1, then qR1 --b--> qR.",
+        hintSteps: [
+          "Top-level `union` means your NFA should start with an epsilon split into two submachines.",
+          "For `((ba) ∪ b)^*`, think in terms of repeatable tokens: every repetition is either `b` or `ba`.",
+          "For `((bb) ∪ a)^*`, every repetition is either `a` or `bb`.",
+          "Because both branches are starred, epsilon must be accepted."
+        ],
+        walkthroughSteps: [
+          "Start with a start state `qS` and epsilon-transitions to two branch states `qL` and `qR`.",
+          "Make `qL` and `qR` accepting because each branch has a Kleene star, so zero repetitions are allowed.",
+          "Left branch for `((ba) ∪ b)^*`: from `qL`, on `b` either finish a `b` token and stay in `qL`, or start a `ba` token by going to helper state `qL1`; from `qL1`, on `a`, return to `qL`.",
+          "Right branch for `((bb) ∪ a)^*`: from `qR`, on `a`, stay in `qR`; on `b`, go to helper state `qR1`; from `qR1`, on `b`, return to `qR`.",
+          "This works because the left branch generates exactly sequences of `b` and `ba`, while the right branch generates exactly sequences of `a` and `bb`.",
+          "The whole NFA accepts the union because `qS` nondeterministically chooses either branch at the start."
+        ],
+        references: ["Previous Test 2 (10/24/2025) Question 1"],
+        tags: ["nfa", "regular-expression", "union", "kleene-star", "chapter-2", "past-exam"]
+      },
+      {
+        id: "ta-test2-s2025-sim-q2",
+        type: "free",
+        prompt:
+          "Prove that the following language is **not regular**:\n\n$$L = \\{a^n b^n : n \\geq 0\\}.$$",
+        explanation:
+          "Use the pumping lemma. The standard witness is `a^p b^p`, and the key point is that `|xy| <= p` forces the pumped part to lie entirely inside the `a` block.",
+        sampleAnswer:
+          "Assume L is regular with pumping length p. Choose w = a^p b^p. Any split w = xyz with |xy| <= p has y = a^k for some k > 0. Pumping down gives xz = a^(p-k) b^p, which is not in L. Contradiction.",
+        hintSteps: [
+          "Start with contradiction: assume `L` is regular and let `p` be the pumping length.",
+          "Choose the witness string `w = a^p b^p`.",
+          "Explain why `|xy| <= p` forces both `x` and `y` to lie inside the first block of `a` symbols.",
+          "Pump with `i = 0` to make the number of `a`'s and `b`'s unequal."
+        ],
+        walkthroughSteps: [
+          "Assume for contradiction that `L` is regular. Then the pumping lemma gives a pumping length `p`.",
+          "Choose `w = a^p b^p`, which is in `L` and has length at least `p`.",
+          "For any decomposition `w = xyz` with `|xy| <= p` and `|y| > 0`, the substring `y` lies entirely in the first `a^p` block, so `y = a^k` for some `k > 0`.",
+          "Pump down with `i = 0`. Then `xy^0z = xz = a^{p-k} b^p`.",
+          "This new string has fewer `a`'s than `b`'s, so it is not in `L`.",
+          "That contradicts the pumping lemma requirement that `xy^iz` remain in `L` for all `i >= 0`. Therefore `L` is not regular."
+        ],
+        references: ["Previous Test 2 (10/24/2025) Question 2", "Lecture Notes 2.4"],
+        tags: ["pumping-lemma", "non-regular", "chapter-2", "past-exam"]
+      }
+    ]
+  },
+  {
+    id: "ta-test2-s2026-mock",
+    courseId: "theory-of-automata",
+    title: "Theory of Automata Test 2 Mock (Chapter 2 + HW2)",
+    description:
+      "A three-question closed-book mock matching the announced Test 2 format: one DFA, one NFA/regex construction, and one pumping-lemma proof.",
+    difficulty: "Advanced",
+    estMinutes: 68,
+    mode: "exam",
+    isExamSimulation: true,
+    questionCountTarget: 3,
+    tags: ["test2", "mock-exam", "spring-2026", "chapter-2", "hw2", "dfa", "nfa", "pumping-lemma"],
+    timerDefaultMinutes: 70,
+    questions: [
+      {
+        id: "ta-test2-s2026-mock-q1",
+        type: "free",
+        prompt:
+          "Write the transition table of a DFA accepting\n\n$$\\{w \\in \\{a,b\\}^* : \\text{each } a \\text{ in } w \\text{ is immediately preceded by one } b\\}.$$",
+        explanation:
+          "The DFA only needs to remember whether the last symbol was `b`, because that is exactly the condition that makes the next `a` legal.",
+        sampleAnswer:
+          "Use q0(start, accept), q1(just saw b, accept), and qd(dead). Transitions: q0:a->qd, q0:b->q1, q1:a->q0, q1:b->q1, qd:a->qd, qd:b->qd.",
+        hintSteps: [
+          "Decide what information the state needs to remember. Here it is only whether a `b` was just seen.",
+          "The empty string should be accepted because it has no violating `a`.",
+          "Any `a` read without a preceding `b` must send the machine to a dead state.",
+          "Check that every state has exactly one outgoing transition on `a` and on `b`."
+        ],
+        walkthroughSteps: [
+          "Let `q0` mean neutral/start: no active permission for `a` unless we first read `b`.",
+          "Let `q1` mean the last symbol read was `b`, so an `a` is currently allowed.",
+          "Let `qd` be a dead state for any violation.",
+          "From `q0`, reading `a` violates the rule, so go to `qd`; reading `b` moves to `q1`.",
+          "From `q1`, reading `a` is valid and returns to `q0`; reading `b` keeps you in `q1` because another `a` would still be allowed next.",
+          "From `qd`, both inputs loop back to `qd`. Accepting states are `q0` and `q1`."
+        ],
+        references: ["HW2 Problem 3", "Theory of Automata Test 2 scope"],
+        tags: ["dfa", "transition-table", "construction", "hw2", "chapter-2"]
+      },
+      {
+        id: "ta-test2-s2026-mock-q2",
+        type: "free",
+        prompt:
+          "Write the transition relation table for an NFA accepting\n\n$$(ab \\cup aab \\cup aba)^*.$$",
+        explanation:
+          "Treat the inner union as three fixed tokens with a shared prefix. The star means the start state is also accepting and completed tokens must loop back.",
+        sampleAnswer:
+          "Use q0 as start/accept. q0 --a--> q1. From q1, on b go to q0 and q3 simultaneously (for `ab` and `aba`), and on a go to q2 (for `aab`). From q2 on b go to q0. From q3 on a go to q0.",
+        hintSteps: [
+          "The three allowed tokens are `ab`, `aab`, and `aba`.",
+          "All three tokens begin with `a`, so share that prefix in the NFA.",
+          "Because of Kleene star, the start state must accept epsilon and repeated completed tokens must return there.",
+          "At the point where `ab` and `aba` overlap, use nondeterminism instead of forcing one path too early."
+        ],
+        walkthroughSteps: [
+          "Use `q0` as the start and accepting state, because the Kleene star allows the empty string.",
+          "From `q0`, reading `a` moves to `q1`, which represents having consumed the shared first symbol of any token.",
+          "From `q1`, on `a`, go to `q2`; then `q2 --b--> q0` completes the token `aab`.",
+          "From `q1`, on `b`, branch nondeterministically to `q0` and `q3`. The move to `q0` completes `ab`, while the move to `q3` says we are still pursuing `aba`.",
+          "From `q3`, on `a`, return to `q0` to complete `aba`.",
+          "Because all completed tokens return to `q0`, the machine can repeat any combination of `ab`, `aab`, and `aba`."
+        ],
+        references: ["HW2 Problem 10", "Lecture Notes 2.2-2.3"],
+        tags: ["nfa", "transition-relation", "regular-expression", "kleene-star", "hw2", "chapter-2"]
+      },
+      {
+        id: "ta-test2-s2026-mock-q3",
+        type: "free",
+        prompt:
+          "Use the pumping lemma to show that\n\n$$L = \\{ a^n b a^m b a^{m+n} : m,n \\geq 1 \\}$$\n\nis **not regular**.",
+        explanation:
+          "Choose a witness where the first and second `a` blocks are both length `p`, so the final block is forced to be length `2p`. Pumping inside the first block destroys that `m+n` relationship.",
+        sampleAnswer:
+          "Assume L regular with pumping length p. Choose w = a^p b a^p b a^(2p). Any split with |xy| <= p has y in the first a-block. Pumping down changes the first block only, so the final block is no longer the sum of the first two. Contradiction.",
+        hintSteps: [
+          "Start with contradiction and let `p` be the pumping length.",
+          "Choose a witness that makes the relationship easy to track: first block `p`, second block `p`, final block `2p`.",
+          "Use `|xy| <= p` to force `y` into the first `a` block.",
+          "Pump with `i = 0` or `i = 2` and compare the required final exponent with the unchanged final block."
+        ],
+        walkthroughSteps: [
+          "Assume for contradiction that `L` is regular. Let `p` be the pumping length from the pumping lemma.",
+          "Choose the witness `w = a^p b a^p b a^{2p}`. This string is in `L` because it has the form `a^n b a^m b a^{m+n}` with `n = p` and `m = p`.",
+          "For any split `w = xyz` with `|xy| <= p` and `|y| > 0`, the substring `y` lies entirely in the first `a^p` block. So `y = a^k` for some `k > 0`.",
+          "Pump down with `i = 0`. Then `xy^0z = a^{p-k} b a^p b a^{2p}`.",
+          "In this pumped string, the first block length is now `p-k` and the second is still `p`, so the final block should have length `(p-k) + p = 2p-k` if the string were still in `L`.",
+          "But the final block is unchanged at length `2p`, so the required relationship fails. Therefore `xy^0z` is not in `L`, contradicting the pumping lemma.",
+          "Hence `L` is not regular."
+        ],
+        references: ["HW2 Problem 13", "Lecture Notes 2.4"],
+        tags: ["pumping-lemma", "non-regular", "hw2", "chapter-2", "test2"]
+      }
+    ]
+  },
+  {
     id: "ca-midterm-s2025-sim",
     courseId: "computer-architecture",
     title: "Computer Architecture Midterm Simulation (Spring 2025)",

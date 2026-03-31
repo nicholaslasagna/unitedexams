@@ -591,6 +591,255 @@ Use this right before the exam if the question is the A-G architecture recogniti
 If you can answer those three fast, you are ready for the question.
 `;
 
+const automataTest2Notes = `## Theory of Automata Test 2 Master Notes (CS 3383)
+
+Built directly around:
+
+  - the **Spring 2026 Test 2 announcement**
+  - the **previous Test 2** you provided
+  - **Chapter 2** of the lecture notes
+  - **Homework 2 solutions**
+
+> **Actual exam constraints:** closed-book, closed-notes, three questions, and the scope is **Chapter 2 + Assignment 2 only**.
+
+## What Chapter 2 Really Covers
+
+Chapter 2 is the finite-automata block:
+
+  - **2.1 Deterministic finite automata (DFA)**
+  - **2.2 Nondeterministic finite automata (NFA)**
+  - **2.3 Finite automata and regular expressions**
+  - **2.4 Languages that are and are not regular**
+
+That means your prep should center on exactly three families of questions:
+
+  - **DFA construction / transition tables**
+  - **NFA or regex-to-automata construction**
+  - **Pumping-lemma proofs for non-regularity**
+
+If you can do those three cleanly under time pressure, you are aligned with the announced format.
+
+## What the Previous Test 2 Asked
+
+The prior test you gave me had:
+
+1. Draw an NFA for
+
+   \`((ba) union b)^* union ((bb) union a)^*\`
+
+2. Prove that
+
+   \`{ a^n b^n : n >= 0 }\`
+
+   is not regular.
+
+That is a strong signal. The instructor is comfortable mixing:
+
+  - one **construction** question
+  - one **proof of non-regularity** question
+
+The new exam has **three** questions, so the safest assumption is:
+
+  - one DFA-style construction
+  - one NFA/regex-style construction
+  - one pumping-lemma proof
+
+## HW2 Topics You Need Cold
+
+From Homework 2, the patterns worth memorizing are:
+
+  - regex recognition and construction:
+    - \`a(ba)^*\`
+    - strings containing substring \`aab\` or \`bba\`
+    - \`emptyset^* union a(ba union baa)^*(b union ba)\`
+  - DFA construction:
+    - every \`a\` must be immediately preceded by one \`b\`
+    - contains \`abab\` as a substring
+  - NFA / FA construction:
+    - \`(ab)^*(ba)^* union aa^*\`
+    - \`(ab union aab union aba)^*\`
+    - \`((ab)^* union (bc)^*)ab\`
+    - \`((ab union aba)^* a)^*\`
+  - non-regular proofs:
+    - \`{ a^n b a^m b a^{m+n} : m,n >= 1 }\`
+    - \`{ ww^R : w in {a,b}^* }\`
+
+These are not random homework exercises. They are almost exactly the kinds of things a Chapter 2 test can ask.
+
+## Solve Pattern 1: DFA Construction
+
+When asked for a DFA:
+
+  - define each state by **what information it remembers**
+  - use the **minimum memory needed**
+  - include a **dead state** if violations must stay rejected
+  - test your machine on:
+    - one obvious accepted string
+    - one obvious rejected string
+    - epsilon if relevant
+
+### Example mindset
+
+For “each \`a\` is immediately preceded by one \`b\`”:
+
+  - one state means “neutral / no active permission”
+  - one state means “I just saw \`b\`, so an \`a\` is allowed next”
+  - one dead state means “the rule was broken”
+
+If you cannot explain your state meanings in one sentence each, your DFA is not settled yet.
+
+## Solve Pattern 2: NFA / Regex Construction
+
+When asked for an NFA from a regex:
+
+  - identify the **top-level operator first**
+  - build **inside-out**
+  - use these standard moves:
+    - **union** -> epsilon split
+    - **concatenation** -> connect accept of first to start of second
+    - **Kleene star** -> accept epsilon and loop completed pieces back
+
+### Important shortcut
+
+Do **not** try to force determinism into an NFA question.
+
+If a symbol could either:
+
+  - finish one token, or
+  - continue another token,
+
+then branch nondeterministically.
+
+That is exactly why NFAs are easier for these constructions.
+
+### Example
+
+For \`(ab union aab union aba)^*\`:
+
+  - all three tokens start with \`a\`
+  - so share that prefix
+  - when you read the \`b\` after the first \`a\`, branch:
+    - one path says “this was \`ab\`”
+    - another says “I am still building \`aba\`”
+
+That is the correct NFA instinct.
+
+## Solve Pattern 3: Pumping Lemma
+
+Your proof script should be almost mechanical:
+
+1. Assume \`L\` is regular.
+2. Let \`p\` be the pumping length.
+3. Choose a witness string \`w\` in \`L\` with \`|w| >= p\`.
+4. Force where \`y\` must lie using \`|xy| <= p\`.
+5. Pump with \`i = 0\` or \`i = 2\`.
+6. Show the pumped string breaks the defining property.
+7. Contradiction. Therefore \`L\` is not regular.
+
+### What students get wrong
+
+  - choosing a witness that does not expose the structure
+  - forgetting that **the adversary chooses the split**
+  - not explaining why \`y\` must be in a specific region
+  - saying “not equal anymore” without naming the violated property
+
+### Classic prior-test proof
+
+For \`{ a^n b^n : n >= 0 }\`:
+
+  - choose \`w = a^p b^p\`
+  - since \`|xy| <= p\`, \`y\` lies in the first block of \`a\`s
+  - pumping changes only the count of \`a\`s
+  - so the counts no longer match
+
+### Harder HW2 proof
+
+For \`{ a^n b a^m b a^{m+n} : m,n >= 1 }\`:
+
+  - choose \`w = a^p b a^p b a^{2p}\`
+  - force \`y\` into the first \`a\`-block
+  - pumping changes the first block only
+  - but the final block still has exponent \`2p\`
+  - so it can no longer equal \`m+n\`
+
+## Closed-Book Priority List
+
+If you only memorize a few things, memorize these:
+
+  - how to define clean DFA state meanings
+  - union / concatenation / star NFA construction patterns
+  - the pumping-lemma quantifier order
+  - why \`|xy| <= p\` matters
+  - one complete proof of \`{ a^n b^n : n >= 0 }\`
+  - one complete proof of the HW2 language \`a^n b a^m b a^{m+n}\`
+
+## Final Exam-Day Tactics
+
+  - Start by classifying the question: **DFA**, **NFA/regex**, or **pumping lemma**.
+  - For construction questions, write down state meaning before transitions.
+  - For proof questions, write the pumping skeleton immediately so you do not lose quantifier order.
+  - If a regex/NFA question looks ugly, split it by its top-level operator first and never skip that step.
+  - If stuck, do not improvise a different theorem. Chapter 2 questions usually want the standard tool.
+`;
+
+const automataTest2CheatSheet = `## Theory of Automata Test 2 Cheat Sheet
+
+### Scope
+
+  - **Chapter 2 only**
+  - **HW2 only**
+  - likely **3 questions**
+  - closed-book / closed-notes
+
+### Most likely question mix
+
+1. **DFA**
+2. **NFA or regex construction**
+3. **Pumping lemma**
+
+### DFA checklist
+
+  - state meaning first
+  - dead state if needed
+  - every state has transitions on every symbol
+  - test with one accept + one reject example
+
+### NFA checklist
+
+  - union -> epsilon split
+  - concatenation -> connect pieces in sequence
+  - star -> start accepts epsilon and loops back
+  - branch when one symbol can serve multiple token paths
+
+### Pumping lemma checklist
+
+  - assume regular
+  - let \`p\` be pumping length
+  - choose witness \`w\`
+  - force location of \`y\`
+  - pump \`i=0\` or \`i=2\`
+  - name the exact property that breaks
+
+### Prior Test 2 questions
+
+  - NFA for \`((ba) union b)^* union ((bb) union a)^*\`
+  - prove \`{ a^n b^n : n >= 0 }\` is not regular
+
+### HW2 constructions to review
+
+  - DFA: each \`a\` immediately preceded by \`b\`
+  - DFA: contains \`abab\`
+  - NFA: \`(ab union aab union aba)^*\`
+  - FA: \`((ab)^* union (bc)^*)ab\`
+  - pumping: \`a^n b a^m b a^{m+n}\`
+
+### Do not forget
+
+  - \`|xy| <= p\` is how you force where \`y\` lives
+  - in an NFA, branching is allowed and often required
+  - if your DFA state meanings are vague, the machine is not ready
+`;
+
 export const notesByCourse: Record<string, CourseContent> = {
   "software-engineering": {
     "notes": softwareEngineeringArchitectureNotes,
@@ -656,8 +905,8 @@ export const notesByCourse: Record<string, CourseContent> = {
     ]
   },
   "theory-of-automata": {
-    "notes": "## Theory of Automata Notes (CS 3383)\n\nBuilt from your **HW1**, **HW2**, **Test 1**, and lecture notes outline.\n\n> **Exam pattern:** set/relation proofs + regular-language constructions + nonregular proofs. Most mistakes come from using the wrong model/tool.\n\n### Sets and Relations (HW1 heavy)\n\n  - Core identity: `A - (B intersection C) = (A - B) union (A - C)`.\n\n  - Relation operations: inverse, composition, reflexive transitive closure `R*`.\n\n  - Graph criteria: a relation is a function iff each domain node has exactly one outgoing edge.\n\n  - Property checks: reflexive/symmetric/transitive vs antisymmetric; partial vs total orders.\n\n### Regular Languages and Regex\n\n  - Regex operations: union, concatenation, Kleene star.\n\n  - From your work: no-more-than-3-a's and a-count-divisible-by-3 constructions.\n\n  - Test identity: `(b* a*) intersection (a* b*) = a* union b*`.\n\n  - Lecture example: language with 2 or 3 ones (first two nonconsecutive) starts with `0*10*010*` pattern.\n\n### DFA/NFA Construction (HW2)\n\n  - DFA construction tasks: pattern constraints like \"each a immediately preceded by b\" and substring tracking like \"contains abab\".\n\n  - NFA and regex conversion tasks: build machine from expression and expression from machine.\n\n  - Know closure facts to simplify proof paths quickly.\n\n### Proving Non-Regular\n\n  - Pumping lemma is your main contradiction tool.\n\n  - Typical examples: `{a^n b^n}`, and homework-style hard languages.\n\n  - Quantifier order matters: choose witness after pumping length is fixed.\n\n### CFG / PDA / TM Ladder\n\n  - All regular languages are context-free, but not vice versa.\n\n  - PDA handles stack-structured dependencies (e.g., `{ww^R}` as a CFL example).\n\n  - TM level is needed for broader computability tasks (e.g., language families beyond CFL).\n\n### Fast Prep Checklist\n\n  - Do one relation-property proof, one regex design, one DFA table build, one pumping proof.\n\n  - When solving: first label the language class, then choose the proof/machine tool.\n",
-    "cheatSheet": "## Theory of Automata Notes (CS 3383)\n\nBuilt from your **HW1**, **HW2**, **Test 1**, and lecture notes outline.\n\n> **Exam pattern:** set/relation proofs + regular-language constructions + nonregular proofs. Most mistakes come from using the wrong model/tool.\n\n### Sets and Relations (HW1 heavy)\n\n  - Core identity: `A - (B intersection C) = (A - B) union (A - C)`.\n\n  - Relation operations: inverse, composition, reflexive transitive closure `R*`.\n\n  - Graph criteria: a relation is a function iff each domain node has exactly one outgoing edge.\n\n  - Property checks: reflexive/symmetric/transitive vs antisymmetric; partial vs total orders.\n\n### Regular Languages and Regex\n\n  - Regex operations: union, concatenation, Kleene star.\n\n  - From your work: no-more-than-3-a's and a-count-divisible-by-3 constructions.\n\n  - Test identity: `(b* a*) intersection (a* b*) = a* union b*`.\n\n  - Lecture example: language with 2 or 3 ones (first two nonconsecutive) starts with `0*10*010*` pattern.\n\n### DFA/NFA Construction (HW2)\n\n  - DFA construction tasks: pattern constraints like \"each a immediately preceded by b\" and substring tracking like \"contains abab\".\n\n  - NFA and regex conversion tasks: build machine from expression and expression from machine.\n\n  - Know closure facts to simplify proof paths quickly.\n\n### Proving Non-Regular\n\n  - Pumping lemma is your main contradiction tool.\n\n  - Typical examples: `{a^n b^n}`, and homework-style hard languages.\n\n  - Quantifier order matters: choose witness after pumping length is fixed.\n\n### CFG / PDA / TM Ladder\n\n  - All regular languages are context-free, but not vice versa.\n\n  - PDA handles stack-structured dependencies (e.g., `{ww^R}` as a CFL example).\n\n  - TM level is needed for broader computability tasks (e.g., language families beyond CFL).\n\n### Fast Prep Checklist\n\n  - Do one relation-property proof, one regex design, one DFA table build, one pumping proof.\n\n  - When solving: first label the language class, then choose the proof/machine tool.\n",
+    "notes": automataTest2Notes,
+    "cheatSheet": automataTest2CheatSheet,
     "resources": [
       {
         "label": "Introduction to the Theory of Computation (Sipser)",
