@@ -4,6 +4,7 @@ import {
   defaultProfile,
   type DataRepository
 } from "@/lib/storage/repository";
+import { getLocalRepository } from "@/lib/storage/local-repository";
 import {
   normalizeDisplayName,
   normalizeRealName,
@@ -11,6 +12,7 @@ import {
   validateDisplayName
 } from "@/lib/auth/display-name";
 import { getPaletteById, resolvePaletteSelection } from "@/lib/theme/palettes";
+import { isUuidLike } from "@/lib/utils";
 import type {
   AppDataDump,
   AppPreferences,
@@ -135,6 +137,7 @@ function asPerQuestionResults(value: unknown): PerQuestionResult[] {
 
 export class SupabaseRepository implements DataRepository {
   private ensured = false;
+  private readonly localRepository = getLocalRepository();
 
   constructor(private readonly client: SupabaseClient, private readonly user: User) {}
 
@@ -243,6 +246,8 @@ export class SupabaseRepository implements DataRepository {
   async getAttempts(): Promise<Attempt[]> {
     await this.ensureBaseRows();
 
+    const localAttempts = await this.localRepository.getAttempts();
+
     const { data, error } = await this.client
       .from("attempts")
       .select("id, quiz_set_id, completed_at, created_at, score, correct_count, total_count, time_spent_seconds, settings")
@@ -251,9 +256,11 @@ export class SupabaseRepository implements DataRepository {
       .order("created_at", { ascending: false })
       .limit(750);
 
-    if (error || !data) return [];
+    if (error || !data) {
+      return [...localAttempts].sort((left, right) => +new Date(right.date) - +new Date(left.date));
+    }
 
-    return (data as AttemptRow[]).map((row) => {
+    const remoteAttempts: Attempt[] = (data as AttemptRow[]).map((row) => {
       const settings = row.settings ?? {};
       return {
         id: row.id,
@@ -272,10 +279,22 @@ export class SupabaseRepository implements DataRepository {
         topicBreakdown: asTopicBreakdown(settings.topic_breakdown)
       };
     });
+
+    const merged = new Map<string, Attempt>();
+    for (const attempt of [...localAttempts, ...remoteAttempts]) {
+      merged.set(attempt.id, attempt);
+    }
+
+    return [...merged.values()].sort((left, right) => +new Date(right.date) - +new Date(left.date));
   }
 
   async saveAttempt(attempt: Attempt): Promise<void> {
     await this.ensureBaseRows();
+
+    if (!isUuidLike(attempt.quizId)) {
+      await this.localRepository.saveAttempt(attempt);
+      return;
+    }
 
     const dayStart = new Date(attempt.date);
     dayStart.setUTCHours(0, 0, 0, 0);
@@ -352,6 +371,7 @@ export class SupabaseRepository implements DataRepository {
 
   async clearAttempts(): Promise<void> {
     await this.ensureBaseRows();
+    await this.localRepository.clearAttempts();
     await this.client.from("attempts").delete().eq("user_id", this.user.id);
   }
 

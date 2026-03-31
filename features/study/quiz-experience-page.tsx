@@ -615,12 +615,14 @@ export function QuizExperiencePageContent({
         submissionMessage = `${submissionMessage} We could not fully sync this submission yet: ${saveWarning}`;
       }
 
+      const directResultsForPublicStudySet = !sectionAssignmentPolicy;
+
       setResult(attempt);
       setSubmissionMeta({
         resultsAvailable: resultsAvailableNow,
         message: submissionMessage
       });
-      setStage("submitted");
+      setStage(directResultsForPublicStudySet && resultsAvailableNow ? "results" : "submitted");
 
       const isPersonalBest = attempt.score > bestScore;
       if (isPersonalBest && preferences.confettiEnabled) {
