@@ -20,7 +20,7 @@ import {
 import { useAppData } from "@/lib/app-data-context";
 import { useToast } from "@/lib/hooks/use-toast";
 import { resolveQuizSetMode } from "@/lib/study/set-mode";
-import { cn, percentile } from "@/lib/utils";
+import { cn, isUuidLike, percentile } from "@/lib/utils";
 import type { Attempt, QuizSet } from "@/lib/types";
 
 interface HomeworkProgressSnapshot {
@@ -365,6 +365,7 @@ export function HomeworkExperiencePageContent({
 
   const course = quiz ? getCourse(quiz.courseId) : null;
   const setMode = quiz ? resolveQuizSetMode(quiz) : "homework";
+  const canPersistDraftRemotely = isAuthenticated && Boolean(supabase) && Boolean(user) && isUuidLike(setId);
   const order = useMemo(() => (quiz ? quiz.questions.map((question) => question.id) : []), [quiz]);
   const questionMap = useMemo(
     () => new Map((quiz?.questions ?? []).map((question) => [question.id, question])),
@@ -385,7 +386,7 @@ export function HomeworkExperiencePageContent({
     hydratedRef.current = true;
 
     const hydrate = async () => {
-      if (isAuthenticated && supabase && user) {
+      if (canPersistDraftRemotely && supabase && user) {
         const draft = await loadHomeworkDraft({ supabase, userId: user.id, setId });
         if (draft?.settings && typeof draft.settings === "object") {
           const settings = draft.settings as Record<string, unknown>;
@@ -433,7 +434,7 @@ export function HomeworkExperiencePageContent({
     hydrate().catch(() => {
       // noop
     });
-  }, [isAuthenticated, loading, order.length, quiz, setId, supabase, user]);
+  }, [canPersistDraftRemotely, loading, order.length, quiz, setId, supabase, user]);
 
   useEffect(() => {
     if (result) return;
@@ -464,7 +465,7 @@ export function HomeworkExperiencePageContent({
       startedAt
     };
 
-    if (!isAuthenticated || !supabase || !user) {
+    if (!canPersistDraftRemotely || !supabase || !user) {
       writeGuestProgress(setId, snapshot);
       return;
     }
@@ -488,7 +489,7 @@ export function HomeworkExperiencePageContent({
     currentIndex,
     draftAttemptId,
     flaggedIds,
-    isAuthenticated,
+    canPersistDraftRemotely,
     order,
     quiz,
     responseByQuestion,
@@ -677,7 +678,7 @@ export function HomeworkExperiencePageContent({
     await saveAttempt(attempt);
     setResult(attempt);
 
-    if (isAuthenticated && supabase && user && draftAttemptId) {
+    if (canPersistDraftRemotely && supabase && user && draftAttemptId) {
       await clearHomeworkDraft({ supabase, userId: user.id, draftAttemptId });
     } else {
       clearGuestProgress(setId);
