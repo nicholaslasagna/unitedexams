@@ -285,15 +285,193 @@ Rules:
   - \`addi\` uses a **signed 12-bit immediate**
 `;
 
-const softwareEngineeringArchitectureNotes = `## Software Engineering Exam 2 Architecture Guide (Chapter 6)
+const softwareEngineeringArchitectureNotes = `## Software Engineering Exam 2 Master Guide (Chapters 5 and 6)
 
-Built around the **Chapter 6 Architectural Design** deck and the likely exam question your professor described: identify the architecture from a multiple-choice list **A-G**.
+Built directly from your posted review sheet plus the **Chapter 5 System Modeling** and **Chapter 6 Architectural Design** decks.
 
-> **What the exam is probably testing:** can you look at a scenario, pick the strongest architectural clue, and eliminate the close distractors fast.
+> **Exam format:** about 26 Canvas questions, closed-book, closed-notes, no phone/smartwatch/calculator, and you need your charged laptop.
 
-## The A-G Map
+## What Exam 2 Is Actually Testing
 
-Use this exact order when you drill:
+Treat this exam as two connected halves:
+
+  - **Chapter 5:** can you recognize the right UML/system model quickly and explain what it shows?
+  - **Chapter 6:** can you classify architectures and application types from short scenario descriptions?
+
+If you can do those two jobs fast, you are aligned with the exam.
+
+## Chapter 5: System Modeling
+
+### The Four System Perspectives
+
+Chapter 5 organizes models around four perspectives:
+
+  - **External / context perspective**: what surrounds the system
+  - **Interaction perspective**: how the system interacts with actors or components
+  - **Structural perspective**: how the system is organized statically
+  - **Behavioral perspective**: how the system behaves dynamically in response to data or events
+
+### UML Diagram Types and What They Show
+
+  - **Context diagram / context model**: what lies outside the system boundary
+  - **Use case diagram**: interactions between a system and external actors
+  - **Sequence diagram**: time-ordered interactions/messages between actors and system objects/components
+  - **Class diagram**: object classes and associations/relationships between them
+  - **Activity diagram**: the activities in a process or data-processing workflow
+  - **State machine diagram / state diagram**: how the system reacts to internal and external events
+
+### Which Diagram Belongs to Which Model Type
+
+  - **Context model** -> context diagram
+  - **Interaction model** -> use case diagram, sequence diagram
+  - **Structural model** -> class diagram
+  - **Behavioral model (data-driven)** -> activity diagram
+  - **Behavioral model (event-driven)** -> state machine diagram
+
+That mapping is one of the easiest places to lose points if you mix up "interaction" and "behavioral."
+
+## Chapter 5 Symbols You Need to Know
+
+### Use Case Diagram
+
+  - **Actor**: stick-figure role outside the system
+  - **Use case**: oval showing one discrete task
+  - **Association**: solid line between actor and use case
+  - **<<include>>**: dashed arrow pointing to the included use case; happens every time
+  - **<<extend>>**: dashed arrow pointing to the base use case; happens only sometimes
+  - **Generalization**: inheritance/specialization between parent and child actor/use case
+
+### Sequence Diagram
+
+  - actors/objects listed across the top
+  - **Lifeline**: vertical dotted line showing existence over time
+  - **Message**: arrow between participants
+  - **Return/reply**: dashed line back
+  - **Activation box**: shows when an object is active
+  - **alt frame**: alternative message paths / condition branches
+
+### Class Diagram
+
+  - classes shown as rectangles
+  - attributes/operations belong inside class boxes
+  - relationships you need to recognize:
+    - **Association**
+    - **Generalization**
+    - **Aggregation**
+    - **Composition**
+
+Do not confuse use case relationships like **include** and **extend** with class-diagram relationships.
+
+### Activity Diagram
+
+  - models process steps / workflow
+  - **Solid bar**: fork or join for parallel/concurrent flow
+  - **End point**: diagram termination
+  - **Swimlanes**: show which person/organization/system is responsible for which activities
+
+### State Machine Diagram
+
+  - **State**: rounded rectangle
+  - **Transition**: arc/arrow labeled by event
+  - **entry / do / exit** activities may be shown inside a state
+  - used to model responses to internal and external events
+
+## Chapter 5: High-Yield Distinctions
+
+### Use Case vs Sequence
+
+  - **Use case** = high-level actor/system interaction overview
+  - **Sequence** = detailed message order for one scenario
+
+### Activity vs State Machine
+
+  - **Activity** = data-driven process flow
+  - **State machine** = event-driven state changes
+
+### Data-Driven vs Event-Driven
+
+  - **Data-driven**: some data arrives and processing begins
+  - **Event-driven**: some internal or external event occurs and triggers behavior
+
+## How to Draw the Chapter 5 Diagrams Under Exam Pressure
+
+### Context Diagram
+
+  1. Draw the system boundary first.
+  2. Add external actors and neighboring systems.
+  3. Do not put internal class/message/state detail in it.
+
+### Use Case Diagram
+
+  1. Identify actors first.
+  2. Turn each discrete task into a use case.
+  3. Add association/include/extend/generalization only when justified.
+
+### State Machine Diagram
+
+  1. Name the object/system whose states you are modeling.
+  2. List meaningful states.
+  3. Connect them with event-triggered transitions.
+  4. Add entry/do/exit only if it clarifies behavior.
+
+### Class Diagram
+
+  1. Start with core domain nouns.
+  2. Turn those into classes.
+  3. Add the most important relationships.
+  4. Keep it structural; do not drift into runtime sequence behavior.
+
+## Model-Driven Engineering / Model-Driven Architecture
+
+### Core Idea
+
+  - **MDE**: models are the principal outputs, not just programs
+  - **MDA**: model-focused design/implementation approach using UML-based models at different abstraction levels
+
+### The Three MDA Model Types
+
+  - **CIM**: Computation-Independent Model
+    - domain model / important abstractions
+  - **PIM**: Platform-Independent Model
+    - system operation without committing to a platform
+  - **PSM**: Platform-Specific Model
+    - transformed toward a target platform / implementation environment
+
+### Why People Like MDE/MDA
+
+  - higher level of abstraction
+  - less focus on programming-language details
+  - code generation can make platform adaptation cheaper in principle
+
+### Why People Resist It
+
+  - translator/tool creation and maintenance cost
+  - limited tool availability / customization needs
+  - full automation is rarely complete in practice
+  - extra manual coding reduces cost-effectiveness
+  - heavy up-front modeling can clash with agile habits
+
+## Chapter 6: Architectural Design
+
+### Why Architectural Design Matters
+
+Architecture matters because it lets you:
+
+  - communicate the system to stakeholders
+  - analyze the system before full implementation
+  - reuse proven large-scale organization ideas
+
+### Architecture Diagram Symbols in This Class
+
+  - **Boxes** = components
+  - **Nested boxes** = subcomponents
+  - **Arrows/lines** = data flow or control flow
+
+Keep this separate from UML symbolism. Chapter 6 uses simple architecture views, not detailed UML semantics.
+
+## The A-G Architecture Map
+
+Your professor already hinted at this style of question before, so memorize the map:
 
   - **A** = Model-View-Controller (MVC)
   - **B** = Layered architecture
@@ -303,293 +481,214 @@ Use this exact order when you drill:
   - **F** = Transaction processing architecture
   - **G** = Language processing architecture
 
-## The Fast Recognition Rule
+## Architectural Patterns and Their Meanings
 
-Do not start by reading every option deeply. Start by asking:
+### MVC
 
-  1. Is this about **UI separation**? -> **MVC**
-  2. Is this about **system levels/layers**? -> **Layered**
-  3. Is this about **one shared central data store**? -> **Repository**
-  4. Is this about **clients using network services**? -> **Client-server**
-  5. Is this about **data flowing through stages**? -> **Pipe-and-filter**
-  6. Is this about **database-backed user transactions**? -> **Transaction processing**
-  7. Is this about **translating or interpreting a formal language**? -> **Language processing**
+Use when the clue is:
 
-## A. Model-View-Controller (MVC)
-
-**Use it when the scenario says**
-
-  - model, view, controller
+  - UI/input/data separation
   - multiple views of the same data
-  - user input is handled separately from data storage
-  - UI changes should not force data-model changes
+  - interface evolution without rewriting the model
 
-**Core idea**
+### Layered
 
-  - **Model** = system data / business state
-  - **View** = what the user sees
-  - **Controller** = input handling and control logic
+Use when the clue is:
 
-**Main distractor**
+  - service levels / adjacent layers
+  - inner layers protecting critical assets
+  - a hierarchy of responsibilities
 
-  - **Layered** also separates concerns, but MVC is specifically about **presentation + interaction + data**.
+### Repository
 
-## B. Layered Architecture
+Use when the clue is:
 
-**Use it when the scenario says**
+  - one central shared data store
+  - many tools/components reading and writing the same information
+  - components stay relatively independent through shared data
 
-  - layers / levels
-  - each layer provides services to the one above
-  - adjacent layer communication
-  - operating-system-like service hierarchy
-  - inner layers protect critical assets
+### Client-Server
 
-**Core idea**
+Use when the clue is:
 
-  - the system is broken into levels of abstraction or responsibility
+  - clients consuming remote network services
+  - browsers/apps talking to servers
+  - distributed system roles across a network
 
-**Best exam clue**
+### Pipe-and-Filter
 
-  - if the prompt sounds like “level 1, level 2, level 3” or “upper layer uses lower-layer services,” this is usually **Layered**.
+Use when the clue is:
 
-**Main distractor**
+  - staged transformation pipeline
+  - output of one stage becomes input to the next
+  - batch/stream transformations
 
-  - **MVC** is a special UI/data interaction structure; **Layered** is a whole-system structural style.
+## Chapter 6 Application Types and Examples
 
-## C. Repository Architecture
+### Data Processing
 
-**Use it when the scenario says**
+  - bulk input data processed into outputs/reports/files
+  - strong clue: batch jobs, nightly processing, large input files
 
-  - central repository
-  - shared data store
-  - independent tools/components read and write the same data
-  - components do not talk much directly, but all depend on common stored information
+### Transaction Processing
 
-**Core idea**
+  - user requests against a shared database with integrity constraints
+  - classic examples: reservations, banking, shopping, orders
 
-  - the repository is the center of the system
+### Event Processing
 
-**Advantages**
+  - incoming events trigger system behavior
+  - strong clue: sensors/interrupts/monitors/reactive systems
 
-  - components can stay relatively independent
-  - shared data is consistent and accessible
+### Language Processing
 
-**Disadvantages**
-
-  - repository can become a single point of failure
-  - repository schema changes can ripple outward
-
-**Main distractor**
-
-  - **Client-server** is about remote services across a network.
-  - **Repository** is about **shared central data**.
-
-## D. Client-Server Architecture
-
-**Use it when the scenario says**
-
-  - browser/client/mobile app talks to one or more servers
-  - distributed services over a network
-  - server provides service, client consumes it
-  - multiple shared services available remotely
-
-**Core idea**
-
-  - system functionality is distributed across clients and servers
-
-**Advantages**
-
-  - services can be shared and scaled
-  - distribution over a network is natural
-
-**Disadvantages**
-
-  - network performance matters
-  - services/servers may fail independently
-
-**Main distractor**
-
-  - if the prompt is really about business requests + database integrity, the better answer may be **Transaction processing**, not client-server.
-
-## E. Pipe-and-Filter Architecture
-
-**Use it when the scenario says**
-
-  - sequence of transformations
-  - output of one step becomes input to the next
-  - streaming or batch processing
-  - filters/stages/pipeline
-
-**Core idea**
-
-  - data moves through a chain of processing stages
-
-**Best exam clue**
-
-  - if the system sounds like “step 1 transforms, then step 2 transforms, then step 3 transforms,” that is **Pipe-and-filter**.
-
-**Main distractor**
-
-  - **Language processing** often uses phases that look pipelined, but the application type is about formal-language translation. The architectural pattern is still pipe-and-filter only if the question emphasizes the transformation chain itself.
-
-## F. Transaction Processing Architecture
-
-**Use it when the scenario says**
-
-  - users make requests against a shared database
-  - updates must preserve consistency and integrity
-  - orders, bookings, reservations, purchases, banking records
-  - transaction manager / commit / integrity / rollback
-
-**Core idea**
-
-  - process user transactions reliably against persistent shared data
-
-**Canonical examples**
-
-  - e-commerce systems
-  - banking systems
-  - hotel reservations
-
-**Main distractor**
-
-  - many transaction systems are deployed using **client-server**, but the **application architecture** being tested is transaction processing.
-
-## G. Language Processing Architecture
-
-**Use it when the scenario says**
-
-  - compiler
-  - interpreter
-  - command processor
-  - lexical analysis / parsing / semantic analysis / code generation
-  - formal language translation
-
-**Core idea**
-
-  - take a formal language as input and translate or interpret it
-
-**Main distractor**
-
-  - the internal implementation may look like **Pipe-and-filter**, but the application category is **Language processing**.
-
-## The Closest Distractor Pairs
-
-### MVC vs Layered
-
-  - **MVC** = model/view/controller around UI + data
-  - **Layered** = service levels across the whole system
-
-### Repository vs Client-server
-
-  - **Repository** = central shared data store
-  - **Client-server** = remote service interaction over a network
-
-### Pipe-and-filter vs Language processing
-
-  - **Pipe-and-filter** = transformation chain
-  - **Language processing** = compiler/interpreter style formal-language system
-
-### Client-server vs Transaction processing
-
-  - **Client-server** = distribution style
-  - **Transaction processing** = business/request/database integrity application type
+  - compiler/interpreter/command processor style systems
+  - strong clue: formal language input becomes another representation or execution behavior
 
 ## Architecture and Non-Functional Requirements
 
-From the deck:
+The chapter explicitly emphasizes:
 
-  - **Performance**: localize operations; larger components can reduce communication overhead
-  - **Security**: layered architecture helps protect critical assets in inner layers
-  - **Safety**: localize safety-critical parts
-  - **Availability**: use redundancy and fault tolerance
-  - **Maintainability**: prefer self-contained fine-grained components
+  - **Performance**
+  - **Security**
+  - **Safety**
+  - **Availability**
+  - **Maintainability**
 
-This matters because some multiple-choice questions may ask for the architecture that best supports a non-functional goal.
+### The Most Exam-Relevant Mappings
 
-## Exact Exam Strategy for the A-G Question
+  - **Security** -> layered protection of critical assets in inner layers
+  - **Safety** -> localize safety-critical features/components
+  - **Availability** -> redundancy and fault tolerance
+  - **Maintainability** -> self-contained fine-grained components are easier to change
+  - **Performance** -> localize operations / reduce communication overhead
 
-When you get the question:
+## Closest Distractor Pairs
 
-  1. Underline the strongest noun phrase in the scenario.
-  2. Decide whether the question is about:
-     - UI structure
-     - system levels
-     - shared data
-     - network services
-     - staged transformation
-     - user transactions
-     - language translation
-  3. Pick the matching A-G bucket.
-  4. Eliminate the nearest distractor out loud in your head.
+### Use Case vs Sequence
 
-If you can name **why the second-best answer is wrong**, you usually have the right answer.
+  - use case = who interacts and what task they perform
+  - sequence = which messages happen in what order
 
-## High-Yield Memory Anchors
+### Activity vs State Machine
 
-  - **MVC** -> interface/data split
-  - **Layered** -> service levels
-  - **Repository** -> shared central store
-  - **Client-server** -> network services
-  - **Pipe-and-filter** -> sequence of transforms
-  - **Transaction processing** -> user requests + DB integrity
+  - activity = data/process flow
+  - state machine = event/state response
+
+### MVC vs Layered
+
+  - MVC = UI/data/control separation
+  - layered = service levels across the whole system
+
+### Repository vs Client-Server
+
+  - repository = shared central data
+  - client-server = distributed service interaction over a network
+
+### Pipe-and-Filter vs Language Processing
+
+  - pipe-and-filter = transformation pattern
+  - language processing = compiler/interpreter application type
+
+### Client-Server vs Transaction Processing
+
+  - client-server = distribution style
+  - transaction processing = database-backed business request application type
+
+## Best Way to Study This Exam Tonight
+
+  1. Run the new **Exam 2 Full Simulation** once straight through.
+  2. Drill the **UML + System Modeling Drill** until diagram-selection questions feel automatic.
+  3. Run the **Architecture A-G Drill** until you can classify all seven choices from one clue.
+  4. Use the walkthrough sets only after you miss something or cannot explain it cleanly.
+  5. Before the exam, recite from memory:
+     - the four system perspectives
+     - the diagram-type mapping
+     - include vs extend vs generalization
+     - CIM / PIM / PSM
+     - the A-G architecture map
+`;
+
+const softwareEngineeringArchitectureCheatSheet = `## Software Engineering Exam 2 Cheat Sheet (Chapters 5 and 6)
+
+### Exam Shape
+
+  - around **26 Canvas questions**
+  - closed-book / closed-notes
+  - charged laptop required
+
+### Chapter 5 Fast Map
+
+  - **Context model** -> context diagram
+  - **Interaction model** -> use case, sequence
+  - **Structural model** -> class diagram
+  - **Behavioral model (data-driven)** -> activity diagram
+  - **Behavioral model (event-driven)** -> state machine diagram
+
+### UML One-Line Triggers
+
+  - **Use case** -> actors + tasks
+  - **Sequence** -> messages in time order
+  - **Class** -> classes + relationships
+  - **Activity** -> workflow / process steps
+  - **State machine** -> states + events
+
+### Relationship Memory Hooks
+
+  - **include** -> always
+  - **extend** -> sometimes
+  - **generalization** -> inheritance
+  - **class relationships** -> association, generalization, aggregation, composition
+
+### Behavioral Split
+
+  - **data-driven** -> data arrives -> activity diagram
+  - **event-driven** -> event occurs -> state machine diagram
+
+### MDE / MDA
+
+  - **MDE** -> models are principal outputs
+  - **CIM** -> domain abstraction
+  - **PIM** -> no platform commitment
+  - **PSM** -> platform-specific transformation
+  - drawbacks -> tool/translator cost, incomplete automation, agile tension
+
+### Chapter 6 A-G Map
+
+  - **A** = MVC
+  - **B** = Layered
+  - **C** = Repository
+  - **D** = Client-server
+  - **E** = Pipe-and-filter
+  - **F** = Transaction processing
+  - **G** = Language processing
+
+### Architecture One-Line Triggers
+
+  - **MVC** -> UI + data + input split
+  - **Layered** -> service levels / inner protection
+  - **Repository** -> central shared data store
+  - **Client-server** -> networked services
+  - **Pipe-and-filter** -> staged transforms
+  - **Transaction processing** -> requests + DB integrity
   - **Language processing** -> compiler/interpreter
 
-## Best Way to Study This Tonight
+### Application Types
 
-  1. Run the **Exam 2 Architecture Recognition Simulation** once.
-  2. Run the **Focused Drill** until the A-G mapping is automatic.
-  3. Redo every missed question by explaining why the top distractor is wrong.
-  4. Memorize the seven one-line anchors above.
+  - **Data processing** -> batch input/output jobs
+  - **Transaction processing** -> reservations/orders/banking
+  - **Event processing** -> reactive to arriving events
+  - **Language processing** -> compiler/interpreter
+
+### NFR Hooks
+
+  - security -> layered inner protection
+  - safety -> localize critical features
+  - availability -> redundancy / fault tolerance
+  - maintainability -> fine-grained self-contained components
+  - performance -> reduce communication / localize work
 `;
 
-const softwareEngineeringArchitectureCheatSheet = `## Software Engineering Exam 2 Architecture Cheat Sheet
-
-Use this right before the exam if the question is the A-G architecture recognition question.
-
-## A-G Map
-
-  - **A** = Model-View-Controller (MVC)
-  - **B** = Layered architecture
-  - **C** = Repository architecture
-  - **D** = Client-server architecture
-  - **E** = Pipe-and-filter architecture
-  - **F** = Transaction processing architecture
-  - **G** = Language processing architecture
-
-## One-Line Triggers
-
-  - **A / MVC** -> UI + input + data are separated
-  - **B / Layered** -> service levels, adjacent layers, inner protection
-  - **C / Repository** -> central shared data store
-  - **D / Client-server** -> clients use networked services
-  - **E / Pipe-and-filter** -> chained processing stages
-  - **F / Transaction processing** -> user requests + database integrity
-  - **G / Language processing** -> compiler/interpreter/formal language translation
-
-## Fast Eliminations
-
-  - UI split? -> **MVC**, not layered
-  - Shared central data? -> **Repository**, not client-server
-  - Networked services? -> **Client-server**, not repository
-  - Staged transforms? -> **Pipe-and-filter**
-  - Compiler/interpreter? -> **Language processing**
-  - Online orders/reservations/banking? -> **Transaction processing**
-
-## NFR Clues
-
-  - security with inner protected assets -> **Layered**
-  - independent tools sharing data -> **Repository**
-  - batch transformations -> **Pipe-and-filter**
-
-## What To Say In Your Head
-
-  - “What is the single strongest clue?”
-  - “What is the nearest wrong answer?”
-  - “Why is my answer more specific?”
-
-If you can answer those three fast, you are ready for the question.
-`;
 
 const automataTest2Notes = `## Theory of Automata Test 2 Master Notes
 

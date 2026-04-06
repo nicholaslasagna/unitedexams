@@ -5,7 +5,9 @@ import { ChevronDown, ChevronRight, Lightbulb, BookCheck, GraduationCap, AlertTr
 import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Markdown } from "@/components/ui/markdown";
+import { AssessmentChoiceRow } from "@/components/ui/assessment-choice-row";
 import { cn } from "@/lib/utils";
 import type { Question } from "@/lib/types";
 
@@ -119,24 +121,32 @@ export function QuestionCard({
             <label htmlFor={`free-response-${question.id}`} className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
               {isShortResponse ? "Your Answer" : "Your Solution"}
             </label>
-            <textarea
-              id={`free-response-${question.id}`}
-              value={responseText}
-              onChange={(event) => onResponseChange(event.target.value)}
-              placeholder={
-                isShortResponse
-                  ? "Enter a short answer."
-                  : "Work through the problem step by step. Show your method and write your final answer."
-              }
-              disabled={lockInteraction}
-              className={cn(
-                "w-full rounded-xl border border-borderc bg-soft p-4 font-mono text-sm leading-relaxed text-text outline-none transition placeholder:text-muted",
-                isShortResponse ? "min-h-24" : "min-h-44",
-                "focus-visible:ring-2 focus-visible:ring-brand-2/65",
-                lockInteraction && "cursor-not-allowed opacity-90"
-              )}
-              aria-labelledby={promptId}
-            />
+            {isShortResponse ? (
+              <Input
+                id={`free-response-${question.id}`}
+                value={responseText}
+                onChange={(event) => onResponseChange(event.target.value)}
+                placeholder="Enter a short answer."
+                disabled={lockInteraction}
+                spellCheck={false}
+                aria-labelledby={promptId}
+                className={cn("font-mono", lockInteraction && "cursor-not-allowed opacity-90")}
+              />
+            ) : (
+              <textarea
+                id={`free-response-${question.id}`}
+                value={responseText}
+                onChange={(event) => onResponseChange(event.target.value)}
+                placeholder="Work through the problem step by step. Show your method and write your final answer."
+                disabled={lockInteraction}
+                className={cn(
+                  "min-h-40 w-full rounded-xl border border-borderc bg-soft p-4 font-mono text-sm leading-relaxed text-text outline-none transition placeholder:text-muted",
+                  "focus-visible:ring-2 focus-visible:ring-brand-2/65",
+                  lockInteraction && "cursor-not-allowed opacity-90"
+                )}
+                aria-labelledby={promptId}
+              />
+            )}
 
             {isLongResponse && hints.length > 0 && (showHintsBeforeSubmit || submitted) ? (
               <div className="rounded-xl border border-brand-2/30 bg-brand-2/10 p-4">
@@ -242,48 +252,17 @@ export function QuestionCard({
                   : "default";
 
               return (
-                <button
+                <AssessmentChoiceRow
                   key={`${question.id}-${index}`}
-                  type="button"
+                  kind={question.type === "single" ? "single" : "multi"}
+                  marker={key}
+                  content={option}
+                  checked={checked}
+                  state={optionState}
                   role={question.type === "single" ? "radio" : "checkbox"}
-                  aria-checked={checked}
                   disabled={lockInteraction}
                   onClick={() => onToggleOption(index)}
-                  className={cn(
-                    "group flex w-full items-start gap-3 rounded-xl border px-4 py-3.5 text-left transition-all duration-200 ease-out-expo",
-                    optionState === "selected" && "border-brand-2/55 bg-brand-2/10 shadow-[0_0_0_1px_hsl(var(--brand-2)/0.2)]",
-                    optionState === "ok" && "border-success/45 bg-success/15",
-                    optionState === "bad" && "border-danger/45 bg-danger/15",
-                    optionState === "missed" && "border-warn/45 bg-warn/15",
-                    optionState === "default" && "border-borderc bg-soft hover:border-brand-2/40 hover:bg-white/5",
-                    lockInteraction && "cursor-not-allowed opacity-90"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border text-xs font-bold transition",
-                      optionState === "selected" && "border-brand-2/50 bg-brand-2/20 text-brand-2",
-                      optionState === "ok" && "border-success/50 bg-success/20 text-success",
-                      optionState === "bad" && "border-danger/50 bg-danger/20 text-danger",
-                      optionState === "missed" && "border-warn/50 bg-warn/20 text-warn",
-                      optionState === "default" && "border-borderc bg-surface text-muted group-hover:text-text"
-                    )}
-                  >
-                    {key}
-                  </span>
-                  <span className="flex-1 pt-0.5 text-sm leading-relaxed text-text">
-                    <Markdown content={option} promoteMathInInlineCode />
-                  </span>
-                  {submitted && optionState === "ok" ? (
-                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-success" />
-                  ) : null}
-                  {submitted && optionState === "bad" ? (
-                    <XCircle className="mt-1 h-4 w-4 shrink-0 text-danger" />
-                  ) : null}
-                  {submitted && optionState === "missed" ? (
-                    <AlertTriangle className="mt-1 h-4 w-4 shrink-0 text-warn" />
-                  ) : null}
-                </button>
+                />
               );
             })}
           </div>

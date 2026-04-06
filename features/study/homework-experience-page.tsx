@@ -9,7 +9,9 @@ import { fetchPublishedStudySet } from "@/features/study/study-set-source";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Markdown } from "@/components/ui/markdown";
+import { AssessmentChoiceRow } from "@/components/ui/assessment-choice-row";
 import {
   countMissed,
   gradeQuestion,
@@ -915,25 +917,34 @@ export function HomeworkExperiencePageContent({
                   <div className="space-y-3">
                     <Markdown content={currentQuestion.prompt} className="quiz-question-prompt" promoteMathInInlineCode />
                     {isOpenResponseQuestion(currentQuestion) ? (
-                      <textarea
-                        value={responseByQuestion[currentQuestion.id] ?? ""}
-                        onChange={(event) =>
-                          setResponseByQuestion((prev) => ({
-                            ...prev,
-                            [currentQuestion.id]: event.target.value
-                          }))
-                        }
-                        placeholder={
-                          currentQuestion.type === "fill"
-                            ? "Enter a short response."
-                            : "Show your full work, not just the final answer."
-                        }
-                        disabled={questionSubmitted}
-                        className={cn(
-                          "w-full rounded-xl border border-borderc bg-soft p-4 font-mono text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-brand-2/60",
-                          currentQuestion.type === "fill" ? "min-h-24" : "min-h-40"
-                        )}
-                      />
+                      currentQuestion.type === "fill" ? (
+                        <Input
+                          value={responseByQuestion[currentQuestion.id] ?? ""}
+                          onChange={(event) =>
+                            setResponseByQuestion((prev) => ({
+                              ...prev,
+                              [currentQuestion.id]: event.target.value
+                            }))
+                          }
+                          placeholder="Enter a short response."
+                          disabled={questionSubmitted}
+                          spellCheck={false}
+                          className="font-mono"
+                        />
+                      ) : (
+                        <textarea
+                          value={responseByQuestion[currentQuestion.id] ?? ""}
+                          onChange={(event) =>
+                            setResponseByQuestion((prev) => ({
+                              ...prev,
+                              [currentQuestion.id]: event.target.value
+                            }))
+                          }
+                          placeholder="Show your full work, not just the final answer."
+                          disabled={questionSubmitted}
+                          className="min-h-40 w-full rounded-xl border border-borderc bg-soft p-4 font-mono text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-brand-2/60"
+                        />
+                      )
                     ) : (
                       <div className="space-y-2">
                         {(currentQuestion.options ?? []).map((option, optionIndex) => {
@@ -952,22 +963,17 @@ export function HomeworkExperiencePageContent({
                               : "default";
 
                           return (
-                            <button
+                            <AssessmentChoiceRow
                               key={`${currentQuestion.id}-${optionIndex}`}
-                              type="button"
+                              kind={currentQuestion.type === "single" ? "single" : "multi"}
+                              marker={String.fromCharCode(65 + optionIndex)}
+                              content={option}
+                              checked={selected}
+                              state={optionState}
+                              role={currentQuestion.type === "single" ? "radio" : "checkbox"}
                               onClick={() => toggleOption(optionIndex)}
                               disabled={questionSubmitted}
-                              className={cn(
-                                "w-full rounded-xl border px-3 py-2 text-left text-sm",
-                                optionState === "selected" && "border-brand-2/50 bg-brand-2/10 text-text",
-                                optionState === "ok" && "border-success/45 bg-success/15 text-text",
-                                optionState === "bad" && "border-danger/45 bg-danger/15 text-text",
-                                optionState === "missed" && "border-warn/45 bg-warn/15 text-text",
-                                optionState === "default" && "border-borderc bg-soft text-text"
-                              )}
-                            >
-                              <Markdown content={option} promoteMathInInlineCode />
-                            </button>
+                            />
                           );
                         })}
                       </div>

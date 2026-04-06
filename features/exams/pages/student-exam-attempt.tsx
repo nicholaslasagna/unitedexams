@@ -7,6 +7,8 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Markdown } from "@/components/ui/markdown";
+import { AssessmentChoiceRow } from "@/components/ui/assessment-choice-row";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { useToast } from "@/lib/hooks/use-toast";
 import { useAppData } from "@/lib/app-data-context";
@@ -566,7 +568,9 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
           </div>
 
           <div className="rounded-xl border border-borderc bg-soft p-4">
-            <p className="text-sm text-text">{currentQuestion?.prompt}</p>
+            {currentQuestion ? (
+              <Markdown content={currentQuestion.prompt} className="quiz-question-prompt" promoteMathInInlineCode />
+            ) : null}
           </div>
 
           {currentQuestion?.options ? (
@@ -575,20 +579,17 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
                 const selected = (answers[currentQuestion.id] ?? []).includes(optionIndex);
                 const optionText = currentQuestion.options?.[optionIndex] ?? "";
                 return (
-                  <button
+                  <AssessmentChoiceRow
                     key={`${currentQuestion.id}:${optionIndex}`}
-                    type="button"
+                    kind={currentQuestion.type === "single" ? "single" : "multi"}
+                    marker={String.fromCharCode(65 + optionIndex)}
+                    content={optionText}
+                    checked={selected}
+                    state={selected ? "selected" : "default"}
+                    role={currentQuestion.type === "single" ? "radio" : "checkbox"}
                     onClick={() => onToggleOption(optionIndex)}
                     disabled={interactionBlocked}
-                    className={`w-full rounded-xl border px-3 py-2 text-left text-sm transition ${
-                      selected
-                        ? "border-accent/60 bg-accent-subtle text-text"
-                        : "border-borderc bg-soft text-muted hover:text-text"
-                    }`}
-                    aria-pressed={selected}
-                  >
-                    {optionText}
-                  </button>
+                  />
                 );
               })}
             </div>
