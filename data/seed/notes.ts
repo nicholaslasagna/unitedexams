@@ -494,7 +494,11 @@ These came directly from your lecture-review images and are worth memorizing alm
 
 ### Context Model
 
-If the exam asks what a **context model** shows, the right answer is:
+If the exam asks:
+
+  - **"Sometimes a context diagram is used to represent a system. What characteristics are shown in a context model?"**
+
+the right answer is:
 
   - **how external entities interact with an internal software system**
 
@@ -518,6 +522,39 @@ answer:
 Reason:
 
   - MDA raises abstraction through models, but the overall chain still aims toward implementation / executable code.
+
+### List All Architectural Patterns
+
+If the exam shows the full multiple-choice list from the lecture image, the real Chapter 6 patterns are:
+
+  - **Client-server**
+  - **Layered**
+  - **Pipes and filters**
+  - **Repository**
+  - **Model-view-controller**
+
+The distractors from that lecture image were:
+
+  - **Class view**
+  - **Logical filter**
+  - **Development view**
+
+The slide spelled the last valid option as **Model-view-controllers**, but treat that as the normal **Model-view-controller (MVC)** answer.
+
+### What Determines Architecture Structure
+
+If the exam asks which factors **determine the structure of a system architecture**, select:
+
+  - **Safety**
+  - **Availability**
+  - **Performance**
+  - **Security**
+  - **Maintainability**
+
+Reject the process/method distractors:
+
+  - **Use case patterns**
+  - **Agile method**
 
 ### MDA Statements That Were Correct in Homework
 
@@ -721,11 +758,12 @@ Do **not** select:
 
 ## Best Way to Study This Exam Tonight
 
-  1. Run the new **Exam 2 Full Simulation** once straight through because it now mirrors the homework/review wording much more closely.
-  2. Drill the **UML + System Modeling Drill** until the Chapter 5 notation questions feel automatic.
-  3. Run the **Architecture A-G Drill** after that so pattern/application-type recognition becomes fast instead of fuzzy.
-  4. Use the walkthrough sets only after you miss something or cannot explain it cleanly.
-  5. Before the exam, recite from memory:
+  1. Run the new **Exam 2 Guaranteed Lecture Questions** set until those four direct lecture-image questions are automatic.
+  2. Run the **Exam 2 Full Simulation** once straight through because it now mirrors the homework/review wording much more closely.
+  3. Drill the **UML + System Modeling Drill** until the Chapter 5 notation questions feel automatic.
+  4. Run the **Architecture A-G Drill** after that so pattern/application-type recognition becomes fast instead of fuzzy.
+  5. Use the walkthrough sets only after you miss something or cannot explain it cleanly.
+  6. Before the exam, recite from memory:
      - the four system perspectives
      - the diagram-type mapping
      - context circle = process
@@ -738,6 +776,8 @@ Do **not** select:
      - CIM / PIM / PSM
      - the A-G architecture map
      - context model = external entities interacting with the system boundary
+     - architecture structure drivers = safety, availability, performance, security, maintainability
+     - MDA final output = executable code
      - MDA true/false = **True**
      - pattern purpose = template solution to common design problems
      - online shopping = transaction processing

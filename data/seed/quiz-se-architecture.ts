@@ -194,7 +194,7 @@ const chapter5Questions: Question[] = [
   makeSingleQuestion({
     id: "se-exam2-ch5-q3",
     prompt:
-      "Sometimes a context diagram is used to represent a system. What characteristic is shown in a context model?",
+      "Sometimes a context diagram is used to represent a system. What characteristics are shown in a context model?",
     options: [
       "How a software interacts with its components",
       "Shows the states of the system",
@@ -216,8 +216,8 @@ const chapter5Questions: Question[] = [
       "It does not show detailed internal components, states, or workflows.",
       "Choose the option about external entities interacting with an internal software system."
     ],
-    references: ["Chapter 5 – Context models", "Lecture review slide – context model question"],
-    tags: ["chapter-5", "context-model", "external-perspective"],
+    references: ["Chapter 5 – Context models", "Lecture review image – context model question"],
+    tags: ["chapter-5", "context-model", "external-perspective", "guaranteed-review"],
     difficulty: "easy"
   }),
   makeSingleQuestion({
@@ -565,6 +565,29 @@ const chapter5Questions: Question[] = [
   }),
   makeSingleQuestion({
     id: "se-exam2-ch5-q16",
+    prompt:
+      "(True/False) In model-driven architecture, the final output it tries to obtain is an executable code.",
+    options: ["True", "False"],
+    correctIndex: 0,
+    explanation:
+      "MDA raises the abstraction level through models, but its downstream goal is still to transform those models toward implementation and executable code.",
+    hintSteps: [
+      "The question is asking about the end target, not the intermediate artifacts.",
+      "MDA still points toward implementation.",
+      "The model chain ends in executable code."
+    ],
+    walkthroughSteps: [
+      "MDA starts with models at different abstraction levels.",
+      "Those models are transformed toward a platform-specific form.",
+      "The overall goal of that chain is executable code.",
+      "Choose True."
+    ],
+    references: ["Chapter 5 – Model-driven architecture", "Lecture review image – MDA true/false"],
+    tags: ["chapter-5", "mda", "mde", "guaranteed-review"],
+    difficulty: "easy"
+  }),
+  makeSingleQuestion({
+    id: "se-exam2-ch5-q17",
     prompt: "Which list names the three model types recommended by model-driven architecture (MDA)?",
     options: [
       "CIM, PIM, PSM",
@@ -596,7 +619,7 @@ const architectureQuestions: Question[] = [
   makeMultiQuestion({
     id: "se-exam2-arch-q0",
     prompt:
-      "Architectural patterns/styles provide guidance on the situations in which architectural patterns should be used. Several architectural patterns were introduced in this chapter. List all of them.",
+      "Architectural patterns/styles provide guidance on the situations in which a specific architectural pattern should be used. Several architectural patterns were introduced in this chapter. List all of them:",
     options: [
       "Class view",
       "Client-server",
@@ -605,11 +628,11 @@ const architectureQuestions: Question[] = [
       "Pipes and filters",
       "Development view",
       "Repository",
-      "Model-view-controller"
+      "Model-view-controllers"
     ],
     correct: [1, 3, 4, 6, 7],
     explanation:
-      "The architectural patterns introduced in Chapter 6 are Client-server, Layered, Pipes and filters, Repository, and Model-view-controller. Class view and Development view are views, and Logical filter is not one of the chapter's named patterns.",
+      "The architectural patterns introduced in Chapter 6 are Client-server, Layered, Pipes and filters, Repository, and Model-view-controller. The lecture slide spells the final option as 'Model-view-controllers,' but it is referring to MVC. Class view and Development view are views, and Logical filter is not one of the chapter's named patterns.",
     hintSteps: [
       "Separate architecture patterns from architecture views.",
       "The actual pattern list from the chapter is five items long.",
@@ -1121,7 +1144,7 @@ const chapter6FundamentalsQuestions: Question[] = [
       "Select the five quality-attribute options."
     ],
     references: ["Chapter 6 – Architecture and system characteristics", "Lecture review slide – architecture structure drivers"],
-    tags: ["chapter-6", "nfr", "quality-attributes"],
+    tags: ["chapter-6", "nfr", "quality-attributes", "guaranteed-review"],
     difficulty: "med"
   })
 ];
@@ -1131,13 +1154,13 @@ const softwareEngineeringExam2FullSimulation: QuizSet = {
   courseId: "software-engineering",
   title: "Exam 2 Full Simulation (Ch. 5 + 6)",
   description:
-    "Full Software Engineering Exam 2 review now aligned tightly to your Chapter 5 and 6 homework patterns, lecture review sheet, and the exact slide wording used in class.",
+    "Full Software Engineering Exam 2 review aligned to your Chapter 5 and 6 homework patterns, lecture review sheet, and the exact guaranteed slide wording used in class.",
   difficulty: "Advanced",
-  estMinutes: 44,
+  estMinutes: 46,
   tags: ["exam-2", "chapter-5", "chapter-6", "uml", "architectural-design", "system-modeling", "guaranteed-review"],
   mode: "exam",
-  timerDefaultMinutes: 44,
-  questionCountTarget: 27,
+  timerDefaultMinutes: 46,
+  questionCountTarget: 28,
   isExamSimulation: true,
   questions: [
     ...chapter5Questions,
@@ -1182,11 +1205,50 @@ const softwareEngineeringExam2ArchitectureFocusedDrill: QuizSet = {
   description:
     "Fast recognition drill for the exact Chapter 6 architecture-identification style your professor hinted at, now including the guaranteed lecture-review pattern and quality-attribute checks.",
   difficulty: "Intermediate",
-  estMinutes: 14,
+  estMinutes: 16,
   tags: ["exam-2", "chapter-6", "focused-drill", "a-g-options"],
   mode: "quiz",
-  timerDefaultMinutes: 14,
-  questions: architectureQuestions.slice(0, 10)
+  timerDefaultMinutes: 16,
+  questions: [
+    architectureQuestions[0],
+    chapter6FundamentalsQuestions[10],
+    ...architectureQuestions.slice(1, 9)
+  ]
+};
+
+const softwareEngineeringExam2GuaranteedLectureDrill: QuizSet = {
+  id: "se-exam2-guaranteed-lecture-drill",
+  courseId: "software-engineering",
+  title: "Exam 2 Guaranteed Lecture Questions",
+  description:
+    "The four Software Engineering Exam 2 questions pulled directly from your lecture-review images. Use this set to memorize the exact wording and answer patterns.",
+  difficulty: "Intermediate",
+  estMinutes: 8,
+  tags: ["exam-2", "chapter-5", "chapter-6", "guaranteed-review", "lecture-images"],
+  mode: "quiz",
+  timerDefaultMinutes: 8,
+  questions: [
+    {
+      ...chapter5Questions[2],
+      id: "se-exam2-guaranteed-q1-context-model",
+      tags: [...(chapter5Questions[2].tags ?? []), "guaranteed-lecture-drill"]
+    },
+    {
+      ...chapter5Questions[15],
+      id: "se-exam2-guaranteed-q2-mda-true-false",
+      tags: [...(chapter5Questions[15].tags ?? []), "guaranteed-lecture-drill"]
+    },
+    {
+      ...architectureQuestions[0],
+      id: "se-exam2-guaranteed-q3-pattern-list",
+      tags: [...(architectureQuestions[0].tags ?? []), "guaranteed-lecture-drill"]
+    },
+    {
+      ...chapter6FundamentalsQuestions[10],
+      id: "se-exam2-guaranteed-q4-architecture-drivers",
+      tags: [...(chapter6FundamentalsQuestions[10].tags ?? []), "guaranteed-lecture-drill"]
+    }
+  ]
 };
 
 const softwareEngineeringExam2SystemModelingWalkthrough: QuizSet = {
@@ -1501,6 +1563,7 @@ const softwareEngineeringExam2ArchitectureWalkthrough: QuizSet = {
 
 export const softwareEngineeringArchitectureQuizSets: QuizSet[] = [
   softwareEngineeringExam2FullSimulation,
+  softwareEngineeringExam2GuaranteedLectureDrill,
   softwareEngineeringExam2SystemModelingDrill,
   softwareEngineeringExam2ArchitectureSimulation,
   softwareEngineeringExam2ArchitectureFocusedDrill,
