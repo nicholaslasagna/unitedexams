@@ -300,6 +300,16 @@ Treat this exam as two connected halves:
 
 If you can do those two jobs fast, you are aligned with the exam.
 
+## What Changed in This Review Pack
+
+This pack is now biased toward the **actual homework and Canvas review style** you posted, not just general chapter summaries. That means you should expect repeated exposure to:
+
+  - exact UML diagram identification wording
+  - exact symbol questions
+  - exact use case/class/state notation traps
+  - exact Chapter 6 true/false and best-answer wording
+  - the same pattern/application-type distinctions, but phrased the way your professor has already used
+
 ## Chapter 5: System Modeling
 
 ### The Four System Perspectives
@@ -375,6 +385,33 @@ Do not confuse use case relationships like **include** and **extend** with class
   - **Transition**: arc/arrow labeled by event
   - **entry / do / exit** activities may be shown inside a state
   - used to model responses to internal and external events
+
+## Chapter 5 Homework Mirrors You Should Know Cold
+
+These are the fastest points to lose if you hesitate:
+
+  - **System modeling** = developing abstract models of a system to understand functionality and communicate with customers.
+  - **Context model** = how external entities interact with an internal software system.
+  - In a **context diagram**, the **circle** represents the **process**.
+  - **Interaction models** = **use case diagrams** and **sequence diagrams**.
+  - **Use cases** represent **functional requirements**.
+  - The **use case symbol** is the **ellipse / oval**.
+  - Use case relationships to memorize:
+    - **Association**
+    - **Include**
+    - **Extend**
+    - **Inheritance / generalization**
+  - In a **sequence diagram**, an **alt frame** means **if-else logic**.
+  - In a **class diagram**:
+    - \`+\` = public
+    - \`-\` = private
+    - \`#\` = protected
+  - **Aggregation** = **hollow diamond**
+  - Multiplicity **\`6..*\`** = **six or more**
+  - Behavioral stimuli can be triggered by:
+    - **events**
+    - **data**
+  - The UML diagram used to describe system behavior in response to events is the **state diagram / state machine diagram**.
 
 ## Chapter 5: High-Yield Distinctions
 
@@ -482,6 +519,19 @@ Reason:
 
   - MDA raises abstraction through models, but the overall chain still aims toward implementation / executable code.
 
+### MDA Statements That Were Correct in Homework
+
+The homework-style statements you should recognize immediately are:
+
+  - **MDA focuses on the design and implementation stages of software development.**
+  - **MDA will try to generate executable code by sending a platform-specific model through a translator tool.**
+
+The statement about **CIM / PIM / PSM** is still important even when the homework phrasing does not mention those abbreviations directly:
+
+  - **CIM** = domain abstraction
+  - **PIM** = system operation without platform commitment
+  - **PSM** = transformed toward a target platform
+
 ## Chapter 6: Architectural Design
 
 ### Why Architectural Design Matters
@@ -570,6 +620,20 @@ Reject distractors like:
   - **Development view**
   - **Logical filter**
 
+## Chapter 6 Homework Mirrors You Should Know Cold
+
+These showed up in your Chapter 6 homework wording almost directly:
+
+  - **Architectural design** matters because it defines the overall structure and organization of a system and is a critical link between requirements and implementation.
+  - A **component** in a system architecture is represented by a **box / rectangular block**.
+  - Architectural design helps stakeholders by improving **communication**.
+  - **False**: an architectural diagram shows the **detailed** relationships between components.
+  - **True**: an architectural pattern is a description of a system's organization.
+  - **Online shopping** is a **transaction processing** example.
+  - Primary reason for using architectural patterns:
+    - **to provide a template solution to common software design problems**
+  - **False**: it is not possible to combine several architectural patterns in one application.
+
 ## Chapter 6 Application Types and Examples
 
 ### Data Processing
@@ -657,18 +721,26 @@ Do **not** select:
 
 ## Best Way to Study This Exam Tonight
 
-  1. Run the new **Exam 2 Full Simulation** once straight through.
-  2. Drill the **UML + System Modeling Drill** until diagram-selection questions feel automatic.
-  3. Run the **Architecture A-G Drill** until you can classify all seven choices from one clue.
+  1. Run the new **Exam 2 Full Simulation** once straight through because it now mirrors the homework/review wording much more closely.
+  2. Drill the **UML + System Modeling Drill** until the Chapter 5 notation questions feel automatic.
+  3. Run the **Architecture A-G Drill** after that so pattern/application-type recognition becomes fast instead of fuzzy.
   4. Use the walkthrough sets only after you miss something or cannot explain it cleanly.
   5. Before the exam, recite from memory:
      - the four system perspectives
      - the diagram-type mapping
+     - context circle = process
+     - use case = functional requirements
+     - use case symbol = ellipse
      - include vs extend vs generalization
+     - \`+ / - / #\`
+     - aggregation = hollow diamond
+     - \`6..*\` = six or more
      - CIM / PIM / PSM
      - the A-G architecture map
      - context model = external entities interacting with the system boundary
      - MDA true/false = **True**
+     - pattern purpose = template solution to common design problems
+     - online shopping = transaction processing
      - architecture drivers = safety, availability, performance, security, maintainability
      - exact architectural pattern list = client-server, layered, pipes and filters, repository, MVC
 `;
@@ -703,11 +775,15 @@ const softwareEngineeringArchitectureCheatSheet = `## Software Engineering Exam 
   - **extend** -> sometimes
   - **generalization** -> inheritance
   - **class relationships** -> association, generalization, aggregation, composition
+  - **aggregation symbol** -> hollow diamond
+  - **visibility** -> \`+ public\`, \`- private\`, \`# protected\`
+  - **multiplicity \`6..*\`** -> six or more
 
 ### Behavioral Split
 
   - **data-driven** -> data arrives -> activity diagram
   - **event-driven** -> event occurs -> state machine diagram
+  - **stimuli** -> events and data
 
 ### MDE / MDA
 
@@ -718,6 +794,9 @@ const softwareEngineeringArchitectureCheatSheet = `## Software Engineering Exam 
   - drawbacks -> tool/translator cost, incomplete automation, agile tension
   - **MDA T/F** -> executable code is the final target output -> **True**
   - **context model** -> external entities interacting with the internal software system
+  - **MDA homework truths** ->
+    - focuses on design and implementation stages
+    - tries to generate executable code from transformed models
 
 ### Chapter 6 A-G Map
 
@@ -762,6 +841,16 @@ const softwareEngineeringArchitectureCheatSheet = `## Software Engineering Exam 
   - **Pipes and filters**
   - **Repository**
   - **Model-view-controller**
+
+### Chapter 6 Homework Reminders
+
+  - **component symbol** -> box
+  - **stakeholder benefit** -> communication
+  - **detailed relationships in architecture diagram?** -> False
+  - **architectural pattern = system organization description** -> True
+  - **patterns can be combined** -> True, so the "not possible" statement is False
+  - **online shopping** -> transaction processing
+  - **pattern purpose** -> template solution to common design problems
 `;
 
 
