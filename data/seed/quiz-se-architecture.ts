@@ -276,28 +276,29 @@ const chapter5Questions: Question[] = [
   makeSingleQuestion({
     id: "se-exam2-ch5-q6",
     prompt:
-      "A team wants to show what lies outside the system boundary and how the system sits among other systems and processes. Which model should they draw first?",
+      "Sometimes a context diagram is used to represent a system. What characteristic is shown in a context model?",
     options: [
-      "Context diagram",
-      "Sequence diagram",
-      "Class diagram",
-      "State machine diagram"
+      "How software interacts with its components",
+      "Shows the states of the system",
+      "Activities involved in a process or data processing",
+      "How external entities interact with an internal software system",
+      "Functional behavior of the system as seen by the user"
     ],
-    correctIndex: 0,
+    correctIndex: 3,
     explanation:
-      "Context models show the operational context of a system and what lies outside the system boundaries.",
+      "A context model shows the system boundary and the way external entities or neighboring systems interact with the software from the outside.",
     hintSteps: [
-      "This is the external perspective, not the internal design.",
-      "Ask what surrounds the system before asking how the inside works.",
-      "Context diagrams are about boundaries and neighboring systems."
+      "Context models are the external perspective, not the internal design.",
+      "They show what surrounds the system boundary.",
+      "Do not confuse context diagrams with activity, state, or use case detail."
     ],
     walkthroughSteps: [
-      "The question is about environment and boundary placement.",
-      "That is the job of a context diagram/context model.",
-      "Only after that would you move to interaction, structure, or state detail.",
-      "Choose Context diagram."
+      "A context model asks what is outside the system and how it interacts with the system boundary.",
+      "It does not show internal states, process workflow, or internal components.",
+      "That makes the best answer the option about external entities interacting with an internal software system.",
+      "Choose 'How external entities interact with an internal software system.'"
     ],
-    references: ["Chapter 5 – Context models", "Chapter 5 – System perspectives"],
+    references: ["Chapter 5 – Context models", "Lecture review slide – context model question"],
     tags: ["chapter-5", "context-model", "external-perspective"],
     difficulty: "easy"
   }),
@@ -470,39 +471,66 @@ const chapter5Questions: Question[] = [
     tags: ["chapter-5", "behavioral-model", "data-driven", "event-driven"],
     difficulty: "med"
   }),
-  makeMultiQuestion({
+  makeSingleQuestion({
     id: "se-exam2-ch5-q13",
-    prompt:
-      "Which statements about model-driven engineering / model-driven architecture are correct according to Chapter 5? Select all that apply.",
+    prompt: "(True/False) In model-driven architecture, the final output it tries to obtain is executable code.",
     options: [
-      "In MDE, models rather than programs are the principal outputs of development.",
-      "A CIM models important domain abstractions without platform detail.",
-      "A PIM models system operation without reference to a specific implementation platform.",
-      "A PSM is a platform-specific transformation of the platform-independent model.",
-      "Completely automated model-to-code translation is rarely possible in practice, and tool/translator cost can reduce cost-effectiveness.",
-      "MDA guarantees that agile teams never need extra tooling or manual intervention."
+      "True",
+      "False"
     ],
-    correct: [0, 1, 2, 3, 4],
+    correctIndex: 0,
     explanation:
-      "Chapter 5 presents MDE/MDA as model-centered approaches using CIM/PIM/PSM abstractions, while also warning that automation is rarely complete and translator/tool costs can limit adoption.",
+      "Model-driven architecture tries to transform models toward implementation, with executable code as the target output of the overall chain.",
     hintSteps: [
-      "Remember the three MDA model types: CIM, PIM, PSM.",
-      "Chapter 5 explicitly says fully automated translation is rarely possible.",
-      "The slides also say agile and MDA can be awkward together, not automatically solved."
+      "The question is asking for the end goal of the MDA pipeline.",
+      "Think about what the PSM is ultimately trying to support.",
+      "MDA is model-centered, but it still aims toward implementation."
     ],
     walkthroughSteps: [
-      "Start with the core idea: MDE treats models as principal outputs.",
-      "Then recall the model stack: CIM, PIM, PSM.",
-      "Finally add the adoption caveat: translator/tool costs and incomplete automation.",
-      "Reject the 'guarantees agile/no manual work' option because the slides say the opposite in practice."
+      "MDA starts from higher-level models and refines them toward implementation.",
+      "That means executable code is the final target output, even if translation is not perfectly automatic in practice.",
+      "So this slide statement is true.",
+      "Choose True."
     ],
-    references: ["Chapter 5 – Model-driven engineering", "Chapter 5 – Model-driven architecture"],
+    references: ["Chapter 5 – Model-driven architecture", "Lecture review slide – MDA true/false"],
     tags: ["chapter-5", "mde", "mda", "cim", "pim", "psm"],
-    difficulty: "hard"
+    difficulty: "easy"
   })
 ];
 
 const architectureQuestions: Question[] = [
+  makeMultiQuestion({
+    id: "se-exam2-arch-q0",
+    prompt:
+      "Architectural patterns/styles provide guidance on the situations in which architectural patterns should be used. Several architectural patterns were introduced in this chapter. List all of them.",
+    options: [
+      "Class view",
+      "Client-server",
+      "Logical filter",
+      "Layered",
+      "Pipes and filters",
+      "Development view",
+      "Repository",
+      "Model-view-controller"
+    ],
+    correct: [1, 3, 4, 6, 7],
+    explanation:
+      "The architectural patterns introduced in Chapter 6 are Client-server, Layered, Pipes and filters, Repository, and Model-view-controller. Class view and Development view are views, and Logical filter is not one of the chapter's named patterns.",
+    hintSteps: [
+      "Separate architecture patterns from architecture views.",
+      "The actual pattern list from the chapter is five items long.",
+      "Class view and Development view are distractors, not patterns."
+    ],
+    walkthroughSteps: [
+      "Start by recalling the named Chapter 6 patterns.",
+      "They are Client-server, Layered, Pipes and filters, Repository, and Model-view-controller.",
+      "Reject Class view and Development view because they are views rather than patterns.",
+      "Reject Logical filter because the chapter names Pipe-and-filter/Pipes and filters instead."
+    ],
+    references: ["Chapter 6 – Architectural patterns", "Lecture review slide – list all patterns"],
+    tags: ["chapter-6", "architecture", "patterns", "guaranteed-review"],
+    difficulty: "easy"
+  }),
   makeArchitectureQuestion({
     id: "se-exam2-arch-q1",
     prompt:
@@ -762,30 +790,31 @@ const chapter6FundamentalsQuestions: Question[] = [
   makeMultiQuestion({
     id: "se-exam2-ch6-q3",
     prompt:
-      "Which non-functional requirements are explicitly highlighted in Chapter 6 as major architectural concerns? Select all that apply.",
+      "Which of the following will determine the structure of a system architecture? (Select all that apply)",
     options: [
-      "Performance",
-      "Security",
       "Safety",
       "Availability",
-      "Maintainability",
-      "Usability"
+      "Performance",
+      "Use case patterns",
+      "Agile method",
+      "Security",
+      "Maintainability"
     ],
-    correct: [0, 1, 2, 3, 4],
+    correct: [0, 1, 2, 5, 6],
     explanation:
-      "Chapter 6 explicitly calls out performance, security, safety, availability, and maintainability as architectural concerns. Usability matters in software, but it is not in that named Chapter 6 list.",
+      "Chapter 6 ties architecture structure to major non-functional requirements such as safety, availability, performance, security, and maintainability. Use case patterns and agile method are not the determining architectural-quality drivers in that slide.",
     hintSteps: [
-      "The chapter gives a five-item list.",
-      "Do not add plausible extras that were not on the slide.",
-      "Usability is important but not part of this exact list."
+      "The real drivers here are quality attributes.",
+      "The wrong answers are process/method distractions, not architecture qualities.",
+      "Think of the five-item Chapter 6 quality list."
     ],
     walkthroughSteps: [
-      "Recall the exact Chapter 6 list of non-functional concerns.",
-      "It includes performance, security, safety, availability, and maintainability.",
-      "Usability is not part of that exact chapter list.",
-      "Select the first five options only."
+      "Architecture structure is being driven by non-functional requirements here.",
+      "The valid Chapter 6 drivers are Safety, Availability, Performance, Security, and Maintainability.",
+      "Use case patterns and Agile method are not quality attributes that determine architecture structure in this question.",
+      "Select Safety, Availability, Performance, Security, and Maintainability."
     ],
-    references: ["Chapter 6 – Architecture and system characteristics"],
+    references: ["Chapter 6 – Architecture and system characteristics", "Lecture review slide – architecture structure drivers"],
     tags: ["chapter-6", "nfr", "quality-attributes"],
     difficulty: "med"
   }),
@@ -880,13 +909,13 @@ const softwareEngineeringExam2FullSimulation: QuizSet = {
   courseId: "software-engineering",
   title: "Exam 2 Full Simulation (Ch. 5 + 6)",
   description:
-    "Full Software Engineering Exam 2 review built around the posted Chapters 5 and 6 scope: UML/system modeling, MDA, architectural patterns, and application types.",
+    "Full Software Engineering Exam 2 review built around the posted Chapters 5 and 6 scope plus the exact guaranteed lecture-review items: UML/system modeling, MDA, architectural patterns, and application types.",
   difficulty: "Advanced",
-  estMinutes: 42,
-  tags: ["exam-2", "chapter-5", "chapter-6", "uml", "architectural-design", "system-modeling"],
+  estMinutes: 46,
+  tags: ["exam-2", "chapter-5", "chapter-6", "uml", "architectural-design", "system-modeling", "guaranteed-review"],
   mode: "exam",
-  timerDefaultMinutes: 42,
-  questionCountTarget: 26,
+  timerDefaultMinutes: 46,
+  questionCountTarget: 27,
   isExamSimulation: true,
   questions: [
     ...chapter5Questions,
@@ -900,7 +929,7 @@ const softwareEngineeringExam2SystemModelingDrill: QuizSet = {
   courseId: "software-engineering",
   title: "Exam 2 UML + System Modeling Drill",
   description:
-    "Chapter 5 rapid drill covering UML diagram types, relationships, behavioral-model distinctions, and model-driven architecture.",
+    "Chapter 5 rapid drill covering UML diagram types, relationships, behavioral-model distinctions, model-driven architecture, and the exact guaranteed lecture-review questions.",
   difficulty: "Intermediate",
   estMinutes: 18,
   tags: ["exam-2", "chapter-5", "uml", "system-modeling", "focused-drill"],
@@ -930,7 +959,7 @@ const softwareEngineeringExam2ArchitectureFocusedDrill: QuizSet = {
   courseId: "software-engineering",
   title: "Exam 2 Architecture A-G Drill",
   description:
-    "Fast recognition drill for the exact Chapter 6 architecture-identification style your professor hinted at.",
+    "Fast recognition drill for the exact Chapter 6 architecture-identification style your professor hinted at, now including the guaranteed lecture-review pattern and quality-attribute checks.",
   difficulty: "Intermediate",
   estMinutes: 14,
   tags: ["exam-2", "chapter-6", "focused-drill", "a-g-options"],

@@ -451,6 +451,37 @@ Do not confuse use case relationships like **include** and **extend** with class
   - extra manual coding reduces cost-effectiveness
   - heavy up-front modeling can clash with agile habits
 
+## Guaranteed Lecture Callouts
+
+These came directly from your lecture-review images and are worth memorizing almost word-for-word.
+
+### Context Model
+
+If the exam asks what a **context model** shows, the right answer is:
+
+  - **how external entities interact with an internal software system**
+
+That is the external/system-boundary view. It is **not**:
+
+  - internal component interaction
+  - system states
+  - process/workflow activities
+  - user-visible functional behavior
+
+### MDA True / False
+
+If the exam asks:
+
+  - **"In model-driven architecture, the final output it tries to obtain is executable code."**
+
+answer:
+
+  - **True**
+
+Reason:
+
+  - MDA raises abstraction through models, but the overall chain still aims toward implementation / executable code.
+
 ## Chapter 6: Architectural Design
 
 ### Why Architectural Design Matters
@@ -523,6 +554,22 @@ Use when the clue is:
   - output of one stage becomes input to the next
   - batch/stream transformations
 
+### Exact Pattern List to Memorize
+
+If the exam asks you to **list all architectural patterns introduced in this chapter**, the correct list is:
+
+  - **Client-server**
+  - **Layered**
+  - **Pipes and filters**
+  - **Repository**
+  - **Model-view-controller**
+
+Reject distractors like:
+
+  - **Class view**
+  - **Development view**
+  - **Logical filter**
+
 ## Chapter 6 Application Types and Examples
 
 ### Data Processing
@@ -554,6 +601,19 @@ The chapter explicitly emphasizes:
   - **Safety**
   - **Availability**
   - **Maintainability**
+
+If the exam asks which factors **determine the structure of a system architecture**, select:
+
+  - **Safety**
+  - **Availability**
+  - **Performance**
+  - **Security**
+  - **Maintainability**
+
+Do **not** select:
+
+  - **Use case patterns**
+  - **Agile method**
 
 ### The Most Exam-Relevant Mappings
 
@@ -607,6 +667,10 @@ The chapter explicitly emphasizes:
      - include vs extend vs generalization
      - CIM / PIM / PSM
      - the A-G architecture map
+     - context model = external entities interacting with the system boundary
+     - MDA true/false = **True**
+     - architecture drivers = safety, availability, performance, security, maintainability
+     - exact architectural pattern list = client-server, layered, pipes and filters, repository, MVC
 `;
 
 const softwareEngineeringArchitectureCheatSheet = `## Software Engineering Exam 2 Cheat Sheet (Chapters 5 and 6)
@@ -652,6 +716,8 @@ const softwareEngineeringArchitectureCheatSheet = `## Software Engineering Exam 
   - **PIM** -> no platform commitment
   - **PSM** -> platform-specific transformation
   - drawbacks -> tool/translator cost, incomplete automation, agile tension
+  - **MDA T/F** -> executable code is the final target output -> **True**
+  - **context model** -> external entities interacting with the internal software system
 
 ### Chapter 6 A-G Map
 
@@ -687,6 +753,15 @@ const softwareEngineeringArchitectureCheatSheet = `## Software Engineering Exam 
   - availability -> redundancy / fault tolerance
   - maintainability -> fine-grained self-contained components
   - performance -> reduce communication / localize work
+  - architecture structure drivers -> **Safety, Availability, Performance, Security, Maintainability**
+
+### Exact Pattern List
+
+  - **Client-server**
+  - **Layered**
+  - **Pipes and filters**
+  - **Repository**
+  - **Model-view-controller**
 `;
 
 
