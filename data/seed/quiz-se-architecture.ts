@@ -136,149 +136,67 @@ const chapter5Questions: Question[] = [
   makeSingleQuestion({
     id: "se-exam2-ch5-q1",
     prompt:
-      "Which UML diagram is best when you want to show external actors and the discrete tasks they perform with the system?",
+      'What is "system modeling," and how can it help us?',
     options: [
-      "Use case diagram",
-      "Sequence diagram",
-      "Class diagram",
-      "State machine diagram"
+      "It is the process of coding and implementing software components to verify design efficiency.",
+      "It uses mathematical equations to test system performance under high load conditions.",
+      "It involves collecting user feedback after deployment to improve usability.",
+      "It is the process of creating abstract models of a system to understand its functionality and communicate with customers.",
+      "It is a project management activity used to track progress and deadlines."
     ],
-    correctIndex: 0,
+    correctIndex: 3,
     explanation:
-      "Use case diagrams show the interactions between a system and its environment by focusing on actors and the use cases they participate in.",
+      "System modeling is the process of developing abstract models of a system. Those models help analysts understand functionality and communicate with customers.",
     hintSteps: [
-      "Ask whether the focus is external users/systems versus internal object messages.",
-      "Use case diagrams stay high-level and actor-centered.",
-      "Sequence diagrams are more detailed and time-ordered."
+      "Think abstraction, not implementation.",
+      "The goal is understanding and communication.",
+      "UML is the usual notation in this chapter."
     ],
     walkthroughSteps: [
-      "Identify the viewpoint: external actors interacting with the system boundary.",
-      "That is exactly what a use case diagram is for.",
-      "Eliminate sequence/class/state because they focus on messages, structure, or event states instead.",
-      "Choose Use case diagram."
+      "Start by identifying what modeling does: it abstracts the system.",
+      "That abstraction helps analysts understand functionality before building everything.",
+      "The same models are also used to communicate with customers and stakeholders.",
+      "Choose the abstract-models-for-understanding-and-communication answer."
     ],
-    references: ["Chapter 5 – UML diagram types", "Chapter 5 – Interaction models"],
-    tags: ["chapter-5", "uml", "use-case", "interaction-model"],
+    references: ["Chapter 5 – System modeling"],
+    tags: ["chapter-5", "system-modeling", "foundations"],
     difficulty: "easy"
   }),
   makeSingleQuestion({
     id: "se-exam2-ch5-q2",
     prompt:
-      "Which UML diagram is best when you need to show messages moving between actors and system objects in time order for one scenario?",
+      "Which of the following diagrams represents the structure of a system in terms of objects, attributes, associations, and operations?",
     options: [
-      "Activity diagram",
-      "Sequence diagram",
-      "Context diagram",
-      "Class diagram"
+      "Use case diagrams",
+      "Sequence diagrams",
+      "Class diagrams",
+      "State diagrams",
+      "Activity diagrams"
     ],
-    correctIndex: 1,
+    correctIndex: 2,
     explanation:
-      "Sequence diagrams show interactions between actors and system components, including the order of messages over time.",
+      "Class diagrams model the static structure of a system by showing classes, attributes, operations, and the relationships among those classes.",
     hintSteps: [
-      "Look for time ordering and message exchange.",
-      "Sequence diagrams place participants across the top and time moving downward.",
-      "Activity diagrams are about process flow, not object messages."
+      "This is structural, not behavioral.",
+      "Think classes, attributes, operations, relationships.",
+      "Use case and sequence diagrams are interaction models instead."
     ],
     walkthroughSteps: [
-      "The key clue is message sequence over time.",
-      "Sequence diagrams use lifelines and arrows specifically for that purpose.",
-      "Activity diagrams show workflow steps, not object-to-object message timing.",
-      "Choose Sequence diagram."
+      "The key words are objects, attributes, associations, and operations.",
+      "Those are exactly the elements represented in a class diagram.",
+      "The other UML diagrams focus on actors, messages, workflow, or state changes.",
+      "Choose Class diagrams."
     ],
-    references: ["Chapter 5 – Sequence diagrams"],
-    tags: ["chapter-5", "uml", "sequence-diagram", "interaction-model"],
+    references: ["Chapter 5 – Structural models", "Chapter 5 – Class diagrams"],
+    tags: ["chapter-5", "class-diagram", "structural-model"],
     difficulty: "easy"
   }),
   makeSingleQuestion({
     id: "se-exam2-ch5-q3",
     prompt:
-      "Which UML diagram is best for showing classes in a system and the associations between them?",
-    options: [
-      "Class diagram",
-      "Use case diagram",
-      "Activity diagram",
-      "State machine diagram"
-    ],
-    correctIndex: 0,
-    explanation:
-      "Class diagrams are the structural UML diagram used to show classes and the relationships among those classes.",
-    hintSteps: [
-      "This is asking for the static object-oriented structure.",
-      "Class diagrams are structural, not behavioral.",
-      "Use case diagrams show actors, not classes."
-    ],
-    walkthroughSteps: [
-      "Identify the goal: static classes plus their relationships.",
-      "That is the definition of a class diagram.",
-      "The other options describe behavior or external interaction instead.",
-      "Choose Class diagram."
-    ],
-    references: ["Chapter 5 – Structural models", "Chapter 5 – Class diagrams"],
-    tags: ["chapter-5", "uml", "class-diagram", "structural-model"],
-    difficulty: "easy"
-  }),
-  makeSingleQuestion({
-    id: "se-exam2-ch5-q4",
-    prompt:
-      "Which UML diagram is most appropriate for showing the steps in a business process or data-processing workflow?",
-    options: [
-      "Activity diagram",
-      "State machine diagram",
-      "Sequence diagram",
-      "Use case diagram"
-    ],
-    correctIndex: 0,
-    explanation:
-      "Activity diagrams show the activities involved in a process or in data processing and are commonly used for business process models.",
-    hintSteps: [
-      "Look for process steps rather than object states or messages.",
-      "Activity diagrams can also show parallel flows and swimlanes.",
-      "State machines are event/state oriented instead."
-    ],
-    walkthroughSteps: [
-      "The prompt is about workflow steps in a process.",
-      "Activity diagrams are the UML tool for workflow and data-processing flow.",
-      "State diagrams focus on event-triggered state changes, which is different.",
-      "Choose Activity diagram."
-    ],
-    references: ["Chapter 5 – UML diagram types", "Chapter 5 – Activity diagrams"],
-    tags: ["chapter-5", "uml", "activity-diagram", "behavioral-model"],
-    difficulty: "easy"
-  }),
-  makeSingleQuestion({
-    id: "se-exam2-ch5-q5",
-    prompt:
-      "Which UML diagram is best for showing how a single object or system changes state in response to internal or external events?",
-    options: [
-      "State machine diagram",
-      "Class diagram",
-      "Use case diagram",
-      "Context diagram"
-    ],
-    correctIndex: 0,
-    explanation:
-      "State machine diagrams show system states as nodes and events as arcs, modeling how the system responds to stimuli.",
-    hintSteps: [
-      "The word 'events' is the biggest clue.",
-      "States appear as rounded rectangles and transitions are triggered by events.",
-      "Class diagrams are static, not event-driven."
-    ],
-    walkthroughSteps: [
-      "The problem is asking for dynamic state changes caused by events.",
-      "That is exactly the role of a state machine diagram.",
-      "Eliminate class/use case/context because they do not model event-triggered state transitions.",
-      "Choose State machine diagram."
-    ],
-    references: ["Chapter 5 – State machine models", "Chapter 5 – UML state diagrams"],
-    tags: ["chapter-5", "uml", "state-machine", "behavioral-model"],
-    difficulty: "easy"
-  }),
-  makeSingleQuestion({
-    id: "se-exam2-ch5-q6",
-    prompt:
       "Sometimes a context diagram is used to represent a system. What characteristic is shown in a context model?",
     options: [
-      "How software interacts with its components",
+      "How a software interacts with its components",
       "Shows the states of the system",
       "Activities involved in a process or data processing",
       "How external entities interact with an internal software system",
@@ -286,215 +204,391 @@ const chapter5Questions: Question[] = [
     ],
     correctIndex: 3,
     explanation:
-      "A context model shows the system boundary and the way external entities or neighboring systems interact with the software from the outside.",
+      "A context model shows the external perspective: how outside actors or systems interact with the system boundary.",
     hintSteps: [
-      "Context models are the external perspective, not the internal design.",
-      "They show what surrounds the system boundary.",
-      "Do not confuse context diagrams with activity, state, or use case detail."
+      "Context means outside the boundary.",
+      "This is not about internal states or workflow steps.",
+      "Focus on external entities and the internal system."
     ],
     walkthroughSteps: [
-      "A context model asks what is outside the system and how it interacts with the system boundary.",
-      "It does not show internal states, process workflow, or internal components.",
-      "That makes the best answer the option about external entities interacting with an internal software system.",
-      "Choose 'How external entities interact with an internal software system.'"
+      "A context model asks what surrounds the system and interacts with it.",
+      "That is the external/system-boundary perspective.",
+      "It does not show detailed internal components, states, or workflows.",
+      "Choose the option about external entities interacting with an internal software system."
     ],
     references: ["Chapter 5 – Context models", "Lecture review slide – context model question"],
     tags: ["chapter-5", "context-model", "external-perspective"],
     difficulty: "easy"
   }),
-  makeMultiQuestion({
-    id: "se-exam2-ch5-q7",
-    prompt:
-      "Which UML diagrams are specifically called out in Chapter 5 as interaction-model diagrams? Select all that apply.",
+  makeSingleQuestion({
+    id: "se-exam2-ch5-q4",
+    prompt: "In a context diagram, what does the circle symbol represent?",
     options: [
-      "Use case diagram",
-      "Sequence diagram",
-      "Class diagram",
-      "Activity diagram"
+      "External entity",
+      "Process",
+      "Flow line",
+      "External system",
+      "Use case"
     ],
-    correct: [0, 1],
+    correctIndex: 1,
     explanation:
-      "Interaction modeling in Chapter 5 uses use case diagrams for system-to-actor interaction and sequence diagrams for more detailed interaction between system components.",
+      "In the class slides, the single circle in the context diagram represents the process for the whole system.",
     hintSteps: [
-      "Interaction is not the same as structure or general workflow.",
-      "Use case is high-level interaction; sequence is detailed interaction.",
-      "Class is structural and activity is process/data flow."
+      "There is only one system-level process in these context examples.",
+      "Entities sit outside; the circle is the system process.",
+      "Arrows/lines are the flows."
     ],
     walkthroughSteps: [
-      "Start by separating interaction models from structural and behavioral models.",
-      "Use case diagrams model interactions between the system and external agents.",
-      "Sequence diagrams model interactions between system components in more detail.",
-      "Select Use case diagram and Sequence diagram only."
+      "Recall the basic context-diagram legend from the slide.",
+      "External entities sit outside the process.",
+      "The circle stands for the whole system as one process.",
+      "Choose Process."
+    ],
+    references: ["Chapter 5 – Context diagram legend", "Chapter 5 – Mentcare context diagram"],
+    tags: ["chapter-5", "context-model", "symbols"],
+    difficulty: "easy"
+  }),
+  makeMultiQuestion({
+    id: "se-exam2-ch5-q5",
+    prompt:
+      'Which of the following diagrams can be used to represent an "interaction model"? (Select all that apply)',
+    options: [
+      "State diagram",
+      "Class diagram",
+      "Use case diagrams",
+      "Sequence diagrams",
+      "Context diagrams",
+      "Solid diagrams"
+    ],
+    correct: [2, 3],
+    explanation:
+      "Chapter 5 interaction modeling uses use case diagrams for actor/system interaction and sequence diagrams for more detailed component interaction.",
+    hintSteps: [
+      "Interaction is not structure and not context.",
+      "One diagram is actor/task focused, the other is message/time focused.",
+      "Class and state diagrams belong to different perspectives."
+    ],
+    walkthroughSteps: [
+      "Separate interaction models from context, structural, and behavioral models.",
+      "Use case diagrams model interactions between a system and external agents.",
+      "Sequence diagrams model interactions between system components over time.",
+      "Select Use case diagrams and Sequence diagrams only."
     ],
     references: ["Chapter 5 – Interaction models"],
     tags: ["chapter-5", "interaction-model", "uml"],
     difficulty: "med"
   }),
   makeSingleQuestion({
-    id: "se-exam2-ch5-q8",
-    prompt:
-      "In a use case diagram, what does an <<include>> relationship mean?",
+    id: "se-exam2-ch5-q6",
+    prompt: "Which of the following statements is true about use cases?",
     options: [
-      "The included use case happens every time the base use case executes.",
-      "The included use case is optional and only runs if a condition is met.",
-      "The base use case inherits from the included use case.",
-      "The actor may or may not communicate with the use case."
+      "Use cases are used to represent the status of an object.",
+      "Use cases are used to represent structure of components.",
+      "Use cases are used to represent output of a system.",
+      "Use cases are used to represent maintainability of a system.",
+      "Use cases are used to represent functional requirements."
     ],
-    correctIndex: 0,
+    correctIndex: 4,
     explanation:
-      "Include means the base use case depends on the included use case and executes it every time in order to be complete.",
+      "Use case modeling was originally developed to support requirements elicitation, so use cases represent functional requirements from the actor's point of view.",
     hintSteps: [
-      "Chapter 5 contrasts include with extend directly.",
-      "Include is mandatory, extend is conditional.",
-      "The dashed arrow points toward the included use case."
+      "Use cases came from requirements work.",
+      "Actors initiate use cases to access system functionality.",
+      "They are not object-status or component-structure diagrams."
     ],
     walkthroughSteps: [
-      "Remember the rule: include happens every time.",
-      "That means the base use case requires the included behavior to finish correctly.",
-      "Optional behavior belongs to extend, not include.",
-      "Choose the mandatory-every-time option."
+      "Ask what use cases are fundamentally for.",
+      "They describe system behavior as seen from an actor's perspective.",
+      "That means they capture functional requirements.",
+      "Choose the functional-requirements statement."
     ],
-    references: ["Chapter 5 – Use case relationships"],
-    tags: ["chapter-5", "use-case", "include"],
+    references: ["Chapter 5 – Use case modeling", "Chapter 5 – Functional requirements"],
+    tags: ["chapter-5", "use-case", "requirements"],
     difficulty: "easy"
   }),
   makeSingleQuestion({
-    id: "se-exam2-ch5-q9",
-    prompt:
-      "In a use case diagram, what does an <<extend>> relationship mean?",
+    id: "se-exam2-ch5-q7",
+    prompt: "Which basic UML shape is used to indicate a use case?",
     options: [
-      "The extending use case happens only sometimes, when certain criteria are met.",
-      "The extending use case always runs before the base use case.",
-      "The base use case becomes a subclass of the extending use case.",
-      "The relationship only indicates actor participation."
+      "Ellipse (oval)",
+      "Stick figure",
+      "Rectangle with class compartments",
+      "Circle process",
+      "Rounded rectangle state"
     ],
     correctIndex: 0,
     explanation:
-      "Extend represents optional behavior that occurs only under certain conditions; it does not happen every time the base use case executes.",
+      "A use case is drawn as an ellipse/oval. Actors are the stick figures outside the system boundary.",
     hintSteps: [
-      "Include is always; extend is conditional.",
-      "The dashed arrow points toward the base use case.",
-      "Think 'optional extra behavior.'"
+      "Separate the actor symbol from the use case symbol.",
+      "The use case itself is a task bubble, not a box.",
+      "Class and state notation use different shapes."
     ],
     walkthroughSteps: [
-      "Recall the chapter rule: extend only happens sometimes.",
-      "That makes it the optional/conditional relationship.",
-      "This is the opposite of include.",
-      "Choose the conditional behavior option."
+      "Use case diagrams have two iconic shapes: actors and use cases.",
+      "Actors are stick figures.",
+      "The use case itself is the oval/ellipse.",
+      "Choose Ellipse (oval)."
+    ],
+    references: ["Chapter 5 – UML use case diagrams"],
+    tags: ["chapter-5", "use-case", "symbols"],
+    difficulty: "easy"
+  }),
+  makeMultiQuestion({
+    id: "se-exam2-ch5-q8",
+    prompt:
+      "We learned about several relationships associated with use cases. Select all the relationships that are associated with use cases.",
+    options: [
+      "Include",
+      "Association",
+      "Inheritance",
+      "Extend",
+      "Range",
+      "Postcondition"
+    ],
+    correct: [0, 1, 2, 3],
+    explanation:
+      "The use case relationships emphasized in class are association, include, extend, and inheritance/generalization.",
+    hintSteps: [
+      "Ignore documentation words like postcondition.",
+      "Range is not a UML use case relationship.",
+      "Inheritance here means generalization."
+    ],
+    walkthroughSteps: [
+      "List the actual use case relationships from the lecture.",
+      "They are association, include, extend, and inheritance/generalization.",
+      "Range and postcondition are distractors from other contexts.",
+      "Select Include, Association, Inheritance, and Extend."
     ],
     references: ["Chapter 5 – Use case relationships"],
-    tags: ["chapter-5", "use-case", "extend"],
+    tags: ["chapter-5", "use-case", "relationships"],
+    difficulty: "med"
+  }),
+  makeSingleQuestion({
+    id: "se-exam2-ch5-q9",
+    prompt: 'What does an "alternative frame" symbolize in a sequence diagram?',
+    options: [
+      "Show when and how long an object is performing a process",
+      "Show the information being sent between objects",
+      "If-else logic",
+      "Represents a return message",
+      "Shows existence of an object or actor over time"
+    ],
+    correctIndex: 2,
+    explanation:
+      "The alt frame in a sequence diagram represents alternative control paths, which is the UML way to show if/else logic in that scenario.",
+    hintSteps: [
+      "Think branching behavior inside a scenario.",
+      "This is not the activation box or the lifeline.",
+      "Alternative frame means alternate path."
+    ],
+    walkthroughSteps: [
+      "Sequence diagrams can include frames for special control structures.",
+      "The alt frame is used when one of multiple alternative branches can occur.",
+      "That is equivalent to if-else logic.",
+      "Choose If-else logic."
+    ],
+    references: ["Chapter 5 – Sequence diagrams", "Chapter 5 – alt frames"],
+    tags: ["chapter-5", "sequence-diagram", "symbols"],
     difficulty: "easy"
   }),
   makeSingleQuestion({
     id: "se-exam2-ch5-q10",
-    prompt:
-      "What is generalization in use case or actor modeling mainly used for?",
+    prompt: "Which visibility mapping is correct for UML class-diagram notation?",
     options: [
-      "To show specialization/inheritance where children share parent behavior and add detail.",
-      "To force one use case to execute every time another runs.",
-      "To show concurrent flows in an activity diagram.",
-      "To represent a return message in a sequence diagram."
+      "+ public, - private, # protected",
+      "+ private, - public, # protected",
+      "+ protected, - private, # public",
+      "+ public, - protected, # private"
     ],
     correctIndex: 0,
     explanation:
-      "Generalization reduces complexity by showing inheritance/specialization: child use cases or actors share common parent behavior and add their own details.",
+      "In UML class diagrams, `+` means public, `-` means private, and `#` means protected.",
     hintSteps: [
-      "Chapter 5 explicitly says generalization is also called inheritance.",
-      "Think parent/child, not mandatory execution.",
-      "This applies to actors as well as use cases."
+      "This is pure notation recall.",
+      "Public is the plus sign.",
+      "Protected is the hash sign."
     ],
     walkthroughSteps: [
-      "Start with the keyword inheritance.",
-      "Generalization means one element specializes a more general parent.",
-      "That parent-child sharing plus extra detail is the core idea.",
-      "Choose the specialization/inheritance option."
+      "Recall the three visibility markers from the homework feedback.",
+      "`+` means public.",
+      "`-` means private and `#` means protected.",
+      "Choose the first mapping."
     ],
-    references: ["Chapter 5 – Use case relationships"],
-    tags: ["chapter-5", "use-case", "generalization", "inheritance"],
+    references: ["Chapter 5 – Class notation", "Homework 5 review – class visibility"],
+    tags: ["chapter-5", "class-diagram", "symbols", "visibility"],
     difficulty: "easy"
   }),
-  makeMultiQuestion({
+  makeSingleQuestion({
     id: "se-exam2-ch5-q11",
-    prompt:
-      "Which relationships are explicitly listed in Chapter 5 as class-diagram relationships? Select all that apply.",
+    prompt: 'Which symbol is used to represent the "aggregation" relationship in a class diagram?',
     options: [
-      "Association",
-      "Generalization",
-      "Aggregation",
-      "Composition",
-      "Include"
+      "Hollow diamond",
+      "Filled diamond",
+      "Dashed arrow labeled <<include>>",
+      "Open triangle arrow"
     ],
-    correct: [0, 1, 2, 3],
+    correctIndex: 0,
     explanation:
-      "Chapter 5 lists association, generalization, aggregation, and composition as class-diagram relationships. Include belongs to use case diagrams, not class diagrams.",
+      "Aggregation in a class diagram is shown with a hollow diamond. Composition uses the filled diamond.",
     hintSteps: [
-      "Separate use case relationship words from class diagram relationship words.",
-      "Include and extend are not structural class relationships.",
-      "Class diagrams focus on static structure."
+      "Aggregation and composition are easy to swap.",
+      "Aggregation is the weaker whole-part relation.",
+      "That weaker relation uses the open/hollow diamond."
     ],
     walkthroughSteps: [
-      "List the structural relationships first: association, generalization, aggregation, composition.",
-      "Those are class-diagram relationships from the structural-model section.",
-      "Reject include because it belongs to use case modeling.",
-      "Select the four structural relationships only."
+      "Start by separating aggregation from composition.",
+      "Aggregation uses the hollow/open diamond.",
+      "Composition is the filled diamond, so that option is the distractor.",
+      "Choose Hollow diamond."
     ],
-    references: ["Chapter 5 – Structural models", "Chapter 5 – Class diagrams"],
-    tags: ["chapter-5", "class-diagram", "relationships", "structural-model"],
-    difficulty: "med"
+    references: ["Chapter 5 – Class diagram relationships", "Homework 5 review – aggregation"],
+    tags: ["chapter-5", "class-diagram", "aggregation"],
+    difficulty: "easy"
   }),
   makeSingleQuestion({
     id: "se-exam2-ch5-q12",
     prompt:
-      "Which statement correctly distinguishes data-driven and event-driven behavioral modeling?",
+      "Multiplicity notation indicates the number of instances of one class linked to one instance of another class. What does the multiplicity `6..*` indicate?",
     options: [
-      "Data-driven modeling is triggered by incoming data to be processed, while event-driven modeling is triggered by internal or external events.",
-      "Data-driven modeling uses states and events, while event-driven modeling uses activities and workflows only.",
-      "Data-driven and event-driven modeling are just two names for sequence diagrams.",
-      "Event-driven modeling ignores stimulus from the environment and focuses only on stored data."
+      "Exactly six",
+      "Six objects",
+      "Up to six",
+      "Six or more",
+      "Zero to six"
     ],
-    correctIndex: 0,
+    correctIndex: 3,
     explanation:
-      "Behavioral models in Chapter 5 distinguish stimuli of two types: data availability triggering processing, and events triggering system responses.",
+      "`6..*` means the lower bound is six and the upper bound is unbounded, so the relationship allows six or more instances.",
     hintSteps: [
-      "Chapter 5 defines both in the behavioral-model section.",
-      "Activity diagrams are usually data-driven; state diagrams are event-driven.",
-      "Do not confuse message order with stimulus type."
+      "Look at the lower bound and the star separately.",
+      "The star means no fixed upper limit.",
+      "So the only certain minimum is six."
     ],
     walkthroughSteps: [
-      "Identify what triggers system processing in each case.",
-      "Data-driven means processing begins when data arrives.",
-      "Event-driven means some event triggers the response.",
-      "Choose the option that states exactly that distinction."
+      "Read the notation as lower bound to upper bound.",
+      "The lower bound is six.",
+      "The star means many/unbounded above.",
+      "Choose Six or more."
     ],
-    references: ["Chapter 5 – Behavioral models", "Chapter 5 – Activity vs state diagrams"],
-    tags: ["chapter-5", "behavioral-model", "data-driven", "event-driven"],
+    references: ["Chapter 5 – Multiplicity notation", "Homework 5 review – multiplicity"],
+    tags: ["chapter-5", "class-diagram", "multiplicity"],
+    difficulty: "easy"
+  }),
+  makeMultiQuestion({
+    id: "se-exam2-ch5-q13",
+    prompt:
+      "Behavioral models represent the dynamic behavior of a system during execution. Which of the following stimuli can trigger a system? (Select all that apply)",
+    options: [
+      "Events",
+      "Data",
+      "Object",
+      "Classes",
+      "Data type"
+    ],
+    correct: [0, 1],
+    explanation:
+      "Chapter 5 says behavioral models can be driven either by data that arrives for processing or by events that stimulate a response.",
+    hintSteps: [
+      "The chapter names exactly two stimulus categories.",
+      "They are not object-oriented nouns like class or object.",
+      "Think trigger types."
+    ],
+    walkthroughSteps: [
+      "Behavioral models start from a stimulus.",
+      "The two stimulus types emphasized in the chapter are data and events.",
+      "Object, class, and data type are distractors here.",
+      "Select Events and Data."
+    ],
+    references: ["Chapter 5 – Behavioral models"],
+    tags: ["chapter-5", "behavioral-model", "stimuli"],
+    difficulty: "easy"
+  }),
+  makeSingleQuestion({
+    id: "se-exam2-ch5-q14",
+    prompt:
+      "Which of the following diagrams can be used to describe how a system behaves in response to events?",
+    options: [
+      "Data diagram",
+      "Control diagram",
+      "State diagram",
+      "Context diagram",
+      "Class diagram"
+    ],
+    correctIndex: 2,
+    explanation:
+      "State diagrams / state machine diagrams model how a system behaves in response to internal or external events.",
+    hintSteps: [
+      "The keyword is events.",
+      "Behavior over changing states points to the state machine model.",
+      "Class and context diagrams are not event-response models."
+    ],
+    walkthroughSteps: [
+      "The question is asking for event-driven behavior.",
+      "State diagrams are specifically used for event-triggered state changes.",
+      "The other options are structural or irrelevant distractors.",
+      "Choose State diagram."
+    ],
+    references: ["Chapter 5 – State machine diagrams"],
+    tags: ["chapter-5", "state-machine", "events"],
+    difficulty: "easy"
+  }),
+  makeMultiQuestion({
+    id: "se-exam2-ch5-q15",
+    prompt:
+      'Which of the following statements are true about "model-driven architecture"? (Select all that apply)',
+    options: [
+      "Model-driven architecture is used to determine the accessibility of the information contained in classes.",
+      "Model-driven architecture shows how classes are composed of other classes.",
+      "Model-driven architecture focuses on the design and implementation stages of software development.",
+      "Model-driven architecture can express the different states of your objects and how the states will change.",
+      "Model-driven architecture will try to generate executable code by sending a platform-specific model through a translator tool.",
+      "Model-driven architecture only shows flow from one activity to another activity."
+    ],
+    correct: [2, 4],
+    explanation:
+      "MDA focuses on the design and implementation stages and tries to move models toward executable code through transformations. The other options describe class, state, or activity modeling instead.",
+    hintSteps: [
+      "Keep MDA separate from class diagrams, state diagrams, and activity diagrams.",
+      "One true statement is about design/implementation scope.",
+      "The other true statement is about code generation from platform-specific models."
+    ],
+    walkthroughSteps: [
+      "Reject the options that are really about class accessibility, class composition, object states, or activity flow.",
+      "Keep the statements that match the actual purpose of MDA.",
+      "Those are the design/implementation focus and the model-to-code transformation goal.",
+      "Select the third and fifth statements."
+    ],
+    references: ["Chapter 5 – Model-driven architecture", "Homework 5 review – MDA"],
+    tags: ["chapter-5", "mda", "mde"],
     difficulty: "med"
   }),
   makeSingleQuestion({
-    id: "se-exam2-ch5-q13",
-    prompt: "(True/False) In model-driven architecture, the final output it tries to obtain is executable code.",
+    id: "se-exam2-ch5-q16",
+    prompt: "Which list names the three model types recommended by model-driven architecture (MDA)?",
     options: [
-      "True",
-      "False"
+      "CIM, PIM, PSM",
+      "DFD, ERD, PSM",
+      "Context model, interaction model, architecture model",
+      "Use case model, sequence model, class model"
     ],
     correctIndex: 0,
     explanation:
-      "Model-driven architecture tries to transform models toward implementation, with executable code as the target output of the overall chain.",
+      "The three MDA model types are the Computation-Independent Model (CIM), Platform-Independent Model (PIM), and Platform-Specific Model (PSM).",
     hintSteps: [
-      "The question is asking for the end goal of the MDA pipeline.",
-      "Think about what the PSM is ultimately trying to support.",
-      "MDA is model-centered, but it still aims toward implementation."
+      "One is domain/computation independent.",
+      "One is platform independent.",
+      "One is platform specific."
     ],
     walkthroughSteps: [
-      "MDA starts from higher-level models and refines them toward implementation.",
-      "That means executable code is the final target output, even if translation is not perfectly automatic in practice.",
-      "So this slide statement is true.",
-      "Choose True."
+      "Recall the three abstraction levels from the slide.",
+      "They are computation-independent, platform-independent, and platform-specific.",
+      "That corresponds to CIM, PIM, and PSM.",
+      "Choose CIM, PIM, PSM."
     ],
-    references: ["Chapter 5 – Model-driven architecture", "Lecture review slide – MDA true/false"],
-    tags: ["chapter-5", "mde", "mda", "cim", "pim", "psm"],
-    difficulty: "easy"
+    references: ["Chapter 5 – Types of models in MDA"],
+    tags: ["chapter-5", "mda", "cim", "pim", "psm"],
+    difficulty: "med"
   })
 ];
 
@@ -731,64 +825,276 @@ const architectureQuestions: Question[] = [
 ];
 
 const chapter6FundamentalsQuestions: Question[] = [
-  makeMultiQuestion({
+  makeSingleQuestion({
     id: "se-exam2-ch6-q1",
-    prompt:
-      "Which advantages of an explicit system architecture are named in Chapter 6? Select all that apply.",
+    prompt: 'Why do software engineers use "architectural design"?',
     options: [
-      "Stakeholder communication",
-      "System analysis",
-      "Large-scale reuse",
-      "Guaranteed zero maintenance cost"
+      "To define the overall structure and organization of a system, link requirements to implementation, and reason about qualities like safety, availability, performance, security, and maintainability.",
+      "To eliminate the need for requirements engineering and system analysis.",
+      "To decide on private versus public class attributes.",
+      "To replace stakeholder communication with automatic code generation."
     ],
-    correct: [0, 1, 2],
+    correctIndex: 0,
     explanation:
-      "Chapter 6 gives three core benefits of explicit architecture: stakeholder communication, system analysis, and large-scale reuse.",
+      "Architectural design identifies the main structural components and their relationships. It is the critical link between requirements and implementation and supports quality-attribute reasoning.",
     hintSteps: [
-      "Think of what architecture helps you do before the code exists.",
-      "The slide names three benefits directly.",
-      "Anything that sounds absolute or magical is probably wrong."
+      "Think structure and organization first.",
+      "Architecture sits between requirements and implementation.",
+      "The answer should mention large-scale qualities, not class-level details."
     ],
     walkthroughSteps: [
-      "Recall the exact three benefits listed in the chapter.",
-      "They are communication, analysis, and reuse.",
-      "Architecture does not eliminate maintenance cost entirely.",
-      "Select the first three options only."
+      "Start with what architecture does: it defines the main structural components and relationships.",
+      "Then connect it to requirements and implementation.",
+      "Finally, include the non-functional qualities it helps engineers evaluate.",
+      "Choose the long structure-and-quality-focused answer."
     ],
-    references: ["Chapter 6 – Advantages of using a system architecture"],
-    tags: ["chapter-6", "architecture", "benefits"],
+    references: ["Chapter 6 – Architectural design", "Homework 6 review – architectural design"],
+    tags: ["chapter-6", "architecture", "foundations"],
     difficulty: "easy"
   }),
-  makeMultiQuestion({
+  makeSingleQuestion({
     id: "se-exam2-ch6-q2",
     prompt:
-      "In the Chapter 6 box-and-line architectural notation, which statements are correct? Select all that apply.",
+      "Which symbol is used to represent a component in a system architecture?",
     options: [
-      "Boxes represent system components.",
-      "Nested boxes can represent subcomponents.",
-      "Arrows can show data or control flow.",
-      "Rounded rectangles always mean actors as in use case diagrams."
+      "Stick figure actor",
+      "Ellipse use case",
+      "Box / rectangular block",
+      "Circle process",
+      "Dashed message arrow"
     ],
-    correct: [0, 1, 2],
+    correctIndex: 2,
     explanation:
-      "Chapter 6 uses simple box-and-line diagrams where boxes are components, nested boxes can show subcomponents, and arrows indicate data/control flow.",
+      "In the Chapter 6 architectural notation, each box in the diagram represents a component. Nested boxes show subcomponents.",
     hintSteps: [
-      "Do not import UML actor notation into architecture box-and-line diagrams.",
-      "The point is coarse architectural communication, not UML purity.",
-      "Remember boxes, nested boxes, arrows."
+      "Do not import UML use case or context symbols into architecture diagrams.",
+      "Architecture in this class uses simple box-and-line notation.",
+      "Components are blocks."
     ],
     walkthroughSteps: [
-      "Start with the three symbols Chapter 6 explicitly names.",
-      "Boxes are components.",
-      "Nested boxes can show subcomponents, and arrows show data/control flow.",
-      "Reject the actor statement because that belongs to UML use case notation, not architecture box-and-line notation."
+      "Chapter 6 architecture diagrams are simple block diagrams.",
+      "Each box represents a component.",
+      "Actors, ellipses, and circles belong to other modeling notations.",
+      "Choose Box / rectangular block."
     ],
-    references: ["Chapter 6 – Box and line diagrams"],
+    references: ["Chapter 6 – Block diagrams", "Homework 6 review – component symbol"],
     tags: ["chapter-6", "architecture", "symbols"],
     difficulty: "easy"
   }),
-  makeMultiQuestion({
+  makeSingleQuestion({
     id: "se-exam2-ch6-q3",
+    prompt: "How does architectural design help stakeholders?",
+    options: [
+      "Stakeholders use it to write code.",
+      "Stakeholders use it to design class diagrams.",
+      "It helps improve communication.",
+      "Stakeholders use it to run the program."
+    ],
+    correctIndex: 2,
+    explanation:
+      "An explicit system architecture gives stakeholders a shared high-level picture of the system, which improves communication and understanding.",
+    hintSteps: [
+      "This is one of the named benefits from the chapter.",
+      "Think shared understanding before implementation.",
+      "The right answer is about communication."
+    ],
+    walkthroughSteps: [
+      "Architecture gives a common high-level representation of the system.",
+      "That shared representation helps different stakeholders discuss the system coherently.",
+      "The chapter explicitly lists stakeholder communication as a benefit.",
+      "Choose Help improve communication."
+    ],
+    references: ["Chapter 6 – Advantages of using a system architecture"],
+    tags: ["chapter-6", "architecture", "communication"],
+    difficulty: "easy"
+  }),
+  makeSingleQuestion({
+    id: "se-exam2-ch6-q4",
+    prompt:
+      "(True/False) An architectural diagram of a system shows the detailed relationships between components.",
+    options: ["True", "False"],
+    correctIndex: 1,
+    explanation:
+      "Architectural diagrams are intentionally high-level. They show organization and interaction at a coarse level, not detailed class/message relationships.",
+    hintSteps: [
+      "Architecture is coarse-grained communication.",
+      "Detailed relationships belong to lower-level models.",
+      "This statement overclaims the level of detail."
+    ],
+    walkthroughSteps: [
+      "Architecture diagrams show structure and organization broadly.",
+      "They do not try to capture detailed relationships the way more detailed design models do.",
+      "That makes the statement false.",
+      "Choose False."
+    ],
+    references: ["Chapter 6 – Architectural views", "Homework 6 review – T/F"],
+    tags: ["chapter-6", "architecture", "views"],
+    difficulty: "easy"
+  }),
+  makeSingleQuestion({
+    id: "se-exam2-ch6-q5",
+    prompt:
+      "(True/False) An architectural pattern is a description of a system's organization.",
+    options: ["True", "False"],
+    correctIndex: 0,
+    explanation:
+      "Architectural patterns capture reusable knowledge about how systems can be organized and when that organization is appropriate.",
+    hintSteps: [
+      "Patterns are reusable organization knowledge.",
+      "The wording comes almost directly from the chapter.",
+      "This statement is meant to be straightforward."
+    ],
+    walkthroughSteps: [
+      "Architectural patterns describe common system organizations.",
+      "They also explain when those organizations are useful.",
+      "So the statement is true.",
+      "Choose True."
+    ],
+    references: ["Chapter 6 – Architectural patterns"],
+    tags: ["chapter-6", "architecture", "patterns"],
+    difficulty: "easy"
+  }),
+  makeMultiQuestion({
+    id: "se-exam2-ch6-q6",
+    prompt:
+      "Architectural patterns/styles provide guidance on the situations in which specific architectural patterns should be used. Several architectural patterns were introduced in this chapter. List all of them.",
+    options: [
+      "Class view",
+      "Client-server",
+      "Logical filter",
+      "Layered",
+      "Pipes and filters",
+      "Development view",
+      "Repository",
+      "Model-view-controller"
+    ],
+    correct: [1, 3, 4, 6, 7],
+    explanation:
+      "The architectural patterns introduced in Chapter 6 are Client-server, Layered, Pipes and filters, Repository, and Model-view-controller.",
+    hintSteps: [
+      "Separate views from patterns.",
+      "The correct list has five items.",
+      "Logical filter is a distractor for Pipes and filters."
+    ],
+    walkthroughSteps: [
+      "Recall the exact list from the chapter and homework review.",
+      "Keep Client-server, Layered, Pipes and filters, Repository, and Model-view-controller.",
+      "Reject Class view and Development view because they are views, not patterns.",
+      "Reject Logical filter because that is not the chapter's named pattern."
+    ],
+    references: ["Chapter 6 – Architectural patterns", "Homework 6 review – list all patterns"],
+    tags: ["chapter-6", "architecture", "patterns", "guaranteed-review"],
+    difficulty: "easy"
+  }),
+  makeSingleQuestion({
+    id: "se-exam2-ch6-q7",
+    prompt:
+      "What architectural style/pattern is described by the following statement: System functionality is organized into separate layers, and each layer only relies on the facilities and services offered by the layer immediately beneath it?",
+    options: [
+      "Layered style",
+      "Repository style",
+      "Client-server style",
+      "Pipes and filters style"
+    ],
+    correctIndex: 0,
+    explanation:
+      "That description is the standard definition of layered architecture: related functionality grouped into layers with adjacent-layer service dependence.",
+    hintSteps: [
+      "The phrase 'layer immediately beneath it' is the giveaway.",
+      "This is not about shared repositories or remote services.",
+      "Think service levels."
+    ],
+    walkthroughSteps: [
+      "The description centers on separate layers and adjacent-layer dependence.",
+      "That is the defining structure of the layered style.",
+      "Repository and client-server describe different organizational ideas.",
+      "Choose Layered style."
+    ],
+    references: ["Chapter 6 – Layered architecture"],
+    tags: ["chapter-6", "layered", "patterns"],
+    difficulty: "easy"
+  }),
+  makeSingleQuestion({
+    id: "se-exam2-ch6-q8",
+    prompt: "What is an example of a transaction processing application?",
+    options: [
+      "Web search engine",
+      "Video game",
+      "Google Assistant",
+      "Online shopping"
+    ],
+    correctIndex: 3,
+    explanation:
+      "Online shopping is a transaction processing application because it handles user requests that read/update shared business data while maintaining integrity.",
+    hintSteps: [
+      "Think user requests plus shared persistent data.",
+      "Shopping, banking, and reservations are the classic examples.",
+      "Search engines and assistants map elsewhere."
+    ],
+    walkthroughSteps: [
+      "Transaction processing is about user-driven operations against a shared database.",
+      "Online shopping fits that directly because orders, carts, and payments update business data.",
+      "The other options are not the textbook transaction-processing example from the chapter.",
+      "Choose Online shopping."
+    ],
+    references: ["Chapter 6 – Transaction processing applications"],
+    tags: ["chapter-6", "transaction-processing", "application-type"],
+    difficulty: "easy"
+  }),
+  makeSingleQuestion({
+    id: "se-exam2-ch6-q9",
+    prompt:
+      "Which of the following is a primary reason for using architectural patterns in software design?",
+    options: [
+      "To eliminate the need for documentation",
+      "To define the user interface for the system",
+      "To provide a template solution to common software design problems",
+      "To model the hardware layout for the system",
+      "To show the structural view of a component"
+    ],
+    correctIndex: 2,
+    explanation:
+      "Architectural patterns capture reusable solutions to recurring high-level software design problems.",
+    hintSteps: [
+      "Patterns are about reuse of architectural knowledge.",
+      "They are not a substitute for documentation.",
+      "The right answer sounds like reusable guidance."
+    ],
+    walkthroughSteps: [
+      "Architectural patterns are meant to reuse proven architectural organization ideas.",
+      "That makes them template solutions for common design problems.",
+      "They do not exist to eliminate documentation or define hardware layout.",
+      "Choose the template-solution answer."
+    ],
+    references: ["Chapter 6 – Architectural patterns", "Homework 6 review – pattern purpose"],
+    tags: ["chapter-6", "architecture", "patterns"],
+    difficulty: "easy"
+  }),
+  makeSingleQuestion({
+    id: "se-exam2-ch6-q10",
+    prompt:
+      "(True/False) It is not possible to combine several architectural patterns when developing an application.",
+    options: ["True", "False"],
+    correctIndex: 1,
+    explanation:
+      "Architectural patterns can be combined. A real system may use multiple patterns at once depending on its structure and needs.",
+    hintSteps: [
+      "Real systems often mix deployment style, storage style, and UI organization.",
+      "The statement says 'not possible,' which is too absolute.",
+      "Think layered plus client-server plus MVC in one product."
+    ],
+    walkthroughSteps: [
+      "Architectural patterns are not mutually exclusive.",
+      "A system can combine multiple patterns in different parts or views of the architecture.",
+      "That makes the statement false.",
+      "Choose False."
+    ],
+    references: ["Chapter 6 – Combining patterns", "Homework 6 review – T/F"],
+    tags: ["chapter-6", "architecture", "patterns"],
+    difficulty: "easy"
+  }),
+  makeMultiQuestion({
+    id: "se-exam2-ch6-q11",
     prompt:
       "Which of the following will determine the structure of a system architecture? (Select all that apply)",
     options: [
@@ -802,104 +1108,20 @@ const chapter6FundamentalsQuestions: Question[] = [
     ],
     correct: [0, 1, 2, 5, 6],
     explanation:
-      "Chapter 6 ties architecture structure to major non-functional requirements such as safety, availability, performance, security, and maintainability. Use case patterns and agile method are not the determining architectural-quality drivers in that slide.",
+      "Chapter 6 ties architecture structure to major non-functional requirements such as safety, availability, performance, security, and maintainability.",
     hintSteps: [
       "The real drivers here are quality attributes.",
-      "The wrong answers are process/method distractions, not architecture qualities.",
-      "Think of the five-item Chapter 6 quality list."
+      "The wrong answers are process/method distractors.",
+      "Memorize the five quality words from the slide."
     ],
     walkthroughSteps: [
-      "Architecture structure is being driven by non-functional requirements here.",
-      "The valid Chapter 6 drivers are Safety, Availability, Performance, Security, and Maintainability.",
-      "Use case patterns and Agile method are not quality attributes that determine architecture structure in this question.",
-      "Select Safety, Availability, Performance, Security, and Maintainability."
+      "Architecture structure is shaped by non-functional requirements here.",
+      "The five valid drivers are Safety, Availability, Performance, Security, and Maintainability.",
+      "Use case patterns and Agile method are not the quality attributes being tested.",
+      "Select the five quality-attribute options."
     ],
     references: ["Chapter 6 – Architecture and system characteristics", "Lecture review slide – architecture structure drivers"],
     tags: ["chapter-6", "nfr", "quality-attributes"],
-    difficulty: "med"
-  }),
-  makeSingleQuestion({
-    id: "se-exam2-ch6-q4",
-    prompt:
-      "A system reads large input files overnight, transforms them into reports and updated data files, and is primarily concerned with bulk batch runs rather than interactive sessions. Which Chapter 6 application type is this?",
-    options: [
-      "Data processing",
-      "Transaction processing",
-      "Event processing",
-      "Language processing"
-    ],
-    correctIndex: 0,
-    explanation:
-      "Data processing applications focus on batch-style processing of input data to generate outputs or updated files.",
-    hintSteps: [
-      "The clue is batch input data and overnight runs.",
-      "Transaction processing is request/response with integrity constraints.",
-      "Language processing is compiler/interpreter work."
-    ],
-    walkthroughSteps: [
-      "The scenario is centered on bulk data transformation rather than interactive requests.",
-      "That matches data processing architecture.",
-      "Reject transaction processing because there is no user transaction flow at the center of the description.",
-      "Choose Data processing."
-    ],
-    references: ["Chapter 6 – Application architectures"],
-    tags: ["chapter-6", "application-type", "data-processing"],
-    difficulty: "med"
-  }),
-  makeSingleQuestion({
-    id: "se-exam2-ch6-q5",
-    prompt:
-      "A monitoring system waits for external sensor updates and then reacts as those events arrive. Which Chapter 6 application type is this?",
-    options: [
-      "Data processing",
-      "Transaction processing",
-      "Event processing",
-      "Language processing"
-    ],
-    correctIndex: 2,
-    explanation:
-      "Event processing systems are driven by events arriving from the environment and react when those events occur.",
-    hintSteps: [
-      "The word event is not subtle here; incoming stimuli trigger the work.",
-      "This is different from bulk batch data or formal language translation.",
-      "Focus on reacting to arrivals in real time or near real time."
-    ],
-    walkthroughSteps: [
-      "Identify what triggers the system: sensor events arriving from outside.",
-      "That aligns directly with event processing.",
-      "Data processing would emphasize batch datasets, not incoming event reactions.",
-      "Choose Event processing."
-    ],
-    references: ["Chapter 6 – Application architectures"],
-    tags: ["chapter-6", "application-type", "event-processing"],
-    difficulty: "med"
-  }),
-  makeSingleQuestion({
-    id: "se-exam2-ch6-q6",
-    prompt:
-      "Which architectural response most directly supports availability according to Chapter 6?",
-    options: [
-      "Add redundancy and fault tolerance.",
-      "Force every use case to include every subtask.",
-      "Move all components into one central class diagram.",
-      "Replace layers with a single massive module."
-    ],
-    correctIndex: 0,
-    explanation:
-      "Chapter 6 ties availability to redundancy and fault tolerance so the system can continue operating when components fail.",
-    hintSteps: [
-      "Availability is about staying up despite faults.",
-      "Think architectural resilience, not UML notation.",
-      "The chapter uses redundancy/fault tolerance language."
-    ],
-    walkthroughSteps: [
-      "Availability means the system continues to provide service even when faults occur.",
-      "Redundancy and fault tolerance are the Chapter 6 architectural tools for that.",
-      "The other options are irrelevant or harmful to availability.",
-      "Choose Add redundancy and fault tolerance."
-    ],
-    references: ["Chapter 6 – Architecture and system characteristics"],
-    tags: ["chapter-6", "availability", "nfr"],
     difficulty: "med"
   })
 ];
@@ -909,18 +1131,17 @@ const softwareEngineeringExam2FullSimulation: QuizSet = {
   courseId: "software-engineering",
   title: "Exam 2 Full Simulation (Ch. 5 + 6)",
   description:
-    "Full Software Engineering Exam 2 review built around the posted Chapters 5 and 6 scope plus the exact guaranteed lecture-review items: UML/system modeling, MDA, architectural patterns, and application types.",
+    "Full Software Engineering Exam 2 review now aligned tightly to your Chapter 5 and 6 homework patterns, lecture review sheet, and the exact slide wording used in class.",
   difficulty: "Advanced",
-  estMinutes: 46,
+  estMinutes: 44,
   tags: ["exam-2", "chapter-5", "chapter-6", "uml", "architectural-design", "system-modeling", "guaranteed-review"],
   mode: "exam",
-  timerDefaultMinutes: 46,
+  timerDefaultMinutes: 44,
   questionCountTarget: 27,
   isExamSimulation: true,
   questions: [
     ...chapter5Questions,
-    ...chapter6FundamentalsQuestions,
-    ...architectureQuestions.slice(0, 7)
+    ...chapter6FundamentalsQuestions
   ]
 };
 
@@ -929,12 +1150,12 @@ const softwareEngineeringExam2SystemModelingDrill: QuizSet = {
   courseId: "software-engineering",
   title: "Exam 2 UML + System Modeling Drill",
   description:
-    "Chapter 5 rapid drill covering UML diagram types, relationships, behavioral-model distinctions, model-driven architecture, and the exact guaranteed lecture-review questions.",
+    "Chapter 5 rapid drill that mirrors the actual homework/review style: diagram identification, symbols, relationships, behavioral triggers, and model-driven architecture.",
   difficulty: "Intermediate",
-  estMinutes: 18,
+  estMinutes: 22,
   tags: ["exam-2", "chapter-5", "uml", "system-modeling", "focused-drill"],
   mode: "quiz",
-  timerDefaultMinutes: 18,
+  timerDefaultMinutes: 22,
   questions: chapter5Questions
 };
 
