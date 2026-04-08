@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Markdown } from "@/components/ui/markdown";
 import { AssessmentChoiceRow } from "@/components/ui/assessment-choice-row";
+import { choiceMarkerForIndex } from "@/lib/utils";
 import {
   countMissed,
   gradeQuestion,
@@ -966,7 +967,7 @@ export function HomeworkExperiencePageContent({
                             <AssessmentChoiceRow
                               key={`${currentQuestion.id}-${optionIndex}`}
                               kind={currentQuestion.type === "single" ? "single" : "multi"}
-                              marker={String.fromCharCode(65 + optionIndex)}
+                              marker={choiceMarkerForIndex(optionIndex)}
                               content={option}
                               checked={selected}
                               state={optionState}

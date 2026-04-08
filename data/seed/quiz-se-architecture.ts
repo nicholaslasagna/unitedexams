@@ -132,7 +132,44 @@ function makeArchitectureQuestion({
   });
 }
 
-const chapter5Questions: Question[] = [
+function padExamStyleOptions(
+  questions: Question[],
+  pads: Record<string, string[]>,
+  targetCount = 7
+): Question[] {
+  return questions.map((question) => {
+    if (!question.options || question.options.length >= targetCount) return question;
+
+    const extras = pads[question.id];
+    if (!extras || extras.length === 0) return question;
+
+    const nextOptions = [...question.options];
+    const seen = new Set(
+      nextOptions.map((option) =>
+        option
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, " ")
+          .trim()
+      )
+    );
+
+    for (const extra of extras) {
+      const normalized = extra
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim();
+      if (!seen.has(normalized)) {
+        nextOptions.push(extra);
+        seen.add(normalized);
+      }
+      if (nextOptions.length >= targetCount) break;
+    }
+
+    return nextOptions.length === question.options.length ? question : { ...question, options: nextOptions };
+  });
+}
+
+const chapter5QuestionsBase: Question[] = [
   makeSingleQuestion({
     id: "se-exam2-ch5-q1",
     prompt:
@@ -615,6 +652,36 @@ const chapter5Questions: Question[] = [
   })
 ];
 
+const chapter5OptionPads: Record<string, string[]> = {
+  "se-exam2-ch5-q1": [
+    "It focuses on documenting only database schemas for storage design.",
+    "It is mainly used after deployment to measure user adoption."
+  ],
+  "se-exam2-ch5-q2": ["Context diagrams", "Deployment diagrams"],
+  "se-exam2-ch5-q3": [
+    "How data moves through a transformation pipeline",
+    "How classes inherit from one another"
+  ],
+  "se-exam2-ch5-q4": ["Data store", "Actor"],
+  "se-exam2-ch5-q6": [
+    "Use cases are used to represent non-functional quality attributes.",
+    "Use cases are used to describe detailed message timing between objects."
+  ],
+  "se-exam2-ch5-q7": ["Hexagon component", "Diamond relationship symbol"],
+  "se-exam2-ch5-q9": ["Shows an included use case", "Represents a state transition"],
+  "se-exam2-ch5-q10": [
+    "+ private, - protected, # public",
+    "+ protected, - public, # private",
+    "+ private, - public, # protected"
+  ],
+  "se-exam2-ch5-q11": ["Solid association line only", "Crow's foot cardinality", "Circle process node"],
+  "se-exam2-ch5-q12": ["Any number from zero upward", "Between six and seven"],
+  "se-exam2-ch5-q14": ["Sequence diagram", "Use case diagram"],
+  "se-exam2-ch5-q17": ["PIM, PSM, MVC", "CIM, UML, DFD", "CIM, PSM, ERD"]
+};
+
+const chapter5Questions = padExamStyleOptions(chapter5QuestionsBase, chapter5OptionPads);
+
 const architectureQuestions: Question[] = [
   makeMultiQuestion({
     id: "se-exam2-arch-q0",
@@ -847,7 +914,7 @@ const architectureQuestions: Question[] = [
   })
 ];
 
-const chapter6FundamentalsQuestions: Question[] = [
+const chapter6FundamentalsQuestionsBase: Question[] = [
   makeSingleQuestion({
     id: "se-exam2-ch6-q1",
     prompt: 'Why do software engineers use "architectural design"?',
@@ -1148,6 +1215,35 @@ const chapter6FundamentalsQuestions: Question[] = [
     difficulty: "med"
   })
 ];
+
+const chapter6OptionPads: Record<string, string[]> = {
+  "se-exam2-ch6-q1": [
+    "To replace testing with architecture reviews.",
+    "To choose UML visibility symbols inside class diagrams.",
+    "To remove the need for stakeholder communication."
+  ],
+  "se-exam2-ch6-q2": ["Diamond aggregation symbol", "Rounded rectangle state symbol"],
+  "se-exam2-ch6-q3": [
+    "It helps them choose variable names.",
+    "It helps them avoid all documentation.",
+    "It helps them compile the system."
+  ],
+  "se-exam2-ch6-q7": [
+    "Model-view-controller style",
+    "Transaction processing style",
+    "Language processing style"
+  ],
+  "se-exam2-ch6-q8": ["Compiler", "Streaming video player", "Weather simulation"],
+  "se-exam2-ch6-q9": [
+    "To force all systems into the same architecture",
+    "To remove the need for requirements analysis"
+  ]
+};
+
+const chapter6FundamentalsQuestions = padExamStyleOptions(
+  chapter6FundamentalsQuestionsBase,
+  chapter6OptionPads
+);
 
 const softwareEngineeringExam2FullSimulation: QuizSet = {
   id: "se-exam2-full-simulation",

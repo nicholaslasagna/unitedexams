@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Markdown } from "@/components/ui/markdown";
 import { AssessmentChoiceRow } from "@/components/ui/assessment-choice-row";
-import { cn } from "@/lib/utils";
+import { choiceMarkerForIndex, cn } from "@/lib/utils";
 import type { Question } from "@/lib/types";
 
 interface QuestionCardProps {
@@ -33,8 +33,6 @@ interface QuestionCardProps {
   revealCorrectness?: boolean;
   interactionNotice?: string;
 }
-
-const optionKeys = ["A", "B", "C", "D", "E", "F"];
 
 export function QuestionCard({
   question,
@@ -232,7 +230,7 @@ export function QuestionCard({
         ) : (
           <div role={optionRole} aria-labelledby={promptId} className="space-y-2.5">
             {options.map((option, index) => {
-              const key = optionKeys[index] ?? `${index + 1}`;
+              const key = choiceMarkerForIndex(index);
               const checked = selected.includes(index);
               const isCorrectOption = correctSet.has(index);
               const optionState = submitted
