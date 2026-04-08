@@ -36,24 +36,25 @@ export function AssessmentChoiceRow({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "group flex w-full items-start gap-3 rounded-lg border px-3 py-2.5 text-left transition-all duration-150 ease-out-expo",
-        state === "selected" && "border-brand-2/55 bg-brand-2/8",
-        state === "ok" && "border-success/45 bg-success/12",
-        state === "bad" && "border-danger/45 bg-danger/12",
-        state === "missed" && "border-warn/45 bg-warn/12",
-        state === "default" && "border-borderc bg-soft/80 hover:border-brand-2/35 hover:bg-surface",
-        disabled && "cursor-not-allowed opacity-90"
+        "group flex w-full items-start gap-3 rounded-md border px-3 py-3 text-left transition-all duration-150",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-2/55 focus-visible:ring-offset-0",
+        state === "selected" && "border-brand-2/45 bg-brand-2/6",
+        state === "ok" && "border-success/40 bg-success/10",
+        state === "bad" && "border-danger/40 bg-danger/10",
+        state === "missed" && "border-warn/40 bg-warn/10",
+        state === "default" && "border-borderc bg-surface/45 hover:border-brand-2/25 hover:bg-surface/80",
+        disabled ? "cursor-not-allowed opacity-90" : "cursor-pointer"
       )}
     >
       <span
         className={cn(
-          "mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center border transition",
-          kind === "single" ? "rounded-full" : "rounded-[6px]",
-          state === "selected" && "border-brand-2/55 bg-brand-2/12",
-          state === "ok" && "border-success/55 bg-success/15",
-          state === "bad" && "border-danger/55 bg-danger/15",
-          state === "missed" && "border-warn/55 bg-warn/15",
-          state === "default" && "border-borderc bg-surface/80"
+          "mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center border-2 transition",
+          kind === "single" ? "rounded-full" : "rounded-[4px]",
+          state === "selected" && "border-brand-2/60 bg-brand-2/10",
+          state === "ok" && "border-success/60 bg-success/12",
+          state === "bad" && "border-danger/60 bg-danger/12",
+          state === "missed" && "border-warn/60 bg-warn/12",
+          state === "default" && "border-borderc bg-background/80"
         )}
         aria-hidden="true"
       >
@@ -81,18 +82,18 @@ export function AssessmentChoiceRow({
 
       <span
         className={cn(
-          "inline-flex min-h-6 min-w-6 shrink-0 items-center justify-center rounded-md border px-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] transition",
-          state === "selected" && "border-brand-2/45 bg-brand-2/10 text-brand-2",
-          state === "ok" && "border-success/45 bg-success/10 text-success",
-          state === "bad" && "border-danger/45 bg-danger/10 text-danger",
-          state === "missed" && "border-warn/45 bg-warn/10 text-warn",
-          state === "default" && "border-borderc bg-surface/70 text-muted"
+          "inline-flex min-w-5 shrink-0 items-center justify-center pt-0.5 font-mono text-xs font-semibold uppercase tracking-[0.12em] transition",
+          state === "selected" && "text-brand-2",
+          state === "ok" && "text-success",
+          state === "bad" && "text-danger",
+          state === "missed" && "text-warn",
+          state === "default" && "text-muted"
         )}
       >
-        {marker}
+        {marker}.
       </span>
 
-      <span className="min-w-0 flex-1 pt-0.5 text-sm leading-relaxed text-text">
+      <span className="min-w-0 flex-1 pt-0.5 text-sm leading-6 text-text">
         <Markdown content={content} promoteMathInInlineCode />
       </span>
 

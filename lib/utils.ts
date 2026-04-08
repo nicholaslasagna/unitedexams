@@ -60,3 +60,15 @@ export function shuffle<T>(arr: T[]): T[] {
   }
   return copy;
 }
+
+export function choiceMarkerForIndex(index: number) {
+  let value = Math.max(0, Math.floor(index));
+  let marker = "";
+
+  do {
+    marker = String.fromCharCode(65 + (value % 26)) + marker;
+    value = Math.floor(value / 26) - 1;
+  } while (value >= 0);
+
+  return marker;
+}

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Markdown } from "@/components/ui/markdown";
 import { AssessmentChoiceRow } from "@/components/ui/assessment-choice-row";
+import { choiceMarkerForIndex } from "@/lib/utils";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { useToast } from "@/lib/hooks/use-toast";
 import { useAppData } from "@/lib/app-data-context";
@@ -582,7 +583,7 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
                   <AssessmentChoiceRow
                     key={`${currentQuestion.id}:${optionIndex}`}
                     kind={currentQuestion.type === "single" ? "single" : "multi"}
-                    marker={String.fromCharCode(65 + optionIndex)}
+                    marker={choiceMarkerForIndex(optionIndex)}
                     content={optionText}
                     checked={selected}
                     state={selected ? "selected" : "default"}
