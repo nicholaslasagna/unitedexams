@@ -169,6 +169,14 @@ function padExamStyleOptions(
   });
 }
 
+function requireQuestionById(questions: Question[], id: string) {
+  const match = questions.find((question) => question.id === id);
+  if (!match) {
+    throw new Error(`Missing Software Engineering Exam 2 question: ${id}`);
+  }
+  return match;
+}
+
 const chapter5QuestionsBase: Question[] = [
   makeSingleQuestion({
     id: "se-exam2-ch5-q1",
@@ -512,6 +520,34 @@ const chapter5QuestionsBase: Question[] = [
     tags: ["chapter-5", "class-diagram", "multiplicity"],
     difficulty: "easy"
   }),
+  {
+    id: "se-exam2-ch5-q12-short",
+    type: "free",
+    prompt:
+      "Short response: Explain what multiplicity means in a class diagram, and explain what a multiplicity such as `6..*` tells you about the relationship.",
+    explanation:
+      "Multiplicity tells you how many instances of one class can be linked to one instance of another class. A value like `6..*` means at least six related instances, with no fixed upper bound.",
+    solutionMd:
+      "An exam-ready answer says **multiplicity** shows the allowed number of instances in a relationship between classes. It tells you how many objects of one class may be associated with one object of another class. For **`6..*`**, the lower bound is **6** and the upper bound is **unbounded**, so it means **six or more** instances are allowed in that association.",
+    sampleAnswer:
+      "Multiplicity shows how many instances of one class can be associated with another in a class diagram. For `6..*`, the relationship requires at least six associated instances and allows any number above six.",
+    hintSteps: [
+      "Start with the purpose of multiplicity, not the symbol itself.",
+      "Then interpret the lower bound and the star separately.",
+      "Finish with the plain-English meaning: six or more."
+    ],
+    walkthroughSteps: [
+      "Step 1: Define multiplicity as the allowed number of instances in an association.",
+      "Step 2: Explain that the lower bound in `6..*` is 6.",
+      "Step 3: Explain that `*` means no fixed upper limit.",
+      "Step 4: State the final meaning: six or more associated instances."
+    ],
+    references: ["Chapter 5 – Multiplicity notation", "Lecture review note – multiplicity short response"],
+    tags: ["software-engineering", "exam-2", "chapter-5", "class-diagram", "multiplicity", "final-review"],
+    difficulty: "med",
+    homeworkFormat: "multi-step",
+    fromProfessor: true
+  },
   makeMultiQuestion({
     id: "se-exam2-ch5-q13",
     prompt:
@@ -1132,6 +1168,34 @@ const chapter6FundamentalsQuestionsBase: Question[] = [
     difficulty: "easy"
   }),
   makeSingleQuestion({
+    id: "se-exam2-ch6-q8b",
+    prompt:
+      "There are several application types: data processing applications, transaction processing applications, event processing applications, and language processing applications. Give an example of a language processing application:",
+    options: [
+      "Vending machine",
+      "Compiler",
+      "Hotel reservation system",
+      "Banking system"
+    ],
+    correctIndex: 1,
+    explanation:
+      "A compiler is a language processing application because it accepts a formal input language and translates it into another representation or output form.",
+    hintSteps: [
+      "Language processing means interpreting or translating a formal language.",
+      "Only one option actually consumes a programming or formal language.",
+      "The reservation and banking choices are transaction processing examples."
+    ],
+    walkthroughSteps: [
+      "Language processing applications take structured language input and transform or interpret it.",
+      "A compiler does exactly that by translating source code into another form.",
+      "Hotel reservation and banking systems process transactions against shared data instead.",
+      "Choose Compiler."
+    ],
+    references: ["Chapter 6 – Language processing applications", "Lecture review image – language processing example"],
+    tags: ["chapter-6", "language-processing", "application-type", "final-review"],
+    difficulty: "easy"
+  }),
+  makeSingleQuestion({
     id: "se-exam2-ch6-q9",
     prompt:
       "Which of the following is a primary reason for using architectural patterns in software design?",
@@ -1252,11 +1316,11 @@ const softwareEngineeringExam2FullSimulation: QuizSet = {
   description:
     "Full Software Engineering Exam 2 review aligned to your Chapter 5 and 6 homework patterns, lecture review sheet, and the exact guaranteed slide wording used in class.",
   difficulty: "Advanced",
-  estMinutes: 46,
+  estMinutes: 50,
   tags: ["exam-2", "chapter-5", "chapter-6", "uml", "architectural-design", "system-modeling", "final-review"],
   mode: "exam",
-  timerDefaultMinutes: 46,
-  questionCountTarget: 28,
+  timerDefaultMinutes: 50,
+  questionCountTarget: 30,
   isExamSimulation: true,
   questions: [
     ...chapter5Questions,
@@ -1317,22 +1381,22 @@ const softwareEngineeringExam2GuaranteedLectureDrill: QuizSet = {
   courseId: "software-engineering",
   title: "Exam 2 Guaranteed Lecture Questions",
   description:
-    "The four Software Engineering Exam 2 questions pulled directly from your lecture-review images. Use this set to memorize the exact wording and answer patterns.",
+    "Guaranteed Software Engineering Exam 2 questions pulled directly from your lecture-review images and class callouts. Use this set to memorize the exact wording and answer patterns.",
   difficulty: "Intermediate",
-  estMinutes: 8,
+  estMinutes: 12,
   tags: ["exam-2", "chapter-5", "chapter-6", "final-review", "core-final-review"],
   mode: "quiz",
-  timerDefaultMinutes: 8,
+  timerDefaultMinutes: 12,
   questions: [
     {
-      ...chapter5Questions[2],
+      ...requireQuestionById(chapter5Questions, "se-exam2-ch5-q3"),
       id: "se-exam2-guaranteed-q1-context-model",
-      tags: [...(chapter5Questions[2].tags ?? []), "core-final-review"]
+      tags: [...(requireQuestionById(chapter5Questions, "se-exam2-ch5-q3").tags ?? []), "core-final-review"]
     },
     {
-      ...chapter5Questions[15],
+      ...requireQuestionById(chapter5Questions, "se-exam2-ch5-q16"),
       id: "se-exam2-guaranteed-q2-mda-true-false",
-      tags: [...(chapter5Questions[15].tags ?? []), "core-final-review"]
+      tags: [...(requireQuestionById(chapter5Questions, "se-exam2-ch5-q16").tags ?? []), "core-final-review"]
     },
     {
       ...architectureQuestions[0],
@@ -1340,9 +1404,19 @@ const softwareEngineeringExam2GuaranteedLectureDrill: QuizSet = {
       tags: [...(architectureQuestions[0].tags ?? []), "core-final-review"]
     },
     {
-      ...chapter6FundamentalsQuestions[10],
+      ...requireQuestionById(chapter6FundamentalsQuestions, "se-exam2-ch6-q11"),
       id: "se-exam2-guaranteed-q4-architecture-drivers",
-      tags: [...(chapter6FundamentalsQuestions[10].tags ?? []), "core-final-review"]
+      tags: [...(requireQuestionById(chapter6FundamentalsQuestions, "se-exam2-ch6-q11").tags ?? []), "core-final-review"]
+    },
+    {
+      ...requireQuestionById(chapter5Questions, "se-exam2-ch5-q12-short"),
+      id: "se-exam2-guaranteed-q5-multiplicity-short-response",
+      tags: [...(requireQuestionById(chapter5Questions, "se-exam2-ch5-q12-short").tags ?? []), "core-final-review"]
+    },
+    {
+      ...requireQuestionById(chapter6FundamentalsQuestions, "se-exam2-ch6-q8b"),
+      id: "se-exam2-guaranteed-q6-language-processing-example",
+      tags: [...(requireQuestionById(chapter6FundamentalsQuestions, "se-exam2-ch6-q8b").tags ?? []), "core-final-review"]
     }
   ]
 };

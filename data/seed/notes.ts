@@ -509,6 +509,18 @@ That is the external/system-boundary view. It is **not**:
   - process/workflow activities
   - user-visible functional behavior
 
+### Multiplicity Short Response
+
+If the exam asks you to **explain multiplicity** in a short response, the safe exam answer is:
+
+  - **Multiplicity tells you how many instances of one class can be associated with one instance of another class in a class diagram.**
+
+If they also mention **\`6..*\`**, say:
+
+  - **the lower bound is 6**
+  - **the upper bound is unbounded**
+  - **so it means six or more**
+
 ### MDA True / False
 
 If the exam asks:
@@ -555,6 +567,23 @@ Reject the process/method distractors:
 
   - **Use case patterns**
   - **Agile method**
+
+### Language Processing Example
+
+If the exam asks for an example of a **language processing application**, answer:
+
+  - **Compiler**
+
+From the lecture-image question, reject:
+
+  - **Vending machine**
+  - **Hotel reservation system**
+  - **Banking system**
+
+Reason:
+
+  - a compiler takes formal language input and translates it into another representation
+  - hotel reservation and banking systems are transaction-processing examples
 
 ### MDA Statements That Were Correct in Homework
 
@@ -667,6 +696,7 @@ These showed up in your Chapter 6 homework wording almost directly:
   - **False**: an architectural diagram shows the **detailed** relationships between components.
   - **True**: an architectural pattern is a description of a system's organization.
   - **Online shopping** is a **transaction processing** example.
+  - **Compiler** is a **language processing** example.
   - Primary reason for using architectural patterns:
     - **to provide a template solution to common software design problems**
   - **False**: it is not possible to combine several architectural patterns in one application.
@@ -773,11 +803,13 @@ Do **not** select:
      - \`+ / - / #\`
      - aggregation = hollow diamond
      - \`6..*\` = six or more
+     - multiplicity = allowed number of associated class instances
      - CIM / PIM / PSM
      - the A-G architecture map
      - context model = external entities interacting with the system boundary
      - architecture structure drivers = safety, availability, performance, security, maintainability
      - MDA final output = executable code
+     - compiler = language processing
      - MDA true/false = **True**
      - pattern purpose = template solution to common design problems
      - online shopping = transaction processing
