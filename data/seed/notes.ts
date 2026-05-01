@@ -285,644 +285,419 @@ Rules:
   - \`addi\` uses a **signed 12-bit immediate**
 `;
 
-const softwareEngineeringArchitectureNotes = `## Software Engineering Exam 2 Master Guide (Chapters 5 and 6)
+const softwareEngineeringArchitectureNotes = `## Software Engineering Final Exam Master Guide (Chapters 7, 8, and 9)
 
-Built directly from your posted review sheet plus the **Chapter 5 System Modeling** and **Chapter 6 Architectural Design** decks.
+Built directly around:
 
-> **Exam format:** about 26 Canvas questions, closed-book, closed-notes, no phone/smartwatch/calculator, and you need your charged laptop.
+  - the **SE Core final review guide**
+  - your **Chapter 8 Testing** slides
+  - your **Chapter 9 Evolution** slides
+  - the **core final-review items** you attached
+  - the prior Chapter 5/6/7 homework-style questions you already solved correctly
 
-## What Exam 2 Is Actually Testing
+> **Final format:** in-person, laptop required, scratch paper provided, and the test covers **Chapters 7, 8, 9, plus the Impacts of Computing Solutions lecture**.
 
-Treat this exam as two connected halves:
+## What the Final Is Really Testing
 
-  - **Chapter 5:** can you recognize the right UML/system model quickly and explain what it shows?
-  - **Chapter 6:** can you classify architectures and application types from short scenario descriptions?
+Treat the final as four blocks:
 
-If you can do those two jobs fast, you are aligned with the exam.
+  - **Chapter 7:** design/implementation continuation, reuse, configuration management, host-target development, open source
+  - **Chapter 8:** verification and validation, testing strategies, interface/component/system testing, release/user testing, TDD
+  - **Chapter 9:** software evolution, legacy systems, maintenance, refactoring, reengineering
+  - **Computing impacts:** positive and negative effects of computing solutions, especially AI, displacement, unemployment, and cyber crimes
 
-## What Changed in This Review Pack
+If you can classify questions into one of those four blocks immediately, the exam becomes much easier to control.
 
-This pack is now biased toward the **actual homework and Canvas review style** you posted, not just general chapter summaries. That means you should expect repeated exposure to:
+## Guaranteed Final Lecture Questions
 
-  - exact UML diagram identification wording
-  - exact symbol questions
-  - exact use case/class/state notation traps
-  - exact Chapter 6 true/false and best-answer wording
-  - the same pattern/application-type distinctions, but phrased the way your professor has already used
+These are the highest-yield core final-review items and should be memorized almost word-for-word.
 
-## Chapter 5: System Modeling
+### 1. First design-stage / external environment question
 
-### The Four System Perspectives
+If the exam asks which diagram helps you understand the relationship between the software and its external environment first, the answer is:
 
-Chapter 5 organizes models around four perspectives:
+  - **Context diagram**
 
-  - **External / context perspective**: what surrounds the system
-  - **Interaction perspective**: how the system interacts with actors or components
-  - **Structural perspective**: how the system is organized statically
-  - **Behavioral perspective**: how the system behaves dynamically in response to data or events
+### 2. Reuse question
 
-### UML Diagram Types and What They Show
+If the exam asks what can be reused during software development, the correct selections are:
 
-  - **Context diagram / context model**: what lies outside the system boundary
-  - **Use case diagram**: interactions between a system and external actors
-  - **Sequence diagram**: time-ordered interactions/messages between actors and system objects/components
-  - **Class diagram**: object classes and associations/relationships between them
-  - **Activity diagram**: the activities in a process or data-processing workflow
-  - **State machine diagram / state diagram**: how the system reacts to internal and external events
+  - **Components**
+  - **Classes and objects**
+  - **Application systems**
+  - **Architectural patterns**
 
-### Which Diagram Belongs to Which Model Type
+### 3. Observer-pattern relationship question
 
-  - **Context model** -> context diagram
-  - **Interaction model** -> use case diagram, sequence diagram
-  - **Structural model** -> class diagram
-  - **Behavioral model (data-driven)** -> activity diagram
-  - **Behavioral model (event-driven)** -> state machine diagram
+If the exam asks how observers relate to each other in the Observer pattern, the correct idea is:
 
-That mapping is one of the easiest places to lose points if you mix up "interaction" and "behavioral."
+  - **Observers do not know about the existence of other observers; they only know about changes in the observable (subject).**
 
-## Chapter 5 Symbols You Need to Know
+### 4. Costs of reuse question
 
-### Use Case Diagram
+If the exam asks which costs are explicitly listed as costs of reuse, select:
 
-  - **Actor**: stick-figure role outside the system
-  - **Use case**: oval showing one discrete task
-  - **Association**: solid line between actor and use case
-  - **<<include>>**: dashed arrow pointing to the included use case; happens every time
-  - **<<extend>>**: dashed arrow pointing to the base use case; happens only sometimes
-  - **Generalization**: inheritance/specialization between parent and child actor/use case
+  - **time spent looking for reusable software**
+  - **cost of buying reusable software**
+  - **cost of adapting/configuring reusable components**
+  - **cost of integrating reusable elements with new code**
 
-### Sequence Diagram
+Do **not** select the reliability-decrease distractor. Reuse normally increases reliability when the reused element is already mature/tested.
 
-  - actors/objects listed across the top
-  - **Lifeline**: vertical dotted line showing existence over time
-  - **Message**: arrow between participants
-  - **Return/reply**: dashed line back
-  - **Activation box**: shows when an object is active
-  - **alt frame**: alternative message paths / condition branches
+### 5. Testing-goals question
 
-### Class Diagram
+If the exam asks the two things you are trying to do when you test software, select:
 
-  - classes shown as rectangles
-  - attributes/operations belong inside class boxes
-  - relationships you need to recognize:
-    - **Association**
-    - **Generalization**
-    - **Aggregation**
-    - **Composition**
+  - **discover situations in which the behavior of the software is incorrect**
+  - **demonstrate that the software meets its requirements**
 
-Do not confuse use case relationships like **include** and **extend** with class-diagram relationships.
+### 6. Regression-testing question
 
-### Activity Diagram
+If the exam asks which testing checks that changes have not broken previously working code, the answer is:
 
-  - models process steps / workflow
-  - **Solid bar**: fork or join for parallel/concurrent flow
-  - **End point**: diagram termination
-  - **Swimlanes**: show which person/organization/system is responsible for which activities
+  - **Regression testing**
 
-### State Machine Diagram
+### 7. Urgent-change question
 
-  - **State**: rounded rectangle
-  - **Transition**: arc/arrow labeled by event
-  - **entry / do / exit** activities may be shown inside a state
-  - used to model responses to internal and external events
+If the exam asks what may cause urgent software changes, select:
 
-## Chapter 5 Homework Mirrors You Should Know Cold
+  - **changes to the system's environment**
+  - **new government legislation**
+  - **detection of critical faults**
 
-These are the fastest points to lose if you hesitate:
+### 8. Types-of-maintenance question
 
-  - **System modeling** = developing abstract models of a system to understand functionality and communicate with customers.
-  - **Context model** = how external entities interact with an internal software system.
-  - In a **context diagram**, the **circle** represents the **process**.
-  - **Interaction models** = **use case diagrams** and **sequence diagrams**.
-  - **Use cases** represent **functional requirements**.
-  - The **use case symbol** is the **ellipse / oval**.
-  - Use case relationships to memorize:
-    - **Association**
-    - **Include**
-    - **Extend**
-    - **Inheritance / generalization**
-  - In a **sequence diagram**, an **alt frame** means **if-else logic**.
-  - In a **class diagram**:
-    - \`+\` = public
-    - \`-\` = private
-    - \`#\` = protected
-  - **Aggregation** = **hollow diamond**
-  - Multiplicity **\`6..*\`** = **six or more**
-  - Behavioral stimuli can be triggered by:
-    - **events**
-    - **data**
-  - The UML diagram used to describe system behavior in response to events is the **state diagram / state machine diagram**.
+The three maintenance types you must know are:
 
-## Chapter 5: High-Yield Distinctions
+  - **Fault repairs**
+  - **Environmental adaptation**
+  - **Functionality addition and modification**
 
-### Use Case vs Sequence
+## Chapter 7: Design, Reuse, Configuration, Deployment, Open Source
 
-  - **Use case** = high-level actor/system interaction overview
-  - **Sequence** = detailed message order for one scenario
+### Interface design
 
-### Activity vs State Machine
+Interface design is primarily concerned with:
 
-  - **Activity** = data-driven process flow
-  - **State machine** = event-driven state changes
+  - **specifying the detail of the interface to a component or group of components**
 
-### Data-Driven vs Event-Driven
+### Design models
 
-  - **Data-driven**: some data arrives and processing begins
-  - **Event-driven**: some internal or external event occurs and triggers behavior
+The two design-model categories emphasized in class are:
 
-## How to Draw the Chapter 5 Diagrams Under Exam Pressure
+  - **Dynamic models**
+  - **Structural models**
 
-### Context Diagram
+### State diagrams
 
-  1. Draw the system boundary first.
-  2. Add external actors and neighboring systems.
-  3. Do not put internal class/message/state detail in it.
+State diagrams show:
 
-### Use Case Diagram
+  - **how objects change their state in response to events**
 
-  1. Identify actors first.
-  2. Turn each discrete task into a use case.
-  3. Add association/include/extend/generalization only when justified.
+### System context and boundaries
 
-### State Machine Diagram
+The earliest high-value system model is the **context diagram** because it tells you:
 
-  1. Name the object/system whose states you are modeling.
-  2. List meaningful states.
-  3. Connect them with event-triggered transitions.
-  4. Add entry/do/exit only if it clarifies behavior.
+  - what is outside the system boundary
+  - what interacts with the system
+  - how the system sits in its environment
 
-### Class Diagram
+### Observer pattern
 
-  1. Start with core domain nouns.
-  2. Turn those into classes.
-  3. Add the most important relationships.
-  4. Keep it structural; do not drift into runtime sequence behavior.
+Remember both the example and the concept:
 
-## Model-Driven Engineering / Model-Driven Architecture
+  - a **YouTube subscriber system** is a clean observer-pattern example
+  - observers are **decoupled from one another** and react to subject changes independently
 
-### Core Idea
+### Software reuse
 
-  - **MDE**: models are the principal outputs, not just programs
-  - **MDA**: model-focused design/implementation approach using UML-based models at different abstraction levels
+Reuse can happen at several abstraction levels:
 
-### The Three MDA Model Types
+  - **Abstraction-level reuse**
+  - **Object/class-level reuse**
+  - **Component-level reuse**
+  - **System/application-level reuse**
 
-  - **CIM**: Computation-Independent Model
-    - domain model / important abstractions
-  - **PIM**: Platform-Independent Model
-    - system operation without committing to a platform
-  - **PSM**: Platform-Specific Model
-    - transformed toward a target platform / implementation environment
+Benefits of reuse include speed and reliability. Costs include:
 
-### Why People Like MDE/MDA
+  - search time
+  - acquisition/purchase cost
+  - adaptation/configuration cost
+  - integration cost
 
-  - higher level of abstraction
-  - less focus on programming-language details
-  - code generation can make platform adaptation cheaper in principle
+### Configuration management
 
-### Why People Resist It
+You need the three activities straight:
 
-  - translator/tool creation and maintenance cost
-  - limited tool availability / customization needs
-  - full automation is rarely complete in practice
-  - extra manual coding reduces cost-effectiveness
-  - heavy up-front modeling can clash with agile habits
+  - **Version management** -> track versions of components/systems
+  - **System integration** -> build a working system from components
+  - **Problem tracking** -> let users report bugs and let developers coordinate who is fixing what
 
-## Guaranteed Lecture Callouts
+### Host-target development
 
-These came directly from your lecture-review images and are worth memorizing almost word-for-word.
+The distinction:
 
-### Context Model
+  - **Development platform / host** = where the software is developed
+  - **Execution platform / target** = where the software actually runs for the user
 
-If the exam asks:
+For the gaming example, target systems included:
 
-  - **"Sometimes a context diagram is used to represent a system. What characteristics are shown in a context model?"**
+  - **user's gaming console**
+  - **user's laptop**
 
-the right answer is:
+### Open source development
 
-  - **how external entities interact with an internal software system**
+Memorize these:
 
-That is the external/system-boundary view. It is **not**:
+  - **Anyone can contribute** to an open-source system
+  - **GPL** is the exam answer when the professor asks which license to use if you want to share everything and keep no secrets
 
-  - internal component interaction
-  - system states
-  - process/workflow activities
-  - user-visible functional behavior
+## Chapter 8: Software Testing
 
-### Multiplicity Short Response
+### The two testing goals
 
-If the exam asks you to **explain multiplicity** in a short response, the safe exam answer is:
+Testing is trying to do two things:
 
-  - **Multiplicity tells you how many instances of one class can be associated with one instance of another class in a class diagram.**
+  - **Validation testing**: show the software meets its requirements
+  - **Defect testing**: expose incorrect, undesirable, or non-conforming behavior
 
-If they also mention **\`6..*\`**, say:
+### Verification vs validation
 
-  - **the lower bound is 6**
-  - **the upper bound is unbounded**
-  - **so it means six or more**
+  - **Verification** = *Are we building the product right?*
+  - **Validation** = *Are we building the right product?*
 
-### MDA True / False
+### Inspections vs testing
 
-If the exam asks:
+  - **Software inspections** = static verification; analyze static representations
+  - **Software testing** = dynamic verification; execute the system and observe behavior
 
-  - **"In model-driven architecture, the final output it tries to obtain is executable code."**
+### Equivalence partitioning
 
-answer:
+Equivalence partitioning means:
 
-  - **True**
+  - split inputs into groups expected to behave the same way
+  - choose test cases from each group rather than every single input value
 
-Reason:
+### Interface testing
 
-  - MDA raises abstraction through models, but the overall chain still aims toward implementation / executable code.
+Know the interface types:
 
-### List All Architectural Patterns
+  - **Parameter interfaces**
+  - **Shared memory interfaces**
+  - **Procedural interfaces**
+  - **Message passing interfaces**
 
-If the exam shows the full multiple-choice list from the lecture image, the real Chapter 6 patterns are:
+Shared-memory clue:
 
-  - **Client-server**
-  - **Layered**
-  - **Pipes and filters**
-  - **Repository**
-  - **Model-view-controller**
+  - a block of memory is shared between components
 
-The distractors from that lecture image were:
+### Regression testing
 
-  - **Class view**
-  - **Logical filter**
-  - **Development view**
+Regression testing is:
 
-The slide spelled the last valid option as **Model-view-controllers**, but treat that as the normal **Model-view-controller (MVC)** answer.
+  - **testing the system to check that changes have not broken previously working code**
 
-### What Determines Architecture Structure
+### Release testing
 
-If the exam asks which factors **determine the structure of a system architecture**, select:
+Release testing is:
 
-  - **Safety**
-  - **Availability**
-  - **Performance**
-  - **Security**
-  - **Maintainability**
+  - testing a release intended for use outside the development team
+  - mainly trying to **convince the supplier that the system is good enough for use**
 
-Reject the process/method distractors:
+### Stress testing and fail-soft behavior
 
-  - **Use case patterns**
-  - **Agile method**
+Stress testing deliberately overloads the system to:
 
-### Language Processing Example
+  - test failure behavior
+  - reveal defects that only appear under heavy load
+  - check that the system **fails soft** instead of collapsing
 
-If the exam asks for an example of a **language processing application**, answer:
+### User testing
 
-  - **Compiler**
+Know the three kinds:
 
-From the lecture-image question, reject:
+  - **Alpha testing** -> users work with developers at the developer's site
+  - **Beta testing** -> release is given to users so they can experiment and report problems
+  - **Acceptance testing** -> customers decide whether the system is good enough to accept and deploy
 
-  - **Vending machine**
-  - **Hotel reservation system**
-  - **Banking system**
+### TDD benefits
 
-Reason:
+The major TDD benefits emphasized in class were:
 
-  - a compiler takes formal language input and translates it into another representation
-  - hotel reservation and banking systems are transaction-processing examples
+  - **Code coverage**
+  - **Regression testing**
+  - **Simplified debugging**
+  - **System documentation**
 
-### MDA Statements That Were Correct in Homework
+## Chapter 9: Software Evolution and Maintenance
 
-The homework-style statements you should recognize immediately are:
+### Why software evolution matters
 
-  - **MDA focuses on the design and implementation stages of software development.**
-  - **MDA will try to generate executable code by sending a platform-specific model through a translator tool.**
+Software change is inevitable because:
 
-The statement about **CIM / PIM / PSM** is still important even when the homework phrasing does not mention those abbreviations directly:
+  - new requirements emerge
+  - the business environment changes
+  - errors must be repaired
+  - new hardware/software environments appear
+  - performance or reliability may need improvement
 
-  - **CIM** = domain abstraction
-  - **PIM** = system operation without platform commitment
-  - **PSM** = transformed toward a target platform
+### Evolution, servicing, phase-out
 
-## Chapter 6: Architectural Design
+  - **Evolution** -> new requirements continue to be proposed and implemented
+  - **Servicing** -> software is still useful, but only bug fixes / environment-keeping changes are made; **no new functionality**
+  - **Phase-out** -> system may still be used, but no further changes are made
 
-### Why Architectural Design Matters
+### Urgent change requests
 
-Architecture matters because it lets you:
+Urgent changes may be needed when:
 
-  - communicate the system to stakeholders
-  - analyze the system before full implementation
-  - reuse proven large-scale organization ideas
+  - a serious system fault must be repaired
+  - the environment changes unexpectedly (for example, OS upgrade)
+  - business conditions require rapid response
+  - new legislation affects the system
 
-### Architecture Diagram Symbols in This Class
+### Legacy systems
 
-  - **Boxes** = components
-  - **Nested boxes** = subcomponents
-  - **Arrows/lines** = data flow or control flow
+Legacy systems are older systems that may depend on obsolete:
 
-Keep this separate from UML symbolism. Chapter 6 uses simple architecture views, not detailed UML semantics.
+  - hardware
+  - support software
+  - languages/technologies
+  - business processes and embedded rules
 
-## The A-G Architecture Map
+Legacy-system replacement is risky because business rules, data, and dependencies are often embedded in the existing system.
 
-Your professor already hinted at this style of question before, so memorize the map:
+### System assessment
 
-  - **A** = Model-View-Controller (MVC)
-  - **B** = Layered architecture
-  - **C** = Repository architecture
-  - **D** = Client-server architecture
-  - **E** = Pipe-and-filter architecture
-  - **F** = Transaction processing architecture
-  - **G** = Language processing architecture
+Know the three assessment ideas:
 
-## Architectural Patterns and Their Meanings
+  - **Business value assessment** -> how much time/effort the system saves or how important it is to business outputs
+  - **Environment assessment** -> hardware, support software, maintenance cost, operational environment factors
+  - **Application assessment** -> quality and maintainability of the application itself
 
-### MVC
+### Three maintenance types
 
-Use when the clue is:
+  1. **Fault repairs** -> fix bugs/vulnerabilities/deficiencies
+  2. **Environmental adaptation** -> adapt the software to a different operating environment
+  3. **Functionality addition and modification** -> satisfy new requirements
 
-  - UI/input/data separation
-  - multiple views of the same data
-  - interface evolution without rewriting the model
+### Refactoring vs reengineering
 
-### Layered
+  - **Refactoring** = continuous structural improvement that preserves functionality; preventative maintenance
+  - **Reengineering** = larger restructuring/re-documentation/translation of a legacy system to improve maintainability without changing functionality
 
-Use when the clue is:
+### Reengineering activities
 
-  - service levels / adjacent layers
-  - inner layers protecting critical assets
-  - a hierarchy of responsibilities
+These were explicitly listed:
 
-### Repository
+  - **Source code translation**
+  - **Reverse engineering**
+  - **Program modularization**
 
-Use when the clue is:
+### Advantages of reengineering
 
-  - one central shared data store
-  - many tools/components reading and writing the same information
-  - components stay relatively independent through shared data
+Compared with replacement, reengineering has two highlighted advantages:
 
-### Client-Server
+  - **Reduced risk**
+  - **Reduced cost**
 
-Use when the clue is:
+### Bad smells
 
-  - clients consuming remote network services
-  - browsers/apps talking to servers
-  - distributed system roles across a network
+Examples of bad smells you should know:
 
-### Pipe-and-Filter
+  - **Duplicate code**
+  - **Long methods**
+  - **Switch statements**
+  - **Data clumps**
 
-Use when the clue is:
+## Impacts of Computing Solutions
 
-  - staged transformation pipeline
-  - output of one stage becomes input to the next
-  - batch/stream transformations
+The final also includes broader social impact topics.
 
-### Exact Pattern List to Memorize
+### Negative impacts explicitly named in the review guide
 
-If the exam asks you to **list all architectural patterns introduced in this chapter**, the correct list is:
+  - **Displacement**
+  - **Unemployment**
+  - **Cyber crimes**
 
-  - **Client-server**
-  - **Layered**
-  - **Pipes and filters**
-  - **Repository**
-  - **Model-view-controller**
+### AI impact
 
-Reject distractors like:
+The safe exam framing is:
 
-  - **Class view**
-  - **Development view**
-  - **Logical filter**
+  - AI can improve speed, automation, and access to services
+  - AI can also create workforce displacement, job loss pressure, and new forms of abuse/crime
 
-## Chapter 6 Homework Mirrors You Should Know Cold
+## Best Way to Use the New Final Study Content in United Exams
 
-These showed up in your Chapter 6 homework wording almost directly:
-
-  - **Architectural design** matters because it defines the overall structure and organization of a system and is a critical link between requirements and implementation.
-  - A **component** in a system architecture is represented by a **box / rectangular block**.
-  - Architectural design helps stakeholders by improving **communication**.
-  - **False**: an architectural diagram shows the **detailed** relationships between components.
-  - **True**: an architectural pattern is a description of a system's organization.
-  - **Online shopping** is a **transaction processing** example.
-  - **Compiler** is a **language processing** example.
-  - Primary reason for using architectural patterns:
-    - **to provide a template solution to common software design problems**
-  - **False**: it is not possible to combine several architectural patterns in one application.
-
-## Chapter 6 Application Types and Examples
-
-### Data Processing
-
-  - bulk input data processed into outputs/reports/files
-  - strong clue: batch jobs, nightly processing, large input files
-
-### Transaction Processing
-
-  - user requests against a shared database with integrity constraints
-  - classic examples: reservations, banking, shopping, orders
-
-### Event Processing
-
-  - incoming events trigger system behavior
-  - strong clue: sensors/interrupts/monitors/reactive systems
-
-### Language Processing
-
-  - compiler/interpreter/command processor style systems
-  - strong clue: formal language input becomes another representation or execution behavior
-
-## Architecture and Non-Functional Requirements
-
-The chapter explicitly emphasizes:
-
-  - **Performance**
-  - **Security**
-  - **Safety**
-  - **Availability**
-  - **Maintainability**
-
-If the exam asks which factors **determine the structure of a system architecture**, select:
-
-  - **Safety**
-  - **Availability**
-  - **Performance**
-  - **Security**
-  - **Maintainability**
-
-Do **not** select:
-
-  - **Use case patterns**
-  - **Agile method**
-
-### The Most Exam-Relevant Mappings
-
-  - **Security** -> layered protection of critical assets in inner layers
-  - **Safety** -> localize safety-critical features/components
-  - **Availability** -> redundancy and fault tolerance
-  - **Maintainability** -> self-contained fine-grained components are easier to change
-  - **Performance** -> localize operations / reduce communication overhead
-
-## Closest Distractor Pairs
-
-### Use Case vs Sequence
-
-  - use case = who interacts and what task they perform
-  - sequence = which messages happen in what order
-
-### Activity vs State Machine
-
-  - activity = data/process flow
-  - state machine = event/state response
-
-### MVC vs Layered
-
-  - MVC = UI/data/control separation
-  - layered = service levels across the whole system
-
-### Repository vs Client-Server
-
-  - repository = shared central data
-  - client-server = distributed service interaction over a network
-
-### Pipe-and-Filter vs Language Processing
-
-  - pipe-and-filter = transformation pattern
-  - language processing = compiler/interpreter application type
-
-### Client-Server vs Transaction Processing
-
-  - client-server = distribution style
-  - transaction processing = database-backed business request application type
-
-## Best Way to Study This Exam Tonight
-
-  1. Run the new **Exam 2 Guaranteed Lecture Questions** set until those four direct lecture-image questions are automatic.
-  2. Run the **Exam 2 Full Simulation** once straight through because it now mirrors the homework/review wording much more closely.
-  3. Drill the **UML + System Modeling Drill** until the Chapter 5 notation questions feel automatic.
-  4. Run the **Architecture A-G Drill** after that so pattern/application-type recognition becomes fast instead of fuzzy.
-  5. Use the walkthrough sets only after you miss something or cannot explain it cleanly.
-  6. Before the exam, recite from memory:
-     - the four system perspectives
-     - the diagram-type mapping
-     - context circle = process
-     - use case = functional requirements
-     - use case symbol = ellipse
-     - include vs extend vs generalization
-     - \`+ / - / #\`
-     - aggregation = hollow diamond
-     - \`6..*\` = six or more
-     - multiplicity = allowed number of associated class instances
-     - CIM / PIM / PSM
-     - the A-G architecture map
-     - context model = external entities interacting with the system boundary
-     - architecture structure drivers = safety, availability, performance, security, maintainability
-     - MDA final output = executable code
-     - compiler = language processing
-     - MDA true/false = **True**
-     - pattern purpose = template solution to common design problems
-     - online shopping = transaction processing
-     - architecture drivers = safety, availability, performance, security, maintainability
-     - exact architectural pattern list = client-server, layered, pipes and filters, repository, MVC
+  1. Run **Final Core Review Drill** until those direct slide questions are automatic.
+  2. Run the **Software Engineering Final Mock Exam** straight through once with exam settings.
+  3. Use **Final Testing + Evolution Drill** to isolate weak spots in Chapters 8 and 9.
+  4. Before the real exam, recite from memory:
+     - context diagram
+     - reuse items
+     - reuse costs
+     - observer relationship
+     - two testing goals
+     - verification vs validation
+     - regression testing
+     - release testing goal
+     - urgent change causes
+     - three maintenance types
+     - refactoring vs reengineering
+     - GPL
+     - target system examples
+     - displacement / unemployment / cyber crimes
 `;
 
-const softwareEngineeringArchitectureCheatSheet = `## Software Engineering Exam 2 Cheat Sheet (Chapters 5 and 6)
+const softwareEngineeringArchitectureCheatSheet = `## Software Engineering Final Exam Cheat Sheet
 
-### Exam Shape
+### Guaranteed answers
 
-  - around **26 Canvas questions**
-  - closed-book / closed-notes
-  - charged laptop required
+  - first system/environment diagram -> **Context diagram**
+  - reuse items -> **components, classes/objects, application systems, architectural patterns**
+  - observer relationship -> **observers do not know about each other; they only react to subject changes**
+  - reuse costs -> **search, buy, adapt/configure, integrate**
+  - testing goals -> **meet requirements** and **find incorrect behavior**
+  - regression testing -> **checks that changes have not broken previously working code**
+  - urgent changes -> **environment changes, legislation, critical faults**
+  - maintenance types -> **fault repairs, environmental adaptation, functionality addition/modification**
 
-### Chapter 5 Fast Map
+### Chapter 7 fast map
 
-  - **Context model** -> context diagram
-  - **Interaction model** -> use case, sequence
-  - **Structural model** -> class diagram
-  - **Behavioral model (data-driven)** -> activity diagram
-  - **Behavioral model (event-driven)** -> state machine diagram
+  - interface design -> **detail of interface to component(s)**
+  - design-model types -> **dynamic** and **structural**
+  - state diagram -> **objects change state in response to events**
+  - target systems -> **user's laptop / user's console**
+  - problem tracking -> **bug reporting + fix coordination**
+  - GPL -> **share everything / no secrets**
+  - open source -> **anyone can contribute**
 
-### UML One-Line Triggers
+### Chapter 8 fast map
 
-  - **Use case** -> actors + tasks
-  - **Sequence** -> messages in time order
-  - **Class** -> classes + relationships
-  - **Activity** -> workflow / process steps
-  - **State machine** -> states + events
+  - verification -> **building the product right**
+  - validation -> **building the right product**
+  - inspections -> **static verification**
+  - testing -> **dynamic verification**
+  - equivalence partitioning -> **group same-behavior inputs**
+  - shared memory interface -> **shared block of memory**
+  - release testing -> **convince supplier system is good enough for use**
+  - stress testing -> **overload + fail-soft + reveal high-load defects**
+  - acceptance testing -> **customer decides if deployable**
+  - beta testing -> **users experiment and report problems**
 
-### Relationship Memory Hooks
+### Chapter 9 fast map
 
-  - **include** -> always
-  - **extend** -> sometimes
-  - **generalization** -> inheritance
-  - **class relationships** -> association, generalization, aggregation, composition
-  - **aggregation symbol** -> hollow diamond
-  - **visibility** -> \`+ public\`, \`- private\`, \`# protected\`
-  - **multiplicity \`6..*\`** -> six or more
+  - servicing -> **keep operational, no new functionality**
+  - environmental adaptation -> **adapt to new computer / OS / environment**
+  - reengineering advantages -> **reduced risk, reduced cost**
+  - reengineering activities -> **source code translation, reverse engineering, modularization**
+  - refactoring -> **continuous structure improvement without changing functionality**
+  - legacy replacement risk -> **embedded business rules, data, dependencies**
+  - bad smells -> **duplicate code, long methods, switch statements, data clumps**
 
-### Behavioral Split
+### Impacts of computing solutions
 
-  - **data-driven** -> data arrives -> activity diagram
-  - **event-driven** -> event occurs -> state machine diagram
-  - **stimuli** -> events and data
-
-### MDE / MDA
-
-  - **MDE** -> models are principal outputs
-  - **CIM** -> domain abstraction
-  - **PIM** -> no platform commitment
-  - **PSM** -> platform-specific transformation
-  - drawbacks -> tool/translator cost, incomplete automation, agile tension
-  - **MDA T/F** -> executable code is the final target output -> **True**
-  - **context model** -> external entities interacting with the internal software system
-  - **MDA homework truths** ->
-    - focuses on design and implementation stages
-    - tries to generate executable code from transformed models
-
-### Chapter 6 A-G Map
-
-  - **A** = MVC
-  - **B** = Layered
-  - **C** = Repository
-  - **D** = Client-server
-  - **E** = Pipe-and-filter
-  - **F** = Transaction processing
-  - **G** = Language processing
-
-### Architecture One-Line Triggers
-
-  - **MVC** -> UI + data + input split
-  - **Layered** -> service levels / inner protection
-  - **Repository** -> central shared data store
-  - **Client-server** -> networked services
-  - **Pipe-and-filter** -> staged transforms
-  - **Transaction processing** -> requests + DB integrity
-  - **Language processing** -> compiler/interpreter
-
-### Application Types
-
-  - **Data processing** -> batch input/output jobs
-  - **Transaction processing** -> reservations/orders/banking
-  - **Event processing** -> reactive to arriving events
-  - **Language processing** -> compiler/interpreter
-
-### NFR Hooks
-
-  - security -> layered inner protection
-  - safety -> localize critical features
-  - availability -> redundancy / fault tolerance
-  - maintainability -> fine-grained self-contained components
-  - performance -> reduce communication / localize work
-  - architecture structure drivers -> **Safety, Availability, Performance, Security, Maintainability**
-
-### Exact Pattern List
-
-  - **Client-server**
-  - **Layered**
-  - **Pipes and filters**
-  - **Repository**
-  - **Model-view-controller**
-
-### Chapter 6 Homework Reminders
-
-  - **component symbol** -> box
-  - **stakeholder benefit** -> communication
-  - **detailed relationships in architecture diagram?** -> False
-  - **architectural pattern = system organization description** -> True
-  - **patterns can be combined** -> True, so the "not possible" statement is False
-  - **online shopping** -> transaction processing
-  - **pattern purpose** -> template solution to common design problems
+  - negative impacts -> **displacement, unemployment, cyber crimes**
 `;
 
 
