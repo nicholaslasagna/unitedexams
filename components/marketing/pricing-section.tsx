@@ -76,7 +76,7 @@ export function PricingSection() {
           name="Class / Institution"
           tagline="When the school covers access. The cleanest path for a real course."
           price="Custom"
-          cadence="for a class or program"
+          cadence="per class / program"
           features={[
             "Verified students get full access — no popups",
             "Section-aware professor workspace",

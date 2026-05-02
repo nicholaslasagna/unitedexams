@@ -26,6 +26,17 @@ const courseArtworkById: Record<string, string> = {
   "theory-of-automata": "/images/courses/theory-of-automata.svg"
 };
 
+function Stat({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-baseline gap-2">
+      <span className="font-mono text-2xl font-bold leading-none text-text">{value}</span>
+      <span className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-text-secondary">
+        {label}
+      </span>
+    </div>
+  );
+}
+
 export default function LandingPage() {
   const totalMinutes = quizSets.reduce((sum, set) => sum + set.estMinutes, 0);
   const totalQuestions = quizSets.reduce((sum, set) => sum + set.questions.length, 0);
@@ -70,10 +81,9 @@ export default function LandingPage() {
               </h1>
 
               <p className="max-w-xl text-[16px] leading-relaxed text-text-secondary">
-                United Exams turns course material into beautiful, focused
-                practice — guided quizzes, walkthroughs, timed exam simulations,
-                notes, sections, and progress that&apos;s actually yours.
-                Built for real classes. Calm enough for daily use.
+                Course-native quizzes, walkthroughs, timed exam simulations, and
+                notes — anchored to the class, not a flashcard pile. Built for real
+                courses. Calm enough for daily use.
               </p>
 
               <PublicAuthActions variant="hero" />
@@ -116,59 +126,14 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ─── COURSE-NATIVE EXPLANATION ──────────────────── */}
-        <section>
-          <SectionHeading
-            eyebrow="Course-native learning"
-            title="Not flashcards. Real classes."
-            description="Every quiz set, exam, and walkthrough lives inside its own course hub. Open the class, pick a lane, and the work stays where it belongs."
-          />
-
-          <div className="mt-6 grid gap-3 md:grid-cols-3">
-            {[
-              {
-                num: "01",
-                t: "Open a course hub",
-                d: "Quizzes, exams, homework, notes, cheat sheets, and resources all live in one focused workspace."
-              },
-              {
-                num: "02",
-                t: "Pick a study lane",
-                d: "Test, Walkthrough, Timed Exam, or Homework Desk — each lane changes the experience, not the content."
-              },
-              {
-                num: "03",
-                t: "See what to fix",
-                d: "Mistake history, weak topics, and recommended next steps appear automatically as you study."
-              }
-            ].map((step) => (
-              <div
-                key={step.num}
-                className="relative overflow-hidden rounded-[1.4rem] border border-borderc bg-surface p-5 shadow-subtle transition-all duration-200 ease-out-expo hover:-translate-y-0.5 hover:border-border-accent hover:shadow-card-hover"
-              >
-                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-accent">
-                  {step.num}
-                </span>
-                <p className="mt-3 font-display text-lg font-semibold text-text">{step.t}</p>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-text-secondary">{step.d}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-[1.25rem] border border-borderc bg-surface/85 px-5 py-3 text-[13px] text-text-secondary">
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-              <span>
-                <span className="font-mono font-bold text-text">{courseAtlas.length}</span> courses
-              </span>
-              <span>
-                <span className="font-mono font-bold text-text">{quizSets.length}</span> quiz sets
-              </span>
-              <span>
-                <span className="font-mono font-bold text-text">{totalQuestions}</span> questions
-              </span>
-              <span>
-                <span className="font-mono font-bold text-text">{totalMinutes}m</span> structured practice
-              </span>
+        {/* ─── LIBRARY STATS STRIP ─────────────────────── */}
+        <section className="rounded-[1.5rem] border border-borderc bg-surface/85 px-5 py-4 sm:px-7">
+          <div className="flex flex-wrap items-center justify-between gap-y-4">
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+              <Stat label="Courses" value={courseAtlas.length} />
+              <Stat label="Quiz sets" value={quizSets.length} />
+              <Stat label="Questions" value={totalQuestions} />
+              <Stat label="Practice" value={`${totalMinutes}m`} />
             </div>
             <Button asChild variant="ghost">
               <Link href="/courses">

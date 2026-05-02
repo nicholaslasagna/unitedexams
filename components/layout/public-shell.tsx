@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConstellationPattern } from "@/components/ui/constellation-pattern";
 import { useAppData } from "@/lib/app-data-context";
@@ -44,6 +44,24 @@ export function PublicShell({ children }: { children: ReactNode }) {
   const isProfessor = isVerifiedProfessor(profile);
   const isSchoolAdmin = isUniversityAdmin(profile);
   const accountName = resolveProfileInternalName(profile, "Account");
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close the mobile drawer whenever route changes
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  // Lock background scroll when drawer is open
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (mobileOpen) {
+      const previous = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = previous;
+      };
+    }
+  }, [mobileOpen]);
 
   useEffect(() => {
     if (!isAuthenticated || !supabase || !user || isProfessor || isSchoolAdmin) {
@@ -147,38 +165,112 @@ export function PublicShell({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="flex items-center gap-2">
-            {!authReady ? (
-              <span className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm text-muted">
-                Checking session...
-              </span>
-            ) : isAuthenticated ? (
-              <>
-                <Button
-                  variant="ghost"
-                  onClick={async () => {
-                    await signOut();
-                    router.push("/courses");
-                    router.refresh();
-                  }}
-                >
-                  Sign out
-                </Button>
-                <span className="hidden rounded-lg border border-borderc bg-soft px-2 py-1 text-xs text-muted lg:inline">
-                  {accountName}
+            <div className="hidden items-center gap-2 md:flex">
+              {!authReady ? (
+                <span className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm text-muted">
+                  Checking session...
                 </span>
-              </>
-            ) : (
-              <>
-                <Button variant="ghost" asChild>
-                  <Link href={`/login?next=${encodeURIComponent(pathname || "/courses")}`}>Sign in</Link>
-                </Button>
-                <Button asChild>
-                  <Link href={`/signup?next=${encodeURIComponent(pathname || "/courses")}`}>Create account</Link>
-                </Button>
-              </>
-            )}
+              ) : isAuthenticated ? (
+                <>
+                  <Button
+                    variant="ghost"
+                    onClick={async () => {
+                      await signOut();
+                      router.push("/courses");
+                      router.refresh();
+                    }}
+                  >
+                    Sign out
+                  </Button>
+                  <span className="hidden rounded-lg border border-borderc bg-soft px-2 py-1 text-xs text-muted lg:inline">
+                    {accountName}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Button variant="ghost" asChild>
+                    <Link href={`/login?next=${encodeURIComponent(pathname || "/courses")}`}>Sign in</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link href={`/signup?next=${encodeURIComponent(pathname || "/courses")}`}>Create account</Link>
+                  </Button>
+                </>
+              )}
+            </div>
+
+            <button
+              type="button"
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-menu"
+              onClick={() => setMobileOpen((prev) => !prev)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-borderc bg-soft text-text transition-colors hover:bg-overlay md:hidden"
+            >
+              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile drawer */}
+        {mobileOpen ? (
+          <div
+            id="mobile-menu"
+            className="border-t border-borderc bg-surface/95 backdrop-blur-xl md:hidden animate-fade-rise"
+          >
+            <nav
+              className="mx-auto flex w-full max-w-[1200px] flex-col gap-1 px-5 py-3"
+              aria-label="Mobile"
+            >
+              {navItems.map((item) => {
+                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "rounded-xl px-3 py-3 text-sm font-semibold transition-colors duration-150",
+                      active
+                        ? "bg-accent-subtle text-text"
+                        : "text-text-secondary hover:bg-soft hover:text-text"
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+
+              <div className="mt-2 grid gap-2 border-t border-borderc pt-3">
+                {!authReady ? (
+                  <span className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm text-muted">
+                    Checking session...
+                  </span>
+                ) : isAuthenticated ? (
+                  <Button
+                    variant="secondary"
+                    onClick={async () => {
+                      await signOut();
+                      router.push("/courses");
+                      router.refresh();
+                    }}
+                  >
+                    Sign out
+                  </Button>
+                ) : (
+                  <>
+                    <Button asChild>
+                      <Link href={`/signup?next=${encodeURIComponent(pathname || "/courses")}`}>
+                        Create account
+                      </Link>
+                    </Button>
+                    <Button asChild variant="secondary">
+                      <Link href={`/login?next=${encodeURIComponent(pathname || "/courses")}`}>Sign in</Link>
+                    </Button>
+                  </>
+                )}
+              </div>
+            </nav>
+          </div>
+        ) : null}
       </header>
 
       <main id="main" className="relative z-[1] mx-auto w-full max-w-[1200px] px-5 py-8 md:px-8 lg:px-10">

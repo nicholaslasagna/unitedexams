@@ -1081,6 +1081,41 @@ export function QuizExperiencePageContent({
             : "Tip: switch lanes anytime — your selected attempt length and randomization carry over."}
         </div>
 
+        {/* Premium soft lock — only shown when not part of an institution-graded section flow */}
+        {!sectionParam && setMode !== "homework" ? (
+          <details className="group rounded-[1.1rem] border border-dashed border-borderc bg-surface/70 px-4 py-3 text-[13px] text-text-secondary">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-semibold text-text">
+              <span className="inline-flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-accent" />
+                What Premium adds
+              </span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary group-open:hidden">
+                Show
+              </span>
+              <span className="hidden text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary group-open:inline">
+                Hide
+              </span>
+            </summary>
+            <ul className="mt-3 grid gap-1.5 sm:grid-cols-2">
+              {[
+                "Mistake history across attempts",
+                "Smart review plans for missed topics",
+                "Mastery analytics + readiness signal",
+                "Deeper walkthroughs and hints"
+              ].map((line) => (
+                <li key={line} className="flex items-start gap-2">
+                  <span className="mt-[7px] inline-block h-1 w-1 rounded-full bg-accent" />
+                  {line}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-[12px] text-text-secondary">
+              If your school covers access, all of this is included automatically — no popups,
+              no nags.
+            </p>
+          </details>
+        ) : null}
+
         <QuizSettingsModal
           open={settingsOpen}
           onClose={() => setSettingsOpen(false)}
