@@ -10,6 +10,7 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { useAppData } from "@/lib/app-data-context";
+import { useAccess } from "@/lib/hooks/use-access";
 import type { LeaderboardRpcRow } from "@/lib/supabase/types";
 import { getLeaderboard } from "@/features/leaderboard/api";
 import { LeaderboardList } from "@/features/leaderboard/components/leaderboard-list";
@@ -24,6 +25,9 @@ export function LeaderboardPageContent({
   showHeader?: boolean;
 }) {
   const { supabase, user } = useAppData();
+  // The leaderboard's "show top 5 / sign in for full board" UX is the
+  // canonical guest-vs-signed-in split. Use the access model for it.
+  const access = useAccess();
   const [rows, setRows] = useState<LeaderboardRpcRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState("");
@@ -31,7 +35,8 @@ export function LeaderboardPageContent({
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
 
-  const pageSize = publicMode && !user ? 5 : 25;
+  // Public + guest = top 5 preview. Otherwise we serve the full page.
+  const pageSize = publicMode && access.isGuest ? 5 : 25;
 
   const loadRows = async (nextOffset = 0, reset = false) => {
     if (!supabase) return;
@@ -233,7 +238,7 @@ export function LeaderboardPageContent({
             </Button>
           ) : null}
 
-          {publicMode && !user ? (
+          {publicMode && access.isGuest ? (
             <div className="space-y-3 border-t border-borderc pt-4">
               <div className="rounded-[1rem] border border-accent/35 bg-accent/10 px-4 py-3 text-[13.5px] text-text">
                 Showing top {Math.min(5, filtered.length)}.{" "}
@@ -265,7 +270,7 @@ export function LeaderboardPageContent({
             </div>
           ) : null}
 
-          {publicMode && user ? (
+          {publicMode && !access.isGuest ? (
             <div className="rounded-xl border border-borderc bg-soft px-4 py-3 text-[13px] text-text-secondary">
               Want the full experience?{" "}
               <Link href="/app/leaderboard" className="font-semibold text-accent">
