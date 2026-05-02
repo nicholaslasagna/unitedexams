@@ -197,6 +197,39 @@ const finalMockQuestions: Question[] = [
     tags: ["chapter-7", "context-diagram", "guaranteed-review"],
     difficulty: "easy"
   }),
+  makeMultiQuestion({
+    id: "se-final-q4b-object-class-identification",
+    prompt:
+      "Identifying object classes, such as for a class diagram, might be difficult. Which of the following are specific approaches for identifying object classes? Select all that apply.",
+    options: [
+      "A grammatical approach where nouns are objects/attributes and verbs are operations.",
+      "A mathematical approach using complex algorithms to calculate class density.",
+      "Basing identification on tangible things in the application domain.",
+      "A scenario-based analysis where you identify objects in each scenario.",
+      "A graphical approach where you draw a flow chart until a pattern emerges."
+    ],
+    correct: [0, 2, 3],
+    explanation:
+      "The specific approaches emphasized for object-class identification are grammatical analysis, identifying tangible things in the application domain, and scenario-based analysis. Class-density algorithms and drawing flowcharts until a pattern emerges are distractors.",
+    hintSteps: [
+      "Object-class identification is about finding candidate classes from requirements and the domain.",
+      "Look for approaches tied to language, domain objects, and scenarios.",
+      "Reject options that introduce made-up math or generic flowchart pattern hunting."
+    ],
+    walkthroughSteps: [
+      "In grammatical analysis, nouns often suggest objects or attributes, while verbs suggest operations.",
+      "Tangible things in the application domain are strong candidate classes because the system must represent real domain concepts.",
+      "Scenario-based analysis also helps because each scenario exposes objects participating in that situation.",
+      "The mathematical class-density and flowchart-until-pattern answers are not the listed object-class identification approaches.",
+      "Select the grammatical approach, tangible domain things, and scenario-based analysis."
+    ],
+    references: [
+      "Chapter 7 – Object class identification",
+      "Guaranteed final lecture image – object class identification"
+    ],
+    tags: ["chapter-7", "class-diagram", "object-class-identification", "guaranteed-review"],
+    difficulty: "med"
+  }),
   makeSingleQuestion({
     id: "se-final-q5-observer-relationship",
     prompt:
@@ -819,20 +852,37 @@ const finalMockQuestions: Question[] = [
   })
 ];
 
-const finalGuaranteedLectureDrillQuestions: Question[] = [
-  finalMockQuestions[3],
-  finalMockQuestions[5],
-  finalMockQuestions[6],
-  finalMockQuestions[10],
-  finalMockQuestions[15],
-  finalMockQuestions[19],
-  finalMockQuestions[20],
-  finalMockQuestions[4]
-].map((question, index) => ({
-  ...question,
-  id: `se-final-guaranteed-q${index + 1}`,
-  tags: [...question.tags, "guaranteed-lecture-drill"]
-}));
+function requireFinalQuestionById(id: string) {
+  const question = finalMockQuestions.find((candidate) => candidate.id === id);
+
+  if (!question) {
+    throw new Error(`Missing Software Engineering final question: ${id}`);
+  }
+
+  return question;
+}
+
+const finalGuaranteedLectureQuestionIds = [
+  "se-final-q4-context-diagram",
+  "se-final-q4b-object-class-identification",
+  "se-final-q6-reuse-items",
+  "se-final-q7-reuse-costs",
+  "se-final-q11-testing-goals",
+  "se-final-q16-regression-testing",
+  "se-final-q20-urgent-changes",
+  "se-final-q21-maintenance-types",
+  "se-final-q5-observer-relationship"
+];
+
+const finalGuaranteedLectureDrillQuestions: Question[] = finalGuaranteedLectureQuestionIds.map((id, index) => {
+  const question = requireFinalQuestionById(id);
+
+  return {
+    ...question,
+    id: `se-final-guaranteed-q${index + 1}`,
+    tags: [...question.tags, "guaranteed-lecture-drill"]
+  };
+});
 
 const testingEvolutionDrillQuestions: Question[] = [
   makeSingleQuestion({
@@ -1096,7 +1146,7 @@ const softwareEngineeringFinalFullSimulation: QuizSet = {
   tags: ["final-exam", "chapter-7", "chapter-8", "chapter-9", "impacts-of-computing", "guaranteed-review"],
   mode: "exam",
   timerDefaultMinutes: 52,
-  questionCountTarget: 26,
+  questionCountTarget: 27,
   isExamSimulation: true,
   questions: finalMockQuestions
 };
@@ -1108,10 +1158,10 @@ const softwareEngineeringFinalGuaranteedLectureDrill: QuizSet = {
   description:
     "Short repeatable drill made only from the guaranteed lecture-image questions for the Software Engineering final.",
   difficulty: "Intermediate",
-  estMinutes: 15,
+  estMinutes: 17,
   tags: ["final-exam", "guaranteed-review", "lecture-images", "focused-drill"],
   mode: "quiz",
-  timerDefaultMinutes: 15,
+  timerDefaultMinutes: 17,
   questions: finalGuaranteedLectureDrillQuestions
 };
 
