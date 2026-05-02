@@ -64,6 +64,8 @@ export function CoursesIndexContent({
 }) {
   const router = useRouter();
   const { attempts, isAuthenticated, supabase, user, profile } = useAppData();
+  // Centralized access — drives the AccessBadge variant per card.
+  const access = useAccess();
   const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortBy>("default");
@@ -300,7 +302,17 @@ export function CoursesIndexContent({
             const sectionMaterialHref = selectedSectionId
               ? `/app/sections/${selectedSectionId}/materials`
               : withPrefix(routePrefix, `/courses/${course.id}`);
-            const accessVariant = hasCourseSections ? "institution" : "free";
+            // Per-card access tier indicator. Section-joined > institution
+            // > premium > free. Hidden for guests (no badge clutter).
+            const accessVariant: "institution" | "premium" | "free" | null = hasCourseSections
+              ? "institution"
+              : access.isInstitutionCovered
+                ? "institution"
+                : access.isPremium
+                  ? "premium"
+                  : access.isGuest
+                    ? null
+                    : "free";
             const openPrimary = () => router.push(primaryHref);
 
             return (
@@ -328,9 +340,11 @@ export function CoursesIndexContent({
                       {course.difficulty}
                     </Badge>
                   </div>
-                  <div className="absolute right-3 top-3">
-                    <AccessBadge variant={accessVariant} />
-                  </div>
+                  {accessVariant ? (
+                    <div className="absolute right-3 top-3">
+                      <AccessBadge variant={accessVariant} />
+                    </div>
+                  ) : null}
                   <div className="absolute bottom-3 left-3 right-3">
                     <p className="font-display text-xl font-semibold leading-tight text-text">
                       {course.name}

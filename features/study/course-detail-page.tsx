@@ -29,7 +29,10 @@ import { AccessBadge } from "@/components/ui/access-badge";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Markdown } from "@/components/ui/markdown";
+import { InstitutionAccessNote } from "@/components/ui/institution-access-note";
+import { PremiumUnlockNote } from "@/components/ui/premium-unlock-note";
 import { useAppData } from "@/lib/app-data-context";
+import { useAccess } from "@/lib/hooks/use-access";
 import { modeLabel, resolveQuestionCountTarget, resolveQuizSetMode } from "@/lib/study/set-mode";
 import { fetchPublishedSetsByCourse } from "@/features/study/study-set-source";
 import {
@@ -107,7 +110,8 @@ export function CourseDetailContent({
   const content = getCourseContent(courseId);
   const visual = getCourseVisual(courseId);
 
-  const { attempts } = useAppData();
+  const { attempts, profile } = useAppData();
+  const access = useAccess();
   const [tab, setTab] = useState("quizzes");
   const [query, setQuery] = useState("");
   const [difficulty, setDifficulty] = useState("all");
@@ -233,7 +237,13 @@ export function CourseDetailContent({
                 <Badge tone={course.difficulty === "Advanced" ? "warn" : "default"}>
                   {course.difficulty}
                 </Badge>
-                <AccessBadge variant="free" label="Public hub" />
+                {access.isInstitutionCovered ? (
+                  <AccessBadge variant="institution" label="Institution access" />
+                ) : access.isPremium ? (
+                  <AccessBadge variant="premium" label="Premium active" />
+                ) : (
+                  <AccessBadge variant="free" label="Public hub" />
+                )}
               </div>
 
               <div>
@@ -834,6 +844,21 @@ export function CourseDetailContent({
               </span>{" "}
               Weak topics get prioritized in the recommended-next card when you return.
             </div>
+
+            {/*
+             * Access-aware footer:
+             *   - institution-covered users see a warm note
+             *   - non-premium signed-in students see a tasteful Premium hint
+             *   - guests / premium users / professors see nothing
+             */}
+            {access.messaging.showInstitutionNote ? (
+              <InstitutionAccessNote variant="inline" schoolName={profile?.school ?? null} />
+            ) : !access.messaging.hidePremiumPrompts && !access.isGuest ? (
+              <PremiumUnlockNote
+                title="Available in full access"
+                description="Mistake history and smart review plans use these signals to recommend the highest-leverage next step."
+              />
+            ) : null}
           </CardBody>
         </Card>
       </section>

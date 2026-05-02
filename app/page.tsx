@@ -14,6 +14,7 @@ import { StudyModesSection } from "@/components/marketing/study-modes";
 import { WorkflowSplit } from "@/components/marketing/workflow-split";
 import { InstitutionSection } from "@/components/marketing/institution-section";
 import { PricingSection } from "@/components/marketing/pricing-section";
+import { AccessModelSection } from "@/components/marketing/access-model-section";
 import { TrustSection } from "@/components/marketing/trust-section";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { courses, quizSets } from "@/data/seed";
@@ -219,6 +220,9 @@ export default function LandingPage() {
 
         {/* ─── PRICING ─────────────────────────────────────── */}
         <PricingSection />
+
+        {/* ─── ACCESS MODEL ────────────────────────────────── */}
+        <AccessModelSection />
 
         {/* ─── TRUST ───────────────────────────────────────── */}
         <section className="space-y-6">

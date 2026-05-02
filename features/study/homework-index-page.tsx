@@ -19,6 +19,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { EmptyState } from "@/components/ui/empty-state";
+import { InstitutionAccessNote } from "@/components/ui/institution-access-note";
+import { useAccess } from "@/lib/hooks/use-access";
 import { resolveQuizSetMode } from "@/lib/study/set-mode";
 import type { QuizSet } from "@/lib/types";
 
@@ -37,6 +39,7 @@ export function HomeworkIndexContent({
   subtitle?: string;
   showHeader?: boolean;
 }) {
+  const access = useAccess();
   const [search, setSearch] = useState("");
   const [courseFilter, setCourseFilter] = useState<string>("all");
   const [sets, setSets] = useState<QuizSet[]>([]);
@@ -144,6 +147,11 @@ export function HomeworkIndexContent({
             </div>
           </div>
         </section>
+      ) : null}
+
+      {/* Institution-covered users get a warm reminder once */}
+      {access.messaging.showInstitutionNote ? (
+        <InstitutionAccessNote variant="block" />
       ) : null}
 
       {/* Filter row */}
