@@ -105,6 +105,26 @@ export interface UserProfile {
   role?: "student" | "professor" | "admin";
   resetRequired?: boolean;
   mfaEnabled?: boolean;
+  /**
+   * Entitlement signals — currently UI-only.
+   * These flags expose what the access model needs to make decisions.
+   * Wire them from the backend (Stripe / institution agreements / etc.)
+   * when those systems exist. See `lib/access.ts` for usage.
+   */
+  premiumActive?: boolean;
+  premiumPlan?: "monthly" | "yearly" | null;
+  premiumRenewsAt?: string | null;
+  /**
+   * True when the user's school/department has covered access
+   * (e.g. an institution license is active for their university).
+   * When true, premium prompts are hidden everywhere.
+   */
+  institutionCovered?: boolean;
+  /**
+   * True when the institution itself has been verified by United Exams
+   * (i.e. the school is officially partnered).
+   */
+  institutionVerified?: boolean;
 }
 
 export interface AppPreferences {

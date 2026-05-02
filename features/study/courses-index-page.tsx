@@ -23,6 +23,7 @@ import { AccessBadge } from "@/components/ui/access-badge";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useAppData } from "@/lib/app-data-context";
+import { useAccess } from "@/lib/hooks/use-access";
 import { courseProgress } from "@/features/progress/metrics";
 import { resolveQuizSetMode } from "@/lib/study/set-mode";
 import { listJoinedSections } from "@/features/professor/api";

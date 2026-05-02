@@ -21,6 +21,9 @@ import {
 import { ModeCard } from "@/components/ui/mode-card";
 import { AccessBadge } from "@/components/ui/access-badge";
 import { FeatureStat } from "@/components/ui/feature-stat";
+import { InstitutionAccessNote } from "@/components/ui/institution-access-note";
+import { PremiumUnlockNote } from "@/components/ui/premium-unlock-note";
+import { useAccess } from "@/lib/hooks/use-access";
 import { getCourse, getQuizSet } from "@/data/seed";
 import { fetchPublishedStudySet } from "@/features/study/study-set-source";
 import { Card, CardBody } from "@/components/ui/card";
@@ -78,8 +81,12 @@ export function QuizExperiencePageContent({
   const fallbackQuiz = useMemo(() => getQuizSet(quizId), [quizId]);
   const sectionParam = searchParams.get("section")?.trim() || "";
 
-  const { attempts, saveAttempt, preferences, isAuthenticated, supabase } = useAppData();
+  const { attempts, saveAttempt, preferences, isAuthenticated, supabase, profile } = useAppData();
   const { push } = useToast();
+  // Centralized access decision — `inInstitutionFlow` is true when the
+  // quiz was launched inside a section, which unconditionally hides
+  // upgrade prompts (institution-managed grading flow).
+  const access = useAccess({ inInstitutionFlow: Boolean(sectionParam) });
 
   const [quiz, setQuiz] = useState<QuizSet | undefined>(fallbackQuiz);
   const [quizLoading, setQuizLoading] = useState(!fallbackQuiz);
@@ -817,7 +824,13 @@ export function QuizExperiencePageContent({
                   {examQuestionTarget ? (
                     <Badge tone="warn">Target {examQuestionTarget} q</Badge>
                   ) : null}
-                  <AccessBadge variant="free" label="Public bank" />
+                  {access.isInstitutionCovered ? (
+                    <AccessBadge variant="institution" label="Institution access" />
+                  ) : access.isPremium ? (
+                    <AccessBadge variant="premium" label="Premium active" />
+                  ) : (
+                    <AccessBadge variant="free" label="Public bank" />
+                  )}
                 </div>
 
                 <h1 className="font-display text-[2.2rem] font-semibold leading-[1.05] tracking-tight text-text sm:text-[2.75rem]">
@@ -827,13 +840,17 @@ export function QuizExperiencePageContent({
                   {quiz.description}
                 </p>
 
-                {!isAuthenticated ? (
+                {access.messaging.showInstitutionNote ? (
+                  <InstitutionAccessNote variant="block" schoolName={profile?.school ?? null} />
+                ) : access.messaging.showGuestSavePrompt ? (
                   <div className="rounded-[1.1rem] border border-accent/35 bg-accent/10 px-4 py-3 text-[13.5px] text-text">
                     <span className="inline-flex items-center gap-1.5 font-semibold">
                       <Sparkles className="h-3.5 w-3.5 text-accent" />
-                      Try it free
-                    </span>{" "}
-                    — create an account anytime to save attempts, streaks, and mastery.
+                      Create an account to save your progress
+                    </span>
+                    <p className="mt-1 text-[12.5px] text-text-secondary">
+                      Attempts, mastery, and streaks sync to your account once you sign in.
+                    </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <Button asChild variant="secondary" size="sm">
                         <Link href={signUpPath}>Create free account</Link>
@@ -1081,39 +1098,25 @@ export function QuizExperiencePageContent({
             : "Tip: switch lanes anytime — your selected attempt length and randomization carry over."}
         </div>
 
-        {/* Premium soft lock — only shown when not part of an institution-graded section flow */}
-        {!sectionParam && setMode !== "homework" ? (
-          <details className="group rounded-[1.1rem] border border-dashed border-borderc bg-surface/70 px-4 py-3 text-[13px] text-text-secondary">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-semibold text-text">
-              <span className="inline-flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-accent" />
-                What Premium adds
-              </span>
-              <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary group-open:hidden">
-                Show
-              </span>
-              <span className="hidden text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary group-open:inline">
-                Hide
-              </span>
-            </summary>
-            <ul className="mt-3 grid gap-1.5 sm:grid-cols-2">
-              {[
-                "Mistake history across attempts",
-                "Smart review plans for missed topics",
-                "Mastery analytics + readiness signal",
-                "Deeper walkthroughs and hints"
-              ].map((line) => (
-                <li key={line} className="flex items-start gap-2">
-                  <span className="mt-[7px] inline-block h-1 w-1 rounded-full bg-accent" />
-                  {line}
-                </li>
-              ))}
-            </ul>
-            <p className="mt-3 text-[12px] text-text-secondary">
-              If your school covers access, all of this is included automatically — no popups,
-              no nags.
-            </p>
-          </details>
+        {/*
+         * Premium soft-lock — driven by the centralized access model.
+         * Hidden when:
+         *   - the user is on a section-managed flow (institution grading)
+         *   - the user is premium / institution-covered / a professor
+         *   - this is a homework set (homework has its own flow)
+         */}
+        {!access.messaging.hidePremiumPrompts && setMode !== "homework" ? (
+          <PremiumUnlockNote
+            description="A few signed-in extras that make the daily flow easier. If your school covers access, all of this is included automatically."
+            bullets={[
+              "Mistake history across attempts",
+              "Smart review plans for missed topics",
+              "Mastery analytics + readiness signal",
+              "Deeper walkthroughs and hints"
+            ]}
+            ctaHref="/contact?intent=implementation"
+            ctaLabel="Talk to us about your class"
+          />
         ) : null}
 
         <QuizSettingsModal
