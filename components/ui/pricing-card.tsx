@@ -66,10 +66,10 @@ export function PricingCard({
 
       <p className="mt-3 text-sm leading-relaxed text-text-secondary">{tagline}</p>
 
-      <div className="mt-5 flex items-end gap-1.5">
+      <div className="mt-5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <span className="font-display text-4xl font-semibold leading-none text-text">{price}</span>
         {cadence ? (
-          <span className="pb-1 text-sm text-text-secondary">{cadence}</span>
+          <span className="text-sm leading-tight text-text-secondary">{cadence}</span>
         ) : null}
       </div>
 
