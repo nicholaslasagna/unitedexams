@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 interface ContactPayload {
   subject?: string | null;
-  category?: "Bug" | "Content request" | "Account help" | "Other";
+  category?: "Bug" | "Content request" | "Account help" | "Class implementation" | "Other";
   message?: string;
   currentUrl?: string | null;
   currentRoute?: string | null;
@@ -200,7 +200,7 @@ Deno.serve(async (request) => {
     return json(400, { error: "Message must be at least 20 characters." });
   }
 
-  if (!["Bug", "Content request", "Account help", "Other"].includes(category)) {
+  if (!["Bug", "Content request", "Account help", "Class implementation", "Other"].includes(category)) {
     return json(400, { error: "Invalid category." });
   }
 

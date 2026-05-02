@@ -6,7 +6,7 @@ import { getSupabasePublicEnv } from "@/lib/supabase/env";
 
 const contactSchema = z.object({
   subject: z.string().trim().max(160).optional(),
-  category: z.enum(["Bug", "Content request", "Account help", "Other"]),
+  category: z.enum(["Bug", "Content request", "Account help", "Class implementation", "Other"]),
   message: z.string().trim().min(20).max(8000),
   currentUrl: z.string().trim().max(2048).optional(),
   currentRoute: z.string().trim().max(512).optional()
