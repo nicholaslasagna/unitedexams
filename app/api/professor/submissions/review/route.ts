@@ -9,7 +9,6 @@ const reviewSchema = z.object({
   studentId: z.string().uuid()
 });
 
-export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

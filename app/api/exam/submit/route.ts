@@ -7,7 +7,6 @@ const submitExamSchema = z.object({
   answers: z.record(z.string(), z.array(z.number().int())).default({})
 });
 
-export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

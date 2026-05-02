@@ -8,7 +8,6 @@ const inputSchema = z.object({
   requestedRealName: z.string().trim().min(1).max(32)
 });
 
-export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

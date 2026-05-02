@@ -8,7 +8,6 @@ const paramsSchema = z.object({
   assignmentId: z.string().uuid()
 });
 
-export const runtime = "edge";
 
 export async function DELETE(
   request: NextRequest,
