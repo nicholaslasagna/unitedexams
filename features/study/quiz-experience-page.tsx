@@ -6,12 +6,21 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
+  BookOpenCheck,
   ChartColumnBig,
   CircleCheckBig,
   Clock3,
+  GraduationCap,
+  Notebook,
   RotateCcw,
-  Settings2
+  Settings2,
+  Sparkles,
+  Timer,
+  TimerReset
 } from "lucide-react";
+import { ModeCard } from "@/components/ui/mode-card";
+import { AccessBadge } from "@/components/ui/access-badge";
+import { FeatureStat } from "@/components/ui/feature-stat";
 import { getCourse, getQuizSet } from "@/data/seed";
 import { fetchPublishedStudySet } from "@/features/study/study-set-source";
 import { Card, CardBody } from "@/components/ui/card";
@@ -774,154 +783,303 @@ export function QuizExperiencePageContent({
   const signUpPath = `/signup?next=${encodeURIComponent(quizPath)}`;
 
   if (stage === "overview") {
+    const lengthLabel =
+      settings.questionCount === "all" ? `All ${quiz.questions.length}` : settings.questionCount;
+
     return (
-      <div className="space-y-6">
-        <Link href={coursePath} className="inline-flex items-center gap-2 text-sm font-semibold text-muted transition-all duration-200 ease-out-expo hover:text-text">
+      <div className="space-y-7">
+        <Link
+          href={coursePath}
+          className="inline-flex items-center gap-2 text-sm font-semibold text-text-secondary transition-colors hover:text-text"
+        >
           <ArrowLeft className="h-4 w-4" />
           Back to {course.code}
         </Link>
 
-        <Card className="mesh-hero overflow-hidden">
-          <CardBody className="space-y-5 p-7 md:p-9">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge>{course.code}</Badge>
-              <Badge tone="brand">{quiz.difficulty}</Badge>
-              <Badge tone="success">{quiz.questions.length} questions</Badge>
-            </div>
-            <h1 className="text-display-lg font-semibold tracking-tight">{quiz.title}</h1>
-            <p className="max-w-3xl text-sm leading-relaxed text-text-secondary">{quiz.description}</p>
-
-            <div className="flex flex-wrap gap-2">
-              <Badge tone={setMode === "exam" ? "warn" : setMode === "homework" ? "success" : "brand"}>
-                {setMode === "exam" ? "Exam Simulation" : setMode === "homework" ? "Homework" : "Practice Quiz"}
-              </Badge>
-              {examQuestionTarget ? <Badge tone="warn">Target {examQuestionTarget} questions</Badge> : null}
-            </div>
-
-            {!isAuthenticated ? (
-              <div className="rounded-xl border border-brand-2/35 bg-brand-2/10 px-4 py-3 text-sm text-text">
-                Create a free account to save your progress, streak, and mastery insights.
-                <div className="mt-3">
-                  <Button asChild variant="secondary">
-                    <Link href={signUpPath}>Save progress</Link>
-                  </Button>
-                </div>
-              </div>
-            ) : null}
-
-            <div className="grid gap-3 md:grid-cols-3">
-              <div className="rounded-xl border border-borderc bg-soft p-4 transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-1">
-                <p className="text-xs text-text-secondary">Estimated time</p>
-                <p className="mt-1 font-mono text-heading font-bold text-text">{quiz.estMinutes}m</p>
-              </div>
-              <div className="rounded-xl border border-borderc bg-soft p-4 transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-2">
-                <p className="text-xs text-text-secondary">Best score</p>
-                <p className="mt-1 font-mono text-heading font-bold text-text">{bestScore}%</p>
-              </div>
-              <div className="rounded-xl border border-borderc bg-soft p-4 transition-all duration-200 ease-out-expo hover:shadow-card-hover hover:border-border-accent stagger-3">
-                <p className="text-xs text-text-secondary">Last attempt</p>
-                <p className="mt-1 font-mono text-heading font-bold text-text">{latestAttempt ? `${latestAttempt.score}%` : "—"}</p>
-              </div>
-            </div>
-
-            {assignmentSubmissionLocked ? (
-              <div className="rounded-xl border border-danger/35 bg-danger/10 p-4 text-sm text-text">
-                <p className="font-semibold">This assignment is past due.</p>
-                <p className="mt-1 text-text-secondary">
-                  You can still open it in read-only mode, but you cannot submit answers or finish an attempt for grading.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Button onClick={startReadOnlyAssignmentView}>Open read-only view</Button>
-                  {sectionPath ? (
-                    <Button variant="secondary" asChild>
-                      <Link href={sectionPath}>Back to section</Link>
-                    </Button>
+        {/* Hero panel */}
+        <section className="relative">
+          <div className="aurora absolute inset-0 -z-10 rounded-[2rem] opacity-90" aria-hidden />
+          <div className="premium-card glow-border overflow-hidden p-5 sm:p-7 md:p-8">
+            <div className="grid gap-7 lg:grid-cols-[1.15fr_0.85fr]">
+              <div className="space-y-5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone="accent">{course.code}</Badge>
+                  <Badge>{quiz.difficulty}</Badge>
+                  <Badge
+                    tone={setMode === "exam" ? "warn" : setMode === "homework" ? "success" : "brand"}
+                  >
+                    {setMode === "exam"
+                      ? "Exam Simulation"
+                      : setMode === "homework"
+                        ? "Homework"
+                        : "Practice Quiz"}
+                  </Badge>
+                  {examQuestionTarget ? (
+                    <Badge tone="warn">Target {examQuestionTarget} q</Badge>
                   ) : null}
+                  <AccessBadge variant="free" label="Public bank" />
+                </div>
+
+                <h1 className="font-display text-[2.2rem] font-semibold leading-[1.05] tracking-tight text-text sm:text-[2.75rem]">
+                  {quiz.title}
+                </h1>
+                <p className="max-w-2xl text-[14.5px] leading-relaxed text-text-secondary">
+                  {quiz.description}
+                </p>
+
+                {!isAuthenticated ? (
+                  <div className="rounded-[1.1rem] border border-accent/35 bg-accent/10 px-4 py-3 text-[13.5px] text-text">
+                    <span className="inline-flex items-center gap-1.5 font-semibold">
+                      <Sparkles className="h-3.5 w-3.5 text-accent" />
+                      Try it free
+                    </span>{" "}
+                    — create an account anytime to save attempts, streaks, and mastery.
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Button asChild variant="secondary" size="sm">
+                        <Link href={signUpPath}>Create free account</Link>
+                      </Button>
+                      <Button asChild variant="ghost" size="sm">
+                        <Link href={signInPath}>Sign in</Link>
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+
+                <div className="grid gap-2.5 sm:grid-cols-3">
+                  <FeatureStat
+                    label="Estimated time"
+                    value={`${quiz.estMinutes}m`}
+                    icon={<Clock3 className="h-3.5 w-3.5" />}
+                  />
+                  <FeatureStat
+                    label="Best score"
+                    value={`${bestScore}%`}
+                    icon={<Sparkles className="h-3.5 w-3.5" />}
+                    tone={bestScore >= 80 ? "success" : bestScore > 0 ? "warn" : "default"}
+                  />
+                  <FeatureStat
+                    label="Last attempt"
+                    value={latestAttempt ? `${latestAttempt.score}%` : "—"}
+                    icon={<Timer className="h-3.5 w-3.5" />}
+                  />
                 </div>
               </div>
-            ) : setMode === "homework" ? (
-              <div className="rounded-xl border border-success/30 bg-success/10 p-4 text-sm text-text">
-                This set is configured for one-by-one Homework Mode.
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Button asChild>
-                    <Link href={withPrefix(routePrefix, `/homework/${quiz.id}`)}>Open Homework Mode</Link>
-                  </Button>
-                  <Button variant="ghost" asChild>
-                    <Link href={withPrefix(routePrefix, `/homework/${quiz.id}?review=1`)}>
-                      Resume flagged review
-                    </Link>
+
+              {/* Quick info panel */}
+              <div className="space-y-3">
+                <div className="rounded-[1.25rem] border border-borderc bg-surface/85 p-4">
+                  <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-accent">
+                    Attempt length
+                  </p>
+                  <p className="mt-2 font-display text-2xl font-semibold text-text">
+                    {lengthLabel} q
+                  </p>
+                  <p className="mt-1 text-[12.5px] text-text-secondary">
+                    Adjust in Quiz Settings if you want a shorter run.
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="mt-3 w-full justify-between"
+                    onClick={() => setSettingsOpen(true)}
+                  >
+                    <Settings2 className="h-4 w-4" />
+                    Quiz settings
                   </Button>
                 </div>
+
+                <div className="rounded-[1.25rem] border border-borderc bg-soft px-4 py-3 text-[12.5px] text-text-secondary">
+                  <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+                    Keyboard shortcuts
+                  </p>
+                  <p className="mt-2">
+                    <span className="font-mono font-bold text-text">A/B/C/D</span> select •{" "}
+                    <span className="font-mono font-bold text-text">Enter</span> submit/next •{" "}
+                    <span className="font-mono font-bold text-text">←/→</span> navigate
+                  </p>
+                </div>
               </div>
-            ) : (
+            </div>
+          </div>
+        </section>
+
+        {/* Past-due notice */}
+        {assignmentSubmissionLocked ? (
+          <Card className="border-danger/35 bg-danger/5">
+            <CardBody className="space-y-3 p-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="font-display text-lg font-semibold text-text">This assignment is past due.</p>
+                  <p className="mt-1 text-[13px] text-text-secondary">
+                    You can still open it in read-only mode, but you cannot submit answers for grading.
+                  </p>
+                </div>
+                <Badge tone="danger">Closed</Badge>
+              </div>
               <div className="flex flex-wrap gap-2">
-                {setMode === "exam" ? (
-                  <>
-                    <Button onClick={startExamMode}>Start Exam Simulation</Button>
-                    <Button variant="secondary" onClick={startTestMode}>
-                      Practice This Bank
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button onClick={startTestMode}>Start Test Mode</Button>
-                    <Button variant="secondary" onClick={startStudyMode}>
-                      Start Study Walkthrough
-                    </Button>
-                    <Button variant="ghost" onClick={startTimedMode}>
-                      Start Timed Exam
-                    </Button>
-                  </>
-                )}
-                <Button variant="ghost" onClick={() => setSettingsOpen(true)}>
-                  <Settings2 className="h-4 w-4" />
-                  Quiz Settings
+                <Button onClick={startReadOnlyAssignmentView}>Open read-only view</Button>
+                {sectionPath ? (
+                  <Button variant="secondary" asChild>
+                    <Link href={sectionPath}>Back to section</Link>
+                  </Button>
+                ) : null}
+              </div>
+            </CardBody>
+          </Card>
+        ) : setMode === "homework" ? (
+          <Card>
+            <CardBody className="space-y-3 p-5">
+              <Badge tone="success">Homework</Badge>
+              <p className="font-display text-lg font-semibold text-text">
+                This set is configured for the Homework Desk.
+              </p>
+              <p className="text-[13px] text-text-secondary">
+                Work problems one at a time with hints, full solutions on demand, and flag-for-review.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button asChild>
+                  <Link href={withPrefix(routePrefix, `/homework/${quiz.id}`)}>
+                    <Notebook className="h-4 w-4" />
+                    Open Homework Desk
+                  </Link>
+                </Button>
+                <Button variant="ghost" asChild>
+                  <Link href={withPrefix(routePrefix, `/homework/${quiz.id}?review=1`)}>
+                    Resume flagged review
+                  </Link>
                 </Button>
               </div>
-            )}
-
-            {setMode === "exam" ? (
-              <div className="grid gap-2 md:grid-cols-3">
-                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-text-secondary stagger-1">
-                  <span className="font-semibold text-text">Rule 1:</span> one question at a time with exam pacing.
-                </div>
-                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-text-secondary stagger-2">
-                  <span className="font-semibold text-text">Rule 2:</span>{" "}
-                  {supportsGuidedExamReview
-                    ? "walkthroughs and explanations unlock after each answer so the simulation still teaches."
-                    : "explanations default to end-of-exam review."}
-                </div>
-                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-text-secondary stagger-3">
-                  <span className="font-semibold text-text">Rule 3:</span> professor-priority items are always included.
-                </div>
+            </CardBody>
+          </Card>
+        ) : (
+          // Mode card grid
+          <section className="space-y-3">
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <p className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-accent">
+                  Pick your study mode
+                </p>
+                <p className="mt-1 font-display text-xl font-semibold text-text">
+                  Same quiz · four ways to learn it.
+                </p>
               </div>
-            ) : (
-              <div className="grid gap-2 md:grid-cols-3">
-                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-text-secondary stagger-1">
-                  <span className="font-semibold text-text">Test Mode:</span> answer-first flow, graded accuracy, and explanations on demand.
-                </div>
-                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-text-secondary stagger-2">
-                  <span className="font-semibold text-text">Study Walkthrough:</span> guided hints + full step-by-step solution shown after each submit.
-                </div>
-                <div className="rounded-xl border border-borderc bg-soft px-3 py-2 text-xs text-text-secondary stagger-3">
-                  <span className="font-semibold text-text">Timed Exam:</span> strict clock with randomized order and end-of-quiz review.
-                </div>
-              </div>
-            )}
-
-            <p className="text-xs text-muted">
-              Current attempt length:{" "}
-              {settings.questionCount === "all" ? `All ${quiz.questions.length}` : settings.questionCount} question
-              {settings.questionCount === 1 ? "" : "s"}.
-            </p>
-
-            <div className="rounded-xl border border-borderc bg-soft p-4 text-xs text-muted">
-              {quiz.courseId === "differential-equations"
-                ? "Differential Equations mode: open-ended free response with hint-by-hint guidance and walkthrough self-check."
-                : "Keyboard shortcuts in quiz: A/B/C/D choose options • Enter submit/next • Arrow keys navigate."}
+              <Button variant="ghost" size="sm" onClick={() => setSettingsOpen(true)}>
+                <Settings2 className="h-4 w-4" />
+                Settings
+              </Button>
             </div>
-          </CardBody>
-        </Card>
+
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {setMode === "exam" ? (
+                <>
+                  <ModeCard
+                    tone="exam"
+                    icon={<TimerReset className="h-4 w-4" />}
+                    title="Exam Simulation"
+                    subtitle="Strict clock · randomized order · pro-priority items"
+                    bullets={[
+                      supportsGuidedExamReview
+                        ? "Walkthroughs unlock after each answer"
+                        : "Explanations show at end of exam",
+                      "Professor-flagged items are always included",
+                      "End-of-exam review with topic breakdown"
+                    ]}
+                    cta={
+                      <Button onClick={startExamMode} className="w-full justify-between">
+                        Start exam
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    }
+                    active
+                  />
+                  <ModeCard
+                    icon={<GraduationCap className="h-4 w-4" />}
+                    title="Practice this bank"
+                    subtitle="No timer · explanations on demand"
+                    bullets={[
+                      "Use it to warm up before the exam mode",
+                      "Best/last score still tracks per attempt"
+                    ]}
+                    cta={
+                      <Button onClick={startTestMode} variant="secondary" className="w-full justify-between">
+                        Practice mode
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    }
+                  />
+                </>
+              ) : (
+                <>
+                  <ModeCard
+                    icon={<GraduationCap className="h-4 w-4" />}
+                    title="Test Mode"
+                    subtitle="Answer-first flow · graded accuracy"
+                    bullets={[
+                      "Submit and see if you got it",
+                      "Explanations on demand, no timer",
+                      "Best for momentum and topic repetition"
+                    ]}
+                    cta={
+                      <Button onClick={startTestMode} className="w-full justify-between">
+                        Start Test Mode
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    }
+                    active={attemptMode === "test"}
+                  />
+                  <ModeCard
+                    tone="study"
+                    icon={<BookOpenCheck className="h-4 w-4" />}
+                    title="Study Walkthrough"
+                    subtitle="Hints first · full reasoning after submit"
+                    bullets={[
+                      "Hint-by-hint guidance before answering",
+                      "Why this answer · why others are wrong",
+                      "Best for the first time through a topic"
+                    ]}
+                    cta={
+                      <Button onClick={startStudyMode} variant="secondary" className="w-full justify-between">
+                        Start Walkthrough
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    }
+                    active={attemptMode === "study"}
+                  />
+                  <ModeCard
+                    tone="timed"
+                    icon={<Timer className="h-4 w-4" />}
+                    title="Timed Exam"
+                    subtitle="Strict clock · randomized order"
+                    bullets={[
+                      "Pacing rehearsal under exam pressure",
+                      "End-of-exam review and topic breakdown",
+                      "Use it once you feel solid on the bank"
+                    ]}
+                    cta={
+                      <Button onClick={startTimedMode} variant="ghost" className="w-full justify-between">
+                        Start Timed Exam
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    }
+                    active={attemptMode === "timed"}
+                  />
+                </>
+              )}
+            </div>
+
+            <p className="text-[12px] text-text-secondary">
+              Current attempt length: <span className="font-mono font-bold text-text">{lengthLabel}</span>{" "}
+              question{settings.questionCount === 1 ? "" : "s"}.
+            </p>
+          </section>
+        )}
+
+        {/* Helpful note */}
+        <div className="rounded-[1.1rem] border border-borderc bg-soft px-4 py-3 text-[12.5px] text-text-secondary">
+          {quiz.courseId === "differential-equations"
+            ? "Differential Equations mode: open-ended free response with hint-by-hint guidance and walkthrough self-check."
+            : "Tip: switch lanes anytime — your selected attempt length and randomization carry over."}
+        </div>
 
         <QuizSettingsModal
           open={settingsOpen}

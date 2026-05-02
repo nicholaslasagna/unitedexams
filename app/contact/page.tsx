@@ -1,12 +1,24 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import { BookOpenCheck, Building2, Mail, Send, UsersRound } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpenCheck,
+  Building2,
+  GraduationCap,
+  Mail,
+  Send,
+  Sparkles,
+  UsersRound
+} from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { SectionHeading } from "@/components/ui/section-heading";
 import { PublicShell } from "@/components/layout/public-shell";
 import { useAppData } from "@/lib/app-data-context";
 
@@ -20,16 +32,39 @@ const categories: ContactCategory[] = [
   "Other"
 ];
 
-const implementationCards = [
+const paths = [
   {
-    title: "Students",
-    description: "Ask us to help turn your class material into a focused United Exams study path.",
-    icon: UsersRound
+    role: "student",
+    icon: <UsersRound className="h-5 w-5" />,
+    tag: "Students",
+    title: "Bring this to a class I'm taking",
+    text: "Tell us which class is rough. We'll work with the instructor to spin up a course-native study hub for it.",
+    cta: "Suggest a class",
+    href: "/contact?intent=implementation&role=student",
+    accent: "from-cyan-500/15 to-blue-500/15",
+    border: "border-cyan-400/30"
   },
   {
-    title: "Teachers",
-    description: "Reach out about sections, assignments, announcements, exams, and course-specific review support.",
-    icon: BookOpenCheck
+    role: "teacher",
+    icon: <BookOpenCheck className="h-5 w-5" />,
+    tag: "Instructors",
+    title: "Use this for a course I teach",
+    text: "Sections, assignments, announcements, exam settings, and grading — all in one place. We handle the setup with you.",
+    cta: "Talk to us",
+    href: "/contact?intent=implementation&role=teacher",
+    accent: "from-fuchsia-500/15 to-violet-500/15",
+    border: "border-fuchsia-400/30"
+  },
+  {
+    role: "institution",
+    icon: <Building2 className="h-5 w-5" />,
+    tag: "Departments / Programs",
+    title: "Cover access for my department",
+    text: "Centralized billing, verified students, and a clean rollout across multiple sections. Premium gates disappear.",
+    cta: "Discuss a program",
+    href: "/contact?intent=implementation&role=institution",
+    accent: "from-emerald-500/15 to-teal-500/15",
+    border: "border-emerald-400/30"
   }
 ];
 
@@ -56,6 +91,9 @@ export default function ContactPage() {
       if (current) return current;
       if (role === "teacher") {
         return "I am interested in bringing United Exams into a course I teach. I would like to discuss section setup, course material, and how students would use it.";
+      }
+      if (role === "institution") {
+        return "I would like to discuss covering access for a department or program. The school is: ";
       }
       if (role === "student") {
         return "I am a student and would like United Exams implemented for one of my classes. The course is: ";
@@ -112,55 +150,109 @@ export default function ContactPage() {
 
   return (
     <PublicShell>
-      <div className="animate-fade-rise mx-auto w-full max-w-[1040px] space-y-6 py-2">
-        <section className="story-panel signal-grid overflow-hidden rounded-[1.6rem] border border-border-accent/70 p-5 shadow-elevated sm:p-6">
-          <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-            <div className="space-y-4">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-accent/25 bg-accent-subtle text-accent">
-                <Building2 className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-accent">Contact United Exams</p>
-                <h1 className="mt-2 max-w-[12ch] text-4xl font-display font-semibold leading-[0.96] tracking-tight text-text sm:text-[3.5rem]">
+      <div className="mx-auto w-full max-w-[1080px] space-y-10 pb-16">
+        {/* Hero */}
+        <section className="relative">
+          <div className="aurora absolute inset-0 -z-10 rounded-[2rem] opacity-90" aria-hidden />
+          <div className="premium-card glow-border p-5 sm:p-7 md:p-9">
+            <div className="grid gap-7 lg:grid-cols-[1fr_0.85fr] lg:items-center">
+              <div className="space-y-4">
+                <span className="eyebrow">
+                  <Sparkles className="h-3 w-3" />
+                  Contact United Exams
+                </span>
+                <h1 className="font-display text-[2.4rem] font-semibold leading-[1.02] tracking-tight text-text sm:text-[3.25rem]">
                   Bring better study into the room.
                 </h1>
-              </div>
-              <p className="max-w-2xl text-sm leading-relaxed text-text-secondary">
-                Students can request support for a hard class. Teachers can ask about using United Exams for course material, sections, review, assignments, and exam prep.
-              </p>
-              <p className="inline-flex items-center gap-2 rounded-full border border-borderc bg-surface/70 px-3 py-1.5 text-sm text-text transition-all duration-200 ease-out-expo">
-                <Mail className="h-4 w-4 text-accent" />
-                support@unitedexams.com
-              </p>
-            </div>
+                <p className="max-w-xl text-[15px] leading-relaxed text-text-secondary">
+                  Whether you&apos;re a student asking us to support a hard class,
+                  an instructor planning a section, or a department thinking about
+                  rollout — start here. We&apos;ll meet you where you are.
+                </p>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              {implementationCards.map((card) => {
-                const Icon = card.icon;
-                return (
-                  <div key={card.title} className="rounded-[1.25rem] border border-borderc bg-surface/70 p-4 shadow-subtle backdrop-blur">
-                    <Icon className="h-5 w-5 text-accent" />
-                    <p className="mt-3 text-lg font-display font-semibold text-text">{card.title}</p>
-                    <p className="mt-1.5 text-sm leading-relaxed text-text-secondary">{card.description}</p>
-                  </div>
-                );
-              })}
+                <div className="flex flex-wrap gap-2">
+                  <Badge tone="brand">Real humans reply</Badge>
+                  <Badge tone="success">Free to ask</Badge>
+                  <Badge>No sales calls unless you want one</Badge>
+                </div>
+
+                <p className="inline-flex items-center gap-2 rounded-full border border-borderc bg-surface/85 px-3 py-1.5 text-[13px] text-text">
+                  <Mail className="h-4 w-4 text-accent" />
+                  support@unitedexams.com
+                </p>
+              </div>
+
+              <div className="rounded-[1.4rem] border border-borderc bg-surface/85 p-5">
+                <p className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-accent">
+                  How this works
+                </p>
+                <ol className="mt-3 space-y-2.5">
+                  {[
+                    "Pick the path that matches you.",
+                    "We reply with a short plan and any questions.",
+                    "We work directly with the instructor or department to set things up.",
+                    "Verified students never see a paywall."
+                  ].map((step, idx) => (
+                    <li key={step} className="flex items-start gap-3">
+                      <span className="step-badge mt-0.5 shrink-0">{idx + 1}</span>
+                      <span className="text-[13px] leading-relaxed text-text-secondary">{step}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
             </div>
           </div>
         </section>
 
+        {/* Three paths */}
+        <section className="space-y-5">
+          <SectionHeading
+            eyebrow="Pick a path"
+            title="Three ways to bring this to your class."
+          />
+          <div className="grid gap-4 lg:grid-cols-3">
+            {paths.map((p) => (
+              <Link
+                key={p.role}
+                href={p.href}
+                className={`group relative flex flex-col overflow-hidden rounded-[1.4rem] border ${p.border} bg-gradient-to-br ${p.accent} p-5 transition-all duration-200 ease-out-expo hover:-translate-y-0.5 hover:shadow-card-hover`}
+              >
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-borderc bg-surface text-accent">
+                  {p.icon}
+                </span>
+                <p className="mt-4 text-[10.5px] font-bold uppercase tracking-[0.18em] text-accent">
+                  {p.tag}
+                </p>
+                <p className="mt-1 font-display text-lg font-semibold text-text">{p.title}</p>
+                <p className="mt-2 flex-1 text-[13.5px] leading-relaxed text-text-secondary">{p.text}</p>
+                <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent transition-transform duration-200 group-hover:translate-x-0.5">
+                  {p.cta}
+                  <ArrowRight className="h-4 w-4" />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* Form */}
         <Card>
           <CardHeader>
-            <h2 className="text-display-md font-display font-semibold">Send a message</h2>
+            <SectionHeading
+              eyebrow="Send a message"
+              title="Tell us about your class."
+              description="Include the course code, school, and what kind of help you're looking for. The more context, the faster we can respond."
+            />
           </CardHeader>
           <CardBody>
             {!authReady ? (
-              <p className="text-sm text-muted">Checking account status…</p>
+              <p className="text-sm text-text-secondary">Checking account status…</p>
             ) : isAuthenticated ? (
               <form className="space-y-4" onSubmit={onSubmit}>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Subject (optional)</label>
+                    <label className="text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+                      Subject (optional)
+                    </label>
                     <Input
                       value={subject}
                       onChange={(event) => setSubject(event.target.value)}
@@ -169,7 +261,9 @@ export default function ContactPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Category</label>
+                    <label className="text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+                      Category
+                    </label>
                     <select
                       value={category}
                       onChange={(event) => setCategory(event.target.value as ContactCategory)}
@@ -183,7 +277,9 @@ export default function ContactPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Message</label>
+                  <label className="text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+                    Message
+                  </label>
                   <textarea
                     required
                     minLength={20}
@@ -195,10 +291,14 @@ export default function ContactPage() {
                 </div>
 
                 {status ? (
-                  <p className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm text-muted">{status}</p>
+                  <p className="rounded-lg border border-borderc bg-soft px-3 py-2 text-sm text-text-secondary">
+                    {status}
+                  </p>
                 ) : null}
                 {warning ? (
-                  <p className="rounded-lg border border-warn/40 bg-warn/10 px-3 py-2 text-sm text-warn">{warning}</p>
+                  <p className="rounded-lg border border-warn/40 bg-warn/10 px-3 py-2 text-sm text-warn">
+                    {warning}
+                  </p>
                 ) : null}
 
                 <div className="flex flex-wrap gap-3">
@@ -213,14 +313,22 @@ export default function ContactPage() {
               </form>
             ) : (
               <div className="space-y-4">
-                <p className="text-sm text-muted text-text-secondary">
-                  Email us directly, or sign in from the top navigation if you want an in-app request with account context and recent activity attached.
+                <p className="text-[14px] leading-relaxed text-text-secondary">
+                  Email us directly, or sign in from the top navigation if you want
+                  an in-app request with account context attached.
                 </p>
                 <div className="flex flex-wrap gap-3">
                   <Button asChild variant="secondary">
                     <a href="mailto:support@unitedexams.com?subject=Bring%20United%20Exams%20to%20a%20class">
+                      <Mail className="h-4 w-4" />
                       Email support@unitedexams.com
                     </a>
+                  </Button>
+                  <Button asChild variant="ghost">
+                    <Link href="/signup">
+                      <GraduationCap className="h-4 w-4" />
+                      Create an account first
+                    </Link>
                   </Button>
                 </div>
               </div>

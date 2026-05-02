@@ -729,3 +729,405 @@ html.theme-transitioning *::after {
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--border-bright));
 }
+
+/* ══════════════════════════════════════════════
+   Premium surfaces — added for the v2 polish pass
+   ══════════════════════════════════════════════ */
+
+/* Aurora hero — drifting layered gradient blobs */
+.aurora {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.aurora::before,
+.aurora::after {
+  content: "";
+  position: absolute;
+  inset: -25%;
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(72px);
+  opacity: 0.85;
+  will-change: transform;
+}
+
+:root.dark .aurora::before {
+  background:
+    radial-gradient(circle at 12% 18%, hsl(var(--brand-1) / 0.55), transparent 48%),
+    radial-gradient(circle at 78% 28%, hsl(var(--brand-2) / 0.42), transparent 52%),
+    radial-gradient(circle at 50% 88%, hsl(var(--brand-3) / 0.36), transparent 55%);
+  animation: auroraDrift 28s ease-in-out infinite;
+}
+
+:root.dark .aurora::after {
+  background:
+    radial-gradient(circle at 80% 80%, hsl(var(--accent) / 0.32), transparent 50%),
+    radial-gradient(circle at 20% 64%, hsl(var(--brand-2) / 0.28), transparent 56%);
+  animation: auroraDrift 36s ease-in-out infinite reverse;
+  opacity: 0.75;
+}
+
+:root:not(.dark) .aurora::before {
+  background:
+    radial-gradient(circle at 12% 18%, hsl(var(--brand-1) / 0.18), transparent 48%),
+    radial-gradient(circle at 78% 28%, hsl(var(--brand-2) / 0.16), transparent 52%),
+    radial-gradient(circle at 50% 88%, hsl(var(--brand-3) / 0.14), transparent 55%);
+  animation: auroraDrift 28s ease-in-out infinite;
+}
+
+:root:not(.dark) .aurora::after {
+  background:
+    radial-gradient(circle at 80% 80%, hsl(var(--accent) / 0.12), transparent 50%),
+    radial-gradient(circle at 20% 64%, hsl(var(--brand-2) / 0.1), transparent 56%);
+  animation: auroraDrift 36s ease-in-out infinite reverse;
+  opacity: 0.7;
+}
+
+@keyframes auroraDrift {
+  0%, 100% { transform: scale(1) translate3d(0, 0, 0); }
+  33% { transform: scale(1.06) translate3d(2%, -1.5%, 0); }
+  66% { transform: scale(1.1) translate3d(-1.5%, 2%, 0); }
+}
+
+html[data-reduce-motion="on"] .aurora::before,
+html[data-reduce-motion="on"] .aurora::after {
+  animation: none;
+}
+
+/* Spotlight cursor effect (subtle) for premium hero panels */
+.spotlight {
+  position: relative;
+}
+.spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    560px circle at var(--spotlight-x, 50%) var(--spotlight-y, 0%),
+    hsl(var(--accent) / 0.14),
+    transparent 60%
+  );
+  transition: opacity 200ms ease;
+}
+
+/* Subtle starfield for hero / dark surfaces */
+.starfield {
+  background-image:
+    radial-gradient(1px 1px at 12% 22%, hsl(var(--text) / 0.42) 50%, transparent 51%),
+    radial-gradient(1px 1px at 28% 64%, hsl(var(--text) / 0.36) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 47% 18%, hsl(var(--accent) / 0.6) 50%, transparent 51%),
+    radial-gradient(1px 1px at 64% 80%, hsl(var(--text) / 0.44) 50%, transparent 51%),
+    radial-gradient(1px 1px at 82% 36%, hsl(var(--text) / 0.5) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 92% 72%, hsl(var(--accent) / 0.55) 50%, transparent 51%);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  opacity: 0.55;
+}
+:root:not(.dark) .starfield { opacity: 0.25; }
+
+/* Diagonal grain — gives the hero a quiet textural feel */
+.grain {
+  background-image:
+    linear-gradient(45deg, hsl(var(--border) / 0.06) 25%, transparent 25%, transparent 75%, hsl(var(--border) / 0.06) 75%),
+    linear-gradient(45deg, hsl(var(--border) / 0.06) 25%, transparent 25%, transparent 75%, hsl(var(--border) / 0.06) 75%);
+  background-position: 0 0, 7px 7px;
+  background-size: 14px 14px;
+}
+
+/* Premium card — base for hero/feature panels */
+.premium-card {
+  position: relative;
+  border-radius: 1.6rem;
+  border: 1px solid hsl(var(--border));
+  background:
+    linear-gradient(160deg, hsl(var(--surface-raised) / 0.98) 0%, hsl(var(--surface) / 0.94) 60%, hsl(var(--surface-raised) / 0.92) 100%);
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow:
+    0 1px 0 hsl(var(--surface) / 0.12) inset,
+    0 24px 60px -28px hsl(var(--text) / 0.22);
+}
+:root.dark .premium-card {
+  box-shadow:
+    0 1px 0 hsl(var(--text) / 0.04) inset,
+    0 24px 60px -22px rgba(0, 0, 0, 0.6);
+}
+
+.premium-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 0%, hsl(var(--brand-1) / 0.08), transparent 38%),
+    radial-gradient(circle at 100% 30%, hsl(var(--brand-3) / 0.08), transparent 42%);
+}
+
+.premium-card > * { position: relative; z-index: 1; }
+
+/* Hairline (used for dividers, separators inside premium cards) */
+.hairline {
+  background: linear-gradient(90deg, transparent, hsl(var(--border-bright) / 0.6) 20%, hsl(var(--border-bright) / 0.6) 80%, transparent);
+}
+
+/* Mode card — premium tile for quiz launch (Test/Study/Timed/Exam) */
+.mode-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1.25rem 1.25rem 1.1rem;
+  border-radius: 1.25rem;
+  border: 1px solid hsl(var(--border));
+  background: linear-gradient(170deg, hsl(var(--surface) / 0.96), hsl(var(--surface-raised) / 0.84));
+  text-align: left;
+  transition:
+    transform 220ms var(--ease-out),
+    box-shadow 220ms var(--ease-out),
+    border-color 220ms var(--ease-out);
+  overflow: hidden;
+}
+.mode-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 220ms var(--ease-out);
+  background:
+    radial-gradient(circle at 80% 0%, hsl(var(--accent) / 0.18), transparent 60%);
+}
+.mode-card:hover {
+  transform: translateY(-2px);
+  border-color: hsl(var(--border-accent));
+  box-shadow: 0 18px 40px -22px hsl(var(--accent) / 0.45);
+}
+.mode-card:hover::after { opacity: 1; }
+.mode-card[data-active="true"] {
+  border-color: hsl(var(--accent) / 0.65);
+  box-shadow:
+    0 0 0 1px hsl(var(--accent) / 0.35),
+    0 18px 40px -22px hsl(var(--accent) / 0.5);
+}
+.mode-card[data-active="true"]::after { opacity: 1; }
+
+.mode-card[data-tone="study"] { background: linear-gradient(170deg, hsl(var(--surface) / 0.96), hsl(160 60% 8% / 0.4)); }
+.mode-card[data-tone="exam"]  { background: linear-gradient(170deg, hsl(var(--surface) / 0.96), hsl(38 60% 9% / 0.4)); }
+.mode-card[data-tone="timed"] { background: linear-gradient(170deg, hsl(var(--surface) / 0.96), hsl(355 60% 9% / 0.4)); }
+:root:not(.dark) .mode-card[data-tone="study"] { background: linear-gradient(170deg, hsl(var(--surface)), hsl(160 60% 96%)); }
+:root:not(.dark) .mode-card[data-tone="exam"]  { background: linear-gradient(170deg, hsl(var(--surface)), hsl(38 80% 96%)); }
+:root:not(.dark) .mode-card[data-tone="timed"] { background: linear-gradient(170deg, hsl(var(--surface)), hsl(355 80% 97%)); }
+
+/* Soft-lock card — gentle paywall surface */
+.lock-card {
+  position: relative;
+  border-radius: 1.25rem;
+  border: 1px dashed hsl(var(--border-bright));
+  background: linear-gradient(170deg, hsl(var(--surface) / 0.7), hsl(var(--soft) / 0.85));
+  padding: 1.1rem 1.2rem;
+  overflow: hidden;
+}
+.lock-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(45deg, hsl(var(--border) / 0.1) 0 1px, transparent 1px 12px);
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0.4;
+}
+
+/* Beautiful "ribbon" used on premium cards */
+.ribbon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.32rem 0.7rem;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  background: linear-gradient(135deg, hsl(var(--brand-1)), hsl(var(--brand-2)) 60%, hsl(var(--brand-3)));
+  color: hsl(var(--accent-fg));
+  box-shadow: 0 4px 16px -6px hsl(var(--accent) / 0.55);
+}
+
+/* Institution access indicator */
+.ribbon--institution {
+  background: linear-gradient(135deg, hsl(160 60% 38%), hsl(176 75% 34%));
+  box-shadow: 0 4px 16px -6px hsl(160 60% 38% / 0.5);
+}
+
+/* Glow border (for top-tier CTA cards) */
+.glow-border {
+  position: relative;
+}
+.glow-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(140deg, hsl(var(--brand-1) / 0.85), hsl(var(--brand-2) / 0.75) 60%, hsl(var(--brand-3) / 0.7));
+  -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Float-y entry */
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.animate-floaty {
+  animation: floatY 6s ease-in-out infinite;
+}
+html[data-reduce-motion="on"] .animate-floaty { animation: none; }
+
+/* Conic spin background — used inside hero "pulse" */
+@keyframes spinSlow {
+  to { transform: rotate(360deg); }
+}
+.conic-pulse {
+  position: absolute;
+  inset: -20%;
+  background: conic-gradient(from 0deg, hsl(var(--brand-1) / 0.5), hsl(var(--brand-2) / 0.4), hsl(var(--brand-3) / 0.45), hsl(var(--brand-1) / 0.5));
+  filter: blur(60px);
+  animation: spinSlow 26s linear infinite;
+  opacity: 0.55;
+}
+:root:not(.dark) .conic-pulse { opacity: 0.18; }
+html[data-reduce-motion="on"] .conic-pulse { animation: none; }
+
+/* "Tape" — animated marquee row */
+.tape {
+  position: relative;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+.tape-track {
+  display: inline-flex;
+  gap: 1rem;
+  padding-right: 1rem;
+  animation: marqueeDrift 36s linear infinite;
+  white-space: nowrap;
+}
+html[data-reduce-motion="on"] .tape-track { animation: none; }
+
+/* Pricing-card highlight border for "Recommended" tier */
+.pricing-popular {
+  position: relative;
+}
+.pricing-popular::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(150deg, hsl(var(--brand-1)), hsl(var(--brand-3)));
+  -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Section eyebrow — small uppercase tag with dot */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.42rem 0.85rem;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: hsl(var(--accent));
+  border: 1px solid hsl(var(--accent) / 0.25);
+  background: hsl(var(--accent-subtle) / 0.7);
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.eyebrow::before {
+  content: "";
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, hsl(var(--brand-2)), hsl(var(--brand-3)));
+  box-shadow: 0 0 12px hsl(var(--accent) / 0.6);
+}
+
+/* Display headline — extra-large hero text utility */
+.display-hero {
+  font-family: var(--font-outfit);
+  font-weight: 600;
+  font-size: clamp(2.5rem, 6.5vw, 5.5rem);
+  line-height: 0.94;
+  letter-spacing: -0.025em;
+  color: hsl(var(--text));
+}
+
+/* Subtle pulse on the "live" dot */
+@keyframes livePulse {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--success) / 0.55); }
+  50% { box-shadow: 0 0 0 8px hsl(var(--success) / 0); }
+}
+.live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: hsl(var(--success));
+  animation: livePulse 1.6s ease-out infinite;
+}
+html[data-reduce-motion="on"] .live-dot { animation: none; }
+
+/* Premium ring for exam readiness */
+@keyframes ringSpin {
+  to { transform: rotate(360deg); }
+}
+.readiness-ring {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+}
+.readiness-ring::before {
+  content: "";
+  position: absolute;
+  inset: -2%;
+  border-radius: 999px;
+  background: conic-gradient(from 0deg, hsl(var(--brand-1) / 0.6), hsl(var(--brand-2) / 0.55), hsl(var(--brand-3) / 0.55), hsl(var(--brand-1) / 0.6));
+  filter: blur(14px);
+  opacity: 0.55;
+  animation: ringSpin 18s linear infinite;
+}
+html[data-reduce-motion="on"] .readiness-ring::before { animation: none; }
+
+/* Numbered step badge */
+.step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, hsl(var(--brand-1)), hsl(var(--brand-3)));
+  color: hsl(var(--accent-fg));
+  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  box-shadow: 0 4px 14px -4px hsl(var(--accent) / 0.6);
+}
+
