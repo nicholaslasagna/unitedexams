@@ -1,14 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Crown, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppData } from "@/lib/app-data-context";
+import { useAccess } from "@/lib/hooks/use-access";
 
 type Variant = "hero" | "closing";
 
 export function PublicAuthActions({ variant }: { variant: Variant }) {
   const { authReady, isAuthenticated } = useAppData();
+  const access = useAccess();
+  // Centralized access also tells us whether to surface a quiet
+  // "Premium active" or "Institution access" badge under the CTAs.
+  const tierBadge = access.isInstitutionCovered ? (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-success">
+      <ShieldCheck className="h-3 w-3" />
+      Institution access
+    </span>
+  ) : access.isPremium ? (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-accent">
+      <Crown className="h-3 w-3" />
+      Premium active
+    </span>
+  ) : null;
 
   if (variant === "hero") {
     return (
@@ -36,6 +51,7 @@ export function PublicAuthActions({ variant }: { variant: Variant }) {
             <Button asChild variant="secondary" size="lg">
               <Link href="/app/courses">Open course catalog</Link>
             </Button>
+            {tierBadge ? <div className="self-center">{tierBadge}</div> : null}
           </>
         ) : (
           <>

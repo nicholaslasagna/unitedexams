@@ -23,10 +23,13 @@ const variantIcon: Record<Variant, ReactNode> = {
 };
 
 const variantLabel: Record<Variant, string> = {
+  // Short labels — used as compact chips on cards. The longer
+  // "Included with Premium" / "Included through your institution"
+  // microcopy lives in <PremiumUnlockNote /> and <InstitutionAccessNote />.
   free: "Free",
   premium: "Premium",
   institution: "Institution",
-  locked: "Locked"
+  locked: "Available in full access"
 };
 
 export function AccessBadge({
