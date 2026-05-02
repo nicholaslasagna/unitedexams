@@ -318,7 +318,17 @@ If the exam asks which diagram helps you understand the relationship between the
 
   - **Context diagram**
 
-### 2. Reuse question
+### 2. Object-class identification question
+
+If the exam asks which approaches help identify object classes for a class diagram, select:
+
+  - **grammatical analysis where nouns are objects/attributes and verbs are operations**
+  - **basing identification on tangible things in the application domain**
+  - **scenario-based analysis where you identify objects in each scenario**
+
+Do **not** select the mathematical class-density distractor or the flowchart-until-pattern distractor.
+
+### 3. Reuse question
 
 If the exam asks what can be reused during software development, the correct selections are:
 
@@ -327,13 +337,13 @@ If the exam asks what can be reused during software development, the correct sel
   - **Application systems**
   - **Architectural patterns**
 
-### 3. Observer-pattern relationship question
+### 4. Observer-pattern relationship question
 
 If the exam asks how observers relate to each other in the Observer pattern, the correct idea is:
 
   - **Observers do not know about the existence of other observers; they only know about changes in the observable (subject).**
 
-### 4. Costs of reuse question
+### 5. Costs of reuse question
 
 If the exam asks which costs are explicitly listed as costs of reuse, select:
 
@@ -344,20 +354,20 @@ If the exam asks which costs are explicitly listed as costs of reuse, select:
 
 Do **not** select the reliability-decrease distractor. Reuse normally increases reliability when the reused element is already mature/tested.
 
-### 5. Testing-goals question
+### 6. Testing-goals question
 
 If the exam asks the two things you are trying to do when you test software, select:
 
   - **discover situations in which the behavior of the software is incorrect**
   - **demonstrate that the software meets its requirements**
 
-### 6. Regression-testing question
+### 7. Regression-testing question
 
 If the exam asks which testing checks that changes have not broken previously working code, the answer is:
 
   - **Regression testing**
 
-### 7. Urgent-change question
+### 8. Urgent-change question
 
 If the exam asks what may cause urgent software changes, select:
 
@@ -365,7 +375,7 @@ If the exam asks what may cause urgent software changes, select:
   - **new government legislation**
   - **detection of critical faults**
 
-### 8. Types-of-maintenance question
+### 9. Types-of-maintenance question
 
 The three maintenance types you must know are:
 
@@ -654,6 +664,7 @@ const softwareEngineeringArchitectureCheatSheet = `## Software Engineering Final
 ### Guaranteed answers
 
   - first system/environment diagram -> **Context diagram**
+  - object-class identification -> **grammatical nouns/verbs, tangible domain things, scenario-based analysis**
   - reuse items -> **components, classes/objects, application systems, architectural patterns**
   - observer relationship -> **observers do not know about each other; they only react to subject changes**
   - reuse costs -> **search, buy, adapt/configure, integrate**
