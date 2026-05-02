@@ -1,5 +1,7 @@
 import { ProfessorSectionGradebookPage } from "@/features/professor/pages/section-gradebook";
 
+export const runtime = "edge";
+
 export default async function SectionGradebookRoutePage({
   params
 }: {

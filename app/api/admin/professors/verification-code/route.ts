@@ -9,7 +9,7 @@ const rotateCodeSchema = z.object({
   expiresAt: z.string().datetime().nullable().optional()
 });
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

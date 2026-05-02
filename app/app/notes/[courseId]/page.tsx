@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 
+export const runtime = "edge";
+
 const Markdown = dynamic(
   () => import("@/components/ui/markdown").then((module) => module.Markdown),
   {

@@ -8,7 +8,7 @@ const eventSchema = z.object({
   payload: z.record(z.string(), z.unknown()).optional()
 });
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

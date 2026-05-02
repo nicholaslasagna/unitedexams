@@ -12,7 +12,7 @@ const contactSchema = z.object({
   currentRoute: z.string().trim().max(512).optional()
 });
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

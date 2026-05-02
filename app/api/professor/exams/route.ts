@@ -20,7 +20,7 @@ const createExamSchema = z.object({
   published: z.boolean()
 });
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

@@ -21,7 +21,7 @@ const accessRulesSchema = z.object({
   openNotesAllowed: z.boolean().optional()
 });
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function POST(
   request: NextRequest,

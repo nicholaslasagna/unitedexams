@@ -3,6 +3,8 @@ import { PublicShell } from "@/components/layout/public-shell";
 import { QuizExperiencePageContent } from "@/features/study/quiz-experience-page";
 import { getQuizSet } from "@/data/seed";
 
+export const runtime = "edge";
+
 export async function generateMetadata({
   params
 }: {

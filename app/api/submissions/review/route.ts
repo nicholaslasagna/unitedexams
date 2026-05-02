@@ -19,7 +19,7 @@ const reviewSchema = z.discriminatedUnion("kind", [
   })
 ]);
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

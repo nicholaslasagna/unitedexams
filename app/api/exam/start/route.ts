@@ -14,7 +14,7 @@ const startExamSchema = z.object({
   turnstileToken: z.string().optional()
 });
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

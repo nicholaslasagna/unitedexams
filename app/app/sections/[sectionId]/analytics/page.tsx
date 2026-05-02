@@ -1,5 +1,7 @@
 import { ProfessorSectionAnalyticsPage } from "@/features/professor/pages/section-analytics";
 
+export const runtime = "edge";
+
 export default async function SectionAnalyticsRoutePage({
   params
 }: {

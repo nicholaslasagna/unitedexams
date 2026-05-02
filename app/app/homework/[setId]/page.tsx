@@ -1,5 +1,7 @@
 import { HomeworkExperiencePageContent } from "@/features/study/homework-experience-page";
 
+export const runtime = "edge";
+
 export default async function AppHomeworkSetRedirect({
   params
 }: {

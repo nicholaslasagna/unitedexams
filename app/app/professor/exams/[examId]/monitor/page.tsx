@@ -1,5 +1,7 @@
 import { ProfessorExamMonitorPage } from "@/features/exams/pages/professor-exam-monitor";
 
+export const runtime = "edge";
+
 export default async function ProfessorExamMonitorRoutePage({
   params
 }: {
