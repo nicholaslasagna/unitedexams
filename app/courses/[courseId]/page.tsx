@@ -3,6 +3,8 @@ import { PublicShell } from "@/components/layout/public-shell";
 import { CourseDetailContent } from "@/features/study/course-detail-page";
 import { getCourse } from "@/data/seed";
 
+export const runtime = "edge";
+
 export async function generateMetadata({
   params
 }: {

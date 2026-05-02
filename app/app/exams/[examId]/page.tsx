@@ -1,5 +1,7 @@
 import { StudentExamAttemptPage } from "@/features/exams/pages/student-exam-attempt";
 
+export const runtime = "edge";
+
 export default async function AppExamAttemptRoutePage({
   params
 }: {

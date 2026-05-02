@@ -12,7 +12,7 @@ const setVerificationSchema = z.object({
   approved: z.boolean()
 });
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function POST(
   request: NextRequest,

@@ -9,7 +9,7 @@ const heartbeatSchema = z.object({
   visibilityState: z.string().trim().max(32).optional()
 });
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

@@ -7,7 +7,7 @@ const removeSchema = z.object({
   ipHash: z.string().trim().min(16).optional()
 });
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function POST(
   request: NextRequest,

@@ -1,5 +1,7 @@
 import { CourseDetailContent } from "@/features/study/course-detail-page";
 
+export const runtime = "edge";
+
 export default async function CourseDetailPage({
   params
 }: {

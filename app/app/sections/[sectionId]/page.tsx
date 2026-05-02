@@ -1,5 +1,7 @@
 import { ProfessorSectionPage } from "@/features/professor/pages/section";
 
+export const runtime = "edge";
+
 export default async function SectionDetailPage({
   params
 }: {

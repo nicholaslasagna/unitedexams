@@ -1,5 +1,7 @@
 import { ProfessorSectionExamsPage } from "@/features/exams/pages/professor-section-exams";
 
+export const runtime = "edge";
+
 export default async function ProfessorSectionExamsRoutePage({
   params
 }: {

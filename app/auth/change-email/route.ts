@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { safeWriteAuditLog } from "@/lib/security/audit";
 
+export const runtime = "edge";
+
 const CHANGE_EMAIL_RATE_LIMIT_MS = 2 * 60 * 1000;
 
 type ChangeEmailAction = "request" | "resend";

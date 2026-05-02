@@ -11,7 +11,7 @@ const createMaterialSchema = z.object({
   attachments: z.array(z.string().trim().url().max(4000)).max(24).optional()
 });
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

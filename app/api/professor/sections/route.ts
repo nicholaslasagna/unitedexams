@@ -10,7 +10,7 @@ const createSectionSchema = z.object({
   courseId: z.string().trim().min(1).max(80)
 });
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

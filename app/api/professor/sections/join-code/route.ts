@@ -8,7 +8,7 @@ const regenerateSchema = z.object({
   sectionId: z.string().uuid()
 });
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

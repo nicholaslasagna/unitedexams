@@ -15,7 +15,7 @@ const createAssignmentSchema = z.object({
   gradingMode: z.enum(["auto", "manual", "mixed"]).optional()
 });
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

@@ -15,7 +15,7 @@ interface MfaListResponse {
   };
 }
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function POST() {
   const supabase = await createSupabaseServerClient();
