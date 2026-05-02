@@ -23,7 +23,6 @@ const updateExamSchema = z.object({
   published: z.boolean().optional()
 });
 
-export const runtime = "edge";
 
 export async function PATCH(
   request: NextRequest,

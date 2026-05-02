@@ -11,7 +11,6 @@ const verifySchema = z.object({
   action: z.enum(["signup", "login", "forgot-password", "reset-password"])
 });
 
-export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   let payload: z.infer<typeof verifySchema>;

@@ -13,7 +13,6 @@ const payloadSchema = z.object({
   rejectionReason: z.string().trim().max(500).nullable().optional()
 });
 
-export const runtime = "edge";
 
 export async function POST(
   request: NextRequest,

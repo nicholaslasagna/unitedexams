@@ -17,7 +17,6 @@ const updateGradingPolicySchema = z
     message: "Assignment and exam weights must total 100."
   });
 
-export const runtime = "edge";
 
 export async function PATCH(
   request: NextRequest,

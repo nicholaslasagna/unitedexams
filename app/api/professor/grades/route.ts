@@ -12,7 +12,6 @@ const upsertGradeSchema = z.object({
   feedback: z.string().max(12000).nullable().optional()
 });
 
-export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

@@ -8,7 +8,6 @@ const paramsSchema = z.object({
   quizSetId: z.string().uuid()
 });
 
-export const runtime = "edge";
 
 export async function DELETE(
   request: NextRequest,

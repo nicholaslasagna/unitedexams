@@ -3,7 +3,6 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { LEGAL_VERSION } from "@/lib/auth/legal";
 import { getClientIp, hashIpForStorage, userAgentSnippet } from "@/lib/auth/ip-protection";
 
-export const runtime = "edge";
 
 function deriveDisplayName(email: string | null | undefined, fallback: string) {
   const base = (email ?? "").split("@")[0]?.trim();

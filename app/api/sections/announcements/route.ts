@@ -68,7 +68,6 @@ function renderAnnouncementEmail(params: {
   return { html, text };
 }
 
-export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

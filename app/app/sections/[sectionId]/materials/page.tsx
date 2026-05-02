@@ -1,6 +1,5 @@
 import { ProfessorSectionMaterialsPage } from "@/features/professor/pages/section-materials";
 
-export const runtime = "edge";
 
 export default async function SectionMaterialsRoutePage({
   params

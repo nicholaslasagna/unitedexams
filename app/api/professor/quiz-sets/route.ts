@@ -25,7 +25,6 @@ const createQuizSetSchema = z.object({
   questions: z.array(questionSchema).min(1).max(500)
 });
 
-export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

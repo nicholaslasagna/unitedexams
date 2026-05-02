@@ -7,7 +7,6 @@ const deleteSchema = z.object({
   ipHash: z.string().trim().min(16)
 });
 
-export const runtime = "edge";
 
 export async function GET() {
   const supabase = await createSupabaseServerClient();

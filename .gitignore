@@ -8,4 +8,7 @@ yarn-error.log*
 pnpm-debug.log*
 .env*
 .npm-cache
+.npm
 tsconfig.tsbuildinfo
+.open-next
+.wrangler

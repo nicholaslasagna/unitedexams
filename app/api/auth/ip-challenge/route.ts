@@ -126,7 +126,6 @@ async function sendApprovalEmail(params: {
   return { ok: true };
 }
 
-export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
