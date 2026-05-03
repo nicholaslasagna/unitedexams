@@ -17,7 +17,7 @@ import {
  */
 export function HeroPreview() {
   return (
-    <div className="relative isolate">
+    <div className="relative isolate overflow-hidden rounded-[1.6rem]">
       <div className="conic-pulse absolute inset-[-30%]" />
       <div className="starfield absolute inset-0 -z-10 rounded-[1.6rem]" />
 

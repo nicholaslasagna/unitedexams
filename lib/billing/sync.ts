@@ -29,6 +29,17 @@ type SubscriptionRow = {
   cancel_at_period_end: boolean;
 };
 
+// Loose UUID v4-shaped check. We don't need crypto-grade validation —
+// just enough to reject obvious garbage (e.g. cuid, "test", "1234") that
+// CLI-triggered events sometimes attach to metadata. Real Supabase
+// auth.users ids are always UUID v4.
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isUuid(value: unknown): value is string {
+  return typeof value === "string" && UUID_RE.test(value);
+}
+
 const ALLOWED_STATUSES: SubscriptionRow["status"][] = [
   "active",
   "trialing",
@@ -44,10 +55,34 @@ export type SyncResult =
 
 export function stripeSubscriptionToRow(
   sub: Stripe.Subscription,
-  env: BillingEnv
+  env: BillingEnv,
+  /**
+   * Optional pre-resolved customer object. The webhook can pass this
+   * after expanding `sub.customer` so we can fall back to
+   * `customer.metadata.user_id` when `sub.metadata.user_id` is missing
+   * (e.g. subscriptions created out-of-band in the Stripe dashboard).
+   */
+  customer?: Stripe.Customer | Stripe.DeletedCustomer | null
 ): SyncResult {
-  // user_id is pinned at checkout via subscription_data.metadata.user_id.
-  const userId = sub.metadata?.user_id?.trim();
+  // Resolution order:
+  //   1. subscription.metadata.user_id (set by our checkout route)
+  //   2. customer.metadata.user_id     (also set by our checkout route)
+  // Both must shape-validate as a UUID — generic CLI-trigger events
+  // sometimes attach arbitrary strings here that we must reject so we
+  // never write a row with a non-FK-resolvable user_id.
+  let userId: string | undefined = sub.metadata?.user_id?.trim();
+  if (!isUuid(userId)) {
+    if (customer && !("deleted" in customer && customer.deleted)) {
+      const fromCustomer = (customer as Stripe.Customer).metadata?.user_id?.trim();
+      if (isUuid(fromCustomer)) {
+        userId = fromCustomer;
+      } else {
+        userId = undefined;
+      }
+    } else {
+      userId = undefined;
+    }
+  }
   if (!userId) {
     return { ok: false, reason: "missing_user_id" };
   }

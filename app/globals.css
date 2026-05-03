@@ -133,6 +133,20 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100%;
+  /*
+   * Defense-in-depth horizontal overflow guard.
+   *
+   * Decorative elements (aurora blobs, radial gradients, conic pulses)
+   * use negative inset / -right-X positioning. If any of them live in
+   * a parent that forgot `overflow: hidden`, their bleed would extend
+   * the document width and create a janky horizontal scroll on mobile.
+   *
+   * Setting overflow-x: clip here guarantees no decorative leak ever
+   * causes horizontal scroll, regardless of what new components add.
+   * `clip` (instead of `hidden`) avoids creating a scroll container,
+   * so position: sticky / fixed children continue to work normally.
+   */
+  overflow-x: clip;
 }
 
 body {
