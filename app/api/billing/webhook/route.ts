@@ -98,14 +98,37 @@ export async function POST(req: NextRequest) {
       case "customer.subscription.updated":
       case "customer.subscription.deleted": {
         const sub = event.data.object as Stripe.Subscription;
-        const sync = stripeSubscriptionToRow(sub, env);
+
+        // First pass: try sync using subscription.metadata.user_id only.
+        let sync = stripeSubscriptionToRow(sub, env);
+
+        // Fallback: if the subscription had no usable metadata.user_id,
+        // expand the customer once and retry. This catches subscriptions
+        // created out-of-band (Stripe dashboard) where the operator
+        // remembered to set customer.metadata.user_id but not the sub's.
+        if (!sync.ok && sync.reason === "missing_user_id") {
+          const customerRef =
+            typeof sub.customer === "string" ? sub.customer : sub.customer?.id ?? null;
+          if (customerRef) {
+            try {
+              const customer = await stripe.customers.retrieve(customerRef);
+              sync = stripeSubscriptionToRow(sub, env, customer);
+            } catch {
+              // Network/API failure — keep the original missing_user_id
+              // result. Auditing below makes the issue visible.
+            }
+          }
+        }
+
         if (!sync.ok) {
           await safeAudit(admin, null, "stripe.webhook", "subscription", sub.id, "error", {
             event_type: event.type,
             reason: sync.reason,
             detail: sync.detail
           });
-          // Don't 5xx — Stripe will keep retrying. We'll inspect manually.
+          // 200 with `skipped` so Stripe doesn't retry forever. Generic
+          // CLI-trigger events land here cleanly with reason='missing_user_id'
+          // or 'unknown_lookup_key'. No subscription row is written.
           return NextResponse.json({ ok: true, skipped: sync.reason });
         }
 
@@ -121,12 +144,24 @@ export async function POST(req: NextRequest) {
           .upsert(row, { onConflict: "stripe_subscription_id" });
 
         if (upsert.error) {
+          // FK violation (Postgres 23503) means the user_id doesn't
+          // exist in profiles — typically because the account was
+          // deleted while the subscription remained in Stripe. Don't
+          // retry forever; audit + 200 so an operator can clean up.
+          const isOrphanedUser = upsert.error.code === "23503";
           await safeAudit(admin, row.user_id, "stripe.webhook", "subscription", sub.id, "error", {
             event_type: event.type,
             stage: "upsert",
-            message: upsert.error.message
+            message: upsert.error.message,
+            orphaned_user: isOrphanedUser
           });
-          // Release the event log so Stripe's retry actually re-enters.
+          if (isOrphanedUser) {
+            // No retry — the Stripe sub references a Supabase user that
+            // doesn't exist any more. Operator should cancel the sub.
+            return NextResponse.json({ ok: true, skipped: "orphaned_user" });
+          }
+          // Transient DB error — release the event log so Stripe retries
+          // and the next attempt can succeed.
           await releaseEventLog();
           return NextResponse.json({ error: "Upsert failed." }, { status: 500 });
         }
