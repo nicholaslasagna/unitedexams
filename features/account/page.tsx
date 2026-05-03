@@ -33,6 +33,7 @@ import {
   validateRealName
 } from "@/lib/auth/display-name";
 import type { ProfileNameChangeRequestRow } from "@/features/account/api";
+import { PremiumStatusCard } from "@/components/billing/premium-status-card";
 
 function parseOnboardingParam() {
   if (typeof window === "undefined") return false;
@@ -420,8 +421,10 @@ export function AccountPageContent() {
     <div className="space-y-6">
       <section>
         <h1 className="text-display-lg font-semibold tracking-tight">Account</h1>
-        <p className="mt-2 text-sm text-text-secondary">Profile, courses, and leaderboard privacy controls.</p>
+        <p className="mt-2 text-sm text-text-secondary">Profile, billing, courses, and leaderboard privacy controls.</p>
       </section>
+
+      <PremiumStatusCard />
 
       <Card>
         <CardHeader>
