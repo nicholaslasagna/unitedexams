@@ -1,18 +1,149 @@
-<svg width="440" height="280" viewBox="0 0 440 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 440 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Computer Architecture — chip die and pipeline">
   <defs>
-    <linearGradient id="bg-ca" x1="18" y1="24" x2="420" y2="256" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0EA5E9"/>
-      <stop offset="1" stop-color="#1E1B4B"/>
+    <linearGradient id="ca-bg" x1="0" y1="0" x2="440" y2="280" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1a0f3a"/>
+      <stop offset="0.55" stop-color="#220f44"/>
+      <stop offset="1" stop-color="#0f0824"/>
     </linearGradient>
+    <radialGradient id="ca-glow" cx="0.3" cy="0.4" r="0.7">
+      <stop offset="0" stop-color="#c084fc" stop-opacity="0.32"/>
+      <stop offset="0.5" stop-color="#a855f7" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#a855f7" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="ca-grid" x="0" y="0" width="9" height="9" patternUnits="userSpaceOnUse">
+      <path d="M 9 0 L 0 0 0 9" fill="none" stroke="#c084fc" stroke-opacity="0.06" stroke-width="0.7"/>
+    </pattern>
+    <linearGradient id="ca-die" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1e1148"/>
+      <stop offset="1" stop-color="#160a36"/>
+    </linearGradient>
+    <linearGradient id="ca-stage1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#0891b2"/></linearGradient>
+    <linearGradient id="ca-stage2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#818cf8"/><stop offset="1" stop-color="#4f46e5"/></linearGradient>
+    <linearGradient id="ca-stage3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c084fc"/><stop offset="1" stop-color="#9333ea"/></linearGradient>
+    <linearGradient id="ca-stage4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f472b6"/><stop offset="1" stop-color="#db2777"/></linearGradient>
+    <linearGradient id="ca-stage5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fb923c"/><stop offset="1" stop-color="#ea580c"/></linearGradient>
   </defs>
-  <rect width="440" height="280" rx="22" fill="url(#bg-ca)"/>
-  <rect x="42" y="42" width="356" height="196" rx="14" fill="#0B1226" fill-opacity="0.48"/>
-  <rect x="74" y="82" width="292" height="120" rx="12" stroke="#93C5FD" stroke-opacity="0.6" stroke-width="2"/>
-  <rect x="98" y="104" width="84" height="76" rx="8" fill="#38BDF8" fill-opacity="0.3"/>
-  <rect x="192" y="104" width="70" height="24" rx="6" fill="#BFDBFE" fill-opacity="0.26"/>
-  <rect x="192" y="136" width="70" height="20" rx="6" fill="#BFDBFE" fill-opacity="0.2"/>
-  <rect x="270" y="104" width="70" height="52" rx="6" fill="#BFDBFE" fill-opacity="0.14"/>
-  <path d="M182 142H192" stroke="#E0F2FE" stroke-width="2"/>
-  <path d="M262 142H270" stroke="#E0F2FE" stroke-width="2"/>
-  <text x="60" y="66" fill="#E0F2FE" font-size="22" font-family="Inter, Arial, sans-serif" font-weight="700">Computer Architecture</text>
+
+  <!-- Background -->
+  <rect width="440" height="280" rx="22" fill="url(#ca-bg)"/>
+  <rect width="440" height="280" rx="22" fill="url(#ca-grid)"/>
+  <rect width="440" height="280" rx="22" fill="url(#ca-glow)"/>
+
+  <!-- ── Top half: chip die ────────────────────────────────── -->
+  <g transform="translate(150 24)">
+    <!-- Outer die package -->
+    <rect x="0" y="0" width="140" height="120" rx="6" fill="url(#ca-die)" stroke="#c084fc" stroke-opacity="0.5" stroke-width="1.2"/>
+
+    <!-- Pads along all 4 edges -->
+    <g fill="#c4b5fd" fill-opacity="0.7">
+      <rect x="14" y="-3" width="3" height="6" rx="1"/>
+      <rect x="26" y="-3" width="3" height="6" rx="1"/>
+      <rect x="38" y="-3" width="3" height="6" rx="1"/>
+      <rect x="50" y="-3" width="3" height="6" rx="1"/>
+      <rect x="62" y="-3" width="3" height="6" rx="1"/>
+      <rect x="74" y="-3" width="3" height="6" rx="1"/>
+      <rect x="86" y="-3" width="3" height="6" rx="1"/>
+      <rect x="98" y="-3" width="3" height="6" rx="1"/>
+      <rect x="110" y="-3" width="3" height="6" rx="1"/>
+      <rect x="122" y="-3" width="3" height="6" rx="1"/>
+      <rect x="14" y="117" width="3" height="6" rx="1"/>
+      <rect x="26" y="117" width="3" height="6" rx="1"/>
+      <rect x="38" y="117" width="3" height="6" rx="1"/>
+      <rect x="50" y="117" width="3" height="6" rx="1"/>
+      <rect x="62" y="117" width="3" height="6" rx="1"/>
+      <rect x="74" y="117" width="3" height="6" rx="1"/>
+      <rect x="86" y="117" width="3" height="6" rx="1"/>
+      <rect x="98" y="117" width="3" height="6" rx="1"/>
+      <rect x="110" y="117" width="3" height="6" rx="1"/>
+      <rect x="122" y="117" width="3" height="6" rx="1"/>
+      <rect x="-3" y="14" width="6" height="3" rx="1"/>
+      <rect x="-3" y="26" width="6" height="3" rx="1"/>
+      <rect x="-3" y="38" width="6" height="3" rx="1"/>
+      <rect x="-3" y="50" width="6" height="3" rx="1"/>
+      <rect x="-3" y="62" width="6" height="3" rx="1"/>
+      <rect x="-3" y="74" width="6" height="3" rx="1"/>
+      <rect x="-3" y="86" width="6" height="3" rx="1"/>
+      <rect x="-3" y="98" width="6" height="3" rx="1"/>
+      <rect x="137" y="14" width="6" height="3" rx="1"/>
+      <rect x="137" y="26" width="6" height="3" rx="1"/>
+      <rect x="137" y="38" width="6" height="3" rx="1"/>
+      <rect x="137" y="50" width="6" height="3" rx="1"/>
+      <rect x="137" y="62" width="6" height="3" rx="1"/>
+      <rect x="137" y="74" width="6" height="3" rx="1"/>
+      <rect x="137" y="86" width="6" height="3" rx="1"/>
+      <rect x="137" y="98" width="6" height="3" rx="1"/>
+    </g>
+
+    <!-- Inner die -->
+    <rect x="20" y="20" width="100" height="80" rx="3" fill="#0f0824" stroke="#c4b5fd" stroke-opacity="0.4" stroke-width="0.8"/>
+
+    <!-- Internal blocks (cores, cache, etc.) -->
+    <rect x="26" y="26" width="40" height="32" rx="2" fill="#1e1148" stroke="#c084fc" stroke-opacity="0.55" stroke-width="0.7"/>
+    <rect x="74" y="26" width="40" height="32" rx="2" fill="#1e1148" stroke="#c084fc" stroke-opacity="0.55" stroke-width="0.7"/>
+    <rect x="26" y="64" width="40" height="32" rx="2" fill="#1e1148" stroke="#c084fc" stroke-opacity="0.55" stroke-width="0.7"/>
+    <rect x="74" y="64" width="40" height="32" rx="2" fill="#22074a" stroke="#f472b6" stroke-opacity="0.7" stroke-width="0.9"/>
+
+    <!-- Block detail -->
+    <g fill="#c084fc" fill-opacity="0.45">
+      <rect x="30" y="30" width="14" height="2" rx="1"/>
+      <rect x="30" y="34" width="22" height="2" rx="1"/>
+      <rect x="30" y="38" width="18" height="2" rx="1"/>
+      <rect x="78" y="30" width="22" height="2" rx="1"/>
+      <rect x="78" y="34" width="14" height="2" rx="1"/>
+      <rect x="78" y="38" width="20" height="2" rx="1"/>
+      <rect x="30" y="68" width="20" height="2" rx="1"/>
+      <rect x="30" y="72" width="14" height="2" rx="1"/>
+      <rect x="30" y="76" width="22" height="2" rx="1"/>
+    </g>
+    <g fill="#fb7185" fill-opacity="0.85">
+      <rect x="78" y="68" width="22" height="2" rx="1"/>
+      <rect x="78" y="72" width="16" height="2" rx="1"/>
+      <rect x="78" y="76" width="20" height="2" rx="1"/>
+      <circle cx="108" cy="92" r="1.5"/>
+    </g>
+
+    <!-- Center crossing trace -->
+    <line x1="70" y1="20" x2="70" y2="100" stroke="#c084fc" stroke-opacity="0.45" stroke-width="0.8"/>
+    <line x1="20" y1="60" x2="120" y2="60" stroke="#c084fc" stroke-opacity="0.45" stroke-width="0.8"/>
+  </g>
+
+  <!-- ── Bottom half: 5-stage pipeline ───────────────────────── -->
+  <g transform="translate(30 178)">
+    <rect x="-6" y="-6" width="392" height="58" rx="10" fill="#0f0824" fill-opacity="0.6" stroke="#a78bfa" stroke-opacity="0.18"/>
+
+    <!-- IF -->
+    <rect x="0" y="0" width="68" height="46" rx="6" fill="url(#ca-stage1)" fill-opacity="0.92"/>
+    <text x="34" y="29" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700" fill="#0f0824" letter-spacing="0.5">IF</text>
+
+    <path d="M 70 23 L 80 23" stroke="#c4b5fd" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M 78 20 L 82 23 L 78 26 Z" fill="#c4b5fd"/>
+
+    <!-- ID -->
+    <rect x="84" y="0" width="68" height="46" rx="6" fill="url(#ca-stage2)" fill-opacity="0.92"/>
+    <text x="118" y="29" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700" fill="#0f0824" letter-spacing="0.5">ID</text>
+
+    <path d="M 154 23 L 164 23" stroke="#c4b5fd" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M 162 20 L 166 23 L 162 26 Z" fill="#c4b5fd"/>
+
+    <!-- EX (highlighted, slightly taller) -->
+    <rect x="168" y="-3" width="68" height="52" rx="7" fill="url(#ca-stage3)" stroke="#f472b6" stroke-width="1.6"/>
+    <text x="202" y="29" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700" fill="#0f0824" letter-spacing="0.5">EX</text>
+
+    <path d="M 238 23 L 248 23" stroke="#c4b5fd" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M 246 20 L 250 23 L 246 26 Z" fill="#c4b5fd"/>
+
+    <!-- MEM -->
+    <rect x="252" y="0" width="68" height="46" rx="6" fill="url(#ca-stage4)" fill-opacity="0.92"/>
+    <text x="286" y="29" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700" fill="#0f0824" letter-spacing="0.5">MEM</text>
+
+    <path d="M 322 23 L 332 23" stroke="#c4b5fd" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M 330 20 L 334 23 L 330 26 Z" fill="#c4b5fd"/>
+
+    <!-- WB -->
+    <rect x="336" y="0" width="44" height="46" rx="6" fill="url(#ca-stage5)" fill-opacity="0.92"/>
+    <text x="358" y="29" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700" fill="#0f0824" letter-spacing="0.5">WB</text>
+  </g>
+
+  <!-- Connection between chip die and pipeline -->
+  <line x1="220" y1="144" x2="220" y2="172" stroke="#c4b5fd" stroke-opacity="0.35" stroke-width="1" stroke-dasharray="3 3"/>
 </svg>
