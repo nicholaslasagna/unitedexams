@@ -165,13 +165,13 @@ export default function LandingPage() {
           />
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {courseAtlas.map((course) => (
+            {courseAtlas.map((course, idx) => (
               <Link
                 key={course.id}
                 href={`/courses/${course.id}`}
                 className="group relative flex flex-col overflow-hidden rounded-[1.4rem] border border-borderc bg-surface shadow-subtle transition-all duration-200 ease-out-expo hover:-translate-y-0.5 hover:border-border-accent hover:shadow-card-hover"
               >
-                <div className="relative h-36 overflow-hidden border-b border-borderc bg-soft">
+                <div className="relative h-40 overflow-hidden border-b border-borderc bg-soft">
                   <Image
                     src={course.artwork}
                     alt={`${course.name} artwork`}
@@ -182,6 +182,16 @@ export default function LandingPage() {
                   <div className="absolute left-3 top-3">
                     <Badge tone="accent">{course.code}</Badge>
                   </div>
+                  {/* Editorial volume numeral — small serif italic mark in
+                      the corner that signals "curated collection," not
+                      "generic catalog." Low contrast, intentionally quiet. */}
+                  <span
+                    aria-hidden
+                    className="absolute right-3 top-3 select-none font-display text-[11px] italic text-text-secondary/70"
+                    style={{ fontVariantNumeric: "oldstyle-nums" }}
+                  >
+                    № {String(idx + 1).padStart(2, "0")}
+                  </span>
                 </div>
                 <div className="flex flex-1 flex-col p-4">
                   <p className="font-display text-base font-semibold text-text">{course.name}</p>
