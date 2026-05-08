@@ -66,13 +66,31 @@ export function AuthShell({
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-bg px-4 py-6 text-text sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="ambient-glow" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,hsl(var(--brand-1)/0.18),transparent_44%),radial-gradient(circle_at_bottom_right,hsl(var(--brand-3)/0.14),transparent_40%),linear-gradient(180deg,hsl(var(--bg)),hsl(var(--bg)/0.96))]" />
-      <ConstellationPattern className="fixed" opacity={0.03} variant="default" />
+      {/*
+       * Decorative layers — restricted to lg+ viewports.
+       * On mobile, stacked backdrop-filters + 52px-blur mesh-hero
+       * pseudo-elements + a constellation overlay can peg iOS Safari's
+       * compositor for 10–20s before the form is fully painted. The
+       * AuthShell is meant to be focused for sign-in; the visual flair
+       * lives on landing pages instead.
+       */}
+      <div className="ambient-glow hidden lg:block" />
+      <div className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(circle_at_top_left,hsl(var(--brand-1)/0.18),transparent_44%),radial-gradient(circle_at_bottom_right,hsl(var(--brand-3)/0.14),transparent_40%),linear-gradient(180deg,hsl(var(--bg)),hsl(var(--bg)/0.96))] lg:block" />
+      <ConstellationPattern className="fixed hidden lg:block" opacity={0.03} variant="default" />
 
       <div className="relative z-[1] mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-[1280px] items-center justify-center">
-        <div className={cn("grid w-full gap-5 rounded-[2rem] border border-borderc/80 bg-surface/70 p-3 shadow-[0_24px_90px_hsl(var(--bg)/0.48)] backdrop-blur-2xl lg:grid-cols-[1.08fr_0.92fr] lg:p-5", className)}>
-          <section className="mesh-hero relative overflow-hidden rounded-[1.7rem] border border-borderc/70 bg-[linear-gradient(145deg,hsl(var(--surface-raised)/0.95),hsl(var(--surface)/0.8))] p-5 sm:p-6 lg:p-8">
+        <div className={cn(
+          "grid w-full gap-5 rounded-[2rem] border border-borderc/80 bg-surface/85 p-3 shadow-[0_24px_90px_hsl(var(--bg)/0.48)]",
+          // Heavy backdrop-blur is desktop-only — keeps mobile compositing cheap.
+          "lg:bg-surface/70 lg:backdrop-blur-2xl lg:grid-cols-[1.08fr_0.92fr] lg:p-5",
+          className
+        )}>
+          {/*
+           * Hero column — hidden on mobile. Avoids the mesh-hero blur
+           * pseudo-elements and the marketing copy the user must
+           * scroll past on a small screen.
+           */}
+          <section className="mesh-hero relative hidden overflow-hidden rounded-[1.7rem] border border-borderc/70 bg-[linear-gradient(145deg,hsl(var(--surface-raised)/0.95),hsl(var(--surface)/0.8))] p-5 sm:p-6 lg:block lg:p-8">
             <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,hsl(var(--brand-2)/0.18),transparent_70%)]" />
             <div className="relative flex h-full flex-col justify-between gap-6">
               <div className="space-y-6">
@@ -122,7 +140,12 @@ export function AuthShell({
             </div>
           </section>
 
-          <section className="rounded-[1.7rem] border border-borderc/70 bg-[linear-gradient(180deg,hsl(var(--surface)/0.92),hsl(var(--surface-raised)/0.82))] p-5 shadow-subtle backdrop-blur-xl sm:p-6 lg:p-8">
+          {/*
+           * Form column — backdrop-blur is desktop-only.
+           * On mobile we use a slightly more opaque surface instead;
+           * visual difference is negligible, perf gain is large.
+           */}
+          <section className="rounded-[1.7rem] border border-borderc/70 bg-surface/95 p-5 shadow-subtle sm:p-6 lg:bg-[linear-gradient(180deg,hsl(var(--surface)/0.92),hsl(var(--surface-raised)/0.82))] lg:p-8 lg:backdrop-blur-xl">
             <div className="mb-5 lg:hidden">
               <Link href="/" className="inline-flex items-center gap-2 rounded-xl border border-borderc bg-soft px-3 py-2">
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-brand-gradient text-accent-fg">
