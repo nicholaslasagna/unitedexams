@@ -2,8 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  HeartHandshake,
-  Sparkles
+  HeartHandshake
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -70,15 +69,19 @@ export default function LandingPage() {
 
           <div className="relative grid gap-8 px-1 py-3 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-10 lg:px-2 lg:py-6">
             <div className="space-y-6">
-              <span className="eyebrow">
-                <Sparkles className="h-3 w-3" />
-                The course-native study platform
-              </span>
+              {/* One understated mark, no sparkle icon — kicker style. */}
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-text-secondary">
+                Course-native study platform
+              </p>
 
+              {/*
+               * Editorial headline: italic-serif emphasis on the
+               * key phrase rather than a rainbow gradient. Real
+               * publications use italic for emphasis; "AI gradient
+               * SaaS" is what we're avoiding.
+               */}
               <h1 className="display-hero">
-                Study that{" "}
-                <span className="text-gradient">feels alive</span>
-                <span className="text-accent">.</span>
+                Study that <span className="italic text-accent">feels alive</span>.
               </h1>
 
               <p className="max-w-xl text-[16px] leading-relaxed text-text-secondary">
@@ -99,26 +102,12 @@ export default function LandingPage() {
                 <span className="hidden h-3 w-px bg-borderc sm:inline-block" />
                 <span>Verified school users see no paywalls</span>
               </div>
-
-              <div className="grid gap-2.5 pt-2 sm:grid-cols-3">
-                {[
-                  ["Course-native", "Everything stays tied to the class."],
-                  ["Immediate feedback", "Practice tells you what to fix."],
-                  ["Section-aware", "Sections, assignments, exams, posts."]
-                ].map(([title, text]) => (
-                  <div
-                    key={title}
-                    className="rounded-[1rem] border border-borderc bg-surface/72 p-3 backdrop-blur"
-                  >
-                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-accent">
-                      {title}
-                    </p>
-                    <p className="mt-1.5 text-[12.5px] leading-snug text-text-secondary">
-                      {text}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              {/*
+               * Removed the 3 "Course-native / Immediate feedback /
+               * Section-aware" pill cards — they restated what the
+               * subhead already says and stacked another row of
+               * decorated cards onto the hero. Calmer is better.
+               */}
             </div>
 
             <div className="relative">
@@ -151,7 +140,6 @@ export default function LandingPage() {
         {/* ─── FEATURED COURSES ────────────────────────────── */}
         <section className="space-y-6">
           <SectionHeading
-            eyebrow="Course atlas"
             title="Open a class. Start studying."
             description="The seeded course hubs are real. Each one bundles practice, walkthroughs, and reference material in one workspace."
             trailing={
@@ -244,11 +232,16 @@ export default function LandingPage() {
         </section>
 
         {/* ─── FINAL CTA ───────────────────────────────────── */}
-        <section className="relative">
-          <div className="aurora absolute inset-0 -z-10 rounded-[2rem] opacity-80" aria-hidden />
-          <div className="relative grid gap-6 overflow-hidden rounded-[2rem] border border-borderc bg-surface/72 p-6 shadow-elevated backdrop-blur-xl sm:p-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-10 lg:p-10">
+        {/*
+         * Calm closer. No aurora here — the hero already owns the
+         * brand-gradient moment; repeating it three times turns the
+         * page into an "AI marketing template." A solid surface with
+         * strong typography is more sophisticated.
+         */}
+        <section>
+          <div className="grid gap-6 rounded-[1.6rem] border border-borderc bg-surface p-6 sm:p-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-10 lg:p-10">
             <div className="space-y-4">
-              <span className="eyebrow">Step into it</span>
+              {/* No eyebrow — the headline carries the moment. */}
               <h2 className="font-display text-[2.1rem] font-semibold leading-[1.05] tracking-tight text-text sm:text-[2.6rem]">
                 The kind of study tool a student wishes their course already had.
               </h2>

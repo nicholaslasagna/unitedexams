@@ -22,13 +22,17 @@ const points = [
 
 export function InstitutionSection() {
   return (
-    <section className="relative">
-      <div className="aurora absolute inset-0 -z-10 rounded-[2rem] opacity-90" aria-hidden />
-
-      <div className="relative overflow-hidden rounded-[2rem] border border-borderc bg-surface/75 p-5 backdrop-blur-xl shadow-elevated sm:p-7 lg:p-9">
+    /*
+     * Editorial section — no aurora background, no backdrop-blur. The
+     * institution promise stands on its own typographically; visual
+     * decoration would dilute it. A single hairline-bordered card
+     * with calm interior layout reads as "considered," not "marketing."
+     */
+    <section>
+      <div className="rounded-[1.6rem] border border-borderc bg-surface p-5 sm:p-7 lg:p-9">
         <div className="grid gap-7 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div className="space-y-4">
-            <span className="eyebrow">Institution access</span>
+            {/* No eyebrow here — the headline itself names the topic. */}
             <h2 className="font-display text-[2.1rem] font-semibold leading-[1.05] tracking-tight text-text sm:text-[2.6rem]">
               When your class is covered, you never see a paywall.
             </h2>

@@ -35,7 +35,6 @@ export function WorkflowSplit() {
   return (
     <section className="space-y-6">
       <SectionHeading
-        eyebrow="Two workflows · one platform"
         title="Built for the people on both sides of the class."
         description="Students and instructors share the same course foundation, with separate workflows that respect each role."
       />
@@ -66,27 +65,25 @@ function WorkflowColumn({
   icon,
   tag,
   title,
-  steps,
-  accentClass,
-  ringClass
+  steps
 }: {
   icon: React.ReactNode;
   tag: string;
   title: string;
   steps: { title: string; text: string }[];
-  accentClass: string;
-  ringClass: string;
+  /** kept for API compatibility — no longer painted */
+  accentClass?: string;
+  ringClass?: string;
 }) {
   return (
-    <div
-      className={`relative overflow-hidden rounded-[1.5rem] border ${ringClass} bg-gradient-to-br ${accentClass} p-5 sm:p-6`}
-    >
-      <div className="absolute inset-0 -z-10 opacity-60">
-        <div className="absolute -top-20 left-1/2 h-60 w-60 -translate-x-1/2 rounded-full bg-[radial-gradient(circle,hsl(var(--accent)/0.16),transparent_70%)] blur-3xl" />
-      </div>
-
+    /*
+     * Calm column — hairline border on a solid surface, no gradient
+     * fill, no glowing radial blob, no backdrop-blur. The numbered
+     * steps are the content; nothing should compete with them.
+     */
+    <div className="rounded-[1.4rem] border border-borderc bg-surface p-5 sm:p-6">
       <div className="flex items-center gap-3">
-        <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-borderc bg-surface text-accent">
+        <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-borderc bg-soft text-accent">
           {icon}
         </span>
         <div>
@@ -99,7 +96,7 @@ function WorkflowColumn({
         {steps.map((step, idx) => (
           <li
             key={step.title}
-            className="flex gap-3 rounded-[1rem] border border-borderc/80 bg-surface/80 p-3 backdrop-blur"
+            className="flex gap-3 rounded-[1rem] border border-borderc bg-soft p-3"
           >
             <span className="step-badge mt-0.5 shrink-0">{idx + 1}</span>
             <div>

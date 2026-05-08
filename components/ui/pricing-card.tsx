@@ -33,19 +33,26 @@ export function PricingCard({
   footnote?: string;
   className?: string;
 }) {
+  /*
+   * Pricing cards used to use a glowing gradient border + glow shadow
+   * for the "Recommended" tier — that combo (glow + ribbon + accent
+   * tier icon) is the AI-marketing-template fingerprint. Now we mark
+   * the recommended tier with a slightly stronger border and a quiet
+   * top label. The pricing itself carries the weight.
+   */
   return (
     <div
       className={cn(
-        "relative flex h-full flex-col overflow-hidden rounded-[1.4rem] border border-borderc bg-surface p-6 shadow-subtle",
-        highlighted && "pricing-popular shadow-glow",
+        "relative flex h-full flex-col overflow-hidden rounded-[1.4rem] border bg-surface p-6 shadow-subtle",
+        highlighted ? "border-accent/45" : "border-borderc",
         className
       )}
     >
       {highlighted ? (
-        <span className="ribbon absolute right-5 top-5">
-          <Crown className="h-3 w-3" />
+        <p className="mb-3 inline-flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-accent">
+          <span className="inline-block h-1 w-1 rounded-full bg-accent" />
           Recommended
-        </span>
+        </p>
       ) : null}
 
       <div className="flex items-center gap-2">
