@@ -1,96 +1,77 @@
 <svg viewBox="0 0 440 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Theory of Automata — deterministic finite automaton">
   <defs>
-    <linearGradient id="ta-bg" x1="0" y1="0" x2="440" y2="280" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#062a26"/>
-      <stop offset="0.5" stop-color="#0a3a32"/>
-      <stop offset="1" stop-color="#031c19"/>
-    </linearGradient>
-    <radialGradient id="ta-glow" cx="0.55" cy="0.45" r="0.7">
-      <stop offset="0" stop-color="#34d399" stop-opacity="0.3"/>
-      <stop offset="0.55" stop-color="#10b981" stop-opacity="0.06"/>
-      <stop offset="1" stop-color="#10b981" stop-opacity="0"/>
-    </radialGradient>
-    <pattern id="ta-paper" x="0" y="0" width="22" height="22" patternUnits="userSpaceOnUse">
-      <line x1="0" y1="0" x2="22" y2="22" stroke="#34d399" stroke-opacity="0.04" stroke-width="0.5"/>
-    </pattern>
+    <style>
+      .ta-stroke { stroke: #6ee7b7; stroke-opacity: 0.85; stroke-width: 1.5; fill: none; }
+      .ta-stroke-soft { stroke: #6ee7b7; stroke-opacity: 0.5; stroke-width: 1; fill: none; }
+      .ta-state-fill { fill: #052016; }
+      .ta-text { fill: #ecfdf5; font-family: ui-serif, Georgia, "Times New Roman", serif; }
+      .ta-italic { font-style: italic; }
+    </style>
     <marker id="ta-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#a7f3d0"/>
-    </marker>
-    <marker id="ta-arrow-accent" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#fbbf24"/>
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6ee7b7"/>
     </marker>
   </defs>
 
-  <!-- Background -->
-  <rect width="440" height="280" rx="22" fill="url(#ta-bg)"/>
-  <rect width="440" height="280" rx="22" fill="url(#ta-paper)"/>
-  <rect width="440" height="280" rx="22" fill="url(#ta-glow)"/>
+  <!-- Solid ink background -->
+  <rect width="440" height="280" rx="22" fill="#06231d"/>
 
-  <!-- Edges (drawn under nodes so circles overlap them cleanly) -->
-  <g fill="none" stroke="#a7f3d0" stroke-opacity="0.85" stroke-width="1.6" stroke-linecap="round">
-    <!-- start arrow into q0 -->
-    <line x1="34" y1="156" x2="62" y2="156" marker-end="url(#ta-arrow)"/>
-    <!-- q0 → q1 (top arc) -->
-    <path d="M 100 142 C 130 100, 200 100, 230 142" marker-end="url(#ta-arrow)"/>
-    <!-- q1 → q0 (bottom arc, the return) -->
-    <path d="M 230 168 C 200 200, 130 200, 100 168" marker-end="url(#ta-arrow)"/>
-    <!-- q1 → q2 -->
-    <line x1="270" y1="156" x2="320" y2="156" marker-end="url(#ta-arrow)"/>
-    <!-- q2 self-loop (top) -->
-    <path d="M 348 122 C 340 92, 380 92, 376 122"/>
-    <line x1="372" y1="120" x2="376" y2="124" stroke="#a7f3d0" stroke-width="2"/>
-    <line x1="372" y1="120" x2="378" y2="118" stroke="#a7f3d0" stroke-width="2"/>
-  </g>
+  <!--
+    Three-state DFA, q0 → q1 → q2 (accept).
+    Edge labels in italic serif. Double circle on the accept state.
+    No "active state" highlight. No vector field. No corner notation
+    overload — just one quiet figure label.
+  -->
 
-  <!-- Highlighted "current input" path (accent gold) -->
-  <g fill="none" stroke="#fbbf24" stroke-opacity="0.95" stroke-width="2.2" stroke-linecap="round">
-    <line x1="270" y1="156" x2="320" y2="156" marker-end="url(#ta-arrow-accent)"/>
-  </g>
+  <!-- Edges (drawn first, under nodes) -->
+  <!-- start arrow into q0 -->
+  <line x1="34" y1="146" x2="62" y2="146" class="ta-stroke" marker-end="url(#ta-arrow)"/>
 
-  <!-- Edge labels (a, b — the alphabet) -->
-  <g font-family="ui-serif, Georgia, 'Times New Roman', serif" font-style="italic" font-size="14" fill="#ecfdf5">
-    <!-- q0 → q1 : a -->
-    <text x="161" y="105" text-anchor="middle" fill-opacity="0.92">a</text>
-    <!-- q1 → q0 : b -->
-    <text x="161" y="207" text-anchor="middle" fill-opacity="0.92">b</text>
-    <!-- q1 → q2 : a -->
-    <text x="295" y="146" text-anchor="middle" fill="#fde68a" font-weight="700">a</text>
-    <!-- q2 self-loop : b -->
-    <text x="358" y="86" text-anchor="middle" fill-opacity="0.92">b</text>
-  </g>
+  <!-- q0 → q1 (top arc) — labeled 'a' -->
+  <path d="M 102 134 C 132 96, 200 96, 230 134" class="ta-stroke" marker-end="url(#ta-arrow)"/>
+
+  <!-- q1 → q0 (bottom arc) — labeled 'b' -->
+  <path d="M 230 158 C 200 196, 132 196, 102 158" class="ta-stroke" marker-end="url(#ta-arrow)"/>
+
+  <!-- q1 → q2 — labeled 'a' -->
+  <line x1="270" y1="146" x2="316" y2="146" class="ta-stroke" marker-end="url(#ta-arrow)"/>
+
+  <!-- q2 self-loop on top — labeled 'b' -->
+  <path d="M 348 116 C 340 88, 380 88, 376 116" class="ta-stroke"/>
+  <path d="M 374 117 l 4 -4 l -2 7 z" fill="#6ee7b7"/>
 
   <!-- States -->
-  <!-- q0 (start) -->
+  <!-- q0 -->
   <g>
-    <circle cx="80" cy="156" r="26" fill="#062a26" stroke="#a7f3d0" stroke-width="2"/>
-    <text x="80" y="161" text-anchor="middle" font-family="ui-serif, Georgia, 'Times New Roman', serif" font-style="italic" font-size="16" font-weight="600" fill="#ecfdf5">q₀</text>
+    <circle cx="80" cy="146" r="24" class="ta-state-fill ta-stroke"/>
+    <text x="80" y="151" text-anchor="middle" class="ta-text ta-italic" font-size="15" font-weight="600">q₀</text>
   </g>
-
-  <!-- q1 (middle) -->
+  <!-- q1 -->
   <g>
-    <circle cx="250" cy="156" r="26" fill="#062a26" stroke="#a7f3d0" stroke-width="2"/>
-    <text x="250" y="161" text-anchor="middle" font-family="ui-serif, Georgia, 'Times New Roman', serif" font-style="italic" font-size="16" font-weight="600" fill="#ecfdf5">q₁</text>
+    <circle cx="250" cy="146" r="24" class="ta-state-fill ta-stroke"/>
+    <text x="250" y="151" text-anchor="middle" class="ta-text ta-italic" font-size="15" font-weight="600">q₁</text>
   </g>
-
-  <!-- q2 (accepting — double circle) -->
+  <!-- q2 (accepting) — double circle -->
   <g>
-    <circle cx="362" cy="156" r="30" fill="#062a26" stroke="#34d399" stroke-width="2"/>
-    <circle cx="362" cy="156" r="24" fill="none" stroke="#34d399" stroke-width="1.4"/>
-    <text x="362" y="161" text-anchor="middle" font-family="ui-serif, Georgia, 'Times New Roman', serif" font-style="italic" font-size="16" font-weight="600" fill="#d1fae5">q₂</text>
+    <circle cx="362" cy="146" r="28" class="ta-state-fill ta-stroke"/>
+    <circle cx="362" cy="146" r="22" class="ta-stroke-soft"/>
+    <text x="362" y="151" text-anchor="middle" class="ta-text ta-italic" font-size="15" font-weight="600">q₂</text>
   </g>
 
-  <!-- Whiteboard-style margin marks (small academic flourish) -->
-  <g stroke="#a7f3d0" stroke-opacity="0.18" stroke-width="0.8" stroke-linecap="round">
-    <line x1="22" y1="40" x2="22" y2="58"/>
-    <line x1="22" y1="68" x2="22" y2="76"/>
-    <line x1="22" y1="86" x2="22" y2="94"/>
+  <!-- Edge labels -->
+  <g class="ta-text ta-italic" font-size="13">
+    <!-- 'a' on the top arc q0→q1 -->
+    <text x="166" y="98" text-anchor="middle">a</text>
+    <!-- 'b' on the bottom arc q1→q0 -->
+    <text x="166" y="200" text-anchor="middle">b</text>
+    <!-- 'a' on q1→q2 -->
+    <text x="293" y="138" text-anchor="middle">a</text>
+    <!-- 'b' on q2 self-loop -->
+    <text x="362" y="80" text-anchor="middle">b</text>
   </g>
 
-  <!-- Tiny corner annotation: handwritten alphabet hint -->
-  <g font-family="ui-serif, Georgia, serif" font-style="italic" font-size="11" fill="#a7f3d0" fill-opacity="0.55">
-    <text x="32" y="248">Σ = {a, b}</text>
-  </g>
+  <!-- Quiet alphabet annotation, classical math style -->
+  <text x="32" y="246" class="ta-text ta-italic" font-size="11" fill-opacity="0.55">Σ = {a, b}</text>
 
-  <!-- Tiny dot at q0 to suggest the active position -->
-  <circle cx="80" cy="156" r="3.5" fill="#fbbf24"/>
+  <!-- Page number mark -->
+  <text x="412" y="22" text-anchor="end" class="ta-text ta-italic" font-size="9" fill-opacity="0.45">fig. 4</text>
 </svg>

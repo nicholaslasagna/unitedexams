@@ -1,120 +1,84 @@
-<svg viewBox="0 0 440 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Software Engineering — system architecture">
+<svg viewBox="0 0 440 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Software Engineering — UML class diagram">
   <defs>
-    <linearGradient id="se-bg" x1="0" y1="0" x2="440" y2="280" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#0a1736"/>
-      <stop offset="0.55" stop-color="#0e1c44"/>
-      <stop offset="1" stop-color="#071027"/>
-    </linearGradient>
-    <radialGradient id="se-glow" cx="0.62" cy="0.34" r="0.7">
-      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.35"/>
-      <stop offset="0.45" stop-color="#22d3ee" stop-opacity="0.08"/>
-      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
-    </radialGradient>
-    <pattern id="se-dots" x="0" y="0" width="14" height="14" patternUnits="userSpaceOnUse">
-      <circle cx="1" cy="1" r="0.9" fill="#7dd3fc" fill-opacity="0.18"/>
-    </pattern>
-    <linearGradient id="se-node-active" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#67e8f9"/>
-      <stop offset="1" stop-color="#22d3ee"/>
-    </linearGradient>
-    <filter id="se-soft" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="0.6"/>
-    </filter>
+    <style>
+      .se-stroke { stroke: #93c5fd; stroke-opacity: 0.85; }
+      .se-stroke-soft { stroke: #93c5fd; stroke-opacity: 0.45; }
+      .se-fill { fill: #0c1426; }
+      .se-text { fill: #e0e7ff; font-family: ui-serif, Georgia, "Times New Roman", serif; }
+      .se-mono { fill: #cbd5e1; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 8px; letter-spacing: 0.02em; }
+      .se-italic { font-style: italic; }
+    </style>
+    <marker id="se-empty-tri" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto">
+      <path d="M 1 1 L 11 6 L 1 11 z" fill="#0a1020" stroke="#93c5fd" stroke-width="1"/>
+    </marker>
+    <marker id="se-empty-diamond" viewBox="0 0 14 12" refX="13" refY="6" markerWidth="13" markerHeight="11" orient="auto">
+      <path d="M 1 6 L 7 1 L 13 6 L 7 11 z" fill="#0a1020" stroke="#93c5fd" stroke-width="1"/>
+    </marker>
   </defs>
 
-  <!-- Background -->
-  <rect width="440" height="280" rx="22" fill="url(#se-bg)"/>
-  <rect width="440" height="280" rx="22" fill="url(#se-dots)"/>
-  <rect width="440" height="280" rx="22" fill="url(#se-glow)"/>
+  <!-- Solid background -->
+  <rect width="440" height="280" rx="22" fill="#0a1020"/>
 
-  <!-- Soft grid lines (architectural feel) -->
-  <g stroke="#3b82f6" stroke-opacity="0.07" stroke-width="1">
-    <line x1="0" y1="70" x2="440" y2="70"/>
-    <line x1="0" y1="140" x2="440" y2="140"/>
-    <line x1="0" y1="210" x2="440" y2="210"/>
-    <line x1="110" y1="0" x2="110" y2="280"/>
-    <line x1="220" y1="0" x2="220" y2="280"/>
-    <line x1="330" y1="0" x2="330" y2="280"/>
+  <!--
+    Three UML classes laid out horizontally so the middle horizontal
+    band (which is what the catalog card crop shows) holds the most
+    important content. Reads left-to-right:
+      User  ──association──>  Order  ──aggregation──>  LineItem
+  -->
+
+  <!-- LEFT: User -->
+  <g transform="translate(20 96)">
+    <rect x="0" y="0" width="110" height="88" rx="2" class="se-fill se-stroke" stroke-width="1.3"/>
+    <line x1="0" y1="22" x2="110" y2="22" class="se-stroke" stroke-width="1"/>
+    <line x1="0" y1="52" x2="110" y2="52" class="se-stroke-soft" stroke-width="0.8"/>
+    <text x="55" y="15" text-anchor="middle" class="se-text" font-size="12" font-weight="700">User</text>
+    <text x="6" y="34" class="se-mono">- id: UUID</text>
+    <text x="6" y="44" class="se-mono">- email: str</text>
+    <text x="6" y="64" class="se-mono">+ login()</text>
+    <text x="6" y="74" class="se-mono">+ logout()</text>
   </g>
 
-  <!-- Connection traces (under nodes) -->
-  <g fill="none" stroke="#7dd3fc" stroke-opacity="0.55" stroke-width="1.4" stroke-linecap="round">
-    <path d="M 220 140 L 96 70"/>
-    <path d="M 220 140 L 360 64"/>
-    <path d="M 220 140 L 88 210"/>
-    <path d="M 220 140 L 360 210"/>
-    <path d="M 96 70 Q 158 92 220 140"/>
-  </g>
-  <g fill="none" stroke="#22d3ee" stroke-opacity="0.85" stroke-width="1.6" stroke-linecap="round">
-    <path d="M 220 140 L 320 140"/>
-  </g>
-
-  <!-- Trace tick markers along edges -->
-  <g fill="#bae6fd" fill-opacity="0.7">
-    <circle cx="156" cy="106" r="1.4"/>
-    <circle cx="290" cy="100" r="1.4"/>
-    <circle cx="156" cy="174" r="1.4"/>
-    <circle cx="290" cy="178" r="1.4"/>
-    <circle cx="270" cy="140" r="1.6"/>
+  <!-- MIDDLE: Order (slightly taller — visual anchor) -->
+  <g transform="translate(165 84)">
+    <rect x="0" y="0" width="110" height="112" rx="2" class="se-fill se-stroke" stroke-width="1.4"/>
+    <line x1="0" y1="22" x2="110" y2="22" class="se-stroke" stroke-width="1"/>
+    <line x1="0" y1="62" x2="110" y2="62" class="se-stroke-soft" stroke-width="0.8"/>
+    <text x="55" y="15" text-anchor="middle" class="se-text" font-size="12" font-weight="700">Order</text>
+    <text x="6" y="34" class="se-mono">- id: UUID</text>
+    <text x="6" y="44" class="se-mono">- total: Money</text>
+    <text x="6" y="54" class="se-mono">- placedAt: ts</text>
+    <text x="6" y="74" class="se-mono">+ submit()</text>
+    <text x="6" y="84" class="se-mono">+ cancel()</text>
+    <text x="6" y="94" class="se-mono">+ total()</text>
   </g>
 
-  <!-- Satellite modules: each is a small "service" rectangle -->
-  <g>
-    <!-- top-left -->
-    <rect x="68" y="50" width="56" height="40" rx="6" fill="#0b1d3d" stroke="#7dd3fc" stroke-opacity="0.5" stroke-width="1.2"/>
-    <rect x="74" y="56" width="44" height="3" rx="1.5" fill="#bae6fd" fill-opacity="0.7"/>
-    <rect x="74" y="63" width="32" height="3" rx="1.5" fill="#bae6fd" fill-opacity="0.4"/>
-    <rect x="74" y="70" width="38" height="3" rx="1.5" fill="#bae6fd" fill-opacity="0.4"/>
-    <circle cx="118" cy="84" r="2" fill="#22d3ee"/>
-
-    <!-- top-right -->
-    <rect x="332" y="44" width="56" height="40" rx="6" fill="#0b1d3d" stroke="#7dd3fc" stroke-opacity="0.5" stroke-width="1.2"/>
-    <rect x="338" y="50" width="44" height="3" rx="1.5" fill="#bae6fd" fill-opacity="0.7"/>
-    <rect x="338" y="57" width="28" height="3" rx="1.5" fill="#bae6fd" fill-opacity="0.4"/>
-    <rect x="338" y="64" width="36" height="3" rx="1.5" fill="#bae6fd" fill-opacity="0.4"/>
-
-    <!-- bottom-left -->
-    <rect x="60" y="190" width="56" height="40" rx="6" fill="#0b1d3d" stroke="#7dd3fc" stroke-opacity="0.5" stroke-width="1.2"/>
-    <rect x="66" y="196" width="44" height="3" rx="1.5" fill="#bae6fd" fill-opacity="0.7"/>
-    <rect x="66" y="203" width="32" height="3" rx="1.5" fill="#bae6fd" fill-opacity="0.4"/>
-    <rect x="66" y="210" width="40" height="3" rx="1.5" fill="#bae6fd" fill-opacity="0.4"/>
-
-    <!-- bottom-right -->
-    <rect x="332" y="190" width="56" height="40" rx="6" fill="#0b1d3d" stroke="#7dd3fc" stroke-opacity="0.5" stroke-width="1.2"/>
-    <rect x="338" y="196" width="44" height="3" rx="1.5" fill="#bae6fd" fill-opacity="0.7"/>
-    <rect x="338" y="203" width="36" height="3" rx="1.5" fill="#bae6fd" fill-opacity="0.4"/>
-    <rect x="338" y="210" width="28" height="3" rx="1.5" fill="#bae6fd" fill-opacity="0.4"/>
-    <circle cx="382" cy="223" r="2" fill="#22d3ee"/>
+  <!-- RIGHT: LineItem -->
+  <g transform="translate(310 96)">
+    <rect x="0" y="0" width="110" height="88" rx="2" class="se-fill se-stroke" stroke-width="1.3"/>
+    <line x1="0" y1="22" x2="110" y2="22" class="se-stroke" stroke-width="1"/>
+    <line x1="0" y1="52" x2="110" y2="52" class="se-stroke-soft" stroke-width="0.8"/>
+    <text x="55" y="15" text-anchor="middle" class="se-text" font-size="12" font-weight="700">LineItem</text>
+    <text x="6" y="34" class="se-mono">- sku: str</text>
+    <text x="6" y="44" class="se-mono">- qty: int</text>
+    <text x="6" y="64" class="se-mono">+ subtotal()</text>
   </g>
 
-  <!-- Center module — the active one, larger + glowing -->
-  <g>
-    <rect x="180" y="108" width="88" height="64" rx="8" fill="url(#se-node-active)" stroke="#22d3ee" stroke-width="1.4"/>
-    <!-- inner detail to suggest "code" -->
-    <rect x="190" y="118" width="52" height="3" rx="1.5" fill="#0a1736" fill-opacity="0.55"/>
-    <rect x="190" y="126" width="38" height="3" rx="1.5" fill="#0a1736" fill-opacity="0.4"/>
-    <rect x="200" y="134" width="46" height="3" rx="1.5" fill="#0a1736" fill-opacity="0.4"/>
-    <rect x="200" y="142" width="32" height="3" rx="1.5" fill="#0a1736" fill-opacity="0.4"/>
-    <rect x="190" y="150" width="44" height="3" rx="1.5" fill="#0a1736" fill-opacity="0.4"/>
-    <rect x="190" y="158" width="56" height="3" rx="1.5" fill="#0a1736" fill-opacity="0.55"/>
-    <!-- corner indicator -->
-    <circle cx="262" cy="116" r="3" fill="#0a1736"/>
-    <circle cx="262" cy="116" r="1.6" fill="#22d3ee"/>
-  </g>
+  <!--
+    Relationships:
+      User → Order : association (open arrow)   "places  *"
+      Order ◇→ LineItem : aggregation (open diamond on Order side)  "1..*"
+  -->
 
-  <!-- Scattered I/O ports along edges -->
-  <g fill="#22d3ee" fill-opacity="0.7">
-    <rect x="0" y="68" width="6" height="4" rx="1"/>
-    <rect x="0" y="138" width="6" height="4" rx="1"/>
-    <rect x="0" y="208" width="6" height="4" rx="1"/>
-    <rect x="434" y="98" width="6" height="4" rx="1"/>
-    <rect x="434" y="180" width="6" height="4" rx="1"/>
-  </g>
+  <!-- Association arrow: User → Order -->
+  <line x1="130" y1="140" x2="165" y2="140" class="se-stroke" stroke-width="1.3" marker-end="url(#se-empty-tri)"/>
+  <text x="148" y="132" text-anchor="middle" class="se-text se-italic" font-size="9.5" fill-opacity="0.85">places</text>
+  <text x="148" y="156" text-anchor="middle" class="se-mono">1 ..  *</text>
 
-  <!-- Subtle hatching in lower-left for texture -->
-  <g stroke="#7dd3fc" stroke-opacity="0.12" stroke-width="0.7">
-    <line x1="22" y1="252" x2="56" y2="252"/>
-    <line x1="22" y1="258" x2="48" y2="258"/>
-    <line x1="22" y1="264" x2="40" y2="264"/>
-  </g>
+  <!-- Aggregation: Order ◇— LineItem (diamond on Order side) -->
+  <line x1="275" y1="140" x2="310" y2="140" class="se-stroke" stroke-width="1.3" marker-start="url(#se-empty-diamond)"/>
+  <text x="293" y="132" text-anchor="middle" class="se-text se-italic" font-size="9.5" fill-opacity="0.85">contains</text>
+  <text x="293" y="156" text-anchor="middle" class="se-mono">1 ..  *</text>
+
+  <!-- Quiet figure label, classical academic mark -->
+  <text x="412" y="266" text-anchor="end" class="se-text se-italic" font-size="9" fill-opacity="0.45">fig. 1</text>
 </svg>

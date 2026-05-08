@@ -17,11 +17,15 @@ import {
  */
 export function HeroPreview() {
   return (
+    /*
+     * The product preview itself is the visual moment. We removed the
+     * spinning conic-gradient + glowing border that surrounded it —
+     * those decorations made the card look like a "generated SaaS
+     * landing template" rather than a real product surface. The mock
+     * UI inside is interesting on its own.
+     */
     <div className="relative isolate overflow-hidden rounded-[1.6rem]">
-      <div className="conic-pulse absolute inset-[-30%]" />
-      <div className="starfield absolute inset-0 -z-10 rounded-[1.6rem]" />
-
-      <div className="premium-card glow-border relative">
+      <div className="premium-card relative">
         {/* Top bar */}
         <div className="flex items-center justify-between gap-3 border-b border-borderc/70 px-4 py-3">
           <div className="flex items-center gap-2">
