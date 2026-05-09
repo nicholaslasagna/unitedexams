@@ -101,6 +101,30 @@ export default function SettingsPage() {
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [mfaRequired, setMfaRequired] = useState(false);
 
+  /*
+   * Account-deletion approval state for university-linked students.
+   * Mirrors the existing profile_name_change_requests pattern.
+   * Loaded on mount; refreshed after request/cancel actions.
+   */
+  type DeletionRequestRow = {
+    id: string;
+    status: "pending" | "approved" | "rejected" | "cancelled" | "fulfilled";
+    reason: string | null;
+    rejection_reason: string | null;
+    created_at: string;
+    approved_at: string | null;
+  };
+  const [deletionRequest, setDeletionRequest] = useState<DeletionRequestRow | null>(null);
+  const [deletionRequestLoading, setDeletionRequestLoading] = useState(false);
+  const [deletionReason, setDeletionReason] = useState("");
+  const [requestingDeletion, setRequestingDeletion] = useState(false);
+  const [cancellingRequest, setCancellingRequest] = useState(false);
+
+  // Branch flag — when true, the danger zone shows the request flow
+  // instead of the immediate-delete form. Computed from profile.
+  const requiresUniversityApproval =
+    profile.role === "student" && Boolean(profile.universityId);
+
   const mfaApi = useMemo<MfaApi | undefined>(() => {
     if (!supabase) return undefined;
     const authWithMfa = supabase.auth as unknown as { mfa?: MfaApi };
@@ -642,6 +666,93 @@ export default function SettingsPage() {
     }
   };
 
+  // Load the latest deletion request for university-linked students.
+  useEffect(() => {
+    if (!supabase || !user || !requiresUniversityApproval) {
+      setDeletionRequest(null);
+      return;
+    }
+    let active = true;
+    setDeletionRequestLoading(true);
+    void (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("account_deletion_requests")
+          .select("id, status, reason, rejection_reason, created_at, approved_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (!active) return;
+        if (error) {
+          setDeletionRequest(null);
+          return;
+        }
+        setDeletionRequest((data as DeletionRequestRow | null) ?? null);
+      } finally {
+        if (active) setDeletionRequestLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [supabase, user, requiresUniversityApproval]);
+
+  const requestDeletion = async () => {
+    if (!supabase) return;
+    setRequestingDeletion(true);
+    try {
+      const { error } = await supabase.rpc("request_account_deletion", {
+        reason_input: deletionReason.trim() || null
+      });
+      if (error) throw error;
+      // Re-fetch the row so the UI reflects the new pending state.
+      const { data } = await supabase
+        .from("account_deletion_requests")
+        .select("id, status, reason, rejection_reason, created_at, approved_at")
+        .eq("user_id", user?.id ?? "")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setDeletionRequest((data as DeletionRequestRow | null) ?? null);
+      setDeletionReason("");
+      push({
+        title: "Deletion request submitted",
+        description: "Your school will review and decide.",
+        tone: "success"
+      });
+    } catch (error) {
+      push({
+        title: "Could not submit deletion request",
+        description: (error as Error).message,
+        tone: "error"
+      });
+    } finally {
+      setRequestingDeletion(false);
+    }
+  };
+
+  const cancelDeletionRequest = async () => {
+    if (!supabase) return;
+    setCancellingRequest(true);
+    try {
+      const { error } = await supabase.rpc("cancel_my_account_deletion_request");
+      if (error) throw error;
+      setDeletionRequest((prev) =>
+        prev ? { ...prev, status: "cancelled" } : prev
+      );
+      push({ title: "Request cancelled", tone: "success" });
+    } catch (error) {
+      push({
+        title: "Could not cancel the request",
+        description: (error as Error).message,
+        tone: "error"
+      });
+    } finally {
+      setCancellingRequest(false);
+    }
+  };
+
   if (!ready) {
     return (
       <div className="space-y-4">
@@ -1061,22 +1172,148 @@ export default function SettingsPage() {
             <input ref={fileRef} type="file" accept="application/json" onChange={onImportFile} className="hidden" />
           </div>
 
+          {/*
+           * Danger Zone — branches on access tier.
+           *
+           * - Unaffiliated students / professors / admins: immediate
+           *   self-delete with the "DELETE" confirmation phrase.
+           * - University-linked students: must submit a deletion
+           *   request to their school, get it approved by a
+           *   university admin, then complete the delete with the
+           *   confirmation phrase. The RPC server-side guard refuses
+           *   any other path — the UI here just makes the flow legible.
+           */}
           <div className="rounded-xl border border-danger/30 bg-danger/10 p-4">
             <p className="text-sm font-semibold text-danger">Danger Zone</p>
-            <p className="mt-1 text-xs text-muted text-text-secondary">
-              This permanently deletes your account and all connected data.
-            </p>
-            <div className="mt-3 grid gap-2 md:grid-cols-[1fr_auto]">
-              <Input
-                value={deletePhrase}
-                onChange={(event) => setDeletePhrase(event.target.value)}
-                placeholder='Type "DELETE" to confirm'
-              />
-              <Button variant="ghost" onClick={deleteAccount} loading={deletingAccount}>
-                <Trash2 className="h-4 w-4" />
-                Delete account
-              </Button>
-            </div>
+
+            {requiresUniversityApproval ? (
+              deletionRequestLoading ? (
+                <p className="mt-2 text-xs text-text-secondary">
+                  Checking deletion request status…
+                </p>
+              ) : deletionRequest?.status === "pending" ? (
+                <div className="mt-2 space-y-3">
+                  <p className="text-xs text-text-secondary">
+                    Your school is reviewing your account deletion request. You&apos;ll
+                    be notified once a university admin approves or rejects it.
+                  </p>
+                  <div className="rounded-lg border border-borderc bg-surface/70 px-3 py-2 text-xs text-text-secondary">
+                    <p>
+                      <span className="font-semibold text-text">Status:</span>{" "}
+                      Pending review
+                    </p>
+                    <p className="mt-1">
+                      <span className="font-semibold text-text">Submitted:</span>{" "}
+                      {new Date(deletionRequest.created_at).toLocaleString()}
+                    </p>
+                    {deletionRequest.reason ? (
+                      <p className="mt-1">
+                        <span className="font-semibold text-text">Reason:</span>{" "}
+                        {deletionRequest.reason}
+                      </p>
+                    ) : null}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    onClick={cancelDeletionRequest}
+                    loading={cancellingRequest}
+                  >
+                    Cancel request
+                  </Button>
+                </div>
+              ) : deletionRequest?.status === "approved" ? (
+                <div className="mt-2 space-y-3">
+                  <p className="text-xs text-text-secondary">
+                    Your school approved your deletion request. To finish removing
+                    your account, type <span className="font-mono font-semibold text-text">DELETE</span> below
+                    and confirm. This is permanent.
+                  </p>
+                  <div className="grid gap-2 md:grid-cols-[1fr_auto]">
+                    <Input
+                      value={deletePhrase}
+                      onChange={(event) => setDeletePhrase(event.target.value)}
+                      placeholder='Type "DELETE" to confirm'
+                    />
+                    <Button
+                      variant="ghost"
+                      onClick={deleteAccount}
+                      loading={deletingAccount}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete account
+                    </Button>
+                  </div>
+                </div>
+              ) : deletionRequest?.status === "rejected" ? (
+                <div className="mt-2 space-y-3">
+                  <p className="text-xs text-text-secondary">
+                    Your school declined your deletion request.
+                    {deletionRequest.rejection_reason ? (
+                      <>
+                        {" "}Reason: <span className="italic">{deletionRequest.rejection_reason}</span>
+                      </>
+                    ) : null}{" "}
+                    You can submit a new request below.
+                  </p>
+                  <textarea
+                    value={deletionReason}
+                    onChange={(event) => setDeletionReason(event.target.value)}
+                    rows={3}
+                    maxLength={600}
+                    placeholder="Why are you requesting deletion? (optional)"
+                    className="w-full rounded-lg border border-borderc bg-surface/70 px-3 py-2 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+                  />
+                  <Button
+                    variant="ghost"
+                    onClick={requestDeletion}
+                    loading={requestingDeletion}
+                  >
+                    Submit new request
+                  </Button>
+                </div>
+              ) : (
+                <div className="mt-2 space-y-3">
+                  <p className="text-xs text-text-secondary">
+                    Your account is linked to a university. Account deletion
+                    requires approval from a university admin at your school —
+                    this protects coursework, attempts, and grades from being
+                    erased mid-term. Submit a request and we&apos;ll forward it.
+                  </p>
+                  <textarea
+                    value={deletionReason}
+                    onChange={(event) => setDeletionReason(event.target.value)}
+                    rows={3}
+                    maxLength={600}
+                    placeholder="Why are you requesting deletion? (optional)"
+                    className="w-full rounded-lg border border-borderc bg-surface/70 px-3 py-2 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+                  />
+                  <Button
+                    variant="ghost"
+                    onClick={requestDeletion}
+                    loading={requestingDeletion}
+                  >
+                    Request account deletion
+                  </Button>
+                </div>
+              )
+            ) : (
+              <>
+                <p className="mt-1 text-xs text-muted text-text-secondary">
+                  This permanently deletes your account and all connected data.
+                </p>
+                <div className="mt-3 grid gap-2 md:grid-cols-[1fr_auto]">
+                  <Input
+                    value={deletePhrase}
+                    onChange={(event) => setDeletePhrase(event.target.value)}
+                    placeholder='Type "DELETE" to confirm'
+                  />
+                  <Button variant="ghost" onClick={deleteAccount} loading={deletingAccount}>
+                    <Trash2 className="h-4 w-4" />
+                    Delete account
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         </CardBody>
       </Card>
