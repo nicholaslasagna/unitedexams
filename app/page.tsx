@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PublicShell } from "@/components/layout/public-shell";
 import { PublicAuthActions } from "@/components/public/public-auth-actions";
-import { HeroPreview } from "@/components/marketing/hero-preview";
+import { HeroIndex } from "@/components/marketing/hero-index";
 import { StudyModesSection } from "@/components/marketing/study-modes";
 import { WorkflowSplit } from "@/components/marketing/workflow-split";
 import { InstitutionSection } from "@/components/marketing/institution-section";
@@ -67,51 +67,53 @@ export default function LandingPage() {
         <section className="relative">
           <div className="aurora absolute inset-0 -z-10 rounded-[2rem] opacity-90" aria-hidden />
 
-          <div className="relative grid gap-8 px-1 py-3 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-10 lg:px-2 lg:py-6">
-            <div className="space-y-6">
-              {/* One understated mark, no sparkle icon — kicker style. */}
-              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-text-secondary">
-                Course-native study platform
+          <div className="relative grid gap-10 px-1 py-3 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-12 lg:px-2 lg:py-6">
+            <div className="space-y-7">
+              {/*
+               * Publication-style kicker — small caps mono, like a
+               * magazine masthead. Just two facts: what this is, when.
+               * No marketing voice.
+               */}
+              <p className="font-mono text-[10.5px] uppercase tracking-[0.32em] text-text-secondary">
+                Course-native study platform · Spring 2026
               </p>
 
               {/*
-               * Editorial headline: italic-serif emphasis on the
-               * key phrase rather than a rainbow gradient. Real
-               * publications use italic for emphasis; "AI gradient
-               * SaaS" is what we're avoiding.
+               * The brand mark IS the hero. Like a real publication —
+               * "The New Yorker" doesn't print "Stories that come alive"
+               * over their masthead. The wordmark, set huge in editorial
+               * Fraunces with one italic word for personality, does the
+               * work the marketing tagline used to do.
+               *
+               * Lifted from the Invincible VS reference: their hero is
+               * the game logo, big and confident, with no marketing pitch
+               * around it. The brand IS the message.
                */}
               <h1 className="display-hero">
-                Study that <span className="italic text-accent">feels alive</span>.
+                United <span className="italic text-accent">Exams</span>.
               </h1>
 
-              <p className="max-w-xl text-[16px] leading-relaxed text-text-secondary">
-                Course-native quizzes, walkthroughs, timed exam simulations, and
-                notes — anchored to the class, not a flashcard pile. Built for real
-                courses. Calm enough for daily use.
+              {/*
+               * Description — what this is, in plain language. Reads
+               * like a publication's subhead, not a SaaS pitch.
+               */}
+              <p className="max-w-xl font-display text-[18px] italic leading-relaxed text-text-secondary">
+                A workspace for the courses you&apos;re actually taking — quizzes,
+                walkthroughs, exam simulations, and notes, kept inside the
+                class they belong to.
               </p>
 
               <PublicAuthActions variant="hero" />
 
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[12.5px] text-text-secondary">
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="live-dot" />
-                  No credit card to try
-                </span>
-                <span className="hidden h-3 w-px bg-borderc sm:inline-block" />
-                <span>Free is generous</span>
-                <span className="hidden h-3 w-px bg-borderc sm:inline-block" />
-                <span>Verified school users see no paywalls</span>
-              </div>
-              {/*
-               * Removed the 3 "Course-native / Immediate feedback /
-               * Section-aware" pill cards — they restated what the
-               * subhead already says and stacked another row of
-               * decorated cards onto the hero. Calmer is better.
-               */}
+              {/* Quiet masthead-style trust line. */}
+              <p className="font-display text-[13px] italic leading-relaxed text-text-secondary">
+                No credit card to try · Free is generous · Verified school
+                users never see a paywall.
+              </p>
             </div>
 
             <div className="relative">
-              <HeroPreview />
+              <HeroIndex courses={courseAtlas} />
             </div>
           </div>
         </section>

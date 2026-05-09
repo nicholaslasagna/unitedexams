@@ -1,11 +1,26 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Outfit, Fira_Code } from "next/font/google";
+import { Outfit, Fira_Code, Fraunces } from "next/font/google";
 import { Providers } from "@/app/providers";
 import { SkipLink } from "@/components/ui/skip-link";
 import "@/app/globals.css";
 
+// Body / UI: Outfit — clean, neutral sans for everything functional.
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
+
+// Display: Fraunces — variable editorial serif with real personality.
+// Used on design-led sites (Apple, Stripe-quality publications) where the
+// goal is "considered, not generic SaaS." We use it for hero + section
+// titles only; body stays in Outfit to keep things readable on small
+// screens.
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  // Pull a few stylistic axes that give Fraunces its character.
+  axes: ["opsz", "SOFT", "WONK"],
+  display: "swap"
+});
+
 const firaCode = Fira_Code({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
@@ -70,7 +85,7 @@ const captchaBootScript = `
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${outfit.variable} ${firaCode.variable} font-sans`}>
+      <body className={`${outfit.variable} ${fraunces.variable} ${firaCode.variable} font-sans`}>
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
         <script dangerouslySetInnerHTML={{ __html: captchaBootScript }} />
         <SkipLink />
