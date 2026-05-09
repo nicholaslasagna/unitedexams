@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { PublicShell } from "@/components/layout/public-shell";
 import { PublicAuthActions } from "@/components/public/public-auth-actions";
 import { HeroIndex } from "@/components/marketing/hero-index";
+import { Reveal } from "@/components/ui/reveal";
 import { StudyModesSection } from "@/components/marketing/study-modes";
 import { WorkflowSplit } from "@/components/marketing/workflow-split";
 import { InstitutionSection } from "@/components/marketing/institution-section";
@@ -70,56 +71,46 @@ export default function LandingPage() {
           <div className="relative grid gap-10 px-1 py-3 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-12 lg:px-2 lg:py-6">
             <div className="space-y-7">
               {/*
-               * Publication-style kicker — small caps mono, like a
-               * magazine masthead. Just two facts: what this is, when.
-               * No marketing voice.
+               * Hero stagger — each element rises into place 80ms after
+               * the previous one. The kicker leads, then the wordmark,
+               * then the description, then CTAs, then the trust line.
+               * The Course Index sidebar follows after.
+               *
+               * Pure CSS animations (no JS) so above-the-fold reveals
+               * don't depend on hydration timing.
                */}
-              <p className="font-mono text-[10.5px] uppercase tracking-[0.32em] text-text-secondary">
+              <p className="reveal-up reveal-d-1 font-mono text-[10.5px] uppercase tracking-[0.32em] text-text-secondary">
                 Course-native study platform · Spring 2026
               </p>
 
-              {/*
-               * The brand mark IS the hero. Like a real publication —
-               * "The New Yorker" doesn't print "Stories that come alive"
-               * over their masthead. The wordmark, set huge in editorial
-               * Fraunces with one italic word for personality, does the
-               * work the marketing tagline used to do.
-               *
-               * Lifted from the Invincible VS reference: their hero is
-               * the game logo, big and confident, with no marketing pitch
-               * around it. The brand IS the message.
-               */}
-              <h1 className="display-hero">
+              <h1 className="reveal-up reveal-d-2 display-hero">
                 United <span className="italic text-accent">Exams</span>.
               </h1>
 
-              {/*
-               * Description — what this is, in plain language. Reads
-               * like a publication's subhead, not a SaaS pitch.
-               */}
-              <p className="max-w-xl font-display text-[18px] italic leading-relaxed text-text-secondary">
+              <p className="reveal-up reveal-d-3 max-w-xl font-display text-[18px] italic leading-relaxed text-text-secondary">
                 A workspace for the courses you&apos;re actually taking — quizzes,
                 walkthroughs, exam simulations, and notes, kept inside the
                 class they belong to.
               </p>
 
-              <PublicAuthActions variant="hero" />
+              <div className="reveal-up reveal-d-4">
+                <PublicAuthActions variant="hero" />
+              </div>
 
-              {/* Quiet masthead-style trust line. */}
-              <p className="font-display text-[13px] italic leading-relaxed text-text-secondary">
+              <p className="reveal-up reveal-d-5 font-display text-[13px] italic leading-relaxed text-text-secondary">
                 No credit card to try · Free is generous · Verified school
                 users never see a paywall.
               </p>
             </div>
 
-            <div className="relative">
+            <div className="reveal-up reveal-d-6 relative">
               <HeroIndex courses={courseAtlas} />
             </div>
           </div>
         </section>
 
         {/* ─── LIBRARY STATS STRIP ─────────────────────── */}
-        <section className="rounded-[1.5rem] border border-borderc bg-surface/85 px-5 py-4 sm:px-7">
+        <Reveal as="section" className="rounded-[1.5rem] border border-borderc bg-surface/85 px-5 py-4 sm:px-7">
           <div className="flex flex-wrap items-center justify-between gap-y-4">
             <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
               <Stat label="Courses" value={courseAtlas.length} />
@@ -134,33 +125,37 @@ export default function LandingPage() {
               </Link>
             </Button>
           </div>
-        </section>
+        </Reveal>
 
         {/* ─── STUDY MODES ─────────────────────────────────── */}
-        <StudyModesSection />
+        <Reveal>
+          <StudyModesSection />
+        </Reveal>
 
         {/* ─── FEATURED COURSES ────────────────────────────── */}
         <section className="space-y-6">
-          <SectionHeading
-            title="Open a class. Start studying."
-            description="The seeded course hubs are real. Each one bundles practice, walkthroughs, and reference material in one workspace."
-            trailing={
-              <Button asChild variant="ghost">
-                <Link href="/courses">
-                  All courses
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            }
-          />
+          <Reveal>
+            <SectionHeading
+              title="Open a class. Start studying."
+              description="The seeded course hubs are real. Each one bundles practice, walkthroughs, and reference material in one workspace."
+              trailing={
+                <Button asChild variant="ghost">
+                  <Link href="/courses">
+                    All courses
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              }
+            />
+          </Reveal>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {courseAtlas.map((course, idx) => (
-              <Link
-                key={course.id}
-                href={`/courses/${course.id}`}
-                className="group relative flex flex-col overflow-hidden rounded-[1.4rem] border border-borderc bg-surface shadow-subtle transition-all duration-200 ease-out-expo hover:-translate-y-0.5 hover:border-border-accent hover:shadow-card-hover"
-              >
+              <Reveal key={course.id} delay={idx * 100}>
+                <Link
+                  href={`/courses/${course.id}`}
+                  className="group relative flex h-full flex-col overflow-hidden rounded-[1.4rem] border border-borderc bg-surface shadow-subtle transition-all duration-200 ease-out-expo hover:-translate-y-0.5 hover:border-border-accent hover:shadow-card-hover"
+                >
                 <div className="relative h-40 overflow-hidden border-b border-borderc bg-soft">
                   <Image
                     src={course.artwork}
@@ -207,31 +202,40 @@ export default function LandingPage() {
                     </span>
                   </div>
                 </div>
-              </Link>
+                </Link>
+              </Reveal>
             ))}
           </div>
         </section>
 
         {/* ─── WORKFLOW SPLIT ──────────────────────────────── */}
-        <WorkflowSplit />
+        <Reveal>
+          <WorkflowSplit />
+        </Reveal>
 
         {/* ─── INSTITUTION ─────────────────────────────────── */}
-        <InstitutionSection />
+        <Reveal>
+          <InstitutionSection />
+        </Reveal>
 
         {/* ─── PRICING ─────────────────────────────────────── */}
-        <PricingSection />
+        <Reveal>
+          <PricingSection />
+        </Reveal>
 
         {/* ─── ACCESS MODEL ────────────────────────────────── */}
-        <AccessModelSection />
+        <Reveal>
+          <AccessModelSection />
+        </Reveal>
 
         {/* ─── TRUST ───────────────────────────────────────── */}
-        <section className="space-y-6">
+        <Reveal as="section" className="space-y-6">
           <SectionHeading
             eyebrow="Built to be trusted"
             title="Quietly serious about the things that matter."
           />
           <TrustSection />
-        </section>
+        </Reveal>
 
         {/* ─── FINAL CTA ───────────────────────────────────── */}
         {/*
@@ -240,7 +244,7 @@ export default function LandingPage() {
          * page into an "AI marketing template." A solid surface with
          * strong typography is more sophisticated.
          */}
-        <section>
+        <Reveal as="section">
           <div className="grid gap-6 rounded-[1.6rem] border border-borderc bg-surface p-6 sm:p-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-10 lg:p-10">
             <div className="space-y-4">
               {/* No eyebrow — the headline carries the moment. */}
@@ -291,7 +295,7 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
-        </section>
+        </Reveal>
       </div>
     </PublicShell>
   );
