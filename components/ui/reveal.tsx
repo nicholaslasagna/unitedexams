@@ -88,8 +88,10 @@ export function Reveal({
   const style: CSSProperties = {};
   if (hydrated && !revealed) {
     style.opacity = 0;
-    // pre-translate slightly so there's no jump when animation starts
-    style.transform = "translateY(24px)";
+    // Pre-pose to match the keyframe-from in globals.css so the
+    // animation starts cleanly with no visible jump.
+    style.transform = "translateY(36px) scale(0.985)";
+    style.filter = "blur(2px)";
   } else if (revealed && delay > 0) {
     style.animationDelay = `${delay}ms`;
   }
