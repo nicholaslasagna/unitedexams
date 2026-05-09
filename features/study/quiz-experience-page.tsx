@@ -120,6 +120,27 @@ export function QuizExperiencePageContent({
   const [guestSaveModalOpen, setGuestSaveModalOpen] = useState(false);
   const finalizingRef = useRef(false);
 
+  /*
+   * Ref bag for the keyboard handler — see the keydown effect below
+   * for the full explanation. Updated on every render so the handler
+   * always reads current state without re-binding the listener.
+   */
+  const quizKeyHandlersRef = useRef<{
+    currentQuestion: typeof currentQuestion;
+    submittedByQuestion: typeof submittedByQuestion;
+    selfMarkedByQuestion: typeof selfMarkedByQuestion;
+    assignmentSubmissionLocked: boolean;
+    hideLiveExamFeedback: boolean;
+    currentIndex: number;
+    orderLength: number;
+    toggleOption: (index: number) => void;
+    submitCurrentQuestion: () => void;
+    gotoNext: () => void;
+    gotoPrev: () => void;
+    setStageOverview: () => void;
+    push: typeof push;
+  } | null>(null);
+
   useEffect(() => {
     let active = true;
     setQuizLoading(true);
@@ -661,88 +682,136 @@ export function QuizExperiencePageContent({
     }
   };
 
+  /*
+   * Keep the ref bag fresh on every render. The keyboard listener
+   * (below) reads everything through this ref so it always sees
+   * current state — no stale closures, no rebinding on every state
+   * change. This must run on every render, not gated by deps.
+   */
+  quizKeyHandlersRef.current = {
+    currentQuestion,
+    submittedByQuestion,
+    selfMarkedByQuestion,
+    assignmentSubmissionLocked,
+    hideLiveExamFeedback,
+    currentIndex,
+    orderLength: order.length,
+    toggleOption,
+    submitCurrentQuestion,
+    gotoNext,
+    gotoPrev,
+    setStageOverview: () => setStage("overview"),
+    push
+  };
+
   useEffect(() => {
     if (stage !== "quiz" || !currentQuestion) return;
 
+    /*
+     * The keyboard handler used to read state directly from this
+     * effect's closure. The deps array only re-bound the handler when
+     * `submittedByQuestion` / `selfMarkedByQuestion` changed — so
+     * after pressing A/B/C/D to select an option (which updates
+     * `selectedByQuestion`, NOT in the deps), the Enter handler still
+     * called the stale `submitCurrentQuestion` from the previous
+     * render — which read the OLD empty `selectedByQuestion` and
+     * fired "Choose an answer first" even though the user had
+     * already selected.
+     *
+     * Fix: read every dynamic dependency through `latestRef.current`
+     * so the handler always sees current state. The listener itself
+     * stays mounted for the whole quiz stage; no rebinding noise.
+     */
     const onKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
       const isTyping = ["INPUT", "TEXTAREA", "SELECT"].includes(target?.tagName ?? "");
       if (isTyping) return;
 
+      const r = quizKeyHandlersRef.current;
+      if (!r) return;
+
+      const cq = r.currentQuestion;
+      if (!cq) return;
+
       const key = event.key.toLowerCase();
-      if (!isOpenResponseQuestion(currentQuestion)) {
+      if (!isOpenResponseQuestion(cq)) {
         const optionIndex = keyMap.indexOf(key);
-        const optionsLength = currentQuestion.options?.length ?? 0;
+        const optionsLength = cq.options?.length ?? 0;
         if (optionIndex >= 0 && optionIndex < optionsLength) {
           event.preventDefault();
-          toggleOption(optionIndex);
+          r.toggleOption(optionIndex);
           return;
         }
       }
 
       if (key === "enter") {
         event.preventDefault();
-        if (assignmentSubmissionLocked) {
-          if (currentIndex < order.length - 1) {
-            gotoNext();
+        if (r.assignmentSubmissionLocked) {
+          if (r.currentIndex < r.orderLength - 1) {
+            r.gotoNext();
           } else {
-            setStage("overview");
+            r.setStageOverview();
           }
           return;
         }
-        if (!submittedByQuestion[currentQuestion.id]) {
-          submitCurrentQuestion();
+        if (!r.submittedByQuestion[cq.id]) {
+          r.submitCurrentQuestion();
         } else {
           if (
-            !hideLiveExamFeedback &&
-            requiresSelfMark(currentQuestion) &&
-            selfMarkedByQuestion[currentQuestion.id] === undefined
+            !r.hideLiveExamFeedback &&
+            requiresSelfMark(cq) &&
+            r.selfMarkedByQuestion[cq.id] === undefined
           ) {
-            push({
+            r.push({
               title: "Mark your self-check first",
               description: "Choose 'I got this' or 'Need review' before moving on."
             });
             return;
           }
-          gotoNext();
+          r.gotoNext();
         }
       }
 
       if (key === "arrowright") {
-        if (assignmentSubmissionLocked) {
+        if (r.assignmentSubmissionLocked) {
           event.preventDefault();
-          if (currentIndex < order.length - 1) {
-            gotoNext();
+          if (r.currentIndex < r.orderLength - 1) {
+            r.gotoNext();
           } else {
-            setStage("overview");
+            r.setStageOverview();
           }
           return;
         }
         if (
-          !hideLiveExamFeedback &&
-          requiresSelfMark(currentQuestion) &&
-          submittedByQuestion[currentQuestion.id] &&
-          selfMarkedByQuestion[currentQuestion.id] === undefined
+          !r.hideLiveExamFeedback &&
+          requiresSelfMark(cq) &&
+          r.submittedByQuestion[cq.id] &&
+          r.selfMarkedByQuestion[cq.id] === undefined
         ) {
-          push({
+          r.push({
             title: "Self-check required",
             description: "Mark your response before navigating to the next question."
           });
           return;
         }
         event.preventDefault();
-        gotoNext();
+        r.gotoNext();
       }
 
       if (key === "arrowleft") {
         event.preventDefault();
-        gotoPrev();
+        r.gotoPrev();
       }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [stage, currentQuestion, submittedByQuestion, selfMarkedByQuestion, push, attemptMode]);
+    // The handler reads everything through `quizKeyHandlersRef`, so
+    // we only need to re-bind when the *stage* itself changes (entering
+    // or leaving the quiz). All in-quiz state updates flow through
+    // the ref without causing listener churn.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage]);
 
   useEffect(() => {
     if (stage !== "results" || !result || isAuthenticated) {
@@ -1310,8 +1379,26 @@ export function QuizExperiencePageContent({
               onSelfMark={() => undefined}
               lockInteraction
               disableSelfMark
-              showExplanation
-              onToggleExplanation={() => undefined}
+              /*
+               * Default: explanation visible (the whole point of the
+               * review screen is to read the answer). But we read from
+               * the same `showExplanation` map the main quiz uses, so
+               * the user can toggle it off if they want to test
+               * themselves on the question first.
+               *
+               * Previously this prop was hardcoded to `true` and the
+               * onToggle handler was a no-op — clicking "Hide
+               * explanation" did nothing. Now it's a real flip-flop.
+               */
+              showExplanation={showExplanation[reviewQuestion.id] !== false}
+              onToggleExplanation={() =>
+                setShowExplanation((prev) => ({
+                  ...prev,
+                  // First click sets to false (hide); second click
+                  // flips back to true. Default-undefined → true.
+                  [reviewQuestion.id]: prev[reviewQuestion.id] === false ? true : false
+                }))
+              }
             />
           </CardBody>
         </Card>
