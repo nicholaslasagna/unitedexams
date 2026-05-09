@@ -11,8 +11,15 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
+        // Body / UI: clean neutral sans
         sans: ["var(--font-outfit)", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["var(--font-outfit)", "ui-sans-serif", "system-ui", "sans-serif"],
+        // Display: editorial variable serif — used for hero + section titles
+        // to give the site a real "designed publication" feel rather than
+        // generic Tailwind sans-everywhere.
+        display: ["var(--font-fraunces)", "ui-serif", "Georgia", "Times New Roman", "serif"],
+        // Backup sans-display class for places where serif would be wrong
+        // (small UI labels, button text, dense data tables).
+        "display-sans": ["var(--font-outfit)", "ui-sans-serif", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "monospace"]
       },
       fontSize: {

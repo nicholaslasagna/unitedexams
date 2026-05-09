@@ -1080,14 +1080,33 @@ html[data-reduce-motion="on"] .tape-track { animation: none; }
   box-shadow: 0 0 12px hsl(var(--accent) / 0.6);
 }
 
-/* Display headline — extra-large hero text utility */
+/*
+ * Display headline — editorial-serif hero text utility.
+ *
+ * Uses Fraunces (variable serif) at a soft optical size with subtle
+ * "wonk" turned on for the genuine designed-publication feel. The italic
+ * stylistic alternates are gorgeous — pair with `<em>` or `.italic` for
+ * the emphasis word in the headline.
+ *
+ * Tracking is loosened slightly compared to a sans display, because
+ * serif letters need a touch more breathing room at large sizes.
+ */
 .display-hero {
-  font-family: var(--font-outfit);
-  font-weight: 600;
-  font-size: clamp(2.5rem, 6.5vw, 5.5rem);
-  line-height: 0.94;
-  letter-spacing: -0.025em;
+  font-family: var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  font-size: clamp(2.4rem, 6.2vw, 5rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
   color: hsl(var(--text));
+  font-variation-settings: "opsz" 144, "SOFT" 50, "WONK" 0;
+}
+.display-hero em,
+.display-hero .italic {
+  font-style: italic;
+  /* Italic Fraunces benefits from slightly tighter tracking + a touch
+     more wonk to amplify its character. */
+  font-variation-settings: "opsz" 144, "SOFT" 70, "WONK" 1;
+  font-weight: 500;
 }
 
 /* Subtle pulse on the "live" dot */

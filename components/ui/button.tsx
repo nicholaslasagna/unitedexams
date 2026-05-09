@@ -14,18 +14,21 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const variantStyles: Record<Variant, string> = {
+  // Primary CTA — solid accent fill, no rainbow gradient, no glow.
+  // Hover lifts subtly (1px) and slightly darkens — architectural,
+  // not "glassy SaaS pill." Letter-spacing tightens to feel intentional.
   primary: cn(
-    "bg-brand-gradient text-accent-fg font-semibold",
-    "shadow-[0_1px_2px_hsl(var(--accent)/0.2)]",
-    "hover:shadow-glow hover:-translate-y-px hover:brightness-[1.06]",
-    "active:translate-y-0 active:shadow-subtle active:brightness-[0.98]",
+    "bg-accent text-accent-fg font-semibold tracking-[-0.005em]",
+    "shadow-[0_1px_0_rgba(255,255,255,0.05)_inset,0_1px_2px_hsl(var(--accent)/0.18)]",
+    "hover:-translate-y-px hover:bg-[hsl(var(--accent-dim))]",
+    "active:translate-y-0 active:brightness-[0.96]",
     "focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
     "disabled:shadow-none"
   ),
   secondary: cn(
-    "bg-soft text-text border border-borderc",
-    "hover:bg-overlay hover:border-border-bright",
-    "active:scale-[0.98]",
+    "bg-transparent text-text border border-border-bright",
+    "hover:bg-soft hover:border-text/30",
+    "active:scale-[0.985]",
     "focus-visible:ring-2 focus-visible:ring-accent/50"
   ),
   ghost: cn(
