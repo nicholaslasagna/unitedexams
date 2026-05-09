@@ -1486,45 +1486,70 @@ export function QuizExperiencePageContent({
         />
 
         <div className="space-y-3">
-          {currentQuestion ? (
-            <QuestionCard
-              question={currentQuestion}
-              questionNumber={currentIndex + 1}
-              totalQuestions={order.length}
-              selected={selectedByQuestion[currentQuestion.id] ?? []}
-              responseText={responseByQuestion[currentQuestion.id] ?? ""}
-              onToggleOption={toggleOption}
-              onResponseChange={updateCurrentFreeResponse}
-              onSubmitQuestion={submitCurrentQuestion}
-              submitted={Boolean(submittedByQuestion[currentQuestion.id])}
-              isCorrect={
-                submittedByQuestion[currentQuestion.id]
-                  ? requiresSelfMark(currentQuestion) && selfMarkedByQuestion[currentQuestion.id] === undefined
-                    ? null
-                    : Boolean(correctByQuestion[currentQuestion.id])
-                  : null
-              }
-              selfMarked={selfMarkedByQuestion[currentQuestion.id]}
-              onSelfMark={markCurrentFreeQuestion}
-              lockInteraction={assignmentSubmissionLocked || Boolean(submittedByQuestion[currentQuestion.id])}
-              disableSelfMark={hideLiveExamFeedback}
-              studyMode={immediateReviewMode}
-              showHintsBeforeSubmit={immediateReviewMode}
-              showExplanation={immediateReviewMode ? true : Boolean(showExplanation[currentQuestion.id])}
-              revealCorrectness={!hideLiveExamFeedback}
-              interactionNotice={
-                assignmentSubmissionLocked
-                  ? "This assignment is past due. Review the question content, but submissions are locked."
-                  : undefined
-              }
-              onToggleExplanation={() =>
-                setShowExplanation((prev) => ({
-                  ...prev,
-                  [currentQuestion.id]: !prev[currentQuestion.id]
-                }))
-              }
-            />
-          ) : null}
+          {currentQuestion ? (() => {
+            /*
+             * Compute the explanation visibility ONCE so the rendered
+             * value and the toggle handler agree.
+             *
+             * Previously this read `immediateReviewMode ? true : Boolean(...)`
+             * which hardcoded `true` in study/walkthrough mode, ignoring
+             * the toggle state entirely. The user clicking "Hide
+             * explanation" updated the state map but the next render
+             * forced it back to true. Result: the button felt dead.
+             *
+             * Now: in study mode the default is "visible" (key === undefined
+             * means visible), but a user-set `false` is respected. In other
+             * modes the default is "hidden" (must explicitly show first).
+             * The toggle flips relative to what's CURRENTLY visible, so
+             * clicking always changes the displayed state.
+             */
+            const explanationVisible = immediateReviewMode
+              ? showExplanation[currentQuestion.id] !== false
+              : Boolean(showExplanation[currentQuestion.id]);
+
+            return (
+              <QuestionCard
+                question={currentQuestion}
+                questionNumber={currentIndex + 1}
+                totalQuestions={order.length}
+                selected={selectedByQuestion[currentQuestion.id] ?? []}
+                responseText={responseByQuestion[currentQuestion.id] ?? ""}
+                onToggleOption={toggleOption}
+                onResponseChange={updateCurrentFreeResponse}
+                onSubmitQuestion={submitCurrentQuestion}
+                submitted={Boolean(submittedByQuestion[currentQuestion.id])}
+                isCorrect={
+                  submittedByQuestion[currentQuestion.id]
+                    ? requiresSelfMark(currentQuestion) && selfMarkedByQuestion[currentQuestion.id] === undefined
+                      ? null
+                      : Boolean(correctByQuestion[currentQuestion.id])
+                    : null
+                }
+                selfMarked={selfMarkedByQuestion[currentQuestion.id]}
+                onSelfMark={markCurrentFreeQuestion}
+                lockInteraction={assignmentSubmissionLocked || Boolean(submittedByQuestion[currentQuestion.id])}
+                disableSelfMark={hideLiveExamFeedback}
+                studyMode={immediateReviewMode}
+                showHintsBeforeSubmit={immediateReviewMode}
+                showExplanation={explanationVisible}
+                revealCorrectness={!hideLiveExamFeedback}
+                interactionNotice={
+                  assignmentSubmissionLocked
+                    ? "This assignment is past due. Review the question content, but submissions are locked."
+                    : undefined
+                }
+                onToggleExplanation={() =>
+                  setShowExplanation((prev) => ({
+                    ...prev,
+                    // Flip relative to what's currently visible — not from
+                    // the raw map value, which may be undefined while the
+                    // visible default is true.
+                    [currentQuestion.id]: !explanationVisible
+                  }))
+                }
+              />
+            );
+          })() : null}
 
           <div className="flex items-center justify-between rounded-xl border border-borderc bg-surface px-4 py-3">
             <Button variant="secondary" onClick={gotoPrev} disabled={currentIndex === 0}>
