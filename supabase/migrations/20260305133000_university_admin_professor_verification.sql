@@ -291,8 +291,12 @@ $$;
 
 grant execute on function public.set_managed_professor_verification_status(uuid, boolean) to authenticated;
 
-drop function if exists public.guard_profile_security_fields();
-create function public.guard_profile_security_fields()
+-- CREATE OR REPLACE for the same reason as is_university_admin above:
+-- the trg_profiles_guard_security_fields trigger on public.profiles
+-- depends on this function, so a DROP would fail when this migration
+-- is replayed against a database that already has it. Signature is
+-- unchanged across versions so REPLACE produces an identical end state.
+create or replace function public.guard_profile_security_fields()
 returns trigger
 language plpgsql
 security definer
