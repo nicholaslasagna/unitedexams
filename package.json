@@ -16,7 +16,9 @@
     "cf:deploy": "opennextjs-cloudflare deploy",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload"
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "billing:check": "node scripts/setup-stripe-billing.mjs --check",
+    "billing:setup": "node scripts/setup-stripe-billing.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.9.0",

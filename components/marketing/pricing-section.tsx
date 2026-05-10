@@ -4,7 +4,30 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { UpgradeButton } from "@/components/billing/upgrade-button";
 import { PortalButton } from "@/components/billing/portal-button";
+import { PaymentMethodBadges } from "@/components/billing/payment-method-badges";
+import { Tooltip } from "@/components/ui/tooltip";
 import { useAccess } from "@/lib/hooks/use-access";
+
+// One-sentence explanations matched to the Premium feature labels in
+// the pricing grid. Hover/focus surfaces these as tooltips so a visitor
+// knows what each Premium line item actually does without leaving the
+// page.
+const premiumFeatureExplanations: Record<string, string> = {
+  "Unlimited saved progress & mastery analytics":
+    "Every quiz attempt, walkthrough step, and per-topic mastery score syncs to your account and stays — across devices, across the term.",
+  "Full quiz banks across courses":
+    "Free shows a sample. Premium opens every released quiz set and mock exam in the catalog.",
+  "Walkthrough videos & step-by-step solutions":
+    "Hint-by-hint reveals plus narrated walkthroughs for the trickiest exam questions, rolling out per course.",
+  "Timed exam simulations + readiness signal":
+    "Strict timer, randomized order, end-of-exam review, and a single 0–100 readiness score so you know whether you're ready.",
+  "Mistake history + smart review plans":
+    "Every wrong answer is queued for spaced re-test with the original walkthrough one tap away.",
+  "Sections you can join":
+    "Join professor- or peer-led sections by code. Same hubs your classmates see, with shared assignments.",
+  "Hosted checkout with eligible wallets and PayPal":
+    "Pay with Apple Pay, Google Pay, Link, PayPal, or any major card — all inside Stripe-hosted Checkout. United Exams never sees your card details."
+};
 
 /**
  * Pricing — three editorial columns sharing one bordered grid:
@@ -62,14 +85,31 @@ export function PricingSection() {
           </div>
           <p className="tier-tag">For students paying their own way.</p>
           <ul className="tier-features-ed">
-            <li>Unlimited saved progress &amp; mastery analytics</li>
-            <li>Full quiz banks across courses</li>
-            <li>Walkthrough videos &amp; step-by-step solutions</li>
-            <li>Timed exam simulations + readiness signal</li>
-            <li>Mistake history + smart review plans</li>
-            <li>Sections you can join</li>
+            {[
+              "Unlimited saved progress & mastery analytics",
+              "Full quiz banks across courses",
+              "Walkthrough videos & step-by-step solutions",
+              "Timed exam simulations + readiness signal",
+              "Mistake history + smart review plans",
+              "Sections you can join",
+              "Hosted checkout with eligible wallets and PayPal"
+            ].map((label) => (
+              <li key={label}>
+                <Tooltip content={premiumFeatureExplanations[label] ?? ""}>
+                  <button
+                    type="button"
+                    className="m-0 cursor-help bg-transparent p-0 text-left text-inherit underline decoration-borderc decoration-dotted underline-offset-[3px] transition-colors hover:text-text focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+                  >
+                    {label}
+                  </button>
+                </Tooltip>
+              </li>
+            ))}
           </ul>
-          <PremiumCta />
+          <div className="space-y-2">
+            <PremiumCta />
+            <PaymentMethodBadges compact />
+          </div>
         </div>
 
         {/* Institution */}
@@ -150,7 +190,7 @@ function PremiumCta() {
           <ArrowRight className="h-3.5 w-3.5" />
         </Link>
         <p className="text-[11.5px] text-text-secondary">
-          Sign up first — checkout starts on your account page.
+          Sign up first — Stripe-hosted checkout starts on your account page.
         </p>
       </div>
     );
@@ -164,6 +204,9 @@ function PremiumCta() {
       <UpgradeButton plan="yearly" variant="ghost" returnUrl="/app/account">
         Or save with annual
       </UpgradeButton>
+      <p className="text-[11.5px] text-text-secondary">
+        Payment details stay inside Stripe-hosted Checkout.
+      </p>
     </div>
   );
 }

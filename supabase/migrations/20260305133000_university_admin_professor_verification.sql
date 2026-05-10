@@ -36,8 +36,14 @@ create trigger trg_university_professor_verification_codes_updated_at
 before update on public.university_professor_verification_codes
 for each row execute procedure public.set_updated_at();
 
-drop function if exists public.is_university_admin(uuid, uuid);
-create function public.is_university_admin(uid uuid, university_id_input uuid default null)
+-- Use CREATE OR REPLACE rather than DROP + CREATE: by the time this
+-- migration is replayed on a database that already had the function,
+-- RLS policies on university_professor_verification_codes,
+-- profile_name_change_requests, and account_deletion_requests depend
+-- on it, and a DROP would fail with "cannot drop function ... because
+-- other objects depend on it". The signature hasn't changed across
+-- versions, so REPLACE is safe.
+create or replace function public.is_university_admin(uid uuid, university_id_input uuid default null)
 returns boolean
 language sql
 stable

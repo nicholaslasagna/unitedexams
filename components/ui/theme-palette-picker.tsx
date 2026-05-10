@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import { Check, ChevronDown, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { THEME_PALETTES } from "@/lib/theme/palettes";
+import {
+  THEME_PALETTES,
+  STANDARD_PALETTES,
+  SEASONAL_PALETTES,
+  type ThemePalette
+} from "@/lib/theme/palettes";
 import { checkAccentContrast } from "@/lib/theme/contrast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -98,49 +103,42 @@ export function ThemePalettePicker({
         <p className="mt-0.5 text-xs text-muted">Choose a palette or pick a custom color.</p>
       </div>
 
-      {/* Swatch grid — 4 columns on desktop, 3 on mobile */}
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-        {THEME_PALETTES.map((p) => {
-          const isActive = palette === p.id;
-          return (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => {
-                onPaletteChange(p.id);
-                setShowCustom(false);
-              }}
-              className={cn(
-                "group relative flex flex-col items-center gap-2 rounded-xl border p-3",
-                "transition-all duration-150 ease-out-expo",
-                isActive
-                  ? "border-accent bg-accent-subtle shadow-glow"
-                  : "border-borderc bg-soft hover:bg-overlay hover:border-border-bright hover:shadow-subtle"
-              )}
-              aria-pressed={isActive}
-              aria-label={`${p.label} theme`}
-            >
-              <span
-                className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-full shadow-subtle",
-                  "transition-transform duration-150",
-                  "group-hover:scale-105",
-                  isActive && "ring-2 ring-white/30 ring-offset-2 ring-offset-bg"
-                )}
-                style={{ background: `hsl(${p.hue}, ${p.saturation}%, ${isDark ? Math.min(p.lightness + 10, 75) : p.lightness}%)` }}
-              >
-                {isActive ? <Check className="h-4 w-4 text-white drop-shadow-sm" /> : null}
-              </span>
-              <span className={cn(
-                "text-[11px] font-medium",
-                isActive ? "text-accent" : "text-muted"
-              )}>
-                {p.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Standard palettes — always shown first */}
+      <PaletteSwatchGrid
+        palettes={STANDARD_PALETTES}
+        activeId={palette}
+        isDark={isDark}
+        onSelect={(id) => {
+          onPaletteChange(id);
+          setShowCustom(false);
+        }}
+      />
+
+      {/* Seasonal palettes — own labelled section so they read as a
+          deliberate "themed" choice rather than a hidden 13th option.
+          Includes a small blurb under each label (e.g. "Christmas red").
+          The settings page is auth-gated, so guest users never see
+          this picker at all. */}
+      {SEASONAL_PALETTES.length > 0 ? (
+        <div className="space-y-2 border-t border-borderc pt-4">
+          <div className="flex items-baseline justify-between">
+            <p className="text-sm font-semibold text-text">Seasonal</p>
+            <p className="text-[11px] text-muted">
+              Holidays &amp; seasons — switch any time, switch back any time.
+            </p>
+          </div>
+          <PaletteSwatchGrid
+            palettes={SEASONAL_PALETTES}
+            activeId={palette}
+            isDark={isDark}
+            showBlurb
+            onSelect={(id) => {
+              onPaletteChange(id);
+              setShowCustom(false);
+            }}
+          />
+        </div>
+      ) : null}
 
       {/* Custom toggle */}
       <button
@@ -320,6 +318,79 @@ export function ThemePalettePicker({
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+/**
+ * Swatch grid — extracted so the standard and seasonal sections can
+ * share the exact same render path. The `showBlurb` flag opts seasonal
+ * palettes into a small italic blurb under the label ("Christmas red",
+ * "Cherry blossom") that gives the swatches a sense of intention.
+ */
+function PaletteSwatchGrid({
+  palettes,
+  activeId,
+  isDark,
+  showBlurb = false,
+  onSelect
+}: {
+  palettes: ThemePalette[];
+  activeId: string;
+  isDark: boolean;
+  showBlurb?: boolean;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+      {palettes.map((p) => {
+        const isActive = activeId === p.id;
+        return (
+          <button
+            key={p.id}
+            type="button"
+            onClick={() => onSelect(p.id)}
+            className={cn(
+              "group relative flex flex-col items-center gap-2 rounded-xl border p-3",
+              "transition-all duration-150 ease-out-expo",
+              isActive
+                ? "border-accent bg-accent-subtle shadow-glow"
+                : "border-borderc bg-soft hover:bg-overlay hover:border-border-bright hover:shadow-subtle"
+            )}
+            aria-pressed={isActive}
+            aria-label={`${p.label} theme${p.blurb ? ` — ${p.blurb}` : ""}`}
+          >
+            <span
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-full shadow-subtle",
+                "transition-transform duration-150",
+                "group-hover:scale-105",
+                isActive && "ring-2 ring-white/30 ring-offset-2 ring-offset-bg"
+              )}
+              style={{
+                background: `hsl(${p.hue}, ${p.saturation}%, ${
+                  isDark ? Math.min(p.lightness + 10, 75) : p.lightness
+                }%)`
+              }}
+            >
+              {isActive ? <Check className="h-4 w-4 text-white drop-shadow-sm" /> : null}
+            </span>
+            <span
+              className={cn(
+                "text-[11px] font-medium",
+                isActive ? "text-accent" : "text-muted"
+              )}
+            >
+              {p.label}
+            </span>
+            {showBlurb && p.blurb ? (
+              <span className="text-[10px] italic text-muted/80 leading-tight text-center">
+                {p.blurb}
+              </span>
+            ) : null}
+          </button>
+        );
+      })}
     </div>
   );
 }

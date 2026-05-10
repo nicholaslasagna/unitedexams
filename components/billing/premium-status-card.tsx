@@ -12,6 +12,8 @@ import { useAccess } from "@/lib/hooks/use-access";
 import { useAppData } from "@/lib/app-data-context";
 import { UpgradeButton } from "@/components/billing/upgrade-button";
 import { PortalButton } from "@/components/billing/portal-button";
+import { PaymentMethodBadges } from "@/components/billing/payment-method-badges";
+import { PremiumFeatureList } from "@/components/billing/premium-feature-list";
 
 /**
  * Account-page billing card. Branches entirely on the centralized
@@ -138,33 +140,38 @@ export function PremiumStatusCard() {
         ) : null}
 
         <p className="text-[13.5px] leading-relaxed text-text-secondary">
-          Premium adds mistake history, smart review plans, mastery analytics, and
-          deeper walkthroughs. If your school covers access, you&apos;ll never see this card.
+          Premium adds saved progress, mistake history, exam simulations, and
+          per-topic mastery analytics. Hover any row below for what each one does —
+          or open the full upgrade page to compare both plans side-by-side.
         </p>
 
-        <ul className="space-y-1.5 text-[13px] text-text-secondary">
-          {[
-            "Unlimited saved progress and history",
-            "Full quiz banks and timed exam simulations",
-            "Mastery tracking + weak-topic recommendations",
-            "Mistake history and smart review"
-          ].map((line) => (
-            <li key={line} className="flex items-start gap-2">
-              <span className="mt-[7px] inline-block h-1 w-1 rounded-full bg-accent" />
-              {line}
-            </li>
-          ))}
-        </ul>
+        {/* Compact, hover-explainable feature list. */}
+        <div className="rounded-[1rem] border border-borderc bg-soft/40 p-3">
+          <PremiumFeatureList variant="flat" />
+        </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <UpgradeButton plan="monthly">Premium · $8 / month</UpgradeButton>
-          <UpgradeButton plan="yearly" variant="secondary">
+          <UpgradeButton plan="monthly" returnUrl="/app/account">
+            Premium · $8 / month
+          </UpgradeButton>
+          <UpgradeButton plan="yearly" variant="secondary" returnUrl="/app/account">
             Premium · $72 / year
           </UpgradeButton>
         </div>
 
+        <div className="flex items-center justify-between gap-3 border-t border-borderc pt-3">
+          <PaymentMethodBadges compact />
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/app/upgrade">
+              Compare plans
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </Button>
+        </div>
+
         <p className="text-[11.5px] text-text-secondary">
-          Cancel anytime in the Customer Portal. Annual saves ~25% versus monthly.
+          Stripe-hosted checkout. United Exams never sees or stores your card.
+          Annual saves about 25% vs. monthly.
         </p>
       </CardBody>
     </Card>
@@ -205,7 +212,7 @@ function PremiumStatusBlock() {
             : "—"}
         </p>
         <p className="mt-1 text-[11.5px] text-text-secondary">
-          Manage cancellation, payment method, and invoices in the portal.
+          Manage cancellation, wallet/payment method, and invoices in the portal.
         </p>
       </div>
     </div>

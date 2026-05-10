@@ -21,6 +21,8 @@ import { getBillingEnv, planLookupKey } from "@/lib/billing/env";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { resolveOrigin, safeReturnPath } from "@/lib/billing/return-url";
+import { validateStripePriceForPlan } from "@/lib/billing/pricing";
+import { checkoutPaymentMethodOptions } from "@/lib/billing/payment-methods";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -100,6 +102,10 @@ export async function POST(req: NextRequest) {
     // Operator-facing config error — don't leak the lookup key value.
     return NextResponse.json({ error: "Subscription plan unavailable." }, { status: 500 });
   }
+  const priceCheck = validateStripePriceForPlan(price, payload.plan, lookupKey);
+  if (!priceCheck.ok) {
+    return NextResponse.json({ error: "Subscription plan misconfigured." }, { status: 500 });
+  }
 
   // ── Find or create the Stripe customer (idempotent) ───────────────
   // First try our DB. Then try Stripe's customer search by metadata
@@ -161,12 +167,20 @@ export async function POST(req: NextRequest) {
     mode: "subscription",
     customer: customerId,
     line_items: [{ price: price.id, quantity: 1 }],
+    ...checkoutPaymentMethodOptions(env),
     allow_promotion_codes: true,
     success_url: `${origin}${returnPath}?billing=success`,
     cancel_url: `${origin}${returnPath}?billing=canceled`,
     client_reference_id: user.id,
+    metadata: {
+      user_id: user.id,
+      plan: payload.plan
+    },
     subscription_data: {
-      metadata: { user_id: user.id }
+      metadata: {
+        user_id: user.id,
+        plan: payload.plan
+      }
     }
   });
 
