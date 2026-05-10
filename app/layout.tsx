@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import localFont from "next/font/local";
 import { Outfit, Fira_Code, Fraunces } from "next/font/google";
 import { Providers } from "@/app/providers";
 import { SkipLink } from "@/components/ui/skip-link";
@@ -22,6 +23,18 @@ const fraunces = Fraunces({
 });
 
 const firaCode = Fira_Code({ subsets: ["latin"], variable: "--font-mono" });
+
+// Wordmark display: Rodin Bokutoh Pro B — heavy geometric sans used for
+// the homepage "United Exams" hero wordmark. It pairs with Fraunces
+// italic for the accent word and gives the brand a real, considered
+// identity instead of "Inter at 80px."
+const rodin = localFont({
+  src: "../public/fonts/RodinBokutoh-Pro-B.otf",
+  variable: "--font-rodin",
+  weight: "700",
+  style: "normal",
+  display: "swap"
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://unitedexams.com"),
@@ -85,7 +98,7 @@ const captchaBootScript = `
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${outfit.variable} ${fraunces.variable} ${firaCode.variable} font-sans`}>
+      <body className={`${outfit.variable} ${fraunces.variable} ${rodin.variable} ${firaCode.variable} font-sans`}>
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
         <script dangerouslySetInnerHTML={{ __html: captchaBootScript }} />
         <SkipLink />

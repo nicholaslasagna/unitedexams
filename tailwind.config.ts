@@ -20,6 +20,9 @@ const config: Config = {
         // Backup sans-display class for places where serif would be wrong
         // (small UI labels, button text, dense data tables).
         "display-sans": ["var(--font-outfit)", "ui-sans-serif", "system-ui", "sans-serif"],
+        // Wordmark — heavy geometric for the homepage "United Exams" hero.
+        // Paired with the Fraunces italic for the accent word.
+        wordmark: ["var(--font-rodin)", "var(--font-outfit)", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "monospace"]
       },
       fontSize: {

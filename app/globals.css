@@ -1262,3 +1262,1163 @@ html[data-reduce-motion="on"] .readiness-ring::before { animation: none; }
   box-shadow: 0 4px 14px -4px hsl(var(--accent) / 0.6);
 }
 
+/* ════════════════════════════════════════════════════════════════════
+   Editorial Homepage System
+   ────────────────────────────────────────────────────────────────────
+   The styles below power the brand-new homepage redesign — a
+   considered, publication-style hero with massive Rodin Bokutoh
+   wordmark, atmospheric background layers, a fixed right-side course
+   rail, an editorial Course Index sidebar, and section treatments
+   (stats strip, course cards with axis-grid art, study-mode tiles
+   with a colored top bar, workflow split, institutional Folio moment,
+   pricing tiers, closer card pair).
+
+   These classes are scoped via class names rather than utility-classes
+   because the homepage is a unique editorial layout — opinionated
+   typography, hairline rules, and grid intersections — that doesn't
+   read well as a stack of utilities. Other pages keep their existing
+   Tailwind treatment.
+
+   Theming: variables derive from the same `hsl(var(--bg))`,
+   `hsl(var(--surface))`, `hsl(var(--text))` tokens used everywhere
+   else, so the editorial page renders correctly under both the dark
+   and light themes the user already has. The "deep ink" feel of the
+   Claude Design reference comes from the existing dark-theme tokens.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── Hairline ruler color: a quieter divider than --border ── */
+:root        { --hairline: hsl(228 14% 90%); }
+:root.dark   { --hairline: hsl(228 14% 13%); }
+
+/* ── 1. Atmospheric background layers ──
+   Three quiet fixed-position overlays:
+   - .page-haze   : large soft radial vignettes (corner stage-light)
+   - .page-noise  : fine grain so the deep surface never looks flat
+   - .page-embers : sparse drifting particles, mask-faded near edges
+   - .page-logo   : the brand mark used as a soft watermark behind it
+   All non-interactive (`pointer-events: none`) and z-index 0 so the
+   <main> content (z-index 1) sits cleanly on top. */
+.page-atmosphere {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.page-haze {
+  position: absolute;
+  inset: 0;
+}
+
+:root.dark .page-haze {
+  background:
+    radial-gradient(ellipse 75% 55% at 16% -10%, hsl(232 38% 14% / 0.85), transparent 60%),
+    radial-gradient(ellipse 65% 50% at 86% 0%,  hsl(218 32% 12% / 0.7),  transparent 65%),
+    radial-gradient(ellipse 90% 40% at 50% 110%, hsl(228 30% 11% / 0.7),  transparent 65%),
+    radial-gradient(ellipse 60% 60% at 50% 50%, transparent 50%, hsl(228 60% 2% / 0.7) 100%);
+}
+:root:not(.dark) .page-haze {
+  background:
+    radial-gradient(ellipse 75% 55% at 16% -10%, hsl(228 18% 90% / 0.55), transparent 60%),
+    radial-gradient(ellipse 65% 50% at 86% 0%,  hsl(228 18% 92% / 0.5),  transparent 65%),
+    radial-gradient(ellipse 90% 40% at 50% 110%, hsl(228 18% 91% / 0.55), transparent 65%);
+}
+
+.page-haze::after {
+  /* Single low-saturation accent kiss in the top-right — gives the
+     page directional warmth without becoming a gradient blob. */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 38% 22% at 92% 6%, hsl(var(--accent-hue) 50% 14% / 0.4), transparent 70%);
+  mix-blend-mode: screen;
+}
+:root:not(.dark) .page-haze::after {
+  background:
+    radial-gradient(ellipse 38% 22% at 92% 6%, hsl(var(--accent-hue) 80% 80% / 0.18), transparent 70%);
+  mix-blend-mode: multiply;
+}
+
+.page-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  background-image:
+    radial-gradient(hsl(228 6% 60%) 0.6px, transparent 0.7px),
+    radial-gradient(hsl(228 6% 60%) 0.4px, transparent 0.5px);
+  background-size: 3px 3px, 7px 7px;
+  background-position: 0 0, 1px 2px;
+  mix-blend-mode: overlay;
+}
+
+.page-embers {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 22%, hsl(var(--accent-hue) 70% 60% / 0.55) 50%, transparent 51%),
+    radial-gradient(1px   1px   at 28% 64%, hsl(228 12% 70% / 0.35) 50%, transparent 51%),
+    radial-gradient(1.4px 1.4px at 47% 18%, hsl(var(--accent-hue) 80% 65% / 0.5) 50%, transparent 51%),
+    radial-gradient(1px   1px   at 64% 80%, hsl(228 14% 70% / 0.32) 50%, transparent 51%),
+    radial-gradient(1.2px 1.2px at 82% 36%, hsl(228 14% 80% / 0.42) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 92% 72%, hsl(var(--accent-hue) 75% 60% / 0.55) 50%, transparent 51%),
+    radial-gradient(1px   1px   at 8%  78%, hsl(228 14% 75% / 0.32) 50%, transparent 51%),
+    radial-gradient(1.1px 1.1px at 38% 92%, hsl(var(--accent-hue) 70% 55% / 0.4) 50%, transparent 51%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black, transparent 90%);
+          mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black, transparent 90%);
+  animation: emberDrift 38s ease-in-out infinite alternate;
+  opacity: 0.85;
+}
+:root:not(.dark) .page-embers { opacity: 0.4; }
+
+@keyframes emberDrift {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-2%, -1.4%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-embers { animation: none; }
+}
+html[data-reduce-motion="on"] .page-embers { animation: none; }
+
+/* ── Soft logo watermark ──
+   The user's logo, large, blurred and faded, anchored center-page.
+   On dark theme it glows quietly behind the hero; on light theme it
+   reads as a faint debossed mark. The mask-fade keeps the edges
+   from creating a hard rectangle. */
+.page-logo {
+  position: absolute;
+  /* Anchor it slightly above the geometric center so the hero
+     wordmark sits over its upper third — the visually-balanced spot. */
+  top: 50%;
+  left: 50%;
+  width: min(78vw, 1100px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -52%);
+  background-image: var(--page-logo-image, none);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, black 36%, transparent 75%);
+          mask-image: radial-gradient(circle at 50% 50%, black 36%, transparent 75%);
+  filter: blur(0.6px);
+  opacity: 0.06;
+}
+:root.dark .page-logo {
+  opacity: 0.07;
+  /* Brighten dark-theme rendering: the logo is dark-coloured, so on a
+     very dark background it would all but disappear. The blend mode
+     lets the highlights of the mark glow instead. */
+  mix-blend-mode: screen;
+  filter: blur(0.6px) brightness(1.6);
+}
+
+/* ── 2. Right-side course rail (fixed) ──
+   Persistent vertical strip of mono course-codes down the right edge,
+   anchored vertically centered. Hovering / scrolling brightens the
+   active course. Hidden on small screens. */
+.course-rail {
+  position: fixed;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  pointer-events: auto;
+}
+.course-rail-line {
+  width: 1px;
+  height: 28px;
+  background: linear-gradient(180deg, transparent, hsl(var(--border-bright)), transparent);
+  margin: 6px 0;
+}
+.rail-mark {
+  position: relative;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: hsl(var(--text-secondary) / 0.7);
+  padding: 12px 4px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rail-mark::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: hsl(var(--text-secondary) / 0.4);
+  transition: background 220ms, width 220ms, height 220ms;
+}
+.rail-mark:hover,
+.rail-mark.is-active {
+  color: hsl(var(--text));
+}
+.rail-mark:hover::before,
+.rail-mark.is-active::before {
+  background: hsl(var(--accent));
+  width: 6px;
+  height: 6px;
+}
+@media (max-width: 1100px) {
+  .course-rail { display: none; }
+}
+
+/* ── 3. Hero wordmark ──
+   Massive Rodin Bokutoh "United" with Fraunces italic accent.
+   The accent word + period are in the brand orange. */
+.wordmark {
+  font-family: var(--font-rodin), var(--font-outfit), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(72px, 13vw, 200px);
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  color: hsl(var(--text));
+  margin: 0;
+}
+.wordmark em {
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  color: hsl(var(--accent));
+  letter-spacing: -0.04em;
+  font-variation-settings: "opsz" 144;
+  margin-left: 0.05em;
+}
+.wordmark .period {
+  color: hsl(var(--accent));
+  font-style: normal;
+  margin-left: 0.02em;
+}
+
+/* Hero kicker — mono uppercase with leading rule */
+.hero-kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: hsl(var(--text-secondary));
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+.hero-kicker::before {
+  content: "";
+  width: 32px;
+  height: 1px;
+  background: hsl(var(--border-bright));
+}
+
+/* Hero italic-serif lede */
+.hero-lede {
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(17px, 1.6vw, 22px);
+  line-height: 1.55;
+  color: hsl(var(--text-secondary));
+  max-width: 560px;
+  margin: 0;
+  font-variation-settings: "opsz" 60;
+}
+.hero-lede strong {
+  color: hsl(var(--text));
+  font-weight: 500;
+  font-style: italic;
+}
+
+/* Trust line with em-style dots */
+.trust-line {
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+  font-style: italic;
+  font-size: 13.5px;
+  color: hsl(var(--text-secondary));
+  max-width: 540px;
+  line-height: 1.6;
+}
+.trust-line .dot {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: hsl(var(--text-secondary) / 0.5);
+  vertical-align: middle;
+  margin: 0 10px;
+  transform: translateY(-2px);
+}
+
+/* ── 4. The Stamp button — hero's confident CTA ──
+   Outlined accent rectangle with an inner perforation feel and a
+   long arrow that grows on hover. Modeled on a passport stamp. */
+.stamp-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 32px 20px 28px;
+  background: hsl(var(--accent));
+  color: hsl(228 50% 6%);
+  font-family: var(--font-outfit);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  outline: 1px solid hsl(var(--accent));
+  outline-offset: 4px;
+  text-decoration: none;
+  transition:
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    outline-offset 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    background 220ms;
+  box-shadow:
+    inset 0 0 0 1px hsl(38 50% 30% / 0.35),
+    inset 0 0 0 5px hsl(var(--accent));
+}
+.stamp-btn::after {
+  content: "";
+  width: 20px;
+  height: 1px;
+  background: hsl(228 50% 6%);
+  transition: width 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.stamp-btn:hover {
+  outline-offset: 7px;
+  transform: translateY(-1px);
+  background: hsl(var(--accent-hue) var(--accent-sat) calc((var(--accent-lit) + 4) * 1%));
+}
+.stamp-btn:hover::after { width: 28px; }
+.stamp-btn .stamp-arrow {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* Ghost button — mono uppercase underlined link */
+.ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--text-secondary));
+  border-bottom: 1px solid hsl(var(--border-bright));
+  text-decoration: none;
+  transition: color 200ms, border-color 200ms;
+}
+.ghost-btn:hover {
+  color: hsl(var(--text));
+  border-color: hsl(var(--accent));
+}
+.ghost-btn::after {
+  content: "→";
+  font-family: var(--font-outfit);
+  font-size: 13px;
+}
+
+/* ── 5. Editorial Course Index sidebar ── */
+.course-index {
+  position: relative;
+  padding: 28px 26px 28px;
+  border: 1px solid hsl(var(--border));
+  background: linear-gradient(170deg, hsl(var(--surface)), hsl(var(--bg-inset)));
+  border-radius: 4px;
+}
+.course-index::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  border: 1px solid hsl(var(--hairline));
+  border-radius: 2px;
+  pointer-events: none;
+}
+.ci-masthead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 16px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+.ci-masthead .vol {
+  font-family: var(--font-fraunces);
+  font-style: italic;
+  font-size: 13px;
+  color: hsl(var(--text-secondary));
+}
+.ci-masthead .vol b {
+  font-style: normal;
+  font-weight: 500;
+  color: hsl(var(--text));
+}
+.ci-masthead .term {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--text-secondary));
+}
+.ci-label {
+  margin: 20px 0 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: hsl(var(--text-secondary));
+}
+.ci-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ci-row {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  gap: 14px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-bottom: 1px solid hsl(var(--hairline));
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 200ms;
+}
+.ci-row:last-child { border-bottom: 0; }
+.ci-row:hover { background: hsl(var(--soft) / 0.5); }
+.ci-row:hover .ci-name { color: hsl(var(--accent)); }
+
+.ci-num {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: hsl(var(--text-secondary));
+  font-variant-numeric: tabular-nums;
+}
+.ci-name {
+  font-family: var(--font-fraunces);
+  font-style: italic;
+  font-size: 19px;
+  font-weight: 500;
+  color: hsl(var(--text));
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  transition: color 200ms;
+  font-variation-settings: "opsz" 60;
+}
+.ci-meta {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: hsl(var(--text-secondary));
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.ci-meta .page {
+  color: hsl(var(--text-secondary));
+  text-transform: none;
+  letter-spacing: 0;
+}
+.ci-colophon {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid hsl(var(--border));
+  font-family: var(--font-fraunces);
+  font-style: italic;
+  font-size: 12.5px;
+  color: hsl(var(--text-secondary));
+  line-height: 1.6;
+}
+.ci-pageno {
+  position: absolute;
+  bottom: 16px;
+  right: 22px;
+  font-family: var(--font-fraunces);
+  font-style: italic;
+  font-size: 11px;
+  color: hsl(var(--text-secondary) / 0.6);
+}
+
+/* ── 6. Editorial section header ──
+   Hairline rule on the bottom, h2 on the left, mono meta on the right. */
+.ed-section { padding: 56px 0; position: relative; }
+.ed-section-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 32px;
+  border-bottom: 1px solid hsl(var(--hairline));
+  padding-bottom: 20px;
+  margin-bottom: 36px;
+}
+.ed-section-head h2 {
+  font-family: var(--font-rodin), var(--font-outfit), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 4.4vw, 56px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  margin: 0;
+  max-width: 18ch;
+  color: hsl(var(--text));
+}
+.ed-section-head h2 em {
+  font-family: var(--font-fraunces);
+  color: hsl(var(--accent));
+  font-style: italic;
+  font-weight: 500;
+  font-variation-settings: "opsz" 144;
+}
+.ed-section-head .section-meta {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--text-secondary));
+  text-align: right;
+  white-space: nowrap;
+}
+@media (max-width: 720px) {
+  .ed-section { padding: 40px 0; }
+  .ed-section-head { grid-template-columns: 1fr; }
+  .ed-section-head .section-meta { text-align: left; }
+}
+
+/* ── 7. Stats strip ── */
+.stats-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid hsl(var(--border));
+  border-bottom: 1px solid hsl(var(--border));
+}
+.stats-strip > div {
+  padding: 24px 22px;
+  border-right: 1px solid hsl(var(--hairline));
+}
+.stats-strip > div:last-child { border-right: 0; }
+.stats-strip .num {
+  font-family: var(--font-mono);
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  color: hsl(var(--text));
+  line-height: 1;
+  display: block;
+  font-variant-numeric: tabular-nums;
+}
+.stats-strip .num em {
+  font-family: var(--font-fraunces);
+  font-style: italic;
+  font-weight: 500;
+  color: hsl(var(--accent));
+  font-size: 0.7em;
+}
+.stats-strip .label {
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--text-secondary));
+  display: block;
+}
+@media (max-width: 720px) {
+  .stats-strip { grid-template-columns: repeat(2, 1fr); }
+  .stats-strip > div:nth-child(2) { border-right: 0; }
+  .stats-strip > div:nth-child(1),
+  .stats-strip > div:nth-child(2) {
+    border-bottom: 1px solid hsl(var(--hairline));
+  }
+}
+
+/* ── 8. Featured course cards (editorial grid) ── */
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: hsl(var(--border));
+  border: 1px solid hsl(var(--border));
+}
+@media (max-width: 1080px) { .courses-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px)  { .courses-grid { grid-template-columns: 1fr; } }
+
+.course-card-ed {
+  background: hsl(var(--bg));
+  padding: 24px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  min-height: 340px;
+  transition: background 280ms cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  position: relative;
+  text-decoration: none;
+}
+.course-card-ed:hover { background: hsl(var(--surface)); }
+.course-card-ed:hover .course-art-ed { transform: translateY(-4px); }
+.course-card-ed:hover .course-open { color: hsl(var(--accent)); }
+.course-card-ed:hover .course-open::after { transform: translateX(4px); }
+
+.course-art-ed {
+  height: 132px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 2px;
+  margin-bottom: 22px;
+  position: relative;
+  overflow: hidden;
+  background: hsl(var(--bg-inset));
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.course-art-ed .axis {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(0deg, transparent 50%, hsl(var(--border) / 0.6) 50%),
+    linear-gradient(90deg, transparent 50%, hsl(var(--border) / 0.6) 50%);
+  background-size: 14px 14px;
+  opacity: 0.45;
+  -webkit-mask: radial-gradient(circle at 50% 50%, black 30%, transparent 70%);
+          mask: radial-gradient(circle at 50% 50%, black 30%, transparent 70%);
+}
+.course-art-ed .glyph {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 36px;
+  font-weight: 500;
+  color: hsl(var(--text-secondary) / 0.85);
+  letter-spacing: -0.02em;
+}
+.course-art-ed .corner-mark {
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  font-family: var(--font-fraunces);
+  font-style: italic;
+  font-size: 11px;
+  color: hsl(var(--text-secondary) / 0.6);
+}
+.course-code-pill {
+  display: inline-flex;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--accent));
+  border: 1px solid hsl(var(--border-bright));
+  border-radius: 999px;
+  padding: 4px 10px;
+  align-self: flex-start;
+  margin-bottom: 12px;
+}
+.course-title-ed {
+  font-family: var(--font-fraunces);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 21px;
+  line-height: 1.15;
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+  color: hsl(var(--text));
+  font-variation-settings: "opsz" 60;
+}
+.course-desc-ed {
+  font-size: 13px;
+  color: hsl(var(--text-secondary));
+  line-height: 1.55;
+  margin: 0 0 auto;
+}
+.mastery {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid hsl(var(--hairline));
+}
+.mastery-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(var(--text-secondary));
+}
+.mastery-row b {
+  font-weight: 500;
+  color: hsl(var(--text));
+  font-variant-numeric: tabular-nums;
+}
+.mastery-track {
+  height: 2px;
+  background: hsl(var(--soft));
+  position: relative;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.mastery-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: hsl(var(--accent));
+  transition: width 600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.course-open {
+  margin-top: 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--text-secondary));
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: color 200ms;
+}
+.course-open::after {
+  content: "→";
+  font-family: var(--font-outfit);
+  font-size: 14px;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── 9. Study mode tiles (editorial) ── */
+.modes-grid-ed {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 1080px) { .modes-grid-ed { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px)  { .modes-grid-ed { grid-template-columns: 1fr; } }
+
+.mode-ed {
+  position: relative;
+  padding: 28px 22px 24px;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  min-height: 226px;
+  transition:
+    border-color 280ms,
+    transform 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mode-ed::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--mode-color, hsl(var(--accent)));
+}
+.mode-ed:hover {
+  transform: translateY(-2px);
+  border-color: hsl(var(--border-bright));
+}
+.mode-num {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  color: hsl(var(--text-secondary));
+  margin-bottom: 12px;
+}
+.mode-title-ed {
+  font-family: var(--font-fraunces);
+  font-weight: 500;
+  font-style: italic;
+  font-size: 24px;
+  letter-spacing: -0.015em;
+  margin: 0 0 10px;
+  color: hsl(var(--text));
+  font-variation-settings: "opsz" 60;
+}
+.mode-desc-ed {
+  font-size: 13.5px;
+  color: hsl(var(--text-secondary));
+  line-height: 1.55;
+  margin: 0 0 auto;
+}
+.mode-meta {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid hsl(var(--hairline));
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(var(--text-secondary));
+}
+
+/* ── 10. Workflow split ── */
+.workflow-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid hsl(var(--border));
+}
+@media (max-width: 900px) { .workflow-grid { grid-template-columns: 1fr; } }
+.workflow-col {
+  padding: 32px 28px 28px;
+  border-right: 1px solid hsl(var(--border));
+  background: hsl(var(--bg));
+}
+.workflow-col:last-child { border-right: 0; }
+@media (max-width: 900px) {
+  .workflow-col {
+    border-right: 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+  .workflow-col:last-child { border-bottom: 0; }
+}
+.wf-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: hsl(var(--text-secondary));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.wf-label::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: hsl(var(--accent));
+  border-radius: 999px;
+}
+.wf-col-title {
+  font-family: var(--font-fraunces);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.1;
+  margin: 12px 0 28px;
+  letter-spacing: -0.02em;
+  color: hsl(var(--text));
+  font-variation-settings: "opsz" 60;
+}
+.wf-step {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid hsl(var(--hairline));
+  align-items: baseline;
+}
+.wf-step-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: hsl(var(--accent));
+  font-variant-numeric: tabular-nums;
+}
+.wf-step-title {
+  font-family: var(--font-outfit);
+  font-size: 15px;
+  font-weight: 500;
+  color: hsl(var(--text));
+  margin: 0 0 4px;
+}
+.wf-step-desc {
+  font-size: 13px;
+  color: hsl(var(--text-secondary));
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ── 11. Institution moment (editorial) ── */
+.institution-ed {
+  padding: 64px 48px;
+  border: 1px solid hsl(var(--border));
+  background: linear-gradient(180deg, hsl(var(--surface)), hsl(var(--bg-inset)));
+  position: relative;
+  overflow: hidden;
+}
+@media (max-width: 720px) { .institution-ed { padding: 40px 24px; } }
+.inst-head-ed {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid hsl(var(--border));
+  padding-bottom: 18px;
+  margin-bottom: 30px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--text-secondary));
+}
+.inst-title-ed {
+  font-family: var(--font-rodin), var(--font-outfit), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(34px, 5vw, 68px);
+  line-height: 0.96;
+  letter-spacing: -0.03em;
+  margin: 0 0 28px;
+  max-width: 18ch;
+  color: hsl(var(--text));
+}
+.inst-title-ed em {
+  font-family: var(--font-fraunces);
+  font-style: italic;
+  color: hsl(var(--accent));
+  font-weight: 500;
+  font-variation-settings: "opsz" 144;
+}
+.inst-grid-ed {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 48px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .inst-grid-ed { grid-template-columns: 1fr; gap: 28px; }
+}
+.inst-promise {
+  font-family: var(--font-fraunces);
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.55;
+  color: hsl(var(--text-secondary));
+  max-width: 56ch;
+  font-variation-settings: "opsz" 60;
+}
+.inst-pacts {
+  border-top: 1px solid hsl(var(--border));
+}
+.inst-pact {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid hsl(var(--hairline));
+  align-items: baseline;
+}
+.inst-pact:last-child { border-bottom: 0; }
+.inst-pact .pact-num {
+  font-family: var(--font-fraunces);
+  font-style: italic;
+  color: hsl(var(--accent));
+  font-size: 22px;
+  font-weight: 500;
+  font-variation-settings: "opsz" 60;
+}
+.inst-pact .pact-text {
+  font-size: 14px;
+  color: hsl(var(--text-secondary));
+  line-height: 1.55;
+}
+.inst-pact .pact-text b {
+  color: hsl(var(--text));
+  font-weight: 500;
+}
+
+/* ── 12. Pricing tiers (editorial) ── */
+.pricing-grid-ed {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border: 1px solid hsl(var(--border));
+}
+@media (max-width: 900px) { .pricing-grid-ed { grid-template-columns: 1fr; } }
+.tier-ed {
+  padding: 32px 28px 28px;
+  border-right: 1px solid hsl(var(--border));
+  position: relative;
+  background: hsl(var(--bg));
+  transition: background 280ms;
+  display: flex;
+  flex-direction: column;
+}
+.tier-ed:last-child { border-right: 0; }
+@media (max-width: 900px) {
+  .tier-ed {
+    border-right: 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+  .tier-ed:last-child { border-bottom: 0; }
+}
+.tier-ed:hover { background: hsl(var(--surface)); }
+.tier-ed.is-recommended { background: hsl(var(--surface)); }
+.tier-ed .recommended-mark {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--accent));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tier-ed .recommended-mark::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  background: hsl(var(--accent));
+}
+.tier-name {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: hsl(var(--text-secondary));
+  margin-bottom: 22px;
+}
+.tier-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.tier-amount {
+  font-family: var(--font-rodin), var(--font-outfit), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 54px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: hsl(var(--text));
+}
+.tier-amount em {
+  font-family: var(--font-fraunces);
+  font-style: italic;
+  color: hsl(var(--accent));
+  font-weight: 500;
+  font-variation-settings: "opsz" 144;
+}
+.tier-period {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(var(--text-secondary));
+}
+.tier-tag {
+  font-family: var(--font-fraunces);
+  font-style: italic;
+  font-size: 14px;
+  color: hsl(var(--text-secondary));
+  margin-bottom: 22px;
+}
+.tier-features-ed {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+  border-top: 1px solid hsl(var(--hairline));
+  flex: 1;
+}
+.tier-features-ed li {
+  font-size: 13.5px;
+  color: hsl(var(--text-secondary));
+  line-height: 1.5;
+  padding: 11px 0;
+  border-bottom: 1px solid hsl(var(--hairline));
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 10px;
+  align-items: baseline;
+}
+.tier-features-ed li::before {
+  content: "·";
+  color: hsl(var(--accent));
+  font-size: 22px;
+  line-height: 0;
+  transform: translateY(-2px);
+}
+
+/* ── 13. Closer cards ── */
+.closer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid hsl(var(--border));
+  margin-top: 28px;
+}
+@media (max-width: 720px) { .closer-grid { grid-template-columns: 1fr; } }
+.closer-card-ed {
+  padding: 28px 26px;
+  border-right: 1px solid hsl(var(--border));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: background 280ms;
+  cursor: pointer;
+  text-decoration: none;
+  background: hsl(var(--bg));
+}
+@media (max-width: 720px) {
+  .closer-card-ed {
+    border-right: 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+  .closer-card-ed:last-child { border-bottom: 0; }
+}
+.closer-card-ed:last-child { border-right: 0; }
+.closer-card-ed:hover { background: hsl(var(--surface)); }
+.cc-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: hsl(var(--accent));
+}
+.cc-title-ed {
+  font-family: var(--font-fraunces);
+  font-style: italic;
+  font-size: 22px;
+  font-weight: 500;
+  margin: 0;
+  color: hsl(var(--text));
+  font-variation-settings: "opsz" 60;
+}
+.cc-text-ed {
+  font-size: 13.5px;
+  color: hsl(var(--text-secondary));
+  line-height: 1.55;
+  margin: 0;
+}
+.cc-cta {
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--text-secondary));
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.closer-card-ed:hover .cc-cta { color: hsl(var(--accent)); }
+
+/* Print page-fold detail at end of hero */
+.fold-rule {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, transparent, hsl(var(--border-bright)) 30%, hsl(var(--border-bright)) 70%, transparent);
+  margin: 0;
+}
+
