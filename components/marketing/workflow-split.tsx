@@ -1,117 +1,89 @@
-import { ArrowRight, GraduationCap, UserCheck } from "lucide-react";
-import { SectionHeading } from "@/components/ui/section-heading";
-
+/**
+ * Workflow split — two columns ("For students" / "For professors")
+ * sharing one bordered grid. Each side has a labeled tag, an italic
+ * serif column title, and a numbered, hairline-divided list of steps.
+ *
+ * Replaces the previous twin-card approach (badge + tone gradient +
+ * step list with rounded cards inside each) with the editorial
+ * Claude Design layout: a single grid with a vertical divider,
+ * mono numerals, no inner card chrome.
+ */
 const studentSteps = [
   {
-    title: "Open a course hub",
-    text: "Everything for that class — quizzes, exams, notes, cheat sheets, resources — sits in one place."
+    t: "Open the course hub",
+    d: "Find your class in the index. Everything for it lives in one workspace — quiz banks, walkthroughs, mock exams, notes."
   },
   {
-    title: "Pick a study mode",
-    text: "Test, Walkthrough, Timed Exam, Homework Desk. The set stays the same — the experience changes."
+    t: "Pick a study mode",
+    d: "Quiz before lecture, study after, timed before midterms, exam two days out. Same questions, different stakes."
   },
   {
-    title: "See what to fix",
-    text: "Mistake history, weak topics, and recommended next actions surface on every return."
+    t: "Watch your mastery climb",
+    d: "Per-topic mastery bars surface what you've actually consolidated, not just what you've clicked through."
+  },
+  {
+    t: "Sit the exam knowing",
+    d: "By the time it counts, the questions feel familiar — because they are."
   }
 ];
 
-const professorSteps = [
+const profSteps = [
   {
-    title: "Open a section",
-    text: "One private space per class section — material, announcements, assignments, and grading live together."
+    t: "Claim a course shell",
+    d: "We seed the public hub. You take it over for your section, with the institution badge."
   },
   {
-    title: "Assign and observe",
-    text: "Hand out a quiz or exam, then watch class progress without leaving the section view."
+    t: "Curate or author",
+    d: "Pick from the bank, edit existing items, or upload your own. Solutions render with KaTeX, code samples, diagrams."
   },
   {
-    title: "Talk to students directly",
-    text: "Post announcements, share resources, and adjust the course as the term moves."
+    t: "Open it to your roster",
+    d: "Section-scoped assignments and exam settings. Students see the right paper at the right time, no LMS dance."
+  },
+  {
+    t: "Read the room",
+    d: "Per-question difficulty, per-student mastery — the analytics you'd hand-build in a spreadsheet, already there."
   }
 ];
 
 export function WorkflowSplit() {
   return (
-    <section className="space-y-6">
-      <SectionHeading
-        title="Built for the people on both sides of the class."
-        description="Students and instructors share the same course foundation, with separate workflows that respect each role."
-      />
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <WorkflowColumn
-          icon={<GraduationCap className="h-5 w-5" />}
-          tag="For students"
-          title="Make the term feel quieter."
-          steps={studentSteps}
-          accentClass="from-cyan-500/15 to-blue-500/15"
-          ringClass="border-cyan-400/30"
-        />
-        <WorkflowColumn
-          icon={<UserCheck className="h-5 w-5" />}
-          tag="For professors"
-          title="Run the section like a real workspace."
-          steps={professorSteps}
-          accentClass="from-fuchsia-500/15 to-violet-500/15"
-          ringClass="border-fuchsia-400/30"
-        />
+    <section className="ed-section">
+      <div className="ed-section-head">
+        <h2>
+          Two sides of the <em>same desk</em>.
+        </h2>
+        <p className="section-meta">For students · For professors</p>
       </div>
-    </section>
-  );
-}
 
-function WorkflowColumn({
-  icon,
-  tag,
-  title,
-  steps
-}: {
-  icon: React.ReactNode;
-  tag: string;
-  title: string;
-  steps: { title: string; text: string }[];
-  /** kept for API compatibility — no longer painted */
-  accentClass?: string;
-  ringClass?: string;
-}) {
-  return (
-    /*
-     * Calm column — hairline border on a solid surface, no gradient
-     * fill, no glowing radial blob, no backdrop-blur. The numbered
-     * steps are the content; nothing should compete with them.
-     */
-    <div className="rounded-[1.4rem] border border-borderc bg-surface p-5 sm:p-6">
-      <div className="flex items-center gap-3">
-        <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-borderc bg-soft text-accent">
-          {icon}
-        </span>
-        <div>
-          <p className="text-[10.5px] font-bold uppercase tracking-[0.2em] text-accent">{tag}</p>
-          <p className="mt-0.5 font-display text-xl font-semibold text-text">{title}</p>
+      <div className="workflow-grid">
+        <div className="workflow-col">
+          <p className="wf-label">For students</p>
+          <h3 className="wf-col-title">A study tool that knows the syllabus.</h3>
+          {studentSteps.map((step, i) => (
+            <div className="wf-step" key={step.t}>
+              <span className="wf-step-num">{String(i + 1).padStart(2, "0")}</span>
+              <div>
+                <p className="wf-step-title">{step.t}</p>
+                <p className="wf-step-desc">{step.d}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="workflow-col">
+          <p className="wf-label">For professors</p>
+          <h3 className="wf-col-title">A workspace built for sections.</h3>
+          {profSteps.map((step, i) => (
+            <div className="wf-step" key={step.t}>
+              <span className="wf-step-num">{String(i + 1).padStart(2, "0")}</span>
+              <div>
+                <p className="wf-step-title">{step.t}</p>
+                <p className="wf-step-desc">{step.d}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-
-      <ol className="mt-5 space-y-3">
-        {steps.map((step, idx) => (
-          <li
-            key={step.title}
-            className="flex gap-3 rounded-[1rem] border border-borderc bg-soft p-3"
-          >
-            <span className="step-badge mt-0.5 shrink-0">{idx + 1}</span>
-            <div>
-              <p className="text-[14.5px] font-semibold text-text">{step.title}</p>
-              <p className="mt-0.5 text-[13px] leading-relaxed text-text-secondary">{step.text}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
-
-      <div className="mt-4 flex items-center gap-2 text-[12.5px] text-text-secondary">
-        <span className="text-accent font-semibold">Same shell</span>
-        <ArrowRight className="h-3.5 w-3.5 text-text-secondary" />
-        <span>different lens</span>
-      </div>
-    </div>
+    </section>
   );
 }
