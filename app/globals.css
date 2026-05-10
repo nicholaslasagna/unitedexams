@@ -2422,3 +2422,165 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
   margin: 0;
 }
 
+/* ════════════════════════════════════════════════════════════════════
+   Auth Aurora — flowing colorful background for sign-in / sign-up
+   ────────────────────────────────────────────────────────────────────
+   Modeled on the Stripe sign-in page: a smooth ribbon of soft blue,
+   amber, magenta, and violet that flows diagonally across the
+   viewport. Pure CSS — no images, no JS, no extra deps.
+
+   Implementation:
+   - Two layers of overlapping conic / radial gradients tinted from
+     the brand accent. They drift slowly (90s loop) so the page feels
+     alive without ever competing with the form for attention.
+   - A vignette darkens the top/bottom edges so the centered auth card
+     reads as the focal point regardless of viewport size.
+   - On `prefers-reduced-motion`, the drift animation stops; the
+     gradient is static.
+
+   Used by `<AuthShell>`; not appropriate elsewhere on the site (the
+   editorial homepage uses its own atmospheric layers).
+   ════════════════════════════════════════════════════════════════════ */
+
+.auth-aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  /* Base wash. The gradient stops are tinted toward the brand accent
+     hue but with a wide enough hue spread to read as "spectrum" not
+     "monochrome." Works on dark and light themes. */
+  background:
+    radial-gradient(ellipse 70% 60% at 12% 22%, hsl(212 92% 62% / 0.42), transparent 62%),
+    radial-gradient(ellipse 60% 55% at 38% 48%, hsl(var(--accent-hue) 92% 60% / 0.42), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 70% 60%, hsl(330 92% 62% / 0.40), transparent 65%),
+    radial-gradient(ellipse 80% 70% at 96% 92%, hsl(285 80% 60% / 0.42), transparent 65%),
+    linear-gradient(180deg, hsl(var(--bg)) 0%, hsl(var(--bg) / 0.6) 50%, hsl(var(--bg)) 100%);
+}
+
+:root:not(.dark) .auth-aurora {
+  /* Light theme: brighten the stops, soften the base wash. */
+  background:
+    radial-gradient(ellipse 70% 60% at 12% 22%, hsl(212 92% 70% / 0.55), transparent 62%),
+    radial-gradient(ellipse 60% 55% at 38% 48%, hsl(var(--accent-hue) 92% 70% / 0.55), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 70% 60%, hsl(330 92% 72% / 0.5), transparent 65%),
+    radial-gradient(ellipse 80% 70% at 96% 92%, hsl(285 80% 72% / 0.5), transparent 65%),
+    linear-gradient(180deg, hsl(var(--bg)) 0%, hsl(var(--bg) / 0.5) 50%, hsl(var(--bg)) 100%);
+}
+
+/* Drifting overlay — second layer with conic + radial, slowly rotating
+   and translating so the spectrum looks alive without ever clearly
+   "moving." */
+.auth-aurora::before {
+  content: "";
+  position: absolute;
+  inset: -10%;
+  background:
+    conic-gradient(
+      from 220deg at 30% 60%,
+      hsl(212 92% 62% / 0.34),
+      hsl(var(--accent-hue) 92% 60% / 0.36),
+      hsl(330 92% 62% / 0.34),
+      hsl(285 80% 60% / 0.34),
+      hsl(212 92% 62% / 0.34)
+    );
+  filter: blur(80px);
+  mix-blend-mode: screen;
+  animation: authAuroraDrift 90s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+:root:not(.dark) .auth-aurora::before {
+  mix-blend-mode: multiply;
+  filter: blur(110px);
+  opacity: 0.85;
+}
+
+/* Vignette — frames the centered card so the eye lands on it. */
+.auth-aurora::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 80% 70% at 50% 50%,
+    transparent 30%,
+    hsl(var(--bg) / 0.55) 100%
+  );
+}
+
+@keyframes authAuroraDrift {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50%  { transform: translate3d(2%, -2%, 0) rotate(40deg); }
+  100% { transform: translate3d(-2%, 2%, 0) rotate(-30deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-aurora::before { animation: none; }
+}
+html[data-reduce-motion="on"] .auth-aurora::before { animation: none; }
+
+/* Auth wordmark — the brand mark fixed top-left, like Stripe's "stripe". */
+.auth-wordmark {
+  position: fixed;
+  top: 1.25rem;
+  left: 1.5rem;
+  z-index: 10;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-family: var(--font-rodin), var(--font-outfit), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: -0.02em;
+  color: hsl(var(--text));
+  text-decoration: none;
+  transition: opacity 150ms ease;
+}
+.auth-wordmark em {
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  color: hsl(var(--accent));
+  margin-left: 0.05em;
+}
+.auth-wordmark:hover { opacity: 0.78; }
+@media (max-width: 480px) {
+  .auth-wordmark { top: 0.85rem; left: 0.95rem; font-size: 1rem; }
+}
+
+/* Auth card — the white-paper centered card on the gradient. */
+.auth-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 28rem;
+  border-radius: 1rem;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--surface));
+  padding: 2rem 1.75rem;
+  box-shadow:
+    0 1px 0 hsl(var(--surface-raised) / 0.06) inset,
+    0 24px 60px -28px hsl(var(--text) / 0.32),
+    0 8px 24px -12px hsl(var(--text) / 0.18);
+}
+:root.dark .auth-card {
+  /* On dark theme, slightly raise contrast and add a subtle inner edge
+     so the card reads as elevated against the colorful aurora. */
+  background: hsl(var(--surface-raised));
+  box-shadow:
+    0 1px 0 hsl(var(--text) / 0.04) inset,
+    0 24px 60px -22px rgba(0, 0, 0, 0.7),
+    0 8px 24px -12px rgba(0, 0, 0, 0.5);
+}
+@media (min-width: 640px) {
+  .auth-card { padding: 2.25rem 2rem; max-width: 30rem; }
+}
+.auth-card.is-wide {
+  /* Used by the signup card which has more fields. */
+  max-width: 36rem;
+}
+@media (min-width: 768px) {
+  .auth-card.is-wide { max-width: 42rem; padding: 2.5rem 2.5rem; }
+}
+
