@@ -4,9 +4,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { GraduationCap, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ConstellationPattern } from "@/components/ui/constellation-pattern";
 import { useAppData } from "@/lib/app-data-context";
 import { isUniversityAdmin, isVerifiedProfessor } from "@/lib/auth/roles";
 import { resolveProfileInternalName } from "@/lib/profile-name";
@@ -131,17 +130,29 @@ export function PublicShell({ children }: { children: ReactNode }) {
   }, [isAuthenticated, isSchoolAdmin, showAnnouncements, showGrades, showSections]);
 
   return (
-    <div className="min-h-screen bg-bg text-text">
-      <div className="ambient-glow" />
-      <ConstellationPattern className="fixed" opacity={0.02} variant="sparse" />
+    <div className="relative min-h-screen bg-bg text-text">
+      {/* Flowing colorful backdrop. Same family as the sign-in page,
+          quieter so it doesn't compete with content. On the homepage,
+          the editorial `.page-atmosphere` (haze + embers + soft logo)
+          renders on top of this and visually dominates — they coexist
+          cleanly because both are fixed-position with z-index 0 and
+          the homepage's haze layer is more opaque. */}
+      <div className="page-aurora" aria-hidden />
 
       <header className="sticky top-0 z-40 border-b border-borderc bg-surface/90 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between gap-4 px-5 py-3 md:px-8">
-          <Link href="/" className="inline-flex items-center gap-3 transition-opacity duration-150 hover:opacity-80">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-gradient text-accent-fg shadow-soft">
-              <GraduationCap className="h-4.5 w-4.5" />
+          {/* Editorial wordmark — matches the auth shell, the homepage,
+              and the in-app sidebar. One mark across the whole site. */}
+          <Link href="/" className="inline-flex items-baseline gap-2 transition-opacity duration-150 hover:opacity-80">
+            <span className="font-wordmark text-[18px] font-bold leading-none tracking-[-0.02em] text-text">
+              United{" "}
+              <em className="font-display font-medium not-italic text-accent">
+                <span className="italic">Exams</span>
+              </em>
             </span>
-            <span className="font-display text-lg font-semibold text-text">United Exams</span>
+            <span className="ml-1 inline-flex translate-y-[-2px] items-center rounded-full border border-borderc px-1.5 py-0.5 font-mono text-[9px] font-medium tracking-[0.22em] text-text-secondary">
+              UE / 26
+            </span>
           </Link>
 
           <nav className="hidden items-center gap-1 md:flex" aria-label="Main">

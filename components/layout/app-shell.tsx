@@ -3,14 +3,18 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { WorkspaceNavigationProvider } from "@/components/layout/workspace-navigation-context";
 import { NavigationProgress } from "@/components/layout/navigation-progress";
-import { ConstellationPattern } from "@/components/ui/constellation-pattern";
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-bg">
+    <div className="relative flex min-h-screen bg-bg">
       <NavigationProgress />
-      <div className="ambient-glow" />
-      <ConstellationPattern className="fixed" opacity={0.025} variant="sparse" />
+
+      {/* Flowing colorful backdrop — same family as the sign-in page,
+          quieter so it never competes with content. Replaces the
+          previous ambient-glow + constellation pattern combo. The
+          aurora is fixed-position with z-index 0; sidebar/topbar/main
+          all sit at z-index 1 via the wrapper below. */}
+      <div className="page-aurora" aria-hidden />
 
       <WorkspaceNavigationProvider>
         <Sidebar />
@@ -23,7 +27,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             <div className="animate-fade-in">{children}</div>
           </main>
-          <footer className="mx-auto w-full max-w-[1360px] border-t border-borderc px-4 py-5 pb-28 text-center text-sm text-muted sm:px-5 md:px-8 lg:pb-4">
+          <footer className="mx-auto w-full max-w-[1360px] border-t border-borderc/70 px-4 py-5 pb-28 text-center text-sm text-muted sm:px-5 md:px-8 lg:pb-4">
             © {new Date().getFullYear()}{" "}
             <a
               href="https://imagicaststudios.com"

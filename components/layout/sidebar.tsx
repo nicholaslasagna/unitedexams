@@ -419,18 +419,24 @@ export function Sidebar() {
 
   return (
     <>
-      <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 flex-col border-r border-borderc bg-surface/90 px-4 pb-5 pt-5 backdrop-blur-xl lg:flex">
+      <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 flex-col border-r border-borderc bg-surface/85 px-4 pb-5 pt-5 backdrop-blur-xl lg:flex">
+        {/* Editorial wordmark — matches the auth shell + homepage so
+            the brand reads as one mark across the entire site. The
+            previous GraduationCap-in-gradient-badge approach felt
+            generic SaaS; this carries the Rodin + Fraunces character. */}
         <Link
           href="/"
-          className="mb-10 flex items-center gap-3 rounded-xl px-2 py-2 transition-colors duration-150 hover:bg-soft"
+          className="mb-10 inline-flex items-baseline gap-2 rounded-md px-2 py-2 transition-opacity duration-150 hover:opacity-80"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-gradient text-lg text-accent-fg shadow-glow">
-            <GraduationCap className="h-[18px] w-[18px]" />
-          </div>
-          <div>
-            <p className="font-display text-[15px] font-bold leading-tight text-text">United Exams</p>
-            <p className="text-[10px] font-semibold uppercase tracking-[5px] text-accent">STUDY</p>
-          </div>
+          <span className="font-wordmark text-[18px] font-bold leading-none tracking-[-0.02em] text-text">
+            United{" "}
+            <em className="font-display font-medium not-italic text-accent">
+              <span className="italic">Exams</span>
+            </em>
+          </span>
+          <span className="ml-1 inline-flex translate-y-[-2px] items-center rounded-full border border-borderc px-1.5 py-0.5 font-mono text-[9px] font-medium tracking-[0.22em] text-text-secondary">
+            UE / 26
+          </span>
         </Link>
 
         <div className="flex-1 space-y-6 overflow-y-auto pr-1">
@@ -507,16 +513,16 @@ export function Sidebar() {
             <div className="flex h-full flex-col">
               <div className="safe-top-pad border-b border-borderc px-5 pb-4 pt-5">
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-gradient text-accent-fg shadow-glow">
-                      <GraduationCap className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="font-display text-lg font-bold text-text">United Exams</p>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-accent">
-                        Mobile Nav
-                      </p>
-                    </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-wordmark text-[20px] font-bold leading-none tracking-[-0.02em] text-text">
+                      United{" "}
+                      <em className="font-display font-medium not-italic text-accent">
+                        <span className="italic">Exams</span>
+                      </em>
+                    </span>
+                    <span className="ml-1 inline-flex translate-y-[-2px] items-center rounded-full border border-borderc px-1.5 py-0.5 font-mono text-[9px] font-medium tracking-[0.22em] text-text-secondary">
+                      UE / 26
+                    </span>
                   </div>
                   <button
                     type="button"

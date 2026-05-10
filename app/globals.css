@@ -2584,3 +2584,89 @@ html[data-reduce-motion="on"] .auth-aurora::before { animation: none; }
   .auth-card.is-wide { max-width: 42rem; padding: 2.5rem 2.5rem; }
 }
 
+/* ════════════════════════════════════════════════════════════════════
+   Page Aurora — calmer flowing gradient for in-app / marketing pages
+   ────────────────────────────────────────────────────────────────────
+   A muted cousin of `.auth-aurora` that frames in-app and marketing
+   surfaces without competing with content. Same hue family (blue →
+   amber → magenta → violet) but with much lower stop opacity so
+   reading body copy on top remains comfortable.
+
+   Used by AppShell and PublicShell. On the homepage, the editorial
+   `.page-atmosphere` (haze + embers + soft logo) renders on top of
+   this layer and visually dominates it — they coexist cleanly.
+   ════════════════════════════════════════════════════════════════════ */
+
+.page-aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 50% at 8% 12%, hsl(212 90% 60% / 0.16), transparent 60%),
+    radial-gradient(ellipse 55% 50% at 38% 30%, hsl(var(--accent-hue) 90% 58% / 0.14), transparent 60%),
+    radial-gradient(ellipse 60% 55% at 78% 64%, hsl(330 90% 62% / 0.14), transparent 65%),
+    radial-gradient(ellipse 70% 65% at 96% 92%, hsl(285 80% 60% / 0.16), transparent 65%),
+    linear-gradient(180deg, hsl(var(--bg)) 0%, hsl(var(--bg) / 0.7) 50%, hsl(var(--bg)) 100%);
+}
+
+:root:not(.dark) .page-aurora {
+  background:
+    radial-gradient(ellipse 60% 50% at 8% 12%, hsl(212 92% 70% / 0.22), transparent 60%),
+    radial-gradient(ellipse 55% 50% at 38% 30%, hsl(var(--accent-hue) 92% 70% / 0.20), transparent 60%),
+    radial-gradient(ellipse 60% 55% at 78% 64%, hsl(330 90% 72% / 0.20), transparent 65%),
+    radial-gradient(ellipse 70% 65% at 96% 92%, hsl(285 80% 72% / 0.22), transparent 65%),
+    linear-gradient(180deg, hsl(var(--bg)) 0%, hsl(var(--bg) / 0.6) 50%, hsl(var(--bg)) 100%);
+}
+
+/* Slow drift overlay — quieter than the auth aurora. The 120s loop
+   makes the motion feel like a long ambient breath rather than an
+   animation. Auto-disabled under prefers-reduced-motion. */
+.page-aurora::before {
+  content: "";
+  position: absolute;
+  inset: -10%;
+  background:
+    conic-gradient(
+      from 220deg at 30% 60%,
+      hsl(212 92% 62% / 0.14),
+      hsl(var(--accent-hue) 92% 60% / 0.16),
+      hsl(330 92% 62% / 0.14),
+      hsl(285 80% 60% / 0.14),
+      hsl(212 92% 62% / 0.14)
+    );
+  filter: blur(110px);
+  mix-blend-mode: screen;
+  animation: pageAuroraDrift 120s ease-in-out infinite alternate;
+  will-change: transform;
+}
+:root:not(.dark) .page-aurora::before {
+  mix-blend-mode: multiply;
+  filter: blur(140px);
+  opacity: 0.7;
+}
+
+/* Vignette so content cards in the center read as the focal point. */
+.page-aurora::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 90% 80% at 50% 50%,
+    transparent 25%,
+    hsl(var(--bg) / 0.4) 100%
+  );
+}
+
+@keyframes pageAuroraDrift {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50%  { transform: translate3d(1.5%, -1.5%, 0) rotate(30deg); }
+  100% { transform: translate3d(-1.5%, 1.5%, 0) rotate(-25deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-aurora::before { animation: none; }
+}
+html[data-reduce-motion="on"] .page-aurora::before { animation: none; }
+
