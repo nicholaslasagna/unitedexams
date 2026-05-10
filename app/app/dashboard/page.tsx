@@ -38,6 +38,45 @@ interface HomeworkDraftRow {
   settings: Record<string, unknown> | null;
 }
 
+/**
+ * Single hairline-divided cell in the dashboard hero stats strip.
+ * Mono numerals where the value is numeric, sans where it's text
+ * (e.g. "Done", "1 left") so the typography stays calm.
+ */
+function DashboardStat({
+  label,
+  value,
+  detail,
+  mono = false
+}: {
+  label: string;
+  value: string | number;
+  detail?: string;
+  mono?: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-1 px-0 sm:px-5">
+      <p className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-text-secondary">
+        {label}
+      </p>
+      <p className="flex items-baseline gap-2">
+        <span
+          className={
+            mono
+              ? "font-mono text-[1.6rem] font-semibold leading-none text-text"
+              : "font-display text-[1.4rem] font-semibold leading-none text-text"
+          }
+        >
+          {value}
+        </span>
+        {detail ? (
+          <span className="text-[12px] text-text-secondary">{detail}</span>
+        ) : null}
+      </p>
+    </div>
+  );
+}
+
 function buildHeatmap(attempts: { date: string }[]) {
   const today = new Date();
   const cells: { key: string; date: string; count: number; label: string }[] = [];
@@ -188,41 +227,52 @@ export default function DashboardPage() {
 
   return (
     <div className="animate-fade-rise space-y-5 md:space-y-6">
-      <section className="space-y-3">
+      {/*
+       * Dashboard hero — calmer than the previous stack of bordered
+       * sub-cards. A serif headline + one-line subtitle, then the four
+       * key signals laid out as a single hairline-divided strip
+       * (Stripe-dashboard pattern), with the "Start" CTA flush right.
+       */}
+      <section className="space-y-4">
         <div className="space-y-1.5">
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-2">Workspace</p>
-          <h1 className="text-[1.9rem] font-display font-semibold tracking-tight text-text sm:text-[2.2rem]">Dashboard</h1>
+          <h1 className="font-display text-[2rem] font-semibold leading-tight tracking-tight text-text sm:text-[2.4rem]">
+            Dashboard
+          </h1>
           <p className="max-w-[42rem] text-[14px] leading-relaxed text-text-secondary">
             Quick access to the next quiz, your current pace, and the course that needs attention.
           </p>
         </div>
 
         <Card>
-          <CardBody className="grid gap-2.5 p-3.5 md:grid-cols-2 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto] xl:items-center">
-            <div className="rounded-[0.95rem] border border-borderc bg-soft px-4 py-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Points</p>
-              <p className="mt-1 font-mono text-[1.35rem] font-bold leading-none text-text">{points}</p>
+          <CardBody className="grid gap-y-4 p-5 sm:grid-cols-2 sm:divide-x sm:divide-borderc xl:grid-cols-[repeat(4,minmax(0,1fr))_auto] xl:items-center">
+            <DashboardStat label="Points" value={points} mono />
+            <DashboardStat
+              label="Streak"
+              value={`${streak.current}d`}
+              detail={`best ${streak.best}d`}
+              mono
+            />
+            <DashboardStat
+              label="Recommended"
+              value={recommendations.length}
+              mono
+            />
+            <DashboardStat
+              label="Today"
+              value={studiedToday ? "Done" : "1 left"}
+              detail={studiedToday ? "Goal complete" : "Need a session"}
+            />
+            <div className="sm:col-span-2 sm:pl-5 xl:col-span-1">
+              <Button
+                asChild
+                variant={studiedToday ? "secondary" : "primary"}
+                className="h-11 w-full xl:w-auto"
+              >
+                <Link href={continueQuiz ? `/quiz/${continueQuiz.id}` : "/app/courses"}>
+                  {studiedToday ? "Run a quick review" : "Start today's sprint"}
+                </Link>
+              </Button>
             </div>
-            <div className="rounded-[0.95rem] border border-borderc bg-soft px-4 py-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Streak</p>
-              <p className="mt-1 text-[13px] font-semibold text-text">
-                <span className="font-mono text-[1.35rem] font-bold leading-none">{streak.current}d</span>
-                <span className="ml-2 text-text-secondary">best {streak.best}d</span>
-              </p>
-            </div>
-            <div className="rounded-[0.95rem] border border-borderc bg-soft px-4 py-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Recommended</p>
-              <p className="mt-1 font-mono text-[1.35rem] font-bold leading-none text-text">{recommendations.length}</p>
-            </div>
-            <div className="rounded-[0.95rem] border border-borderc bg-soft px-4 py-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">Today</p>
-              <p className="mt-1 text-[13px] font-semibold text-text">{studiedToday ? "Goal complete" : "Need 1 session"}</p>
-            </div>
-            <Button asChild variant={studiedToday ? "secondary" : "primary"} className="h-10 w-full xl:w-auto">
-              <Link href={continueQuiz ? `/quiz/${continueQuiz.id}` : "/app/courses"}>
-                {studiedToday ? "Run a quick review" : "Start today’s sprint"}
-              </Link>
-            </Button>
           </CardBody>
         </Card>
       </section>
@@ -230,29 +280,50 @@ export default function DashboardPage() {
       {continueQuiz ? (
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
           <Card className="overflow-hidden">
-            <CardBody className="grid gap-4 p-4 lg:grid-cols-[1.15fr_0.85fr]">
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  {continueCourse ? <Badge tone="brand">{continueCourse.code}</Badge> : null}
-                  <Badge>{continueQuiz.difficulty}</Badge>
-                  <Badge tone="success">Best {continueQuizBest}%</Badge>
-                </div>
+            <CardBody className="grid gap-5 p-5 lg:grid-cols-[1.15fr_0.85fr]">
+              <div className="space-y-4">
+                {/* Mono context line — replaces the previous stack of three
+                    coloured badges. Reads as a Stripe-style metadata row. */}
+                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-text-secondary">
+                  {continueCourse ? `${continueCourse.code} · ` : ""}
+                  {continueQuiz.difficulty}
+                  <span className="mx-2 text-text-secondary/50">·</span>
+                  Personal best{" "}
+                  <span className="font-semibold text-accent">{continueQuizBest}%</span>
+                </p>
+
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Continue</p>
-                  <h2 className="mt-1.5 text-[1.5rem] font-display font-semibold leading-tight text-text">{continueQuiz.title}</h2>
-                  <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-text-secondary">{continueQuiz.description}</p>
+                  <p className="text-[11.5px] font-semibold uppercase tracking-[0.18em] text-text-secondary">
+                    Continue where you left off
+                  </p>
+                  <h2 className="mt-1.5 font-display text-[1.7rem] font-semibold leading-tight tracking-tight text-text">
+                    {continueQuiz.title}
+                  </h2>
+                  <p className="mt-2 max-w-xl text-[13.5px] leading-relaxed text-text-secondary">
+                    {continueQuiz.description}
+                  </p>
                 </div>
-                <div className="grid gap-2.5 sm:grid-cols-2">
-                  <div className="rounded-[0.9rem] border border-borderc bg-soft px-3.5 py-2.5">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Last attempt</p>
-                    <p className="mt-1.5 text-sm font-semibold text-text">{continueQuizLast ? formatRelativeDate(continueQuizLast.date) : "No attempts yet"}</p>
+
+                <dl className="grid gap-3 border-t border-borderc pt-4 sm:grid-cols-2">
+                  <div>
+                    <dt className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-text-secondary">
+                      Last attempt
+                    </dt>
+                    <dd className="mt-1 text-[13.5px] font-semibold text-text">
+                      {continueQuizLast ? formatRelativeDate(continueQuizLast.date) : "No attempts yet"}
+                    </dd>
                   </div>
-                  <div className="rounded-[0.9rem] border border-borderc bg-soft px-3.5 py-2.5">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Estimated sprint</p>
-                    <p className="mt-1.5 text-sm font-semibold text-text">{continueQuiz.estMinutes} minutes</p>
+                  <div>
+                    <dt className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-text-secondary">
+                      Estimated sprint
+                    </dt>
+                    <dd className="mt-1 text-[13.5px] font-semibold text-text">
+                      {continueQuiz.estMinutes} minutes
+                    </dd>
                   </div>
-                </div>
-                <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
+                </dl>
+
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                   <Button asChild>
                     <Link href={`/quiz/${continueQuiz.id}`}>
                       Start quiz
@@ -265,9 +336,9 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="space-y-2.5">
-                <div className="overflow-hidden rounded-[1rem] border border-borderc bg-soft">
-                  <div className={`relative h-28 bg-gradient-to-br ${continueVisual.surfaceClass}`}>
+              <div className="space-y-3">
+                <div className="overflow-hidden rounded-2xl border border-borderc">
+                  <div className={`relative h-32 bg-gradient-to-br ${continueVisual.surfaceClass}`}>
                     <Image
                       src={continueVisual.artworkSrc}
                       alt={`${continueQuiz.title} course artwork`}
@@ -276,8 +347,11 @@ export default function DashboardPage() {
                     />
                   </div>
                 </div>
-                <div className="rounded-[0.95rem] border border-borderc bg-soft px-3.5 py-3">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Last 28 days</p>
+
+                <div className="rounded-2xl border border-borderc bg-soft/60 p-4">
+                  <p className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-text-secondary">
+                    Last 28 days
+                  </p>
                   <div className="mt-2.5 grid grid-cols-7 gap-1">
                     {heatmap.map((cell) => (
                       <span
@@ -297,19 +371,25 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 </div>
+
                 {recentCompletedQuizzes.length > 1 ? (
-                  <div className="space-y-2">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Also active</p>
-                    {recentCompletedQuizzes.slice(1).map((set) => (
-                      <Link
-                        key={set.id}
-                        href={`/quiz/${set.id}`}
-                        className="flex items-center justify-between rounded-[0.9rem] border border-borderc bg-soft px-3.5 py-2 text-sm font-semibold text-text transition-all duration-200 ease-out-expo hover:border-border-accent hover:shadow-card-hover"
-                      >
-                        <span>{set.title}</span>
-                        <ArrowRight className="h-4 w-4 text-faint" />
-                      </Link>
-                    ))}
+                  <div className="space-y-1.5">
+                    <p className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-text-secondary">
+                      Also active
+                    </p>
+                    <ul className="divide-y divide-borderc rounded-2xl border border-borderc bg-soft/40">
+                      {recentCompletedQuizzes.slice(1).map((set) => (
+                        <li key={set.id}>
+                          <Link
+                            href={`/quiz/${set.id}`}
+                            className="flex items-center justify-between gap-3 px-4 py-2.5 text-[13px] font-semibold text-text transition-colors hover:bg-soft"
+                          >
+                            <span className="truncate">{set.title}</span>
+                            <ArrowRight className="h-3.5 w-3.5 shrink-0 text-text-secondary" />
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 ) : null}
               </div>
@@ -356,8 +436,10 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <div>
-              <h2 className="text-2xl font-display font-semibold text-text">Course lanes</h2>
-              <p className="mt-1 text-sm text-text-secondary">Open a course with stronger context: artwork, mastery, and a cleaner path into study materials or active section work.</p>
+              <h2 className="font-display text-[1.55rem] font-semibold tracking-tight text-text">Course lanes</h2>
+              <p className="mt-1 text-[13.5px] text-text-secondary">
+                Open a course with the right context: artwork, mastery, and a clean path into study materials.
+              </p>
             </div>
           </CardHeader>
           <CardBody>
@@ -378,43 +460,50 @@ export default function DashboardPage() {
                   <Link
                     key={course.id}
                     href={`/app/courses/${course.id}`}
-                    className={`group overflow-hidden rounded-[1.4rem] border border-borderc bg-surface/75 transition-all duration-200 ease-out-expo hover:border-border-accent hover:shadow-card-hover stagger-${(i % 6) + 1}`}
+                    className={`group overflow-hidden rounded-2xl border border-borderc bg-surface dark:bg-surface-raised shadow-[0_1px_0_hsl(var(--surface-raised)/0.06)_inset,0_18px_44px_-24px_hsl(var(--text)/0.28),0_6px_16px_-10px_hsl(var(--text)/0.16)] dark:shadow-[0_1px_0_hsl(var(--text)/0.04)_inset,0_18px_44px_-22px_rgba(0,0,0,0.55)] transition-all duration-200 ease-out-expo hover:-translate-y-px hover:border-border-accent stagger-${(i % 6) + 1}`}
                   >
-                    <div className={`relative h-36 bg-gradient-to-br ${visual.surfaceClass}`}>
+                    <div className={`relative h-32 bg-gradient-to-br ${visual.surfaceClass}`}>
                       <Image
                         src={visual.artworkSrc}
                         alt={`${course.name} course artwork`}
                         fill
                         className="object-cover opacity-95"
                       />
+                      <div className="absolute left-3 top-3">
+                        <Badge tone="accent">{course.code}</Badge>
+                      </div>
                     </div>
                     <div className="space-y-4 p-5">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge tone="brand">{course.code}</Badge>
-                        <Badge>{course.difficulty}</Badge>
-                      </div>
                       <div>
-                        <h3 className="text-xl font-semibold text-text">{course.name}</h3>
-                        <p className="mt-2 text-sm leading-relaxed text-text-secondary">{course.description}</p>
+                        <h3 className="font-display text-[1.15rem] font-semibold leading-tight tracking-tight text-text">
+                          {course.name}
+                        </h3>
+                        <p className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-text-secondary">
+                          {course.description}
+                        </p>
                       </div>
+
                       <div>
-                        <div className="mb-2 flex items-center justify-between text-xs">
-                          <span className="text-faint">Mastery</span>
-                          <span className="font-mono font-bold text-accent">{progress}%</span>
+                        <div className="mb-1.5 flex items-baseline justify-between text-[11px]">
+                          <span className="font-bold uppercase tracking-[0.18em] text-text-secondary">
+                            Mastery
+                          </span>
+                          <span className="font-mono font-semibold text-text">{progress}%</span>
                         </div>
                         <ProgressBar value={progress} />
                       </div>
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div className="rounded-[1rem] border border-borderc bg-soft px-4 py-3">
-                          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Last score</p>
-                          <p className="mt-2 font-mono font-bold text-text">{latest ? `${latest.score}%` : "—"}</p>
-                        </div>
-                        <div className="rounded-[1rem] border border-borderc bg-soft px-4 py-3">
-                          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Avg best</p>
-                          <p className="mt-2 font-mono font-bold text-text">{avgBest}%</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between text-sm font-semibold text-text-secondary transition-colors duration-200 group-hover:text-text">
+
+                      {/* Last/avg as a single mono context line — replaces the
+                          two bordered sub-cards. Calmer + reads as data. */}
+                      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-text-secondary">
+                        Last <span className="text-text">{latest ? `${latest.score}%` : "—"}</span>
+                        <span className="mx-2 text-text-secondary/50">·</span>
+                        Avg best <span className="text-text">{avgBest}%</span>
+                        <span className="mx-2 text-text-secondary/50">·</span>
+                        {course.difficulty}
+                      </p>
+
+                      <div className="flex items-center justify-between border-t border-borderc pt-3 text-[12.5px] font-semibold text-text-secondary transition-colors duration-200 group-hover:text-text">
                         <span>Open course lane</span>
                         <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out-expo group-hover:translate-x-1" />
                       </div>

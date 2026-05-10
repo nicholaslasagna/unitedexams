@@ -7,11 +7,8 @@ import Link from "next/link";
 import {
   ArrowRight,
   ArrowUpDown,
-  BookOpenCheck,
-  Clock3,
   Filter,
-  Search,
-  Sparkles
+  Search
 } from "lucide-react";
 import { courses, quizSets } from "@/data/seed";
 import { Card, CardBody } from "@/components/ui/card";
@@ -20,7 +17,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
 import { AccessBadge } from "@/components/ui/access-badge";
-import { SectionHeading } from "@/components/ui/section-heading";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useAppData } from "@/lib/app-data-context";
 import { useAccess } from "@/lib/hooks/use-access";
@@ -181,36 +177,35 @@ export function CoursesIndexContent({
   const totalMinutes = decorated.reduce((sum, c) => sum + c.estimatedMinutes, 0);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7">
       {showHeader ? (
-        <SectionHeading
-          eyebrow="Course atlas"
-          title={title}
-          description={subtitle}
-          trailing={
-            <div className="hidden flex-wrap gap-2 md:flex">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-borderc bg-surface/80 px-3 py-1.5 text-xs text-text-secondary">
-                <BookOpenCheck className="h-3.5 w-3.5 text-accent" />
-                <span className="font-mono font-bold text-text">{decorated.length}</span> courses
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-borderc bg-surface/80 px-3 py-1.5 text-xs text-text-secondary">
-                <Sparkles className="h-3.5 w-3.5 text-accent" />
-                <span className="font-mono font-bold text-text">{totalQuestions}</span> questions
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-borderc bg-surface/80 px-3 py-1.5 text-xs text-text-secondary">
-                <Clock3 className="h-3.5 w-3.5 text-accent" />
-                <span className="font-mono font-bold text-text">{totalMinutes}m</span>
-              </span>
-            </div>
-          }
-        />
+        /* Calmer header — no eyebrow tag, headline carries the moment.
+           Stats become a small mono context line on the right (matches
+           the editorial homepage's section-meta pattern). */
+        <header className="flex flex-col gap-3 border-b border-borderc/70 pb-5 md:flex-row md:items-end md:justify-between">
+          <div className="max-w-2xl space-y-2">
+            <h1 className="font-display text-[2rem] font-semibold leading-tight tracking-tight text-text sm:text-[2.4rem]">
+              {title}
+            </h1>
+            <p className="text-[14px] leading-relaxed text-text-secondary">{subtitle}</p>
+          </div>
+          <p className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-text-secondary">
+            <span className="text-text">{decorated.length}</span> courses
+            <span className="mx-2 text-text-secondary/50">·</span>
+            <span className="text-text">{totalQuestions}</span> questions
+            <span className="mx-2 text-text-secondary/50">·</span>
+            <span className="text-text">{totalMinutes}m</span> practice
+          </p>
+        </header>
       ) : null}
 
-      {/* Filter row */}
-      <Card className="overflow-hidden">
+      {/* Filter row — tighter pills, all aligned on a single hairline
+          row. The search input is the focal point; the two selects are
+          quiet siblings; "Reset" is a ghost link. */}
+      <Card>
         <CardBody className="grid gap-3 p-4 md:grid-cols-[1fr_auto_auto_auto]">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
             <Input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -220,12 +215,12 @@ export function CoursesIndexContent({
             />
           </div>
 
-          <div className="flex items-center gap-2 rounded-xl border border-borderc bg-soft px-3 py-2">
-            <Filter className="h-4 w-4 text-muted" />
+          <div className="flex items-center gap-2 rounded-lg border border-borderc bg-soft px-3 py-2">
+            <Filter className="h-4 w-4 text-text-secondary" aria-hidden />
             <select
               value={difficulty}
               onChange={(event) => setDifficulty(event.target.value)}
-              className="bg-transparent text-sm text-text outline-none"
+              className="bg-transparent text-[13.5px] text-text outline-none"
               aria-label="Filter by difficulty"
             >
               <option value="all">All levels</option>
@@ -235,12 +230,12 @@ export function CoursesIndexContent({
             </select>
           </div>
 
-          <div className="flex items-center gap-2 rounded-xl border border-borderc bg-soft px-3 py-2">
-            <ArrowUpDown className="h-4 w-4 text-muted" />
+          <div className="flex items-center gap-2 rounded-lg border border-borderc bg-soft px-3 py-2">
+            <ArrowUpDown className="h-4 w-4 text-text-secondary" aria-hidden />
             <select
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value as SortBy)}
-              className="bg-transparent text-sm text-text outline-none"
+              className="bg-transparent text-[13.5px] text-text outline-none"
               aria-label="Sort courses"
             >
               {sortOptions.map((opt) => (
@@ -318,13 +313,16 @@ export function CoursesIndexContent({
             return (
               <article
                 key={course.id}
-                className={`group relative flex flex-col overflow-hidden rounded-[1.5rem] border border-borderc bg-surface shadow-subtle transition-all duration-200 ease-out-expo hover:-translate-y-0.5 hover:border-border-accent hover:shadow-card-hover focus-within:border-border-accent stagger-${(idx % 6) + 1}`}
+                className={`group relative flex flex-col overflow-hidden rounded-2xl border border-borderc bg-surface dark:bg-surface-raised shadow-[0_1px_0_hsl(var(--surface-raised)/0.06)_inset,0_18px_44px_-24px_hsl(var(--text)/0.28),0_6px_16px_-10px_hsl(var(--text)/0.16)] dark:shadow-[0_1px_0_hsl(var(--text)/0.04)_inset,0_18px_44px_-22px_rgba(0,0,0,0.55)] transition-all duration-200 ease-out-expo hover:-translate-y-px hover:border-border-accent stagger-${(idx % 6) + 1}`}
               >
-                {/* Hero artwork */}
+                {/* Hero artwork — calmer chrome (single accent pill on
+                    top-left, optional access badge top-right, no
+                    overlaid title — the title sits in the body where
+                    it's typographically anchored). */}
                 <button
                   type="button"
                   onClick={openPrimary}
-                  className="relative h-44 w-full overflow-hidden border-b border-borderc bg-soft text-left"
+                  className="relative h-40 w-full overflow-hidden border-b border-borderc bg-soft text-left"
                   aria-label={`${primaryLabel} for ${course.name}`}
                 >
                   <Image
@@ -333,60 +331,51 @@ export function CoursesIndexContent({
                     fill
                     className="object-cover transition-transform duration-500 ease-out-expo group-hover:scale-[1.04]"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-bg/85 via-bg/15 to-transparent" />
-                  <div className="absolute left-3 top-3 flex flex-wrap gap-2">
+                  <div className="absolute inset-0 bg-gradient-to-t from-bg/35 via-transparent to-transparent" />
+                  <div className="absolute left-3 top-3">
                     <Badge tone="accent">{course.code}</Badge>
-                    <Badge tone={course.difficulty === "Advanced" ? "warn" : "default"}>
-                      {course.difficulty}
-                    </Badge>
                   </div>
                   {accessVariant ? (
                     <div className="absolute right-3 top-3">
                       <AccessBadge variant={accessVariant} />
                     </div>
                   ) : null}
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <p className="font-display text-xl font-semibold leading-tight text-text">
-                      {course.name}
-                    </p>
-                  </div>
                 </button>
 
                 {/* Body */}
                 <div className="flex flex-1 flex-col gap-4 p-5">
-                  <p className="line-clamp-2 text-[13.5px] leading-snug text-text-secondary">
-                    {course.description}
-                  </p>
-
-                  {/* Stats row */}
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    {[
-                      { label: "Quiz", value: course.quizCount },
-                      { label: "Exam", value: course.examCount },
-                      { label: "HW", value: course.homeworkCount }
-                    ].map((stat) => (
-                      <div
-                        key={stat.label}
-                        className="rounded-[0.85rem] border border-borderc bg-soft px-2 py-2"
-                      >
-                        <p className="font-mono text-base font-bold leading-none text-text">{stat.value}</p>
-                        <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-text-secondary">
-                          {stat.label}
-                        </p>
-                      </div>
-                    ))}
+                  <div>
+                    <h3 className="font-display text-[1.2rem] font-semibold leading-tight tracking-tight text-text">
+                      {course.name}
+                    </h3>
+                    <p className="mt-1.5 line-clamp-2 text-[13px] leading-relaxed text-text-secondary">
+                      {course.description}
+                    </p>
                   </div>
 
-                  {/* Mastery */}
+                  {/* Mastery — moved up so the progress signal lands
+                      before the metadata. */}
                   <div>
-                    <div className="mb-1.5 flex items-center justify-between text-[11.5px]">
-                      <span className="font-bold uppercase tracking-[0.16em] text-text-secondary">
+                    <div className="mb-1.5 flex items-baseline justify-between text-[11px]">
+                      <span className="font-bold uppercase tracking-[0.18em] text-text-secondary">
                         Mastery
                       </span>
-                      <span className="font-mono font-bold text-text">{course.mastery}%</span>
+                      <span className="font-mono font-semibold text-text">{course.mastery}%</span>
                     </div>
                     <ProgressBar value={course.mastery} glow />
                   </div>
+
+                  {/* Mode counts as a single mono context line —
+                      replaces the previous 3-column sub-card grid. */}
+                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-text-secondary">
+                    <span className="text-text">{course.quizCount}</span> quiz
+                    <span className="mx-2 text-text-secondary/50">·</span>
+                    <span className="text-text">{course.examCount}</span> exam
+                    <span className="mx-2 text-text-secondary/50">·</span>
+                    <span className="text-text">{course.homeworkCount}</span> hw
+                    <span className="mx-2 text-text-secondary/50">·</span>
+                    {course.difficulty}
+                  </p>
 
                   {/* Tags */}
                   <div className="flex flex-wrap gap-1.5">

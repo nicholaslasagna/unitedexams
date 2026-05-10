@@ -6,9 +6,7 @@ import { Crown, Flame, Lock, Medal, Search, Sparkles, Trophy, Users } from "luci
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { SectionHeading } from "@/components/ui/section-heading";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Badge } from "@/components/ui/badge";
 import { useAppData } from "@/lib/app-data-context";
 import { useAccess } from "@/lib/hooks/use-access";
 import type { LeaderboardRpcRow } from "@/lib/supabase/types";
@@ -81,73 +79,62 @@ export function LeaderboardPageContent({
   const rest = filtered.slice(3);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7">
       {showHeader ? (
-        <section className="relative">
-          <div className="aurora absolute inset-0 -z-10 rounded-[2rem] opacity-90" aria-hidden />
-          <div className="premium-card glow-border p-5 sm:p-7">
-            <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-              <div className="space-y-4">
-                <span className="eyebrow">
-                  <Trophy className="h-3 w-3" />
-                  Leaderboard
-                </span>
-                <h1 className="font-display text-[2.4rem] font-semibold leading-[1.02] tracking-tight text-text sm:text-[3rem]">
-                  Real students. Real progress.
-                </h1>
-                <p className="max-w-xl text-[15px] leading-relaxed text-text-secondary">
-                  Privacy controls are respected — display name, real name, and
-                  university visibility are user-controlled. No shame-based design,
-                  just a quiet record of the work.
-                </p>
-
-                <div className="flex flex-wrap gap-2">
-                  <Badge tone="brand">Top 5 public</Badge>
-                  <Badge tone="success">Privacy-aware</Badge>
-                  <Badge>No fake bots</Badge>
-                </div>
-
-                {myRow && !publicMode ? (
-                  <div className="rounded-[1.1rem] border border-accent/35 bg-accent/10 px-4 py-3 text-[14px] text-text">
-                    <span className="text-text-secondary">Your rank: </span>
-                    <span className="font-mono text-lg font-bold text-text">#{myRow.rank}</span>
-                    <span className="text-text-secondary"> · </span>
-                    <span className="font-mono font-bold text-text">{myRow.points}</span>
-                    <span className="text-text-secondary"> pts</span>
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-3">
-                <PodiumStat
-                  icon={<Trophy className="h-4 w-4" />}
-                  label="Tracked"
-                  value={rows.length}
-                />
-                <PodiumStat
-                  icon={<Flame className="h-4 w-4" />}
-                  label="Top streak"
-                  value={
-                    rows.length === 0
-                      ? "—"
-                      : Math.max(0, ...rows.map((row) => row.streak ?? 0))
-                  }
-                />
-                <PodiumStat
-                  icon={<Users className="h-4 w-4" />}
-                  label="Universities"
-                  value={
-                    rows.length === 0
-                      ? "—"
-                      : new Set(
-                          rows.map((row) => row.university_name).filter(Boolean) as string[]
-                        ).size || "—"
-                  }
-                />
-              </div>
+        /* Editorial header — no aurora overlay, no premium-card +
+           glow-border combo, no eyebrow tag stack. Headline carries
+           the moment; stats become a calm Card row beneath it. */
+        <header className="space-y-5">
+          <div className="flex flex-col gap-3 border-b border-borderc/70 pb-5 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl space-y-2">
+              <h1 className="font-display text-[2rem] font-semibold leading-tight tracking-tight text-text sm:text-[2.4rem]">
+                Leaderboard
+              </h1>
+              <p className="text-[14px] leading-relaxed text-text-secondary">
+                Real students. Real progress. Privacy-aware — display name, real name,
+                and university visibility are user-controlled.
+              </p>
             </div>
+            {myRow && !publicMode ? (
+              <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-text-secondary">
+                Your rank{" "}
+                <span className="text-text">#{myRow.rank}</span>
+                <span className="mx-2 text-text-secondary/50">·</span>
+                <span className="text-text">{myRow.points}</span> pts
+              </p>
+            ) : null}
           </div>
-        </section>
+
+          <Card>
+            <CardBody className="grid gap-y-4 p-5 sm:grid-cols-3 sm:divide-x sm:divide-borderc">
+              <LeaderboardStat
+                icon={<Trophy className="h-3.5 w-3.5" />}
+                label="Tracked"
+                value={rows.length}
+              />
+              <LeaderboardStat
+                icon={<Flame className="h-3.5 w-3.5" />}
+                label="Top streak"
+                value={
+                  rows.length === 0
+                    ? "—"
+                    : Math.max(0, ...rows.map((row) => row.streak ?? 0))
+                }
+              />
+              <LeaderboardStat
+                icon={<Users className="h-3.5 w-3.5" />}
+                label="Universities"
+                value={
+                  rows.length === 0
+                    ? "—"
+                    : new Set(
+                        rows.map((row) => row.university_name).filter(Boolean) as string[]
+                      ).size || "—"
+                }
+              />
+            </CardBody>
+          </Card>
+        </header>
       ) : null}
 
       {/* Filter row */}
@@ -191,11 +178,13 @@ export function LeaderboardPageContent({
         </CardBody>
       </Card>
 
-      {/* Podium (top 3) */}
+      {/* Podium (top 3) — calmer header, no eyebrow tag */}
       {podium.length > 0 ? (
         <section>
-          <SectionHeading eyebrow="Top 3" title="The podium." />
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
+          <h2 className="font-display text-[1.45rem] font-semibold tracking-tight text-text">
+            The podium
+          </h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
             {podium.map((row, idx) => (
               <PodiumCard
                 key={row.user_id}
@@ -285,7 +274,12 @@ export function LeaderboardPageContent({
   );
 }
 
-function PodiumStat({
+/**
+ * Single hairline-divided cell in the leaderboard hero stats Card.
+ * Same shape as the dashboard DashboardStat — keeps the in-app look
+ * consistent across pages.
+ */
+function LeaderboardStat({
   icon,
   label,
   value
@@ -295,12 +289,12 @@ function PodiumStat({
   value: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[1rem] border border-borderc bg-surface/85 p-3.5">
-      <p className="flex items-center justify-between text-[10.5px] font-bold uppercase tracking-[0.18em] text-text-secondary">
+    <div className="flex flex-col gap-1 px-0 sm:px-5">
+      <p className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-text-secondary">
+        <span className="text-accent">{icon}</span>
         {label}
-        <span className="text-accent/80">{icon}</span>
       </p>
-      <p className="mt-1.5 font-mono text-2xl font-bold leading-none text-text">{value}</p>
+      <p className="font-mono text-[1.6rem] font-semibold leading-none text-text">{value}</p>
     </div>
   );
 }
