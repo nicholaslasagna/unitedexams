@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState
 } from "react";
 import type { ReactNode } from "react";
@@ -199,6 +200,35 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     };
   }, [supabase]);
 
+  // Track the previous user id so we can detect signed-in → guest
+  // transitions (including sign-outs that happened in a different tab
+  // and propagated through `onAuthStateChange`). When that transition
+  // fires we proactively clear the stored preferences / profile so the
+  // about-to-run refresh() reads "no prefs" from the local repo and
+  // returns defaults — preventing the previous user's accent / theme
+  // from bleeding into a now-guest session.
+  const previousUserIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!authReady) return;
+    const previous = previousUserIdRef.current;
+    const current = user?.id ?? null;
+    if (previous && !current && typeof window !== "undefined") {
+      try {
+        window.localStorage.removeItem("ue.preferences.v1");
+        window.localStorage.removeItem("ue.profile.v1");
+      } catch {
+        // Storage may be disabled — fall through.
+      }
+      // Snap the in-memory state back to defaults immediately so any
+      // currently-rendered page repaints in the default theme while
+      // refresh() is still in-flight.
+      setProfile(defaultProfile);
+      setPreferences(defaultPreferences);
+      applyPreferences(defaultPreferences);
+    }
+    previousUserIdRef.current = current;
+  }, [authReady, user, applyPreferences]);
+
   useEffect(() => {
     if (!authReady) return;
     setReady(false);
@@ -295,7 +325,30 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     sessionStorage.removeItem("ue.activeSession");
     localStorage.removeItem("ue.rememberSession");
-  }, [supabase]);
+
+    // ── Reset to a clean guest state ──
+    // The previous user's accent / theme / display name lived in
+    // localStorage so the bootstrap could apply them at first paint.
+    // After sign-out the next visitor on this device is a guest and
+    // must see the defaults. We:
+    //   1) clear the stored prefs / profile (next page load will read
+    //      "no prefs" from localStorage and use defaults),
+    //   2) reset the in-memory state so the current tab snaps back
+    //      immediately without requiring a reload, and
+    //   3) re-apply the default CSS vars so the page repaints in the
+    //      default amber accent / dark theme right away.
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.removeItem("ue.preferences.v1");
+        window.localStorage.removeItem("ue.profile.v1");
+      } catch {
+        // Storage may be disabled — fall through.
+      }
+    }
+    setProfile(defaultProfile);
+    setPreferences(defaultPreferences);
+    applyPreferences(defaultPreferences);
+  }, [supabase, applyPreferences]);
 
   const value = useMemo<AppDataContextValue>(
     () => ({

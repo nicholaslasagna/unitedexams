@@ -59,17 +59,61 @@ export const metadata: Metadata = {
   }
 };
 
+// Bootstrap script — runs synchronously before React hydrates so the
+// theme is correct at first paint (no flash of unstyled background).
+//
+// Behaviour:
+//   - Logged-in user (Supabase auth cookie present): read the saved
+//     preferences from localStorage and apply them immediately.
+//   - Guest (no auth cookie): IGNORE any stored preferences and apply
+//     the defaults. This kills the bug where a previous user's accent
+//     colour bleeds through after they sign out — guests should always
+//     see the default United Exams palette and dark theme. We also
+//     proactively clear the stored prefs / profile so the next mount
+//     can't accidentally pick them up either.
+//
+// Auth detection: @supabase/ssr writes a cookie named
+// `sb-<project-ref>-auth-token` when a session exists. The presence
+// of that cookie pattern is the most reliable synchronous signal that
+// the user is authenticated.
 const themeBootScript = `
 (function () {
   try {
-    var raw = localStorage.getItem('ue.preferences.v1');
-    var prefs = raw ? JSON.parse(raw) : null;
-    var theme = prefs && prefs.theme ? prefs.theme : 'system';
-    var reduced = !!(prefs && prefs.reducedMotion);
-    var accentHue = prefs && typeof prefs.accentHue === 'number' ? ((prefs.accentHue % 360) + 360) % 360 : 38;
-    var accentSaturation = prefs && typeof prefs.accentSaturation === 'number' ? Math.max(38, Math.min(95, prefs.accentSaturation)) : 92;
-    var accentLightness = prefs && typeof prefs.accentLightness === 'number' ? Math.max(38, Math.min(76, prefs.accentLightness)) : 50;
-    var accentStrength = prefs && typeof prefs.accentStrength === 'number' ? Math.max(0, Math.min(100, prefs.accentStrength)) : 56;
+    var hasAuthCookie = /(?:^|;\\s*)sb-[A-Za-z0-9_-]+-auth-token=/.test(document.cookie || '');
+
+    // Defaults — match THEME_DEFAULTS in lib/theme/defaults.ts.
+    var DEFAULT_THEME = 'dark';
+    var DEFAULT_HUE = 38;
+    var DEFAULT_SAT = 92;
+    var DEFAULT_LIT = 50;
+    var DEFAULT_STR = 56;
+
+    var theme = DEFAULT_THEME;
+    var reduced = false;
+    var accentHue = DEFAULT_HUE;
+    var accentSaturation = DEFAULT_SAT;
+    var accentLightness = DEFAULT_LIT;
+    var accentStrength = DEFAULT_STR;
+
+    if (hasAuthCookie) {
+      var raw = localStorage.getItem('ue.preferences.v1');
+      var prefs = raw ? JSON.parse(raw) : null;
+      if (prefs) {
+        if (prefs.theme) theme = prefs.theme;
+        reduced = !!prefs.reducedMotion;
+        if (typeof prefs.accentHue === 'number') accentHue = ((prefs.accentHue % 360) + 360) % 360;
+        if (typeof prefs.accentSaturation === 'number') accentSaturation = Math.max(38, Math.min(95, prefs.accentSaturation));
+        if (typeof prefs.accentLightness === 'number') accentLightness = Math.max(38, Math.min(76, prefs.accentLightness));
+        if (typeof prefs.accentStrength === 'number') accentStrength = Math.max(0, Math.min(100, prefs.accentStrength));
+      }
+    } else {
+      // Guest: ensure no stale prefs/profile leak across sessions.
+      try {
+        localStorage.removeItem('ue.preferences.v1');
+        localStorage.removeItem('ue.profile.v1');
+      } catch (_) { /* storage may be disabled */ }
+    }
+
     var resolved = theme === 'system'
       ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
       : theme;

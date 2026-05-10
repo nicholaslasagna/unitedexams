@@ -1,3 +1,9 @@
+import { BILLING_PRICES, type BillingPlan } from "@/lib/billing/pricing";
+import {
+  parseCheckoutPaymentMethodTypes,
+  type CheckoutPaymentMethodType
+} from "@/lib/billing/payment-methods";
+
 /**
  * Server-only billing env. Never imported from client modules.
  *
@@ -15,23 +21,32 @@ export interface BillingEnv {
   webhookSecret: string;
   priceLookupMonthly: string;
   priceLookupYearly: string;
+  checkoutPaymentMethodTypes: CheckoutPaymentMethodType[] | null;
+  paymentMethodConfiguration: string | null;
 }
 
 export function getBillingEnv(): BillingEnv | null {
   const secretKey = process.env.STRIPE_SECRET_KEY?.trim();
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
   const priceLookupMonthly =
-    process.env.STRIPE_PRICE_LOOKUP_MONTHLY?.trim() || "premium_monthly";
+    process.env.STRIPE_PRICE_LOOKUP_MONTHLY?.trim() || BILLING_PRICES.monthly.lookupKey;
   const priceLookupYearly =
-    process.env.STRIPE_PRICE_LOOKUP_YEARLY?.trim() || "premium_yearly";
+    process.env.STRIPE_PRICE_LOOKUP_YEARLY?.trim() || BILLING_PRICES.yearly.lookupKey;
+  const paymentMethodTypes = parseCheckoutPaymentMethodTypes(
+    process.env.STRIPE_CHECKOUT_PAYMENT_METHOD_TYPES
+  );
+  const paymentMethodConfiguration =
+    process.env.STRIPE_PAYMENT_METHOD_CONFIGURATION?.trim() || null;
 
-  if (!secretKey || !webhookSecret) return null;
+  if (!secretKey || !webhookSecret || !paymentMethodTypes.ok) return null;
 
   return {
     secretKey,
     webhookSecret,
     priceLookupMonthly,
-    priceLookupYearly
+    priceLookupYearly,
+    checkoutPaymentMethodTypes: paymentMethodTypes.paymentMethodTypes,
+    paymentMethodConfiguration
   };
 }
 
@@ -43,6 +58,6 @@ export function isBillingConfigured(): boolean {
  * Resolve a Stripe price lookup key from a billing-plan identifier.
  * Centralized so we never accept a raw price id from a client.
  */
-export function planLookupKey(plan: "monthly" | "yearly", env: BillingEnv): string {
+export function planLookupKey(plan: BillingPlan, env: BillingEnv): string {
   return plan === "yearly" ? env.priceLookupYearly : env.priceLookupMonthly;
 }

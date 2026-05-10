@@ -1,5 +1,6 @@
 import type Stripe from "stripe";
 import type { BillingEnv } from "@/lib/billing/env";
+import { validateStripePriceForPlan } from "@/lib/billing/pricing";
 
 /**
  * Pure mapping from a Stripe Subscription object to the row shape we
@@ -51,7 +52,11 @@ const ALLOWED_STATUSES: SubscriptionRow["status"][] = [
 
 export type SyncResult =
   | { ok: true; row: SubscriptionRow }
-  | { ok: false; reason: "missing_user_id" | "unknown_lookup_key"; detail?: string };
+  | {
+      ok: false;
+      reason: "missing_user_id" | "unknown_lookup_key" | "price_contract_mismatch";
+      detail?: string;
+    };
 
 export function stripeSubscriptionToRow(
   sub: Stripe.Subscription,
@@ -101,6 +106,15 @@ export function stripeSubscriptionToRow(
       reason: "unknown_lookup_key",
       detail: lookupKey ?? "(no lookup_key)"
     };
+
+  const priceCheck = validateStripePriceForPlan(item?.price, plan, lookupKey);
+  if (!priceCheck.ok) {
+    return {
+      ok: false,
+      reason: "price_contract_mismatch",
+      detail: priceCheck.reason
+    };
+  }
 
   const status: SubscriptionRow["status"] = ALLOWED_STATUSES.includes(
     sub.status as SubscriptionRow["status"]
