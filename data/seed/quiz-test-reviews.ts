@@ -572,15 +572,15 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
   {
     id: "ca-midterm-s2025-sim",
     courseId: "computer-architecture",
-    title: "Computer Architecture Midterm Simulation (Spring 2025)",
+    title: "Computer Architecture Midterm Simulation",
     description:
-      "An 80-minute exam simulation built directly from the standard midterm. The real test asked students to answer any five out of six prompt groups; this version includes all six so you can overprepare.",
+      "An 80-minute midterm-style simulation across six core prompt groups: assembly translation, procedure calls, instruction encoding/decoding, pipeline dependencies, datapath stages, and branch prediction. Includes all six so you can overprepare.",
     difficulty: "Advanced",
     estMinutes: 80,
     mode: "exam",
     isExamSimulation: true,
     questionCountTarget: 6,
-    tags: ["midterm", "exam-simulation", "midterm-practice", "risc-v", "pipeline"],
+    tags: ["midterm", "exam-simulation", "risc-v", "pipeline"],
     timerDefaultMinutes: 80,
     questions: [
       {
@@ -604,7 +604,7 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
           "Compute the address of `A[i]` with `slli i, 2`; compute the address of `A[2*i]` with `slli i, 3`.",
           "The core pattern is: `lw A[i]`, add `a`, `sw` to `A[2*i]`, increment `i`, and branch back."
         ],
-        references: ["Midterm Practice - A1"],
+        references: ["Midterm Practice A1"],
         tags: ["midterm", "assembly", "branching", "loops", "arrays"]
       },
       {
@@ -628,7 +628,7 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
           "Call `square(a)`, preserve that return value, then call `square(b)`.",
           "Add the two return values into `a0`, restore the frame, and return."
         ],
-        references: ["Midterm Practice - A2"],
+        references: ["Midterm Practice A2"],
         tags: ["midterm", "procedures", "stack", "calling-convention"]
       },
       {
@@ -652,7 +652,7 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
           "Here that becomes `F9B | 00000 | 000 | 00101 | 0010011`.",
           "Converting the full 32-bit pattern to hex gives `0xF9B00293`."
         ],
-        references: ["Midterm Practice - A3"],
+        references: ["Midterm Practice A3"],
         tags: ["midterm", "machine-code", "encoding", "i-type"]
       },
       {
@@ -676,7 +676,7 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
           "Register ABI names are `t6`, `a6`, and `s6` respectively.",
           "The `0100000 / 000` combination selects `sub`, so the instruction is `sub t6, a6, s6`."
         ],
-        references: ["Midterm Practice - A4"],
+        references: ["Midterm Practice A4"],
         tags: ["midterm", "machine-code", "decode", "r-type"]
       },
       {
@@ -700,7 +700,7 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
           "With forwarding, most ALU dependencies clear through bypass paths; the classic remaining issue is the load-use delay after `lw`.",
           "If your class counts full pipeline drain, use `14` and `10`. If it stops at branch EX resolution, use `12` and `8`. Write the assumption so the grader knows what you counted."
         ],
-        references: ["Midterm Practice - A5"],
+        references: ["Midterm Practice A5"],
         tags: ["midterm", "pipeline", "hazards", "forwarding", "timing"]
       },
       {
@@ -724,7 +724,7 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
           "Data hazards are about operand readiness; control hazards are about uncertainty in the next instruction address.",
           "The 2-bit predictor uses four saturating states so one wrong branch does not instantly flip a strong prediction."
         ],
-        references: ["Midterm Practice - A6"],
+        references: ["Midterm Practice A6"],
         tags: ["midterm", "pipeline", "branch-prediction", "control-hazard", "data-hazard"]
       }
     ]
@@ -734,7 +734,7 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
     courseId: "computer-architecture",
     title: "Computer Architecture Test Review I (Free Response)",
     description:
-      "Exact free-response prompts from Midterm Practice and in-class topics, with full reasoning workflows.",
+      "Midterm-style free-response prompts across core RISC-V and pipeline topics, with full reasoning workflows.",
     difficulty: "Advanced",
     estMinutes: 36,
     tags: ["test-review", "free-response", "midterm-aligned", "pipeline", "machine-code"],
@@ -761,7 +761,7 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
           "Else computes subtraction in a0.",
           "If branch computes addition in a0, then both paths merge at exit."
         ],
-        references: ["Midterm Practice - A1(a)", "Assignment 3 Problem 1"],
+        references: ["Midterm Practice A1(a)", "Assignment 3 Problem 1"],
         tags: ["assembly", "branching", "if-else", "midterm"]
       },
       {
@@ -785,7 +785,7 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
           "Address A[i] using `slli i,2` then base add and load.",
           "Address A[2*i] using `slli i,3` then base add and store."
         ],
-        references: ["Midterm Practice - A1(b)", "Assignment 3 Problem 2"],
+        references: ["Midterm Practice A1(b)", "Assignment 3 Problem 2"],
         tags: ["assembly", "loops", "arrays", "addressing", "midterm"]
       },
       {
@@ -809,7 +809,7 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
           "Second call square(b), then add two results into a0.",
           "Restore saved registers, deallocate stack, and `jalr` return."
         ],
-        references: ["Midterm Practice - A2"],
+        references: ["Midterm Practice A2"],
         tags: ["procedures", "stack", "calling-convention", "midterm"]
       },
       {
@@ -831,7 +831,7 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
           "Assemble fields into 32 bits.",
           "Hex result is `0xF9B00293`."
         ],
-        references: ["Midterm Practice - A3"],
+        references: ["Midterm Practice A3"],
         tags: ["machine-code", "i-type", "encoding", "midterm"]
       },
       {
@@ -853,7 +853,7 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
           "funct7 0100000 with funct3 000 means SUB.",
           "Final instruction: `sub t6, a6, s6`."
         ],
-        references: ["Midterm Practice - A4", "Assignment 5 Problem 3"],
+        references: ["Midterm Practice A4", "Assignment 5 Problem 3"],
         tags: ["machine-code", "decode", "r-type", "midterm"]
       },
       {
@@ -877,7 +877,7 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
           "and writes tp; add reads tp -> RAW.",
           "or writes s0 and add writes s1; beq reads both -> two RAW edges."
         ],
-        references: ["Midterm Practice - A5(a)"],
+        references: ["Midterm Practice A5(a)"],
         tags: ["pipeline", "hazards", "raw", "midterm"]
       },
       {
@@ -901,7 +901,7 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
           "In forwarding case, route EX/MEM outputs to dependent EX inputs.",
           "Count cycles in each case and compare."
         ],
-        references: ["Midterm Practice - A5(b)"],
+        references: ["Midterm Practice A5(b)"],
         tags: ["pipeline", "timing", "forwarding", "stalls", "midterm"]
       },
       {
@@ -925,7 +925,7 @@ const testReviewQuizSetReplacementsRaw: QuizSet[] = [
           "2-bit predictor states: Strong/Weak Taken and Strong/Weak Not Taken.",
           "One wrong outcome weakens confidence; two opposite outcomes flip strong prediction."
         ],
-        references: ["Midterm Practice - A6(b)", "Topic 2 Pipeline Notes"],
+        references: ["Midterm Practice A6(b)", "Topic 2 Pipeline Notes"],
         tags: ["control-hazard", "data-hazard", "branch-prediction", "midterm"]
       }
     ]

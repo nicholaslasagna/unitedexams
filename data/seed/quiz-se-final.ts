@@ -862,7 +862,7 @@ function requireFinalQuestionById(id: string) {
   return question;
 }
 
-const finalGuaranteedLectureQuestionIds = [
+const finalCoreReviewQuestionIds = [
   "se-final-q4-context-diagram",
   "se-final-q4b-object-class-identification",
   "se-final-q6-reuse-items",
@@ -874,7 +874,7 @@ const finalGuaranteedLectureQuestionIds = [
   "se-final-q5-observer-relationship"
 ];
 
-const finalGuaranteedLectureDrillQuestions: Question[] = finalGuaranteedLectureQuestionIds.map((id, index) => {
+const finalCoreReviewDrillQuestions: Question[] = finalCoreReviewQuestionIds.map((id, index) => {
   const question = requireFinalQuestionById(id);
 
   return {
@@ -1151,18 +1151,18 @@ const softwareEngineeringFinalFullSimulation: QuizSet = {
   questions: finalMockQuestions
 };
 
-const softwareEngineeringFinalGuaranteedLectureDrill: QuizSet = {
+const softwareEngineeringFinalCoreReviewDrill: QuizSet = {
   id: "se-final-core-final-review",
   courseId: "software-engineering",
   title: "Final Core Review Drill",
   description:
-    "Short repeatable drill made only from the core final-review items for the Software Engineering final.",
+    "Short repeatable drill focused on the highest-yield Software Engineering final-review items.",
   difficulty: "Intermediate",
   estMinutes: 17,
   tags: ["final-exam", "final-review", "core-final-review", "focused-drill"],
   mode: "quiz",
   timerDefaultMinutes: 17,
-  questions: finalGuaranteedLectureDrillQuestions
+  questions: finalCoreReviewDrillQuestions
 };
 
 const softwareEngineeringFinalTestingEvolutionDrill: QuizSet = {
@@ -1181,6 +1181,6 @@ const softwareEngineeringFinalTestingEvolutionDrill: QuizSet = {
 
 export const softwareEngineeringFinalQuizSets: QuizSet[] = [
   softwareEngineeringFinalFullSimulation,
-  softwareEngineeringFinalGuaranteedLectureDrill,
+  softwareEngineeringFinalCoreReviewDrill,
   softwareEngineeringFinalTestingEvolutionDrill
 ];

@@ -1394,7 +1394,7 @@ const legacyQuizSets: QuizSet[] = [
       {
         "id": "ca-core-legacy-q12",
         "type": "multi",
-        "prompt": "Which of the following are core ISA design decisions include: (Select all that apply)",
+        "prompt": "Which of the following are core ISA (instruction set architecture) design decisions? (Select all that apply)",
         "options": [
           "Registers",
           "Addressing modes",

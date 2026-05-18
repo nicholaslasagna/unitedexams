@@ -6,11 +6,11 @@ export interface CourseContent {
 
 const computerArchitectureMidtermNotes = `## Computer Architecture Midterm Master Notes
 
-Built directly around the **standard midterm** you provided.
+Built directly around the standard Computer Architecture midterm topic outline.
 
-> **What the actual exam tested:** C-to-RISC-V translation, procedure calls + stack frames, machine-code encode/decode, 5-stage pipeline hazards/timing, and 2-bit branch prediction.
+> **Topics this midterm typically tests:** C-to-RISC-V translation, procedure calls + stack frames, machine-code encode/decode, 5-stage pipeline hazards/timing, and 2-bit branch prediction.
 
-## Exact Midterm Map
+## Midterm Topic Map
 
 ### A1. C to RISC-V
 
@@ -215,7 +215,7 @@ Then use the smallest reliable template you know.
 
 const computerArchitectureMidtermCheatSheet = `## Computer Architecture Midterm Cheat Sheet
 
-Built from the **standard midterm**.
+Built from the standard Computer Architecture midterm topic outline.
 
 > **If you can do these six things cleanly, you are aligned to the exam.**
 
@@ -289,11 +289,11 @@ const softwareEngineeringArchitectureNotes = `## Software Engineering Final Exam
 
 Built directly around:
 
-  - the **SE Core final review guide**
-  - your **Chapter 8 Testing** slides
-  - your **Chapter 9 Evolution** slides
-  - the **core final-review items** you attached
-  - the prior Chapter 5/6/7 homework-style questions you already solved correctly
+  - the standard Software Engineering final-review topic list
+  - the **Chapter 8 Testing** topic outline
+  - the **Chapter 9 Evolution** topic outline
+  - the highest-yield **core final-review items**
+  - the prior Chapter 5/6/7 homework-style questions already worked correctly
 
 > **Final format:** in-person, laptop required, scratch paper provided, and the test covers **Chapters 7, 8, 9, plus the Impacts of Computing Solutions lecture**.
 
@@ -308,9 +308,9 @@ Treat the final as four blocks:
 
 If you can classify questions into one of those four blocks immediately, the exam becomes much easier to control.
 
-## Guaranteed Final Lecture Questions
+## Core Final Review Items
 
-These are the highest-yield core final-review items and should be memorized almost word-for-word.
+These are the highest-yield Software Engineering final-review items. Lock the wording and the answer pattern for each.
 
 ### 1. First design-stage / external environment question
 
@@ -460,7 +460,7 @@ For the gaming example, target systems included:
 Memorize these:
 
   - **Anyone can contribute** to an open-source system
-  - **GPL** is the exam answer when the professor asks which license to use if you want to share everything and keep no secrets
+  - **GPL** is the right pick when a question asks which license to use if you want to share everything and keep no secrets
 
 ## Chapter 8: Software Testing
 
@@ -639,7 +639,7 @@ The safe exam framing is:
 
 ## Best Way to Use the New Final Study Content in United Exams
 
-  1. Run **Final Core Review Drill** until those direct slide questions are automatic.
+  1. Run **Final Core Review Drill** until those high-frequency review items are automatic.
   2. Run the **Software Engineering Final Mock Exam** straight through once with exam settings.
   3. Use **Final Testing + Evolution Drill** to isolate weak spots in Chapters 8 and 9.
   4. Before the real exam, recite from memory:
@@ -716,10 +716,10 @@ const automataTest2Notes = `## Theory of Automata Test 2 Master Notes
 
 Built directly around:
 
-  - the **standard Test 2 topic outline**
-  - the **previous Test 2** you provided
-  - **Chapter 2** of the lecture notes
-  - **Homework 2 solutions**
+  - the standard **Test 2 topic outline**
+  - prior Test 2-style practice items
+  - **Chapter 2** of the course notes
+  - the **Homework 2 worked solutions**
 
 > **Actual exam constraints:** closed-book, closed-notes, three questions, and the scope is **Chapter 2 + Assignment 2 only**.
 
@@ -740,9 +740,9 @@ That means your prep should center on exactly three families of questions:
 
 If you can do those three cleanly under time pressure, you are aligned with the announced format.
 
-## What the Previous Test 2 Asked
+## What a Typical Test 2 Asks
 
-The prior test you gave me had:
+A prior Test 2-style practice item set was:
 
 1. Draw an NFA for
 

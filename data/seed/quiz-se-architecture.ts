@@ -1363,7 +1363,7 @@ const softwareEngineeringExam2ArchitectureFocusedDrill: QuizSet = {
   courseId: "software-engineering",
   title: "Exam 2 Architecture A-G Drill",
   description:
-    "Fast recognition drill for the exact Chapter 6 architecture-identification style, now including the recurring review pattern and quality-attribute checks.",
+    "Fast recognition drill on Chapter 6 architecture identification, with paired quality-attribute checks and recurring review patterns.",
   difficulty: "Intermediate",
   estMinutes: 16,
   tags: ["exam-2", "chapter-6", "focused-drill", "a-g-options"],
@@ -1376,12 +1376,12 @@ const softwareEngineeringExam2ArchitectureFocusedDrill: QuizSet = {
   ]
 };
 
-const softwareEngineeringExam2GuaranteedLectureDrill: QuizSet = {
+const softwareEngineeringExam2CoreReviewDrill: QuizSet = {
   id: "se-exam2-core-final-review",
   courseId: "software-engineering",
-  title: "Exam 2 Guaranteed Lecture Questions",
+  title: "Exam 2 Core Review Drill",
   description:
-    "Guaranteed Software Engineering Exam 2 questions pulled directly from your lecture-review images and class callouts. Use this set to memorize the exact wording and answer patterns.",
+    "Highest-yield Software Engineering Exam 2 items drawn from the recurring chapter-5 and chapter-6 review patterns. Use this set to lock in the wording and answer patterns.",
   difficulty: "Intermediate",
   estMinutes: 12,
   tags: ["exam-2", "chapter-5", "chapter-6", "final-review", "core-final-review"],
@@ -1733,7 +1733,7 @@ const softwareEngineeringExam2ArchitectureWalkthrough: QuizSet = {
 
 export const softwareEngineeringArchitectureQuizSets: QuizSet[] = [
   softwareEngineeringExam2FullSimulation,
-  softwareEngineeringExam2GuaranteedLectureDrill,
+  softwareEngineeringExam2CoreReviewDrill,
   softwareEngineeringExam2SystemModelingDrill,
   softwareEngineeringExam2ArchitectureSimulation,
   softwareEngineeringExam2ArchitectureFocusedDrill,
