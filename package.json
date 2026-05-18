@@ -65,7 +65,6 @@
     "picomatch": "^4.0.4",
     "vite": "^8.0.5",
     "fast-xml-builder": "^1.2.0",
-    "brace-expansion": "^5.0.6",
     "ws": "^8.20.1",
     "next": {
       "postcss": "^8.5.10"
