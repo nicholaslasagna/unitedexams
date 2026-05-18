@@ -1,6 +1,6 @@
 /**
  * Institution moment — the editorial "Folio" section. Mono-uppercase
- * head row, massive Rodin display headline with a Fraunces italic
+ * head row, massive open-font display headline with a Fraunces italic
  * accent on "partnered", an italic-serif promise paragraph on the
  * left, and a roman-numeralled list of i/ii/iii/iv pacts on the right.
  *

@@ -1266,7 +1266,7 @@ html[data-reduce-motion="on"] .readiness-ring::before { animation: none; }
    Editorial Homepage System
    ────────────────────────────────────────────────────────────────────
    The styles below power the brand-new homepage redesign — a
-   considered, publication-style hero with massive Rodin Bokutoh
+   considered, publication-style hero with a massive open-font
    wordmark, atmospheric background layers, a fixed right-side course
    rail, an editorial Course Index sidebar, and section treatments
    (stats strip, course cards with axis-grid art, study-mode tiles
@@ -1476,7 +1476,7 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
 }
 
 /* ── 3. Hero wordmark ──
-   Massive Rodin Bokutoh "United" with Fraunces italic accent.
+   Massive geometric "United" with Fraunces italic accent.
    The accent word + period are in the brand orange. */
 .wordmark {
   font-family: var(--font-rodin), var(--font-outfit), system-ui, sans-serif;
@@ -2669,4 +2669,3 @@ html[data-reduce-motion="on"] .auth-aurora::before { animation: none; }
   .page-aurora::before { animation: none; }
 }
 html[data-reduce-motion="on"] .page-aurora::before { animation: none; }
-

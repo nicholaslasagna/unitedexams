@@ -18,8 +18,8 @@ import { resolveQuizSetMode } from "@/lib/study/set-mode";
  * Modeled on the Claude Design output and built around three
  * commitments:
  *
- *   1. Brand-as-hero. The wordmark is the hero — Rodin Bokutoh
- *      "United" with a Fraunces italic accent on "Exams" — not a
+ *   1. Brand-as-hero. The wordmark is the hero — a heavy open display
+ *      face for "United" with a Fraunces italic accent on "Exams" — not a
  *      tagline, not a fake product mockup, not a glow card.
  *
  *   2. Editorial publication tone. Hairline rules between sections,
@@ -120,7 +120,7 @@ export default function LandingPage() {
               Course-native study platform · Spring 2026
             </p>
 
-            {/* Brand-as-hero wordmark — Rodin Bokutoh + Fraunces italic. */}
+            {/* Brand-as-hero wordmark — heavy display + Fraunces italic. */}
             <h1 className="reveal-up reveal-d-2 wordmark">
               United <em>Exams</em>
               <span className="period">.</span>

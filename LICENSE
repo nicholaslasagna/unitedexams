@@ -1,0 +1,33 @@
+United Exams Source-Available Portfolio License
+
+Copyright (c) 2026 Nicholas Lasagna. All rights reserved.
+
+This repository is made publicly visible for portfolio review, technical
+evaluation, security review, and hiring/business diligence only.
+
+You may:
+
+- view and read the source code in this repository;
+- reference screenshots, architecture, and implementation details for
+  evaluation of the United Exams project;
+- fork or clone the repository only for private review, provided you do
+  not publish, deploy, distribute, sell, sublicense, or otherwise make a
+  derivative product available.
+
+You may not, without prior written permission from the copyright holder:
+
+- copy substantial portions of the software into another product;
+- deploy the software or a derivative service;
+- redistribute the software, course material, seed content, branding,
+  database schema, or generated assets;
+- use the United Exams name, logo, visual identity, or educational
+  content in another product;
+- sell, sublicense, or commercially exploit this repository or any
+  derivative work.
+
+All third-party dependencies remain governed by their own licenses.
+No license is granted to any third-party trademarks, fonts, course
+materials, or service-provider assets.
+
+For commercial licensing, partnership, or implementation inquiries,
+contact support@unitedexams.com.

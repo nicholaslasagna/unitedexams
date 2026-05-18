@@ -1,6 +1,12 @@
 # United Exams (UnitedExams.com)
 
-Premium-feeling college study platform built with **Next.js + TypeScript + Tailwind CSS** and now wired for **Supabase Auth + Postgres**.
+Premium-feeling college study platform built with **Next.js + TypeScript + Tailwind CSS** and wired for **Supabase Auth + Postgres**.
+
+## Public Portfolio Notice
+
+This repository is source-available for portfolio and technical review. It is **not** open source and is not licensed for commercial reuse, redistribution, or self-hosted deployment. See [LICENSE](./LICENSE).
+
+Production secrets, deployment metadata, user records, payment credentials, and private security runbooks are intentionally excluded. Use `.env.example` as the only committed environment template.
 
 ## Stack
 - Next.js App Router
@@ -166,11 +172,13 @@ Public leaderboard:
 - Explicit guest mode for public study routes (`/courses`, `/quiz`)
 - `/login` and `/signup` now show signed-in state with dashboard/sign-out actions
 
-## Security Review
-- Current gap assessment and NIST-oriented posture notes:
-  - [SECURITY_POSTURE.md](./SECURITY_POSTURE.md)
-- Operations baseline, incident response, retention, and shared responsibility notes:
-  - [SECURITY_OPERATIONS.md](./SECURITY_OPERATIONS.md)
+## Security
+- Vulnerability disclosure and testing boundaries:
+  - [SECURITY.md](./SECURITY.md)
+- Public-release safety checklist:
+  - [PUBLIC_RELEASE.md](./PUBLIC_RELEASE.md)
+- Local public-release audit:
+  - `npm run public:audit`
 
 ## Security Automation
 - GitHub Actions:

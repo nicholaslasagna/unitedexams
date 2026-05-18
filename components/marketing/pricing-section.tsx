@@ -33,7 +33,7 @@ const premiumFeatureExplanations: Record<string, string> = {
  * Pricing — three editorial columns sharing one bordered grid:
  * Free · Premium (recommended) · Class / Institution.
  *
- * Mono uppercase tier names, massive Rodin price numerals with a
+ * Mono uppercase tier names, massive display price numerals with a
  * Fraunces italic accent, italic-serif tagline, hairline-divided
  * feature list, and an access-aware CTA at the bottom that branches
  * the same way it did before:

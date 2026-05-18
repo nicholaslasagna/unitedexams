@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import localFont from "next/font/local";
-import { Outfit, Fira_Code, Fraunces } from "next/font/google";
+import { Archivo_Black, Outfit, Fira_Code, Fraunces } from "next/font/google";
 import { Providers } from "@/app/providers";
 import { SkipLink } from "@/components/ui/skip-link";
 import "@/app/globals.css";
@@ -24,15 +23,13 @@ const fraunces = Fraunces({
 
 const firaCode = Fira_Code({ subsets: ["latin"], variable: "--font-mono" });
 
-// Wordmark display: Rodin Bokutoh Pro B — heavy geometric sans used for
-// the homepage "United Exams" hero wordmark. It pairs with Fraunces
-// italic for the accent word and gives the brand a real, considered
-// identity instead of "Inter at 80px."
-const rodin = localFont({
-  src: "../public/fonts/RodinBokutoh-Pro-B.otf",
+// Wordmark display: Archivo Black — open Google font with a heavy,
+// geometric feel. The variable name stays --font-rodin so existing CSS
+// keeps working without shipping a proprietary font file.
+const rodin = Archivo_Black({
+  subsets: ["latin"],
+  weight: "400",
   variable: "--font-rodin",
-  weight: "700",
-  style: "normal",
   display: "swap"
 });
 

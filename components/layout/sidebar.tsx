@@ -423,7 +423,7 @@ export function Sidebar() {
         {/* Editorial wordmark — matches the auth shell + homepage so
             the brand reads as one mark across the entire site. The
             previous GraduationCap-in-gradient-badge approach felt
-            generic SaaS; this carries the Rodin + Fraunces character. */}
+            generic SaaS; this carries the display + Fraunces character. */}
         <Link
           href="/"
           className="mb-10 inline-flex items-baseline gap-2 rounded-md px-2 py-2 transition-opacity duration-150 hover:opacity-80"

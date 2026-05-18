@@ -12,3 +12,6 @@ pnpm-debug.log*
 tsconfig.tsbuildinfo
 .open-next
 .wrangler
+supabase/.temp
+.claude
+public/fonts/*

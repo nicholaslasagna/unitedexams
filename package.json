@@ -17,6 +17,7 @@
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "public:audit": "node scripts/public-release-audit.mjs",
     "billing:check": "node scripts/setup-stripe-billing.mjs --check",
     "billing:setup": "node scripts/setup-stripe-billing.mjs"
   },
