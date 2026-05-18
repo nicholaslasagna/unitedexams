@@ -1,6 +1,10 @@
-# United Exams (UnitedExams.com)
+# United Exams
 
-Premium-feeling college study platform built with **Next.js + TypeScript + Tailwind CSS** and wired for **Supabase Auth + Postgres**.
+United Exams is a course-native study platform for students, professors, and universities. It turns quizzes, exam simulations, homework walkthroughs, notes, professor sections, gradebooks, and progress tracking into one focused academic workspace.
+
+The project is built as a production SaaS application with **Next.js App Router, TypeScript, Tailwind CSS, Supabase Auth/Postgres, Stripe billing, Cloudflare Pages/OpenNext, and server-mediated security workflows**.
+
+Live site: [unitedexams.com](https://unitedexams.com)
 
 ## Public Portfolio Notice
 
@@ -8,11 +12,63 @@ This repository is source-available for portfolio and technical review. It is **
 
 Production secrets, deployment metadata, user records, payment credentials, and private security runbooks are intentionally excluded. Use `.env.example` as the only committed environment template.
 
+## Product Preview
+
+<p>
+  <img src="./docs/assets/HomepagePNG.png" alt="United Exams homepage with dark editorial interface and course-native study positioning" width="100%" />
+</p>
+
+| Course Catalog | Quiz Experience |
+| --- | --- |
+| <img src="./docs/assets/SubjectsPNG.png" alt="United Exams course catalog showing subject cards and study materials" width="100%" /> | <img src="./docs/assets/QuizPNG.png" alt="United Exams quiz experience with polished answer choices and study feedback" width="100%" /> |
+
+| Guided Practice | Software Engineering Course |
+| --- | --- |
+| <img src="./docs/assets/Quiz2PNG.png" alt="United Exams practice quiz with answer review and walkthrough behavior" width="100%" /> | <img src="./docs/assets/SEPNG.png" alt="United Exams Software Engineering course detail page" width="100%" /> |
+
+## About the Builder
+
+Built by **Nicholas Lasagna** as an end-to-end product: product strategy, interface design, frontend engineering, database modeling, authentication, billing, security hardening, deployment, and academic workflow design.
+
+The goal was not to build another generic quiz app. United Exams was designed around the way real courses actually feel: specific subjects, professor sections, exam pressure, due dates, grade visibility, and the need for immediate feedback while studying.
+
+This repository demonstrates:
+
+- full-stack product engineering from concept to deployed SaaS;
+- secure account, university, professor, and student workflows;
+- polished responsive UI design without relying on stock templates;
+- Supabase schema/RLS/RPC design for academic data flows;
+- Stripe-hosted billing with third-party payment handling;
+- Cloudflare/Next.js deployment readiness;
+- CI checks, dependency auditing, and public-release safety controls.
+
+## Product Scope
+
+- Student study dashboard with recommendations, notes, courses, quizzes, homework, exams, and grades.
+- Canvas-inspired assessment interface with single-choice, multi-answer, fill-in, and written-response modes.
+- Immediate feedback and walkthroughs for platform-authored study material.
+- Professor tools for sections, materials, announcements, assignments, exam building, proctoring, submissions, and gradebook review.
+- University-aware account model with verification, admin workflows, and institution access planning.
+- Guest study mode with local progress and account migration.
+- Premium and institution-oriented monetization path using third-party payment processors.
+
+## Business Model
+
+United Exams is structured as a commercial education product, not a disposable class project:
+
+- free student access for core study flows;
+- premium student features for deeper practice and productivity;
+- institution partnerships for class-wide access;
+- professor and university workflows that make the product useful beyond individual self-study;
+- third-party payment providers so card/wallet details are not stored by the application.
+
 ## Stack
 - Next.js App Router
 - TypeScript (strict)
 - Tailwind CSS + custom premium UI components
 - Supabase (`@supabase/supabase-js`, `@supabase/ssr`)
+- Stripe Checkout + Customer Portal
+- Cloudflare Pages/OpenNext deployment
 - React Markdown + KaTeX + syntax highlighting
 
 ## Quick Start
