@@ -429,21 +429,26 @@ export class SupabaseRepository implements DataRepository {
 
     const { data: lockRow } = await this.client
       .from("profiles")
-      .select("display_name_locked, real_name")
+      .select("display_name_locked, real_name, university_id")
       .eq("id", this.user.id)
       .maybeSingle();
     const displayNameLocked = Boolean(lockRow?.display_name_locked ?? profile.displayNameLocked);
     const currentRealName = normalizeRealName(lockRow?.real_name ?? "");
+    const currentUniversityId = lockRow?.university_id ?? null;
+    const requestedUniversityId = profile.universityId ?? null;
 
     if (normalizedRealName !== currentRealName) {
       throw new Error("Real name changes require university approval.");
     }
 
+    if (requestedUniversityId && requestedUniversityId !== currentUniversityId) {
+      throw new Error("University affiliation requires university-admin approval or a verification code.");
+    }
+
     const updates: Record<string, unknown> = {
       real_name: currentRealName || null,
       show_real_name: Boolean(profile.showRealName),
-      show_university: Boolean(profile.showUniversity),
-      university_id: profile.universityId ?? null
+      show_university: Boolean(profile.showUniversity)
     };
 
     // Display name can still change before it is locked; real-name changes are routed elsewhere.
