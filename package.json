@@ -40,7 +40,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@opennextjs/cloudflare": "^1.19.5",
+    "@opennextjs/cloudflare": "^1.19.11",
     "@types/canvas-confetti": "^1.6.4",
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.2",
