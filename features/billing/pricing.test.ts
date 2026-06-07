@@ -2,7 +2,12 @@ import type Stripe from "stripe";
 import { describe, expect, it } from "vitest";
 import { validateStripePriceForPlan } from "../../lib/billing/pricing";
 
-function price(overrides: Partial<Stripe.Price> = {}): Stripe.Price {
+// Factory uses Partial<unknown> instead of Partial<Stripe.Price> because
+// stripe-node 22's published types tightened around `unit_amount_decimal`
+// (now branded Decimal, not string) and removed `aggregate_usage` from
+// Recurring — those don't matter for what we're testing (price validation
+// only reads unit_amount, currency, interval, lookup_key, active, type).
+function price(overrides: Record<string, unknown> = {}): Stripe.Price {
   return {
     id: "price_test",
     object: "price",
@@ -17,7 +22,6 @@ function price(overrides: Partial<Stripe.Price> = {}): Stripe.Price {
     nickname: null,
     product: "prod_test",
     recurring: {
-      aggregate_usage: null,
       interval: "month",
       interval_count: 1,
       meter: null,
@@ -29,9 +33,8 @@ function price(overrides: Partial<Stripe.Price> = {}): Stripe.Price {
     transform_quantity: null,
     type: "recurring",
     unit_amount: 800,
-    unit_amount_decimal: "800",
     ...overrides
-  } as Stripe.Price;
+  } as unknown as Stripe.Price;
 }
 
 describe("validateStripePriceForPlan", () => {
@@ -43,7 +46,7 @@ describe("validateStripePriceForPlan", () => {
 
   it("rejects a lookup key that points at the wrong amount", () => {
     expect(
-      validateStripePriceForPlan(price({ unit_amount: 900, unit_amount_decimal: "900" }), "monthly", "premium_monthly")
+      validateStripePriceForPlan(price({ unit_amount: 900 }), "monthly", "premium_monthly")
     ).toEqual({
       ok: false,
       reason: "amount_mismatch"
@@ -55,7 +58,6 @@ describe("validateStripePriceForPlan", () => {
       validateStripePriceForPlan(
         price({
           recurring: {
-            aggregate_usage: null,
             interval: "year",
             interval_count: 1,
             meter: null,

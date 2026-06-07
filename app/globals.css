@@ -1476,16 +1476,22 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
 }
 
 /* ── 3. Hero wordmark ──
-   Massive geometric "United" with Fraunces italic accent.
-   The accent word + period are in the brand orange. */
+   Massive Bricolage "United" with Fraunces italic accent.
+   The accent word + period are in the brand orange.
+   - opsz 48 → Bricolage's display optical-size cut (tighter joins,
+     more confident terminals at huge sizes).
+   - Slightly looser letter-spacing than the previous Archivo Black
+     version so the heavy weight breathes at 200px. */
 .wordmark {
   font-family: var(--font-rodin), var(--font-outfit), system-ui, sans-serif;
-  font-weight: 700;
+  font-weight: 800;
   font-size: clamp(72px, 13vw, 200px);
-  line-height: 0.92;
-  letter-spacing: -0.04em;
+  line-height: 0.9;
+  letter-spacing: -0.035em;
   color: hsl(var(--text));
   margin: 0;
+  font-variation-settings: "opsz" 48;
+  font-feature-settings: "ss01", "ss02";
 }
 .wordmark em {
   font-family: var(--font-fraunces), ui-serif, Georgia, serif;

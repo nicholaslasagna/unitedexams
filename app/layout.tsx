@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Archivo_Black, Outfit, Fira_Code, Fraunces } from "next/font/google";
+import { Bricolage_Grotesque, Outfit, Fira_Code, Fraunces } from "next/font/google";
 import { Providers } from "@/app/providers";
 import { SkipLink } from "@/components/ui/skip-link";
 import "@/app/globals.css";
@@ -23,12 +23,23 @@ const fraunces = Fraunces({
 
 const firaCode = Fira_Code({ subsets: ["latin"], variable: "--font-mono" });
 
-// Wordmark display: Archivo Black — open Google font with a heavy,
-// geometric feel. The variable name stays --font-rodin so existing CSS
-// keeps working without shipping a proprietary font file.
-const rodin = Archivo_Black({
+// Wordmark display: Bricolage Grotesque — variable Google font with
+// real editorial character (slight angled terminals, optical-size
+// variation). Pairs cleanly with Fraunces italics on the same line:
+// the heavy geometric body next to the calligraphic accent reads as
+// "designed publication," not "default Tailwind sans."
+//
+// We pull the wider weight band (500–800) plus the optical-size axis
+// so the wordmark uses the display-optical-size cut at huge sizes and
+// nav cuts at small sizes. The variable name stays --font-rodin so
+// existing CSS (homepage hero, section headings, auth shell, sidebar)
+// keeps working without touching dozens of call sites.
+const rodin = Bricolage_Grotesque({
   subsets: ["latin"],
-  weight: "400",
+  // Variable font: omit `weight` and let next/font expose the full
+  // 500-800 axis. Adding `axes: ["opsz"]` would conflict with an
+  // explicit weight per next/font's loader rules, so we just use the
+  // default variable axes (weight + opsz both come along).
   variable: "--font-rodin",
   display: "swap"
 });
