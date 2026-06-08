@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, Command, Search, Sparkles, SunMoon } from "lucide-react";
+import { ChevronRight, Search, Sparkles, SunMoon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useAppData } from "@/lib/app-data-context";
 import { useToast } from "@/lib/hooks/use-toast";
@@ -146,11 +146,6 @@ export function Topbar() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
-            <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 items-center gap-1 rounded-lg border border-borderc bg-soft px-2 py-1 text-[11px] font-semibold text-faint md:inline-flex">
-              <Command className="h-3 w-3" />
-              K
-            </span>
-
             {suggestions.length > 0 ? (
               <div className="absolute left-0 right-0 top-[50px] overflow-hidden rounded-2xl border border-borderc bg-surface shadow-elevated backdrop-blur-xl animate-fade-rise">
                 {suggestions.map((item) => (
@@ -239,19 +234,6 @@ export function Topbar() {
           </div>
         </div>
 
-        {pageMeta.quickActions.length ? (
-          <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {pageMeta.quickActions.map((action) => (
-              <Link
-                key={action.href}
-                href={action.href}
-                className="shrink-0 rounded-full border border-borderc bg-soft px-3 py-1.5 text-[12px] font-semibold text-muted transition-colors duration-150 hover:border-border-bright hover:bg-overlay hover:text-text"
-              >
-                {action.label}
-              </Link>
-            ))}
-          </div>
-        ) : null}
       </div>
     </header>
   );

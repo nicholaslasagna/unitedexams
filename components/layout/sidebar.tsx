@@ -36,8 +36,8 @@ interface NavItem {
 }
 
 const baseItems: NavItem[] = [
-  { href: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/app/courses", label: "Courses", icon: LibraryBig },
+  { href: "/app/dashboard", label: "Home", icon: LayoutDashboard },
+  { href: "/app/courses", label: "My classes", icon: LibraryBig },
   { href: "/app/homework", label: "Homework", icon: ListChecks },
   { href: "/app/exams", label: "Exams", icon: Timer },
   { href: "/app/leaderboard", label: "Leaderboard", icon: Trophy },
@@ -45,6 +45,11 @@ const baseItems: NavItem[] = [
   { href: "/app/account", label: "Account", icon: UserRound },
   { href: "/app/settings", label: "Settings", icon: Settings }
 ];
+
+// Hrefs that are "study tools" reachable inside any class hub. Grouped
+// separately in the sidebar so the top of the nav stays short (Home,
+// My classes, Leaderboard) instead of a wall of equal items.
+const STUDY_TOOL_HREFS = new Set(["/app/homework", "/app/exams", "/app/notes"]);
 
 function buildItems(params: {
   showProfessor: boolean;
@@ -392,8 +397,21 @@ export function Sidebar() {
     [focusedSection, showAnnouncements, showGrades, showProfessor, showSchoolAdmin, showSections]
   );
 
-  const mainItems = useMemo(
-    () => items.filter((item) => item.href !== "/app/account" && item.href !== "/app/settings"),
+  // Top of the nav — the few places people actually move between.
+  const primaryItems = useMemo(
+    () =>
+      items.filter(
+        (item) =>
+          item.href !== "/app/account" &&
+          item.href !== "/app/settings" &&
+          !STUDY_TOOL_HREFS.has(item.href)
+      ),
+    [items]
+  );
+  // Tucked under a quiet "Study tools" header — these also live inside
+  // each class, so they don't need to shout at the top level.
+  const studyItems = useMemo(
+    () => items.filter((item) => STUDY_TOOL_HREFS.has(item.href)),
     [items]
   );
   const personalItems = useMemo(
@@ -406,10 +424,10 @@ export function Sidebar() {
     const labels = showSchoolAdmin
       ? ["Professor Staff", "Account", "Settings"]
       : showProfessor
-        ? ["Dashboard", "Courses", "Sections", showAnnouncements ? "Announcements" : "Exams"]
+        ? ["Home", "My classes", "Sections", showAnnouncements ? "Announcements" : "Exams"]
         : showSections
-          ? ["Dashboard", "Courses", "Sections", showAnnouncements ? "Announcements" : "Homework"]
-          : ["Dashboard", "Courses", "Homework", showAnnouncements ? "Announcements" : "Exams"];
+          ? ["Home", "My classes", "Sections", showAnnouncements ? "Announcements" : "Homework"]
+          : ["Home", "My classes", "Homework", showAnnouncements ? "Announcements" : "Exams"];
 
     return labels
       .map((label) => byLabel.get(label))
@@ -438,14 +456,27 @@ export function Sidebar() {
 
         <div className="flex-1 space-y-6 overflow-y-auto pr-1">
           <div className="space-y-2">
-            <p className="px-2 text-[10px] font-bold uppercase tracking-[0.22em] text-accent">Navigate</p>
             <NavigationList
-              items={mainItems}
+              items={primaryItems}
               pathname={pathname}
               sectionsOpen={sectionsOpen}
               setSectionsOpen={setSectionsOpen}
             />
           </div>
+
+          {studyItems.length ? (
+            <div className="space-y-2">
+              <p className="px-2 text-[10px] font-bold uppercase tracking-[0.22em] text-faint">
+                Study tools
+              </p>
+              <NavigationList
+                items={studyItems}
+                pathname={pathname}
+                sectionsOpen={sectionsOpen}
+                setSectionsOpen={setSectionsOpen}
+              />
+            </div>
+          ) : null}
 
           <SectionQuickList
             sections={sections}
@@ -542,17 +573,32 @@ export function Sidebar() {
               </div>
 
               <div className="flex-1 overflow-y-auto px-4 py-4">
-                <div className="space-y-2">
-                  <p className="px-1 text-[10px] font-bold uppercase tracking-[0.22em] text-accent">Navigate</p>
-                </div>
                 <NavigationList
-                  items={mainItems}
+                  items={primaryItems}
                   pathname={pathname}
                   sectionsOpen={sectionsOpen}
                   setSectionsOpen={setSectionsOpen}
                   onNavigate={() => setMobileMenuOpen(false)}
                   mobile
                 />
+
+                {studyItems.length ? (
+                  <div className="mt-5">
+                    <p className="px-1 text-[10px] font-bold uppercase tracking-[0.22em] text-faint">
+                      Study tools
+                    </p>
+                    <div className="mt-2">
+                      <NavigationList
+                        items={studyItems}
+                        pathname={pathname}
+                        sectionsOpen={sectionsOpen}
+                        setSectionsOpen={setSectionsOpen}
+                        onNavigate={() => setMobileMenuOpen(false)}
+                        mobile
+                      />
+                    </div>
+                  </div>
+                ) : null}
 
                 <div className="mt-5">
                   <SectionQuickList

@@ -13,8 +13,7 @@ import {
   Search,
   Sparkles,
   TimerReset,
-  TrendingUp,
-  Trophy
+  TrendingUp
 } from "lucide-react";
 import { getCourse, getCourseContent, getCourseQuizSets } from "@/data/seed";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
@@ -162,28 +161,6 @@ export function CourseDetailContent({
     });
   }, [sets, query, difficulty, tab]);
 
-  const quizModeCount = useMemo(
-    () => sets.filter((set) => resolveQuizSetMode(set) === "quiz").length,
-    [sets]
-  );
-  const examModeCount = useMemo(
-    () => sets.filter((set) => resolveQuizSetMode(set) === "exam").length,
-    [sets]
-  );
-  const homeworkModeCount = useMemo(
-    () => sets.filter((set) => resolveQuizSetMode(set) === "homework").length,
-    [sets]
-  );
-
-  const totalQuestions = useMemo(
-    () => sets.reduce((sum, s) => sum + s.questions.length, 0),
-    [sets]
-  );
-  const totalEstimatedMinutes = useMemo(
-    () => sets.reduce((sum, s) => sum + s.estMinutes, 0),
-    [sets]
-  );
-
   const recommendedSet = useMemo(() => {
     if (sets.length === 0) return null;
     if (courseAttempts.length === 0) {
@@ -225,10 +202,9 @@ export function CourseDetailContent({
   return (
     <div className="space-y-8">
       {/* ─── COURSE HERO ─────────────────────────────────── */}
-      <section className="relative">
-        <div className="aurora absolute inset-0 -z-10 rounded-[2rem] opacity-90" aria-hidden />
-        <div className="premium-card glow-border overflow-hidden">
-          <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[1.18fr_0.82fr] lg:p-8">
+      <section>
+        <Card className="overflow-hidden">
+          <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[1.25fr_0.75fr] lg:p-8">
             <div className="space-y-5">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone="accent">{course.code}</Badge>
@@ -239,13 +215,11 @@ export function CourseDetailContent({
                   <AccessBadge variant="institution" label="Institution access" />
                 ) : access.isPremium ? (
                   <AccessBadge variant="premium" label="Premium active" />
-                ) : (
-                  <AccessBadge variant="free" label="Public hub" />
-                )}
+                ) : null}
               </div>
 
               <div>
-                <h1 className="font-display text-[2.4rem] font-semibold leading-[1.02] tracking-tight text-text sm:text-[3.25rem]">
+                <h1 className="font-display text-[2.2rem] font-semibold leading-[1.04] tracking-tight text-text sm:text-[2.8rem]">
                   {course.name}
                 </h1>
                 <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-text-secondary">
@@ -253,46 +227,21 @@ export function CourseDetailContent({
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                {course.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className={`rounded-full border px-3 py-1 text-[11px] font-semibold ${visual.chipClass}`}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              {/* Recommended next */}
+              {/* Best place to start — the one obvious entry point */}
               {recommendedSet ? (
                 <div className="rounded-[1.25rem] border border-accent/35 bg-accent/10 p-4 sm:p-5">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-surface/70 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.18em] text-accent">
-                        <Sparkles className="h-3 w-3" />
-                        Best place to start
-                      </span>
-                      <Badge
-                        tone={
-                          recommendedMode === "exam" ? "warn" : recommendedMode === "homework" ? "success" : "brand"
-                        }
-                      >
-                        {modeLabel(recommendedMode)}
-                      </Badge>
-                    </div>
-                    <span className="text-[12px] text-text-secondary">
-                      ~{recommendedSet.estMinutes} min · {recommendedSet.questions.length} q
-                    </span>
-                  </div>
-
-                  <p className="mt-3 font-display text-lg font-semibold text-text">
+                  <p className="inline-flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-accent">
+                    <Sparkles className="h-3 w-3" />
+                    Best place to start
+                  </p>
+                  <p className="mt-2 font-display text-lg font-semibold text-text">
                     {recommendedSet.title}
                   </p>
                   <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
                     {courseAttempts.length === 0
                       ? "New here? This is the easiest way into this class."
                       : "This is your lowest score so far — the best place to improve."}
+                    {" · "}about {recommendedSet.estMinutes} min
                   </p>
 
                   <div className="mt-4 flex flex-col gap-2">
@@ -302,106 +251,41 @@ export function CourseDetailContent({
                         <ArrowRight className="h-4 w-4" />
                       </Link>
                     </Button>
-                    <Link
-                      href={
-                        recommendedMode === "homework"
-                          ? withPrefix(routePrefix, `/homework/${recommendedSet.id}?review=1`)
-                          : withPrefix(routePrefix, `/quiz/${recommendedSet.id}`)
-                      }
-                      className="text-[12.5px] font-medium text-text-secondary underline decoration-borderc underline-offset-4 hover:text-text sm:w-fit"
-                    >
-                      Or try it as a quick quiz
-                    </Link>
                   </div>
                 </div>
               ) : null}
-
-              {/* Stats */}
-              <div className="grid gap-3 sm:grid-cols-4">
-                <CourseStat
-                  icon={<Brain className="h-3.5 w-3.5" />}
-                  label="Practice sets"
-                  value={quizModeCount + examModeCount + homeworkModeCount}
-                />
-                <CourseStat
-                  icon={<Sparkles className="h-3.5 w-3.5" />}
-                  label="Questions"
-                  value={totalQuestions}
-                />
-                <CourseStat
-                  icon={<Clock3 className="h-3.5 w-3.5" />}
-                  label="Est. time"
-                  value={`${totalEstimatedMinutes}m`}
-                />
-                <CourseStat
-                  icon={<Trophy className="h-3.5 w-3.5" />}
-                  label="Attempts"
-                  value={attemptCount}
-                />
-              </div>
             </div>
 
-            {/* Right: mastery + course visual */}
+            {/* Right: artwork + simple progress ring */}
             <div className="space-y-4">
-              <div className="relative overflow-hidden rounded-[1.4rem] border border-borderc bg-soft/70">
-                <div className={`relative h-44 bg-gradient-to-br ${visual.surfaceClass}`}>
+              <div className="relative h-40 overflow-hidden rounded-[1.4rem] border border-borderc bg-soft/70">
+                <div className={`relative h-full w-full bg-gradient-to-br ${visual.surfaceClass}`}>
                   <Image
                     src={visual.artworkSrc}
-                    alt={`${course.name} artwork`}
+                    alt=""
                     fill
                     className="object-cover opacity-95"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-surface/85 via-transparent to-transparent" />
                 </div>
               </div>
 
               <div className="flex items-center gap-4 rounded-[1.25rem] border border-borderc bg-surface/85 p-4">
                 <MasteryRing
                   value={progress}
-                  size={108}
-                  stroke={11}
-                  label="Mastery"
+                  size={92}
+                  stroke={10}
+                  label="Progress"
                   tone={progress >= 80 ? "success" : progress >= 50 ? "brand" : "warn"}
                 />
-                <div className="flex-1 space-y-1.5">
-                  <p className="font-display text-base font-semibold text-text">
-                    {attemptCount === 0 ? "Ready when you are" : "Course readiness"}
-                  </p>
-                  <p className="text-[12.5px] leading-snug text-text-secondary">
-                    {attemptCount === 0
-                      ? "Start a quiz to begin tracking mastery and topic-level signals."
-                      : `Across ${attemptCount} attempt${attemptCount === 1 ? "" : "s"} on this course.`}
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-[1rem] border border-borderc bg-surface/85 px-3 py-3">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary">
-                    Notes stack
-                  </p>
-                  <p className="mt-1 font-display text-base font-semibold text-text">
-                    Notes + cheat sheet
-                  </p>
-                  <p className="mt-1 text-[11.5px] text-text-secondary">
-                    Plus {content.resources.length} curated references.
-                  </p>
-                </div>
-                <div className="rounded-[1rem] border border-borderc bg-surface/85 px-3 py-3">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary">
-                    Topic signals
-                  </p>
-                  <p className="mt-1 font-display text-base font-semibold text-text">
-                    {mastery.length > 0 ? `${mastery.length} tracked` : "Unlock by attempting"}
-                  </p>
-                  <p className="mt-1 text-[11.5px] text-text-secondary">
-                    {mastery.length > 0 ? "See the breakdown below." : "First attempt seeds the data."}
-                  </p>
-                </div>
+                <p className="flex-1 text-[13px] leading-snug text-text-secondary">
+                  {attemptCount === 0
+                    ? "Take a quiz and your progress starts showing here."
+                    : `Based on ${attemptCount} quiz${attemptCount === 1 ? "" : "zes"} you've taken.`}
+                </p>
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       </section>
 
       {/* ─── TAB SWITCHER ────────────────────────────────── */}
@@ -784,22 +668,3 @@ export function CourseDetailContent({
   );
 }
 
-function CourseStat({
-  icon,
-  label,
-  value
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-[1rem] border border-borderc bg-surface/85 p-3.5">
-      <p className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary">
-        {label}
-        <span className="text-accent/80">{icon}</span>
-      </p>
-      <p className="mt-1.5 font-mono text-[1.55rem] font-bold leading-none text-text">{value}</p>
-    </div>
-  );
-}
