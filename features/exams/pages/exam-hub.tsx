@@ -84,7 +84,7 @@ export function ExamHubPage() {
       return {
         title: "Design exams by section",
         description:
-          "Choose the class you want, open the exam builder, and configure timing, proctor controls, open-notes policy, and release rules from there."
+          "Choose the class you want, open the exam builder, and configure timing, exam monitoring, open-notes policy, and release rules from there."
       };
     }
 

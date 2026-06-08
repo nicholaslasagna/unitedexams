@@ -269,7 +269,7 @@ export default function DashboardPage() {
                 className="h-11 w-full xl:w-auto"
               >
                 <Link href={continueQuiz ? `/quiz/${continueQuiz.id}` : "/app/courses"}>
-                  {studiedToday ? "Run a quick review" : "Start today's sprint"}
+                  {studiedToday ? "Run a quick review" : "Start today's practice"}
                 </Link>
               </Button>
             </div>
@@ -315,7 +315,7 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <dt className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-text-secondary">
-                      Estimated sprint
+                      Estimated time
                     </dt>
                     <dd className="mt-1 text-[13.5px] font-semibold text-text">
                       {continueQuiz.estMinutes} minutes
@@ -331,7 +331,7 @@ export default function DashboardPage() {
                     </Link>
                   </Button>
                   <Button variant="secondary" asChild>
-                    <Link href={`/app/courses/${continueQuiz.courseId}`}>Open course lane</Link>
+                    <Link href={`/app/courses/${continueQuiz.courseId}`}>Open course</Link>
                   </Button>
                 </div>
               </div>
@@ -436,7 +436,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <div>
-              <h2 className="font-display text-[1.55rem] font-semibold tracking-tight text-text">Course lanes</h2>
+              <h2 className="font-display text-[1.55rem] font-semibold tracking-tight text-text">Your courses</h2>
               <p className="mt-1 text-[13.5px] text-text-secondary">
                 Open a course with the right context: artwork, mastery, and a clean path into study materials.
               </p>
@@ -504,7 +504,7 @@ export default function DashboardPage() {
                       </p>
 
                       <div className="flex items-center justify-between border-t border-borderc pt-3 text-[12.5px] font-semibold text-text-secondary transition-colors duration-200 group-hover:text-text">
-                        <span>Open course lane</span>
+                        <span>Open course</span>
                         <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out-expo group-hover:translate-x-1" />
                       </div>
                     </div>
@@ -522,7 +522,7 @@ export default function DashboardPage() {
             <CardHeader>
               <h2 className="inline-flex items-center gap-2 text-2xl font-display font-semibold text-text">
                 <TrendingUp className="h-5 w-5 text-accent" />
-                Focus lane
+                Up next
               </h2>
             </CardHeader>
             <CardBody className="space-y-3">

@@ -13,20 +13,20 @@ import { useAccess } from "@/lib/hooks/use-access";
 // knows what each Premium line item actually does without leaving the
 // page.
 const premiumFeatureExplanations: Record<string, string> = {
-  "Unlimited saved progress & mastery analytics":
-    "Every quiz attempt, walkthrough step, and per-topic mastery score syncs to your account and stays — across devices, across the term.",
+  "Saved progress & progress tracking":
+    "Every quiz you take and every topic score saves to your account and stays — across devices, all term long.",
   "Full quiz banks across courses":
-    "Free shows a sample. Premium opens every released quiz set and mock exam in the catalog.",
-  "Walkthrough videos & step-by-step solutions":
-    "Hint-by-hint reveals plus narrated walkthroughs for the trickiest exam questions, rolling out per course.",
-  "Timed exam simulations + readiness signal":
-    "Strict timer, randomized order, end-of-exam review, and a single 0–100 readiness score so you know whether you're ready.",
-  "Mistake history + smart review plans":
-    "Every wrong answer is queued for spaced re-test with the original walkthrough one tap away.",
+    "Free shows a sample. Premium opens every quiz set and practice exam in the catalog.",
+  "Step-by-step video solutions":
+    "Step-by-step hints plus short videos that walk through the trickiest exam questions, added course by course.",
+  "Timed practice exams + exam-ready score":
+    "A real timer, shuffled questions, an end-of-exam review, and a single 0–100 score so you know if you're ready for the test.",
+  "Remembers your mistakes & shows what to review":
+    "Every question you miss comes back later for review, with the explanation one tap away.",
   "Sections you can join":
-    "Join professor- or peer-led sections by code. Same hubs your classmates see, with shared assignments.",
-  "Hosted checkout with eligible wallets and PayPal":
-    "Pay with Apple Pay, Google Pay, Link, PayPal, or any major card — all inside Stripe-hosted Checkout. United Exams never sees your card details."
+    "Join your teacher's or a friend's class by code. You'll see the same materials and shared assignments.",
+  "Pay with wallets or PayPal":
+    "Pay with Apple Pay, Google Pay, Link, PayPal, or any major card — all inside Stripe's secure checkout. United Exams never sees your card details."
 };
 
 /**
@@ -86,13 +86,13 @@ export function PricingSection() {
           <p className="tier-tag">For students paying their own way.</p>
           <ul className="tier-features-ed">
             {[
-              "Unlimited saved progress & mastery analytics",
+              "Saved progress & progress tracking",
               "Full quiz banks across courses",
-              "Walkthrough videos & step-by-step solutions",
-              "Timed exam simulations + readiness signal",
-              "Mistake history + smart review plans",
+              "Step-by-step video solutions",
+              "Timed practice exams + exam-ready score",
+              "Remembers your mistakes & shows what to review",
               "Sections you can join",
-              "Hosted checkout with eligible wallets and PayPal"
+              "Pay with wallets or PayPal"
             ].map((label) => (
               <li key={label}>
                 <Tooltip content={premiumFeatureExplanations[label] ?? ""}>

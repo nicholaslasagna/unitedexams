@@ -27,7 +27,7 @@ export function NotesIndexPage() {
           <div>
             <h1 className="text-3xl font-semibold tracking-tight text-text sm:text-4xl">Notes</h1>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-text-secondary sm:text-base">
-              Course-specific notes, cheat sheets, and reference links across your enrolled study lanes.
+              Course-specific notes, cheat sheets, and reference links across your classes.
             </p>
           </div>
           <Badge tone="info">{noteCourses.length} course note stacks</Badge>
@@ -87,13 +87,16 @@ export function NotesIndexPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <Button asChild>
+                  <div className="flex flex-col gap-2">
+                    <Button asChild size="lg" className="w-full sm:w-auto">
                       <Link href={`/app/notes/${course.id}`}>Open notes</Link>
                     </Button>
-                    <Button variant="secondary" asChild>
-                      <Link href={`/app/courses/${course.id}`}>Open course hub</Link>
-                    </Button>
+                    <Link
+                      href={`/app/courses/${course.id}`}
+                      className="text-[12.5px] font-medium text-text-secondary underline decoration-borderc underline-offset-4 hover:text-text sm:w-fit"
+                    >
+                      Or open the whole class
+                    </Link>
                   </div>
 
                   {content.resources.length > 0 ? (

@@ -4,16 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import {
-  ArrowRight,
-  BookOpenCheck,
-  Building2,
-  GraduationCap,
-  Mail,
-  Send,
-  Sparkles,
-  UsersRound
-} from "lucide-react";
+import { GraduationCap, Mail, Send, Sparkles } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,42 +21,6 @@ const categories: ContactCategory[] = [
   "Account help",
   "Bug",
   "Other"
-];
-
-const paths = [
-  {
-    role: "student",
-    icon: <UsersRound className="h-5 w-5" />,
-    tag: "Students",
-    title: "Bring this to a class I'm taking",
-    text: "Tell us which class is rough. We'll work with the instructor to spin up a course-native study hub for it.",
-    cta: "Suggest a class",
-    href: "/contact?intent=implementation&role=student",
-    accent: "from-cyan-500/15 to-blue-500/15",
-    border: "border-cyan-400/30"
-  },
-  {
-    role: "teacher",
-    icon: <BookOpenCheck className="h-5 w-5" />,
-    tag: "Instructors",
-    title: "Use this for a course I teach",
-    text: "Sections, assignments, announcements, exam settings, and grading — all in one place. We handle the setup with you.",
-    cta: "Talk to us",
-    href: "/contact?intent=implementation&role=teacher",
-    accent: "from-fuchsia-500/15 to-violet-500/15",
-    border: "border-fuchsia-400/30"
-  },
-  {
-    role: "institution",
-    icon: <Building2 className="h-5 w-5" />,
-    tag: "Departments / Programs",
-    title: "Cover access for my department",
-    text: "Centralized billing, verified students, and a clean rollout across multiple sections. Premium gates disappear.",
-    cta: "Discuss a program",
-    href: "/contact?intent=implementation&role=institution",
-    accent: "from-emerald-500/15 to-teal-500/15",
-    border: "border-emerald-400/30"
-  }
 ];
 
 export default function ContactPage() {
@@ -204,36 +159,6 @@ export default function ContactPage() {
           </div>
         </section>
 
-        {/* Three paths */}
-        <section className="space-y-5">
-          <SectionHeading
-            eyebrow="Pick a path"
-            title="Three ways to bring this to your class."
-          />
-          <div className="grid gap-4 lg:grid-cols-3">
-            {paths.map((p) => (
-              <Link
-                key={p.role}
-                href={p.href}
-                className={`group relative flex flex-col overflow-hidden rounded-[1.4rem] border ${p.border} bg-gradient-to-br ${p.accent} p-5 transition-all duration-200 ease-out-expo hover:-translate-y-0.5 hover:shadow-card-hover`}
-              >
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-borderc bg-surface text-accent">
-                  {p.icon}
-                </span>
-                <p className="mt-4 text-[10.5px] font-bold uppercase tracking-[0.18em] text-accent">
-                  {p.tag}
-                </p>
-                <p className="mt-1 font-display text-lg font-semibold text-text">{p.title}</p>
-                <p className="mt-2 flex-1 text-[13.5px] leading-relaxed text-text-secondary">{p.text}</p>
-                <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent transition-transform duration-200 group-hover:translate-x-0.5">
-                  {p.cta}
-                  <ArrowRight className="h-4 w-4" />
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
-
         {/* Form */}
         <Card>
           <CardHeader>
@@ -301,15 +226,20 @@ export default function ContactPage() {
                   </p>
                 ) : null}
 
-                <div className="flex flex-wrap gap-3">
-                  <Button type="submit" loading={loading}>
-                    <Send className="h-4 w-4" />
-                    Send message
-                  </Button>
-                  <Button asChild variant="secondary">
-                    <a href="mailto:support@unitedexams.com">Email support@unitedexams.com</a>
-                  </Button>
-                </div>
+                <Button type="submit" size="lg" loading={loading} className="w-full sm:w-auto">
+                  <Send className="h-4 w-4" />
+                  Send message
+                </Button>
+                <p className="text-[12.5px] text-text-secondary">
+                  Prefer email? Write to{" "}
+                  <a
+                    href="mailto:support@unitedexams.com"
+                    className="font-medium text-accent hover:text-text"
+                  >
+                    support@unitedexams.com
+                  </a>
+                  .
+                </p>
               </form>
             ) : (
               <div className="space-y-4">

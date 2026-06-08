@@ -186,7 +186,7 @@ function buildPageMeta(params: {
       } satisfies WorkspacePageMeta;
     case "courses":
       return {
-        eyebrow: course ? "Course lane" : "Explore and review",
+        eyebrow: course ? "Course" : "Explore and review",
         title: course?.name ?? "Courses",
         breadcrumbs: course
           ? [root, { href: "/app/courses", label: "Courses" }, { href: `/app/courses/${course.id}`, label: course.name }]
@@ -207,7 +207,7 @@ function buildPageMeta(params: {
           ? [root, { href: "/app/notes", label: "Notes" }, { href: `/app/notes/${course.id}`, label: course.name }]
           : [root, { href: "/app/notes", label: "Notes" }],
         quickActions: clampActions([
-          course ? { href: `/app/courses/${course.id}`, label: "Course lane" } : { href: "/app/courses", label: "Courses" },
+          course ? { href: `/app/courses/${course.id}`, label: "Course" } : { href: "/app/courses", label: "Courses" },
           currentSection ? { href: currentSection.materialsHref, label: "Materials" } : null,
           showGrades ? { href: "/app/grades", label: "Grades" } : null
         ])

@@ -18,7 +18,7 @@ export default function PrivacyPage() {
           <h2 className="font-display text-2xl font-semibold">What we collect</h2>
           <ul className="list-disc space-y-1 pl-5 text-sm text-muted">
             <li>Account profile (email, display name, optional real name and university).</li>
-            <li>Quiz/homework attempts and mastery analytics.</li>
+            <li>Quiz/homework attempts and progress tracking.</li>
             <li>Security and abuse signals (hashed IP, user agent snippets, auth challenge data).</li>
             <li>Support messages you submit inside the app.</li>
           </ul>

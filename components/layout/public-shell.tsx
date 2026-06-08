@@ -150,9 +150,6 @@ export function PublicShell({ children }: { children: ReactNode }) {
                 <span className="italic">Exams</span>
               </em>
             </span>
-            <span className="ml-1 inline-flex translate-y-[-2px] items-center rounded-full border border-borderc px-1.5 py-0.5 font-mono text-[9px] font-medium tracking-[0.22em] text-text-secondary">
-              UE / 26
-            </span>
           </Link>
 
           <nav className="hidden items-center gap-1 md:flex" aria-label="Main">

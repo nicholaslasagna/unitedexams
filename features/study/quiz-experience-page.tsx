@@ -10,7 +10,6 @@ import {
   ChartColumnBig,
   CircleCheckBig,
   Clock3,
-  GraduationCap,
   Notebook,
   RotateCcw,
   Settings2,
@@ -18,7 +17,6 @@ import {
   Timer,
   TimerReset
 } from "lucide-react";
-import { ModeCard } from "@/components/ui/mode-card";
 import { AccessBadge } from "@/components/ui/access-badge";
 import { FeatureStat } from "@/components/ui/feature-stat";
 import { InstitutionAccessNote } from "@/components/ui/institution-access-note";
@@ -1017,36 +1015,33 @@ export function QuizExperiencePageContent({
             <CardBody className="space-y-3 p-5">
               <Badge tone="success">Homework</Badge>
               <p className="font-display text-lg font-semibold text-text">
-                This set is configured for the Homework Desk.
+                This one is set up as homework.
               </p>
               <p className="text-[13px] text-text-secondary">
-                Work problems one at a time with hints, full solutions on demand, and flag-for-review.
+                Work through it one problem at a time, with hints and full answers whenever you need them.
               </p>
               <div className="flex flex-wrap gap-2">
-                <Button asChild>
+                <Button asChild size="lg">
                   <Link href={withPrefix(routePrefix, `/homework/${quiz.id}`)}>
                     <Notebook className="h-4 w-4" />
-                    Open Homework Desk
-                  </Link>
-                </Button>
-                <Button variant="ghost" asChild>
-                  <Link href={withPrefix(routePrefix, `/homework/${quiz.id}?review=1`)}>
-                    Resume flagged review
+                    Start homework
                   </Link>
                 </Button>
               </div>
             </CardBody>
           </Card>
         ) : (
-          // Mode card grid
-          <section className="space-y-3">
+          // One clear "Start" + a quieter "other ways to practice" row.
+          // Replaces the old 3–4 equal mode cards that gave a first-timer
+          // no sense of where to begin.
+          <section className="space-y-4">
             <div className="flex items-end justify-between gap-3">
               <div>
                 <p className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-accent">
-                  Pick your study mode
+                  Ready to start?
                 </p>
                 <p className="mt-1 font-display text-xl font-semibold text-text">
-                  Same quiz · four ways to learn it.
+                  Practice this quiz your way.
                 </p>
               </div>
               <Button variant="ghost" size="sm" onClick={() => setSettingsOpen(true)}>
@@ -1055,106 +1050,72 @@ export function QuizExperiencePageContent({
               </Button>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {setMode === "exam" ? (
-                <>
-                  <ModeCard
-                    tone="exam"
-                    icon={<TimerReset className="h-4 w-4" />}
-                    title="Exam Simulation"
-                    subtitle="Strict clock · randomized order · pro-priority items"
-                    bullets={[
-                      supportsGuidedExamReview
-                        ? "Walkthroughs unlock after each answer"
-                        : "Explanations show at end of exam",
-                      "Professor-flagged items are always included",
-                      "End-of-exam review with topic breakdown"
-                    ]}
-                    cta={
-                      <Button onClick={startExamMode} className="w-full justify-between">
-                        Start exam
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    }
-                    active
-                  />
-                  <ModeCard
-                    icon={<GraduationCap className="h-4 w-4" />}
-                    title="Practice this bank"
-                    subtitle="No timer · explanations on demand"
-                    bullets={[
-                      "Use it to warm up before the exam mode",
-                      "Best/last score still tracks per attempt"
-                    ]}
-                    cta={
-                      <Button onClick={startTestMode} variant="secondary" className="w-full justify-between">
-                        Practice mode
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    }
-                  />
-                </>
-              ) : (
-                <>
-                  <ModeCard
-                    icon={<GraduationCap className="h-4 w-4" />}
-                    title="Test Mode"
-                    subtitle="Answer-first flow · graded accuracy"
-                    bullets={[
-                      "Submit and see if you got it",
-                      "Explanations on demand, no timer",
-                      "Best for momentum and topic repetition"
-                    ]}
-                    cta={
-                      <Button onClick={startTestMode} className="w-full justify-between">
-                        Start Test Mode
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    }
-                    active={attemptMode === "test"}
-                  />
-                  <ModeCard
-                    tone="study"
-                    icon={<BookOpenCheck className="h-4 w-4" />}
-                    title="Study Walkthrough"
-                    subtitle="Hints first · full reasoning after submit"
-                    bullets={[
-                      "Hint-by-hint guidance before answering",
-                      "Why this answer · why others are wrong",
-                      "Best for the first time through a topic"
-                    ]}
-                    cta={
-                      <Button onClick={startStudyMode} variant="secondary" className="w-full justify-between">
-                        Start Walkthrough
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    }
-                    active={attemptMode === "study"}
-                  />
-                  <ModeCard
-                    tone="timed"
-                    icon={<Timer className="h-4 w-4" />}
-                    title="Timed Exam"
-                    subtitle="Strict clock · randomized order"
-                    bullets={[
-                      "Pacing rehearsal under exam pressure",
-                      "End-of-exam review and topic breakdown",
-                      "Use it once you feel solid on the bank"
-                    ]}
-                    cta={
-                      <Button onClick={startTimedMode} variant="ghost" className="w-full justify-between">
-                        Start Timed Exam
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    }
-                    active={attemptMode === "timed"}
-                  />
-                </>
-              )}
-            </div>
+            {setMode === "exam" ? (
+              <div className="space-y-3">
+                {/* Recommended: take the exam */}
+                <div className="rounded-[1.4rem] border border-accent/35 bg-accent/10 p-5">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-surface/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-accent">
+                    Recommended
+                  </span>
+                  <p className="mt-3 font-display text-lg font-semibold text-text">Take the exam</p>
+                  <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
+                    A timed, test-style run — the closest thing to the real exam.
+                  </p>
+                  <Button onClick={startExamMode} size="lg" className="mt-4 w-full sm:w-auto">
+                    <TimerReset className="h-4 w-4" />
+                    Start exam
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Gentler option */}
+                <div className="space-y-2">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+                    Not ready for the timer?
+                  </p>
+                  <Button onClick={startTestMode} variant="secondary" className="w-full sm:w-auto">
+                    Practice first — no timer
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {/* Recommended: practice quiz */}
+                <div className="rounded-[1.4rem] border border-accent/35 bg-accent/10 p-5">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-surface/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-accent">
+                    Recommended
+                  </span>
+                  <p className="mt-3 font-display text-lg font-semibold text-text">Practice quiz</p>
+                  <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
+                    Answer each question, then check if you got it. No timer — go at your own pace.
+                  </p>
+                  <Button onClick={startTestMode} size="lg" className="mt-4 w-full sm:w-auto">
+                    Start practicing
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Other ways to practice */}
+                <div className="space-y-2">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+                    Other ways to practice
+                  </p>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    <Button onClick={startStudyMode} variant="secondary" className="w-full sm:w-auto">
+                      <BookOpenCheck className="h-4 w-4" />
+                      Step-by-step with hints
+                    </Button>
+                    <Button onClick={startTimedMode} variant="secondary" className="w-full sm:w-auto">
+                      <Timer className="h-4 w-4" />
+                      Timed quiz
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <p className="text-[12px] text-text-secondary">
-              Current attempt length: <span className="font-mono font-bold text-text">{lengthLabel}</span>{" "}
+              This quiz has <span className="font-mono font-bold text-text">{lengthLabel}</span>{" "}
               question{settings.questionCount === 1 ? "" : "s"}.
             </p>
           </section>
@@ -1163,8 +1124,8 @@ export function QuizExperiencePageContent({
         {/* Helpful note */}
         <div className="rounded-[1.1rem] border border-borderc bg-soft px-4 py-3 text-[12.5px] text-text-secondary">
           {quiz.courseId === "differential-equations"
-            ? "Differential Equations mode: open-ended free response with hint-by-hint guidance and walkthrough self-check."
-            : "Tip: switch lanes anytime — your selected attempt length and randomization carry over."}
+            ? "Heads up: these are write-it-out questions, with step-by-step hints and a self-check."
+            : "Tip: you can switch how you study anytime — your settings carry over."}
         </div>
 
         {/*
@@ -1176,12 +1137,12 @@ export function QuizExperiencePageContent({
          */}
         {!access.messaging.hidePremiumPrompts && setMode !== "homework" ? (
           <PremiumUnlockNote
-            description="A few signed-in extras that make the daily flow easier. If your school covers access, all of this is included automatically."
+            description="A few extras that make studying easier. If your school covers access, you get all of this automatically."
             bullets={[
-              "Mistake history across attempts",
-              "Smart review plans for missed topics",
-              "Mastery analytics + readiness signal",
-              "Deeper walkthroughs and hints"
+              "Remembers the questions you miss",
+              "Tells you what to study next",
+              "Shows your progress and an exam-ready score",
+              "Extra hints and step-by-step answers"
             ]}
             ctaHref="/contact?intent=implementation"
             ctaLabel="Talk to us about your class"
@@ -1460,18 +1421,18 @@ export function QuizExperiencePageContent({
         <div className="inline-flex items-center gap-2 rounded-lg border border-borderc bg-soft px-3 py-2 text-xs text-muted">
           <Clock3 className="h-3.5 w-3.5" />
           {attemptMode === "study"
-            ? `Study walkthrough • ${minutesSeconds(timeSpent)} elapsed`
+            ? `Step-by-step • ${minutesSeconds(timeSpent)} elapsed`
             : attemptMode === "exam"
               ? guidedExamSimulation
                 ? settings.timed
-                  ? `Guided exam simulation • ${minutesSeconds(timeLeft)} left`
-                  : `Guided exam simulation • ${minutesSeconds(timeSpent)} elapsed`
+                  ? `Guided exam • ${minutesSeconds(timeLeft)} left`
+                  : `Guided exam • ${minutesSeconds(timeSpent)} elapsed`
                 : settings.timed
-                  ? `Exam simulation • ${minutesSeconds(timeLeft)} left`
-                  : `Exam simulation • ${minutesSeconds(timeSpent)} elapsed`
+                  ? `Practice exam • ${minutesSeconds(timeLeft)} left`
+                  : `Practice exam • ${minutesSeconds(timeSpent)} elapsed`
               : settings.timed
-              ? `Timed exam • ${minutesSeconds(timeLeft)} left`
-              : `Test mode • ${minutesSeconds(timeSpent)} elapsed`}
+              ? `Timed quiz • ${minutesSeconds(timeLeft)} left`
+              : `Practice quiz • ${minutesSeconds(timeSpent)} elapsed`}
         </div>
       </div>
 

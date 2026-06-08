@@ -30,8 +30,8 @@ function withPrefix(routePrefix: string, path: string) {
 
 export function HomeworkIndexContent({
   routePrefix,
-  title = "Homework Desk",
-  subtitle = "Slow down hard problems. Hints, full solutions, flag-for-review, and saved progress — built like an assignment, not a quiz drill.",
+  title = "Homework",
+  subtitle = "Take your time on hard problems. Step-by-step hints, full answers, and saved progress — built like an assignment, not a quick quiz.",
   showHeader = true
 }: {
   routePrefix: string;
@@ -116,7 +116,7 @@ export function HomeworkIndexContent({
                     icon={<Sparkles className="h-3.5 w-3.5" />}
                   />
                   <Stat
-                    label="Runway"
+                    label="Est. time"
                     value={`${totalMinutes}m`}
                     icon={<Clock3 className="h-3.5 w-3.5" />}
                   />
@@ -125,14 +125,14 @@ export function HomeworkIndexContent({
 
               <div className="space-y-3 rounded-[1.4rem] border border-borderc bg-surface/85 p-5">
                 <p className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-accent">
-                  How the desk works
+                  How homework works
                 </p>
                 <ul className="space-y-2.5">
                   {[
                     "One problem at a time — no overwhelm.",
-                    "Hint-by-hint reveal before the full solution.",
-                    "Flag for review and come back later.",
-                    "Saved progress across sessions and devices."
+                    "Step-by-step hints before the full answer.",
+                    "Mark questions to come back to later.",
+                    "Your progress saves across devices."
                   ].map((line) => (
                     <li
                       key={line}
@@ -266,9 +266,18 @@ export function HomeworkIndexContent({
                   <CardBody className="space-y-4 p-5 sm:p-6">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
-                        <p className="text-[11px] uppercase tracking-[0.16em] text-text-secondary">
-                          {course?.code ?? set.courseId}
-                        </p>
+                        {course ? (
+                          <Link
+                            href={withPrefix(routePrefix, `/courses/${course.id}`)}
+                            className="text-[11px] uppercase tracking-[0.16em] text-text-secondary underline decoration-borderc underline-offset-4 hover:text-text"
+                          >
+                            {course.code}
+                          </Link>
+                        ) : (
+                          <p className="text-[11px] uppercase tracking-[0.16em] text-text-secondary">
+                            {set.courseId}
+                          </p>
+                        )}
                         <h3 className="mt-0.5 font-display text-xl font-semibold text-text">
                           {set.title}
                         </h3>
@@ -300,26 +309,12 @@ export function HomeworkIndexContent({
                       ))}
                     </div>
 
-                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                      <Button asChild className="w-full sm:w-auto">
-                        <Link href={withPrefix(routePrefix, `/homework/${set.id}`)}>
-                          <Notebook className="h-4 w-4" />
-                          Open Homework Desk
-                        </Link>
-                      </Button>
-                      <Button asChild variant="secondary" className="w-full sm:w-auto">
-                        <Link href={withPrefix(routePrefix, `/homework/${set.id}?review=1`)}>
-                          Resume flagged
-                        </Link>
-                      </Button>
-                      {course ? (
-                        <Button asChild variant="ghost" className="w-full sm:w-auto">
-                          <Link href={withPrefix(routePrefix, `/courses/${course.id}`)}>
-                            Open course hub
-                          </Link>
-                        </Button>
-                      ) : null}
-                    </div>
+                    <Button asChild size="lg" className="w-full sm:w-auto">
+                      <Link href={withPrefix(routePrefix, `/homework/${set.id}`)}>
+                        <Notebook className="h-4 w-4" />
+                        Start homework
+                      </Link>
+                    </Button>
                   </CardBody>
                 </Card>
               );

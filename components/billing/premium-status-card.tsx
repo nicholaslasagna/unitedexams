@@ -140,9 +140,9 @@ export function PremiumStatusCard() {
         ) : null}
 
         <p className="text-[13.5px] leading-relaxed text-text-secondary">
-          Premium adds saved progress, mistake history, exam simulations, and
-          per-topic mastery analytics. Hover any row below for what each one does —
-          or open the full upgrade page to compare both plans side-by-side.
+          Premium adds saved progress, mistake review, practice exams, and
+          progress tracking. Tap any feature below to see what it does — or open the
+          full upgrade page to compare both plans side by side.
         </p>
 
         {/* Compact, hover-explainable feature list. */}

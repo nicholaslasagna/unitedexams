@@ -15,7 +15,7 @@ const tiers = [
     icon: <Crown className="h-4 w-4" />,
     title: "Premium students",
     description:
-      "Unlimited progress, advanced walkthroughs, timed exams, mistake history, and mastery analytics.",
+      "Saved progress, step-by-step solutions, timed practice exams, mistake review, and progress tracking.",
     accent: "from-amber-500/12 to-rose-500/10",
     border: "border-amber-400/25"
   },

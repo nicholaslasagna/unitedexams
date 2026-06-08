@@ -10,23 +10,23 @@
 const pacts = [
   {
     n: "i.",
-    title: "SSO with your school IdP.",
-    text: "Shibboleth, Okta, Azure — sign in once with the credentials you already have."
+    title: "Sign in with your school account.",
+    text: "Single sign-on (SSO) with Shibboleth, Okta, or Azure — use the login you already have."
   },
   {
     n: "ii.",
     title: "No upgrade prompts, ever.",
-    text: "Verified domains skip the pricing wall entirely. The UI doesn't ask."
+    text: "Verified school accounts skip the pricing page entirely. The app never asks them to pay."
   },
   {
     n: "iii.",
-    title: "Sections, rosters, and grade passback.",
-    text: "LMS-aware where it needs to be. Quiet where it doesn't."
+    title: "Classes, rosters, and grades.",
+    text: "Sends grades back to your school's system (LMS) where it needs to. Quiet where it doesn't."
   },
   {
     n: "iv.",
-    title: "Data residency and FERPA.",
-    text: "Standard. Contract templates available."
+    title: "Private and FERPA-compliant.",
+    text: "We follow FERPA, the U.S. student-privacy law. Contract templates available."
   }
 ];
 

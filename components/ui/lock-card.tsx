@@ -26,7 +26,7 @@ export function LockCard({
         <AccessBadge variant={variant === "institution" ? "institution" : "premium"} />
         <span className="inline-flex items-center gap-1.5 rounded-full border border-borderc bg-surface/70 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.16em] text-text-secondary">
           <Lock className="h-3 w-3" />
-          Soft lock
+          Premium
         </span>
       </div>
       <p className="mt-3 font-display text-lg font-semibold text-text">{title}</p>

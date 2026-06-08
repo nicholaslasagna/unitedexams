@@ -549,7 +549,7 @@ export default function SettingsPage() {
         throw new Error(payload.error || "Unable to revoke trusted network.");
       }
       await loadTrustedIps();
-      push({ title: "Trusted network revoked", tone: "success" });
+      push({ title: "Trusted device removed", tone: "success" });
     } catch (error) {
       push({
         title: "Unable to revoke trusted network",
@@ -1029,7 +1029,7 @@ export default function SettingsPage() {
                 <span>
                   <span className="block text-sm font-semibold text-text">Extra sign-in protection</span>
                   <span className="mt-0.5 block text-xs text-muted text-text-secondary">
-                    Require email approval for new networks. Professor/admin accounts are always protected; if 2FA is off, we strongly recommend enabling this.
+                    Require email approval when you sign in from a new device. Professor/admin accounts are always protected; if 2FA is off, we strongly recommend enabling this.
                   </span>
                 </span>
                 <input
@@ -1051,7 +1051,7 @@ export default function SettingsPage() {
               <div className="mt-4 rounded-lg border border-borderc bg-surface p-3">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-                    Trusted networks
+                    Trusted devices
                   </p>
                   <Button variant="ghost" onClick={() => void loadTrustedIps()}>
                     Refresh
@@ -1059,7 +1059,7 @@ export default function SettingsPage() {
                 </div>
 
                 {trustedIpsLoading ? (
-                  <p className="text-xs text-muted">Loading trusted networks…</p>
+                  <p className="text-xs text-muted">Loading trusted devices…</p>
                 ) : trustedIps.length === 0 ? (
                   <p className="text-xs text-muted">
                     No approved network entries yet. New networks will require email approval.

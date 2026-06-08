@@ -39,7 +39,7 @@ const sortOptions: { value: SortBy; label: string }[] = [
   { value: "default", label: "Recommended" },
   { value: "name", label: "Course (A→Z)" },
   { value: "mastery", label: "Highest mastery" },
-  { value: "shortest", label: "Shortest runway" },
+  { value: "shortest", label: "Quickest first" },
   { value: "longest", label: "Most material" }
 ];
 
@@ -49,8 +49,8 @@ function withPrefix(routePrefix: string, path: string) {
 
 export function CoursesIndexContent({
   routePrefix,
-  title = "Course Catalog",
-  subtitle = "Structured quiz sets, exam simulations, walkthroughs, notes, and resources across your real classes.",
+  title = "Your courses",
+  subtitle = "Quizzes, practice exams, notes, and extra help for your classes — all in one place.",
   showHeader = true
 }: {
   routePrefix: string;
@@ -286,7 +286,7 @@ export function CoursesIndexContent({
             const primaryHref = hasCourseSections
               ? `/app/sections/${selectedSectionId}/materials`
               : withPrefix(routePrefix, `/courses/${course.id}`);
-            const primaryLabel = hasCourseSections ? "Open class section" : "Open course hub";
+            const primaryLabel = hasCourseSections ? "Open my class" : "Open course";
             const selectedSection = courseSections.find((section) => section.sectionId === selectedSectionId);
             const gradeSummary = courseGradesById[course.id];
             const selectedSectionLabel = selectedSection
@@ -441,21 +441,23 @@ export function CoursesIndexContent({
                     </div>
                   ) : null}
 
-                  {/* Actions */}
+                  {/* Actions — one primary button. When the student is in a
+                      class section, the public hub is still reachable via a
+                      small text link so the card has just one obvious button. */}
                   <div className="mt-auto flex flex-col gap-2">
-                    <Button asChild className="w-full justify-between">
+                    <Button asChild size="lg" className="w-full justify-between">
                       <Link href={primaryHref}>
                         {primaryLabel}
                         <ArrowRight className="h-4 w-4" />
                       </Link>
                     </Button>
                     {hasCourseSections ? (
-                      <Button asChild variant="ghost" className="w-full justify-between">
-                        <Link href={withPrefix(routePrefix, `/courses/${course.id}`)}>
-                          Open public hub
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </Button>
+                      <Link
+                        href={withPrefix(routePrefix, `/courses/${course.id}`)}
+                        className="text-center text-[12.5px] font-medium text-text-secondary underline decoration-borderc underline-offset-4 hover:text-text"
+                      >
+                        Or open the public course
+                      </Link>
                     ) : null}
                   </div>
                 </div>

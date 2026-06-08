@@ -109,7 +109,7 @@ export function LeaderboardPageContent({
             <CardBody className="grid gap-y-4 p-5 sm:grid-cols-3 sm:divide-x sm:divide-borderc">
               <LeaderboardStat
                 icon={<Trophy className="h-3.5 w-3.5" />}
-                label="Tracked"
+                label="Students ranked"
                 value={rows.length}
               />
               <LeaderboardStat
@@ -182,7 +182,7 @@ export function LeaderboardPageContent({
       {podium.length > 0 ? (
         <section>
           <h2 className="font-display text-[1.45rem] font-semibold tracking-tight text-text">
-            The podium
+            Top 3
           </h2>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {podium.map((row, idx) => (

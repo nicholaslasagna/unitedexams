@@ -7,7 +7,6 @@ import {
   ArrowRight,
   BookOpenText,
   Brain,
-  ChevronRight,
   Clock3,
   FileText,
   Flame,
@@ -51,34 +50,33 @@ const tabDefs = [
   { id: "homework", label: "Homework" },
   { id: "notes", label: "Notes" },
   { id: "cheats", label: "Cheat sheets" },
-  { id: "resources", label: "Resources" }
+  { id: "resources", label: "Extra help" }
 ];
 
 const tabMeta: Record<string, { title: string; description: string }> = {
   quizzes: {
-    title: "Quiz practice",
-    description:
-      "Mastery-focused practice with study and timed variants. Best for momentum and topic repetition."
+    title: "Quizzes",
+    description: "Quick practice to review topics and build a streak."
   },
   exams: {
-    title: "Exam simulations",
-    description: "Higher-pressure sets that mirror the actual testing window."
+    title: "Exams",
+    description: "Timed, test-style runs to practice under pressure."
   },
   homework: {
-    title: "Homework lane",
-    description: "Assignment-style work with hints, flagged review, and longer problems."
+    title: "Homework",
+    description: "Longer practice with hints you can mark to come back to."
   },
   notes: {
-    title: "Study notes",
-    description: "Course walkthrough, concept framing, and structured written guidance."
+    title: "Notes",
+    description: "Plain-English notes and explanations for this class."
   },
   cheats: {
     title: "Cheat sheets",
-    description: "Compressed reference for formulas, patterns, and fast recall."
+    description: "Quick reference for formulas and key facts."
   },
   resources: {
-    title: "External resources",
-    description: "Curated supporting references linked to this course lane."
+    title: "Extra help",
+    description: "Helpful links and videos for this class."
   }
 };
 
@@ -273,7 +271,7 @@ export function CourseDetailContent({
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-surface/70 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.18em] text-accent">
                         <Sparkles className="h-3 w-3" />
-                        Recommended next
+                        Best place to start
                       </span>
                       <Badge
                         tone={
@@ -293,32 +291,27 @@ export function CourseDetailContent({
                   </p>
                   <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
                     {courseAttempts.length === 0
-                      ? "Start here. The easiest entry into this course."
-                      : "Lowest best score so far — the highest-leverage place to improve."}
+                      ? "New here? This is the easiest way into this class."
+                      : "This is your lowest score so far — the best place to improve."}
                   </p>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Button asChild>
+                  <div className="mt-4 flex flex-col gap-2">
+                    <Button asChild size="lg" className="w-full sm:w-auto">
                       <Link href={recommendedHref}>
-                        {recommendedMode === "exam"
-                          ? "Open exam simulation"
-                          : recommendedMode === "homework"
-                            ? "Open homework"
-                            : "Open study walkthrough"}
+                        Start here
                         <ArrowRight className="h-4 w-4" />
                       </Link>
                     </Button>
-                    <Button asChild variant="ghost">
-                      <Link
-                        href={
-                          recommendedMode === "homework"
-                            ? withPrefix(routePrefix, `/homework/${recommendedSet.id}?review=1`)
-                            : withPrefix(routePrefix, `/quiz/${recommendedSet.id}`)
-                        }
-                      >
-                        Try test mode instead
-                      </Link>
-                    </Button>
+                    <Link
+                      href={
+                        recommendedMode === "homework"
+                          ? withPrefix(routePrefix, `/homework/${recommendedSet.id}?review=1`)
+                          : withPrefix(routePrefix, `/quiz/${recommendedSet.id}`)
+                      }
+                      className="text-[12.5px] font-medium text-text-secondary underline decoration-borderc underline-offset-4 hover:text-text sm:w-fit"
+                    >
+                      Or try it as a quick quiz
+                    </Link>
                   </div>
                 </div>
               ) : null}
@@ -327,7 +320,7 @@ export function CourseDetailContent({
               <div className="grid gap-3 sm:grid-cols-4">
                 <CourseStat
                   icon={<Brain className="h-3.5 w-3.5" />}
-                  label="Lanes"
+                  label="Practice sets"
                   value={quizModeCount + examModeCount + homeworkModeCount}
                 />
                 <CourseStat
@@ -337,7 +330,7 @@ export function CourseDetailContent({
                 />
                 <CourseStat
                   icon={<Clock3 className="h-3.5 w-3.5" />}
-                  label="Runway"
+                  label="Est. time"
                   value={`${totalEstimatedMinutes}m`}
                 />
                 <CourseStat
@@ -411,72 +404,17 @@ export function CourseDetailContent({
         </div>
       </section>
 
-      {/* ─── STUDY LANES ─────────────────────────────────── */}
-      <section>
-        <div className="grid gap-4 lg:grid-cols-3">
-          {[
-            {
-              id: "quizzes",
-              title: "Quiz practice",
-              count: quizModeCount,
-              detail: "Mastery-focused practice with study and timed variants.",
-              tone: "from-cyan-500/12 to-blue-500/10",
-              border: "border-cyan-400/25"
-            },
-            {
-              id: "exams",
-              title: "Exam simulations",
-              count: examModeCount,
-              detail: "Higher-pressure sets intended to mirror test conditions.",
-              tone: "from-amber-500/12 to-rose-500/10",
-              border: "border-amber-400/25"
-            },
-            {
-              id: "homework",
-              title: "Homework desk",
-              count: homeworkModeCount,
-              detail: "Assignment-style work with review and flagged follow-up.",
-              tone: "from-emerald-500/12 to-teal-500/10",
-              border: "border-emerald-400/25"
-            }
-          ].map((lane) => {
-            const active = tab === lane.id;
-            return (
-              <button
-                key={lane.id}
-                type="button"
-                onClick={() => setTab(lane.id)}
-                className={`group relative flex flex-col overflow-hidden rounded-[1.4rem] border bg-gradient-to-br ${lane.tone} p-5 text-left transition-all duration-200 ease-out-expo hover:-translate-y-0.5 hover:shadow-card-hover ${
-                  active ? `${lane.border} shadow-card-hover` : "border-borderc"
-                }`}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-accent">
-                      Study lane
-                    </p>
-                    <p className="mt-2 font-display text-xl font-semibold text-text">{lane.title}</p>
-                  </div>
-                  <span className="font-mono text-3xl font-bold text-text">{lane.count}</span>
-                </div>
-                <p className="mt-3 text-[13.5px] leading-relaxed text-text-secondary">{lane.detail}</p>
-                <span
-                  className={`mt-4 inline-flex items-center gap-1 text-[12.5px] font-semibold ${active ? "text-accent" : "text-text-secondary"}`}
-                >
-                  {active ? "Active lane" : "Open lane"}
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
       {/* ─── TAB SWITCHER ────────────────────────────────── */}
+      {/*
+       * The 3 "study lane" cards that used to sit here were removed:
+       * they duplicated the tab bar below (clicking "Quiz practice"
+       * lane === clicking the "Quizzes" tab), giving a newcomer two
+       * different controls for the same job. One switcher is clearer.
+       */}
       <div className="space-y-4">
         <div className="space-y-2">
           <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">
-            Course workspace
+            Everything for this class
           </span>
           <Tabs tabs={tabDefs} value={tab} onChange={setTab} />
         </div>
@@ -616,56 +554,36 @@ export function CourseDetailContent({
 
                       <div className="rounded-xl border border-borderc bg-soft px-4 py-3 text-[13px] text-text-secondary">
                         {setMode === "homework"
-                          ? "Homework sets are built for longer-form work, review, and flagged follow-up."
+                          ? "Homework is longer practice with hints you can mark to come back to."
                           : setMode === "exam"
-                            ? "Exam simulations raise the pressure and are best for timing practice."
-                            : "Quiz practice is best for frequent repetition, topic review, and momentum building."}
+                            ? "An exam-style run with a timer — good for getting used to test conditions."
+                            : "Quick practice to review topics and build momentum. You'll pick how to study on the next screen."}
                       </div>
 
-                      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                      {/*
+                       * One clear button per card. The quiz start screen
+                       * (reached by this button) is where the learner picks
+                       * how to study — practice, step-by-step, or timed — so
+                       * the card itself doesn't need 2-3 competing buttons.
+                       */}
+                      <Button asChild size="lg" className="w-full sm:w-auto">
                         {setMode === "homework" ? (
-                          <>
-                            <Button asChild className="w-full sm:w-auto">
-                              <Link href={withPrefix(routePrefix, `/homework/${set.id}`)}>
-                                Start Homework
-                              </Link>
-                            </Button>
-                            <Button variant="secondary" asChild className="w-full sm:w-auto">
-                              <Link href={withPrefix(routePrefix, `/homework/${set.id}?review=1`)}>
-                                Review flagged
-                              </Link>
-                            </Button>
-                          </>
+                          <Link href={withPrefix(routePrefix, `/homework/${set.id}`)}>
+                            Start homework
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
                         ) : setMode === "exam" ? (
-                          <>
-                            <Button asChild className="w-full sm:w-auto">
-                              <Link href={withPrefix(routePrefix, `/quiz/${set.id}?mode=exam`)}>
-                                <TimerReset className="h-4 w-4" />
-                                Start Exam Simulation
-                              </Link>
-                            </Button>
-                            <Button variant="secondary" asChild className="w-full sm:w-auto">
-                              <Link href={withPrefix(routePrefix, `/quiz/${set.id}`)}>Practice this bank</Link>
-                            </Button>
-                          </>
+                          <Link href={withPrefix(routePrefix, `/quiz/${set.id}?mode=exam`)}>
+                            <TimerReset className="h-4 w-4" />
+                            Start exam
+                          </Link>
                         ) : (
-                          <>
-                            <Button asChild className="w-full sm:w-auto">
-                              <Link href={withPrefix(routePrefix, `/quiz/${set.id}`)}>Start Quiz</Link>
-                            </Button>
-                            <Button variant="secondary" asChild className="w-full sm:w-auto">
-                              <Link href={withPrefix(routePrefix, `/quiz/${set.id}?mode=study`)}>
-                                Study Walkthrough
-                              </Link>
-                            </Button>
-                            <Button variant="ghost" asChild className="w-full sm:w-auto">
-                              <Link href={withPrefix(routePrefix, `/quiz/${set.id}?mode=timed`)}>
-                                Timed Mode
-                              </Link>
-                            </Button>
-                          </>
+                          <Link href={withPrefix(routePrefix, `/quiz/${set.id}`)}>
+                            Start
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
                         )}
-                      </div>
+                      </Button>
                     </CardBody>
                   </Card>
                 );
@@ -685,9 +603,9 @@ export function CourseDetailContent({
                   <BookOpenText className="h-4 w-4" />
                 </span>
                 <div>
-                  <h2 className="font-display text-xl font-semibold">Study Notes</h2>
+                  <h2 className="font-display text-xl font-semibold">Notes</h2>
                   <p className="mt-1 text-[13px] text-text-secondary">
-                    Course walkthrough, concept framing, and structured written guidance.
+                    Plain-English notes and explanations for this class.
                   </p>
                 </div>
               </div>
@@ -697,7 +615,7 @@ export function CourseDetailContent({
               {routePrefix === "/app" ? (
                 <Button asChild variant="ghost" className="mt-4">
                   <Link href={withPrefix(routePrefix, `/notes/${course.id}`)}>
-                    Open dedicated notes viewer
+                    Open full notes
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
@@ -719,7 +637,7 @@ export function CourseDetailContent({
                 <div>
                   <h2 className="font-display text-xl font-semibold">Cheat Sheets</h2>
                   <p className="mt-1 text-[13px] text-text-secondary">
-                    Fast-reference formulas, patterns, and condensed reminders for this course.
+                    Quick reference for formulas and key facts.
                   </p>
                 </div>
               </div>
@@ -750,11 +668,11 @@ export function CourseDetailContent({
                   </div>
                 </div>
                 <p className="text-[13px] text-text-secondary">
-                  External resource curated for this course lane.
+                  A helpful link for this class.
                 </p>
                 <Button asChild variant="secondary" className="w-full justify-between">
                   <a href={item.href} target="_blank" rel="noreferrer">
-                    Open resource
+                    Open link
                     <span aria-hidden>↗</span>
                   </a>
                 </Button>
@@ -769,7 +687,7 @@ export function CourseDetailContent({
         <Card>
           <CardHeader>
             <SectionHeading
-              eyebrow="Topic mastery"
+              eyebrow="Your progress"
               title="What you've practiced — and where to push next."
             />
           </CardHeader>
@@ -777,8 +695,8 @@ export function CourseDetailContent({
             {mastery.length === 0 ? (
               <EmptyState
                 icon={<Brain className="h-6 w-6" />}
-                title="No mastery data yet"
-                description="Start any quiz to seed topic-level signals. Mastery bars fill in automatically."
+                title="No progress yet"
+                description="Start any quiz and your progress fills in here automatically."
               />
             ) : (
               mastery.map((item) => (
@@ -797,16 +715,16 @@ export function CourseDetailContent({
         <Card>
           <CardHeader>
             <SectionHeading
-              eyebrow="Highest-leverage study"
-              title="Weak topics to revisit."
+              eyebrow="Where to focus"
+              title="Topics to work on next."
             />
           </CardHeader>
           <CardBody className="space-y-3">
             {weakTopics.length === 0 ? (
               <EmptyState
                 icon={<Flame className="h-6 w-6" />}
-                title="Nothing flagged yet"
-                description="Once a few attempts land, the weakest topics surface here automatically."
+                title="Nothing here yet"
+                description="After a few quizzes, the topics to work on show up here."
               />
             ) : (
               <ul className="space-y-2">
@@ -842,7 +760,7 @@ export function CourseDetailContent({
                 <TrendingUp className="h-3.5 w-3.5 text-success" />
                 Tip
               </span>{" "}
-              Weak topics get prioritized in the recommended-next card when you return.
+              Next time you visit, we&apos;ll point you to these topics first.
             </div>
 
             {/*
@@ -855,8 +773,8 @@ export function CourseDetailContent({
               <InstitutionAccessNote variant="inline" schoolName={profile?.school ?? null} />
             ) : !access.messaging.hidePremiumPrompts && !access.isGuest ? (
               <PremiumUnlockNote
-                title="Available in full access"
-                description="Mistake history and smart review plans use these signals to recommend the highest-leverage next step."
+                title="Available with Premium"
+                description="Premium remembers the questions you miss and suggests what to study next."
               />
             ) : null}
           </CardBody>

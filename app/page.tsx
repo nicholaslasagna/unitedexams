@@ -117,7 +117,7 @@ export default function LandingPage() {
         >
           <div className="space-y-9">
             <p className="reveal-up reveal-d-1 hero-kicker">
-              Course-native study platform · Spring 2026
+              A study platform for your real classes · Spring 2026
             </p>
 
             {/* Brand-as-hero wordmark — heavy display + Fraunces italic. */}

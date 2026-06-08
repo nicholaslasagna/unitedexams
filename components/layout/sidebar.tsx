@@ -434,9 +434,6 @@ export function Sidebar() {
               <span className="italic">Exams</span>
             </em>
           </span>
-          <span className="ml-1 inline-flex translate-y-[-2px] items-center rounded-full border border-borderc px-1.5 py-0.5 font-mono text-[9px] font-medium tracking-[0.22em] text-text-secondary">
-            UE / 26
-          </span>
         </Link>
 
         <div className="flex-1 space-y-6 overflow-y-auto pr-1">
@@ -519,9 +516,6 @@ export function Sidebar() {
                       <em className="font-display font-medium not-italic text-accent">
                         <span className="italic">Exams</span>
                       </em>
-                    </span>
-                    <span className="ml-1 inline-flex translate-y-[-2px] items-center rounded-full border border-borderc px-1.5 py-0.5 font-mono text-[9px] font-medium tracking-[0.22em] text-text-secondary">
-                      UE / 26
                     </span>
                   </div>
                   <button
