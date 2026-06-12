@@ -22,7 +22,7 @@
     "billing:setup": "node scripts/setup-stripe-billing.mjs"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.10.3",
+    "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.107.0",
     "canvas-confetti": "^1.9.3",
     "clsx": "^2.1.1",
