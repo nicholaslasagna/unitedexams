@@ -72,12 +72,34 @@ export function shouldRequireIpApproval(params: {
   return false;
 }
 
-function getCookieSigningSecret() {
-  return (
-    process.env.IP_COOKIE_SIGNING_SECRET ||
-    process.env.IP_APPROVAL_PEPPER ||
-    ""
-  );
+/**
+ * Resolve the HMAC secret used to sign IP-trust / approved-IP cookies.
+ *
+ * Returns null when no secret is configured. This is critical: an empty
+ * HMAC key is publicly computable, so signing/verifying with "" would
+ * let anyone forge a valid `ue_ip_ok` / `ue_trust_device` cookie and
+ * skip the IP-approval second factor. Callers MUST fail closed on null
+ * (reject the cookie). The authoritative `login_ip_allowlist` DB check
+ * in middleware still runs, so failing closed never locks anyone out —
+ * it only disables the forgeable fast-path.
+ */
+function getCookieSigningSecret(): string | null {
+  const secret = process.env.IP_COOKIE_SIGNING_SECRET || process.env.IP_APPROVAL_PEPPER || "";
+  return secret.length > 0 ? secret : null;
+}
+
+/**
+ * Constant-time comparison of two equal-length hex strings. Avoids a
+ * timing oracle on HMAC verification. Length mismatch returns false
+ * immediately (lengths are not secret here).
+ */
+function constantTimeEqualHex(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
 }
 
 function toBase64Url(value: string) {
@@ -110,6 +132,19 @@ async function hmacHex(value: string, secret: string) {
 async function signCookiePayload(payload: Record<string, unknown>) {
   const secret = getCookieSigningSecret();
   const encodedPayload = toBase64Url(JSON.stringify(payload));
+  if (!secret) {
+    // No signing secret configured. Issue a cookie signed with a random
+    // per-call nonce so it can NEVER verify — this disables the trust
+    // fast-path entirely and forces auth back onto the authoritative
+    // `login_ip_allowlist` DB check. Loudly signal the misconfiguration.
+    if (process.env.NODE_ENV === "production") {
+      console.error(
+        "[security] IP_COOKIE_SIGNING_SECRET (or IP_APPROVAL_PEPPER) is not set — IP-trust cookies are disabled. Configure a strong secret."
+      );
+    }
+    const nonce = createChallengeToken(16);
+    return `${encodedPayload}.${await hmacHex(encodedPayload, nonce)}`;
+  }
   const signature = await hmacHex(encodedPayload, secret);
   return `${encodedPayload}.${signature}`;
 }
@@ -120,8 +155,11 @@ async function verifySignedCookie<T extends Record<string, unknown>>(value: stri
   if (!encodedPayload || !signature) return null;
 
   const secret = getCookieSigningSecret();
+  // Fail closed: with no configured secret, never trust a signed cookie.
+  // The DB allowlist check in middleware remains authoritative.
+  if (!secret) return null;
   const expected = await hmacHex(encodedPayload, secret);
-  if (expected !== signature) return null;
+  if (!constantTimeEqualHex(expected, signature)) return null;
 
   try {
     return JSON.parse(fromBase64Url(encodedPayload)) as T;
