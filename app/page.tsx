@@ -18,9 +18,11 @@ import { resolveQuizSetMode } from "@/lib/study/set-mode";
  * Modeled on the Claude Design output and built around three
  * commitments:
  *
- *   1. Brand-as-hero. The wordmark is the hero — a heavy open display
- *      face for "United" with a Fraunces italic accent on "Exams" — not a
- *      tagline, not a fake product mockup, not a glow card.
+ *   1. Brand-as-hero. The wordmark is the hero — an open display face
+ *      for "United" with a Fraunces italic accent on "Exams" — not a
+ *      tagline, not a fake product mockup, not a glow card. Sized to feel
+ *      welcoming rather than monumental: a first-time visitor should read
+ *      it as a greeting, not as signage shouting at them.
  *
  *   2. Editorial publication tone. Hairline rules between sections,
  *      mono uppercase labels, italic-serif titles, oldstyle page
@@ -117,19 +119,19 @@ export default function LandingPage() {
         >
           <div className="space-y-9">
             <p className="reveal-up reveal-d-1 hero-kicker">
-              A study platform for your real classes · Spring 2026
+              Built for the classes you&apos;re taking right now
             </p>
 
-            {/* Brand-as-hero wordmark — heavy display + Fraunces italic. */}
+            {/* Brand-as-hero wordmark — display face + Fraunces italic. */}
             <h1 className="reveal-up reveal-d-2 wordmark">
               United <em>Exams</em>
               <span className="period">.</span>
             </h1>
 
             <p className="reveal-up reveal-d-3 hero-lede">
-              A workspace for the courses you&apos;re <strong>actually</strong> taking
-              — quizzes, walkthroughs, exam simulations, and notes, kept inside
-              the class they belong to.
+              Everything for one class in one place — practice quizzes,
+              step-by-step walkthroughs, past-exam simulations, and notes.
+              Pick a class and we&apos;ll show you <strong>exactly where to start</strong>.
             </p>
 
             <div className="reveal-up reveal-d-4">
