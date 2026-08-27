@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Crown, Flame, Lock, Medal, Search, Sparkles, Trophy, Users } from "lucide-react";
+import { Crown, Flame, Lock, Medal, Search, Trophy, Users } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -91,8 +91,8 @@ export function LeaderboardPageContent({
                 Leaderboard
               </h1>
               <p className="text-[14px] leading-relaxed text-text-secondary">
-                Real students. Real progress. Privacy-aware — display name, real name,
-                and university visibility are user-controlled.
+                Scores students chose to post. You control what shows: display name,
+                real name, and university are each your call.
               </p>
             </div>
             {myRow && !publicMode ? (
@@ -208,7 +208,7 @@ export function LeaderboardPageContent({
         <CardBody className="space-y-4">
           {filtered.length === 0 && !loading ? (
             <EmptyState
-              icon={<Sparkles className="h-6 w-6" />}
+              icon={<Trophy className="h-6 w-6" />}
               title="No leaderboard entries yet"
               description="Once people start posting attempts, this list fills in. Be the first to post a score."
               action={

@@ -310,7 +310,7 @@ export function QuestionCard({
                     : isCorrect === null
                       ? "Response submitted — now review the solution step by step."
                       : isCorrect
-                        ? "Correct! Well done."
+                        ? "Correct."
                         : "Not quite. Study the walkthrough below to understand why."}
                 </p>
                 {revealCorrectness && isCorrect === false && !isTextResponse ? (

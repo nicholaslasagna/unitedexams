@@ -50,7 +50,7 @@ function withPrefix(routePrefix: string, path: string) {
 export function CoursesIndexContent({
   routePrefix,
   title = "Your courses",
-  subtitle = "Quizzes, practice exams, notes, and extra help for your classes — all in one place.",
+  subtitle = "Quizzes, practice exams, notes, and extra help, filed under the class they belong to.",
   showHeader = true
 }: {
   routePrefix: string;

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, CalendarClock, Crown, GraduationCap, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarClock, GraduationCap, KeyRound, Loader2 } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AccessBadge } from "@/components/ui/access-badge";
@@ -130,7 +130,7 @@ export function PremiumStatusCard() {
         {activating ? (
           <div className="rounded-[1rem] border border-accent/30 bg-accent/10 px-4 py-3 text-[13px] text-text">
             <span className="inline-flex items-center gap-2 font-semibold">
-              <Sparkles className="h-3.5 w-3.5 text-accent" />
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-accent" />
               Activating Premium…
             </span>
             <p className="mt-1 text-[12px] text-text-secondary">
@@ -186,7 +186,7 @@ function PremiumStatusBlock() {
     <div className="grid gap-3 sm:grid-cols-2">
       <div className="rounded-[1rem] border border-borderc bg-soft px-3.5 py-3">
         <p className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-text-secondary">
-          <Crown className="h-3 w-3 text-accent" />
+          <KeyRound className="h-3 w-3 text-accent" />
           Plan
         </p>
         <p className="mt-1.5 font-display text-base font-semibold text-text">

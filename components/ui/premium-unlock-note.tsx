@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Crown, Sparkles } from "lucide-react";
+import { KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +42,7 @@ export function PremiumUnlockNote({
           className
         )}
       >
-        <Crown className="h-3 w-3" />
+        <KeyRound className="h-3 w-3" />
         {title}
       </span>
     );
@@ -57,7 +57,7 @@ export function PremiumUnlockNote({
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-accent">
-          <Sparkles className="h-3 w-3" />
+          <KeyRound className="h-3 w-3" />
           {title}
         </span>
         <span className="text-[11px] text-text-secondary">

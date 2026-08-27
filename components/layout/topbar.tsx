@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, Search, Sparkles, SunMoon } from "lucide-react";
+import { ArrowUpRight, ChevronRight, Search, SunMoon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useAppData } from "@/lib/app-data-context";
 import { useToast } from "@/lib/hooks/use-toast";
@@ -164,7 +164,7 @@ export function Topbar() {
                         {KIND_LABEL[item.kind] ?? "Open"}
                       </p>
                     </div>
-                    <Sparkles className="h-3.5 w-3.5 shrink-0 text-faint" />
+                    <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-faint" />
                   </button>
                 ))}
               </div>

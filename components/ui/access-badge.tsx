@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Building2, Crown, Sparkles, Lock } from "lucide-react";
+import { Building2, BookOpen, KeyRound, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Variant = "free" | "premium" | "institution" | "locked";
@@ -16,8 +16,8 @@ const variantStyles: Record<Variant, string> = {
 };
 
 const variantIcon: Record<Variant, ReactNode> = {
-  free: <Sparkles className="h-3 w-3" />,
-  premium: <Crown className="h-3 w-3" />,
+  free: <BookOpen className="h-3 w-3" />,
+  premium: <KeyRound className="h-3 w-3" />,
   institution: <Building2 className="h-3 w-3" />,
   locked: <Lock className="h-3 w-3" />
 };

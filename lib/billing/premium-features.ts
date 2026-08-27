@@ -34,7 +34,7 @@ export interface PremiumFeature {
     | "graduation"
     | "video"
     | "wallet"
-    | "wand"
+    | "route"
     | "books";
   category: PremiumFeatureCategory;
 }
@@ -45,7 +45,7 @@ export const PREMIUM_FEATURES: PremiumFeature[] = [
     id: "saved-progress",
     title: "Unlimited saved progress",
     tooltip:
-      "Every quiz attempt, walkthrough step, and answer history syncs to your account and stays. No more losing your place when you switch devices or clear your browser.",
+      "Every quiz attempt, walkthrough step, and answer history syncs to your account and stays put when you switch devices or clear your browser.",
     iconName: "infinity",
     category: "study"
   },
@@ -114,7 +114,7 @@ export const PREMIUM_FEATURES: PremiumFeature[] = [
     title: "Weak-topic recommendations",
     tooltip:
       "We surface the next set, walkthrough, or chapter you'd benefit most from — based on your actual performance, not a generic study plan.",
-    iconName: "wand",
+    iconName: "route",
     category: "analytics"
   },
 

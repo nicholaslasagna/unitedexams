@@ -51,10 +51,10 @@ export const metadata: Metadata = {
     template: "%s | United Exams"
   },
   description:
-    "United Exams is a premium college study platform with beautiful quizzes, walkthroughs, progress tracking, and course notes.",
+    "Course hubs for the classes you are actually taking: quiz banks, step-by-step walkthroughs, timed exam simulations, and notes, all kept inside the course they belong to.",
   openGraph: {
     title: "United Exams",
-    description: "Study smarter. Test stronger.",
+    description: "Quiz banks, walkthroughs, and timed exam simulations, kept inside the class they belong to.",
     type: "website"
   },
   icons: {

@@ -13,7 +13,8 @@ import {
   Notebook,
   RotateCcw,
   Settings2,
-  Sparkles,
+  TrendingUp,
+  UserPlus,
   Timer,
   TimerReset
 } from "lucide-react";
@@ -872,8 +873,7 @@ export function QuizExperiencePageContent({
 
         {/* Hero panel */}
         <section className="relative">
-          <div className="aurora absolute inset-0 -z-10 rounded-[2rem] opacity-90" aria-hidden />
-          <div className="premium-card glow-border overflow-hidden p-5 sm:p-7 md:p-8">
+          <div className="premium-card overflow-hidden p-5 sm:p-7 md:p-8">
             <div className="grid gap-7 lg:grid-cols-[1.15fr_0.85fr]">
               <div className="space-y-5">
                 <div className="flex flex-wrap items-center gap-2">
@@ -912,7 +912,7 @@ export function QuizExperiencePageContent({
                 ) : access.messaging.showGuestSavePrompt ? (
                   <div className="rounded-[1.1rem] border border-accent/35 bg-accent/10 px-4 py-3 text-[13.5px] text-text">
                     <span className="inline-flex items-center gap-1.5 font-semibold">
-                      <Sparkles className="h-3.5 w-3.5 text-accent" />
+                      <UserPlus className="h-3.5 w-3.5 text-accent" />
                       Create an account to save your progress
                     </span>
                     <p className="mt-1 text-[12.5px] text-text-secondary">
@@ -938,7 +938,7 @@ export function QuizExperiencePageContent({
                   <FeatureStat
                     label="Best score"
                     value={`${bestScore}%`}
-                    icon={<Sparkles className="h-3.5 w-3.5" />}
+                    icon={<TrendingUp className="h-3.5 w-3.5" />}
                     tone={bestScore >= 80 ? "success" : bestScore > 0 ? "warn" : "default"}
                   />
                   <FeatureStat
@@ -1260,7 +1260,7 @@ export function QuizExperiencePageContent({
               <h2 className="text-heading font-semibold">Don&apos;t lose this score.</h2>
               <ul className="space-y-2 text-sm text-muted">
                 <li>• Save attempts + progress charts</li>
-                <li>• Personalized weak-topic recommendations</li>
+                <li>• Weak-topic recommendations</li>
                 <li>• Streak tracking + leaderboard</li>
               </ul>
               <div className="flex flex-wrap gap-2">

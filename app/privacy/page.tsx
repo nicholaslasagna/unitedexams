@@ -27,7 +27,7 @@ export default function PrivacyPage() {
         <section className="space-y-3 rounded-2xl border border-borderc bg-soft p-5">
           <h2 className="font-display text-2xl font-semibold">How we use data</h2>
           <ul className="list-disc space-y-1 pl-5 text-sm text-muted">
-            <li>Provide account login, saved progress, and personalized recommendations.</li>
+            <li>Provide account login, saved progress, and study recommendations based on your scores.</li>
             <li>Operate professor sections, assignments, and grading workflows.</li>
             <li>Protect accounts from abuse and suspicious sign-ins.</li>
             <li>Respond to support requests sent through the contact flow.</li>

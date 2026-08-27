@@ -385,7 +385,7 @@ export function AccountPageContent() {
       window.history.replaceState({}, "", url.toString());
     }
     router.refresh();
-    push({ title: "Onboarding complete", description: "Recommendations are now personalized.", tone: "success" });
+    push({ title: "Onboarding complete", description: "Recommendations now use your courses.", tone: "success" });
   };
 
   const themePreset = async (hue: number, strength: number) => {

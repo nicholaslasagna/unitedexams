@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import { GraduationCap, Mail, Send, Sparkles } from "lucide-react";
+import { GraduationCap, Mail, MessageSquare, Send } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -108,21 +108,20 @@ export default function ContactPage() {
       <div className="mx-auto w-full max-w-[1080px] space-y-10 pb-16">
         {/* Hero */}
         <section className="relative">
-          <div className="aurora absolute inset-0 -z-10 rounded-[2rem] opacity-90" aria-hidden />
-          <div className="premium-card glow-border p-5 sm:p-7 md:p-9">
+          <div className="premium-card p-5 sm:p-7 md:p-9">
             <div className="grid gap-7 lg:grid-cols-[1fr_0.85fr] lg:items-center">
               <div className="space-y-4">
                 <span className="eyebrow">
-                  <Sparkles className="h-3 w-3" />
+                  <MessageSquare className="h-3 w-3" />
                   Contact United Exams
                 </span>
                 <h1 className="font-display text-[2.4rem] font-semibold leading-[1.02] tracking-tight text-text sm:text-[3.25rem]">
                   Bring better study into the room.
                 </h1>
                 <p className="max-w-xl text-[15px] leading-relaxed text-text-secondary">
-                  Whether you&apos;re a student asking us to support a hard class,
-                  an instructor planning a section, or a department thinking about
-                  rollout — start here. We&apos;ll meet you where you are.
+                  Students asking us to cover a hard class, instructors planning a
+                  section, departments weighing a rollout: this form reaches the same
+                  short list of people, and we read all of it.
                 </p>
 
                 <div className="flex flex-wrap gap-2">

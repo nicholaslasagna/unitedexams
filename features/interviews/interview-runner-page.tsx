@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Crown, Lock, Play, RotateCcw, Trophy, XCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, KeyRound, Lock, Play, RotateCcw, Trophy, XCircle } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
@@ -371,7 +371,7 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
                         {round.name}
                         {locked ? (
                           <span className="inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-accent">
-                            <Crown className="h-3 w-3" /> Premium
+                            <KeyRound className="h-3 w-3" /> Premium
                           </span>
                         ) : null}
                       </p>
@@ -403,7 +403,7 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
                 </div>
                 {!hasFullLoop ? (
                   <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-accent">
-                    <Crown className="h-3 w-3" /> Premium
+                    <KeyRound className="h-3 w-3" /> Premium
                   </span>
                 ) : null}
               </div>
@@ -695,7 +695,7 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
                   bullets={lockedRounds.map((round) => `${round.name} · ${round.minutes} min`)}
                   trailing={
                     <UpgradeButton plan="monthly" returnUrl={`/app/interviews/${interviewId}`}>
-                      Unlock the full loop
+                      See the rest of the loop
                     </UpgradeButton>
                   }
                 />

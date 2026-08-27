@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Crown, ShieldCheck } from "lucide-react";
+import { ArrowRight, KeyRound, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppData } from "@/lib/app-data-context";
 import { useAccess } from "@/lib/hooks/use-access";
@@ -20,7 +20,7 @@ export function PublicAuthActions({ variant }: { variant: Variant }) {
     </span>
   ) : access.isPremium ? (
     <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-accent">
-      <Crown className="h-3 w-3" />
+      <KeyRound className="h-3 w-3" />
       Premium active
     </span>
   ) : null;

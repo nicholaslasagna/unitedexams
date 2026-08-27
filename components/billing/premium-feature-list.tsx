@@ -9,7 +9,7 @@ import {
   Infinity as InfinityIcon,
   Library,
   PlayCircle,
-  Sparkles,
+  Route,
   Target,
   Timer,
   Wallet,
@@ -54,7 +54,7 @@ const ICONS: Record<PremiumFeature["iconName"], LucideIcon> = {
   graduation: GraduationCap,
   video: PlayCircle,
   wallet: Wallet,
-  wand: Sparkles,
+  route: Route,
   books: BookMarked
 };
 

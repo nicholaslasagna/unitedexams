@@ -148,7 +148,7 @@ export function SectionsOverviewPageContent() {
                 </>
               ) : (
                 <div className="rounded-[1rem] border border-borderc bg-soft px-4 py-4 text-sm text-text-secondary">
-                  Join a class section to unlock course-specific materials, homework, and announcements.
+                  Join a class section to see its materials, homework, and announcements.
                 </div>
               )}
             </CardBody>
@@ -169,7 +169,7 @@ export function SectionsOverviewPageContent() {
             <div>
               <p className="text-xl font-semibold text-text">No class sections yet</p>
               <p className="mt-2 max-w-2xl text-sm leading-relaxed text-text-secondary">
-                Join a professor section from the account page to unlock class-specific materials, homework, and announcements here.
+                Join a professor section from the account page and its materials, homework, and announcements show up here.
               </p>
             </div>
             <Button asChild>

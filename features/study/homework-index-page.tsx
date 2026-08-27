@@ -9,7 +9,7 @@ import {
   Filter,
   Notebook,
   Search,
-  Sparkles
+  ListChecks
 } from "lucide-react";
 import { courses, quizSets } from "@/data/seed";
 import { fetchPublishedSetsByMode } from "@/features/study/study-set-source";
@@ -95,8 +95,7 @@ export function HomeworkIndexContent({
       {/* Hero */}
       {showHeader ? (
         <section className="relative">
-          <div className="aurora absolute inset-0 -z-10 rounded-[2rem] opacity-90" aria-hidden />
-          <div className="premium-card glow-border p-5 sm:p-7">
+          <div className="premium-card p-5 sm:p-7">
             <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
               <div className="space-y-4">
                 <span className="eyebrow">
@@ -113,7 +112,7 @@ export function HomeworkIndexContent({
                   <Stat
                     label="Questions"
                     value={totalQuestions}
-                    icon={<Sparkles className="h-3.5 w-3.5" />}
+                    icon={<ListChecks className="h-3.5 w-3.5" />}
                   />
                   <Stat
                     label="Est. time"

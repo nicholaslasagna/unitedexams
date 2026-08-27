@@ -7,11 +7,11 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  Crown,
+  KeyRound,
+  Loader2,
   Lock,
   RefreshCw,
-  ShieldCheck,
-  Sparkles
+  ShieldCheck
 } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -163,7 +163,7 @@ function UpgradeHero({
       <CardBody className="space-y-6 p-6 sm:p-8">
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.18em] text-accent">
-            <Crown className="h-3 w-3" /> Premium Student
+            <KeyRound className="h-3 w-3" /> Premium Student
           </span>
           <span className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-text-secondary">
             One plan · billed in USD · cancel anytime
@@ -172,12 +172,12 @@ function UpgradeHero({
 
         <div className="space-y-3">
           <h1 className="font-display text-[2rem] font-semibold leading-[1.05] tracking-tight text-text sm:text-[2.6rem]">
-            Unlock everything United Exams can do for the courses you&apos;re actually taking.
+            Everything United Exams can do, for the courses you&apos;re actually taking.
           </h1>
           <p className="max-w-2xl text-[15px] leading-relaxed text-text-secondary">
-            Saved progress, mistake history, exam simulations, and per-topic mastery —
-            all in one workspace. Same student price worldwide. Hover any feature below
-            for what it actually means.
+            Saved progress, mistake history, exam simulations, and per-topic mastery.
+            Same student price worldwide. Hover any feature below to see what it
+            actually does.
           </p>
         </div>
 
@@ -491,7 +491,7 @@ function ActivatingBanner() {
   return (
     <div className="rounded-[1rem] border border-accent/30 bg-accent/10 px-4 py-3 text-[13px] text-text">
       <p className="flex items-center gap-2 font-semibold">
-        <Sparkles className="h-3.5 w-3.5 text-accent" /> Activating Premium…
+        <Loader2 className="h-3.5 w-3.5 animate-spin text-accent" /> Activating Premium…
       </p>
       <p className="mt-1 text-[12px] text-text-secondary">
         Your subscription is processing. This page updates automatically when the

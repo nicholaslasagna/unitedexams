@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { ReactNode } from "react";
-import { ArrowRight, Crown } from "lucide-react";
+import { ArrowRight, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -88,7 +88,7 @@ export function UpgradeButton({
         onClick={onClick}
         className={className}
       >
-        <Crown className="h-4 w-4" />
+        <KeyRound className="h-4 w-4" />
         {children ?? (plan === "yearly" ? "Start Premium Yearly" : "Start Premium Monthly")}
         <ArrowRight className="h-4 w-4" />
       </Button>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Crown, Lock } from "lucide-react";
+import { ArrowRight, KeyRound, Lock } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -101,7 +101,7 @@ export function InterviewsIndexContent() {
                 </p>
                 {lockedRoundCount > 0 ? (
                   <p className="mt-2 inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-accent">
-                    <Crown className="h-3 w-3" />
+                    <KeyRound className="h-3 w-3" />
                     {lockedRoundCount} more {lockedRoundCount === 1 ? "round" : "rounds"} with Premium
                   </p>
                 ) : null}

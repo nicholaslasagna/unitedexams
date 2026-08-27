@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
-import { Check, Crown, Building2, Sparkles } from "lucide-react";
+import { Check, KeyRound, Building2, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Tier = "free" | "premium" | "institution";
 
 const tierIcon: Record<Tier, ReactNode> = {
-  free: <Sparkles className="h-4 w-4" />,
-  premium: <Crown className="h-4 w-4" />,
+  free: <BookOpen className="h-4 w-4" />,
+  premium: <KeyRound className="h-4 w-4" />,
   institution: <Building2 className="h-4 w-4" />
 };
 

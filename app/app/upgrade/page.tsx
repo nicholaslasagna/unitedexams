@@ -4,7 +4,7 @@ import { UpgradePageContent } from "@/features/billing/upgrade-page";
 export const metadata: Metadata = {
   title: "Go Premium",
   description:
-    "Unlock the full United Exams library — saved progress, mistake history, exam simulations, and per-topic mastery. Hosted Stripe Checkout supports cards, Apple Pay, Google Pay, Link, and PayPal."
+    "The full United Exams library: saved progress, mistake history, exam simulations, and per-topic mastery. Checkout is hosted by Stripe and takes cards, Apple Pay, Google Pay, Link, and PayPal."
 };
 
 // Force dynamic rendering — this page reads `useSearchParams()` for the

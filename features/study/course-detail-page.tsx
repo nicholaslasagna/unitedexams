@@ -6,12 +6,12 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   BookOpenText,
-  Brain,
   Clock3,
   FileText,
+  Flag,
   Flame,
+  NotebookText,
   Search,
-  Sparkles,
   TimerReset,
   TrendingUp
 } from "lucide-react";
@@ -231,7 +231,7 @@ export function CourseDetailContent({
               {recommendedSet ? (
                 <div className="rounded-[1.25rem] border border-accent/35 bg-accent/10 p-4 sm:p-5">
                   <p className="inline-flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-accent">
-                    <Sparkles className="h-3 w-3" />
+                    <Flag className="h-3 w-3" />
                     Best place to start
                   </p>
                   <p className="mt-2 font-display text-lg font-semibold text-text">
@@ -516,7 +516,7 @@ export function CourseDetailContent({
             <CardHeader>
               <div className="flex items-center gap-3">
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-accent/30 bg-accent/10 text-accent">
-                  <Sparkles className="h-4 w-4" />
+                  <NotebookText className="h-4 w-4" />
                 </span>
                 <div>
                   <h2 className="font-display text-xl font-semibold">Cheat Sheets</h2>
@@ -578,7 +578,7 @@ export function CourseDetailContent({
           <CardBody className="space-y-3">
             {mastery.length === 0 ? (
               <EmptyState
-                icon={<Brain className="h-6 w-6" />}
+                icon={<TrendingUp className="h-6 w-6" />}
                 title="No progress yet"
                 description="Start any quiz and your progress fills in here automatically."
               />
