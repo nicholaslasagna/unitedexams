@@ -299,6 +299,16 @@ function buildPageMeta(params: {
           { href: "/app/announcements", label: "Announcements" }
         ])
       } satisfies WorkspacePageMeta;
+    case "interviews":
+      return {
+        eyebrow: "Interview practice",
+        title: "Interviews",
+        breadcrumbs: [root, { href: "/app/interviews", label: "Interviews" }],
+        quickActions: clampActions([
+          { href: "/app/dashboard", label: "Home" },
+          { href: "/app/courses", label: "My classes" }
+        ])
+      } satisfies WorkspacePageMeta;
     case "leaderboard":
       return {
         eyebrow: "Momentum tracking",

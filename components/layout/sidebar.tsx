@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   LayoutDashboard,
   LibraryBig,
+  Briefcase,
   ListChecks,
   Timer,
   Trophy,
@@ -38,6 +39,7 @@ interface NavItem {
 const baseItems: NavItem[] = [
   { href: "/app/dashboard", label: "Home", icon: LayoutDashboard },
   { href: "/app/courses", label: "My classes", icon: LibraryBig },
+  { href: "/app/interviews", label: "Interviews", icon: Briefcase },
   { href: "/app/homework", label: "Homework", icon: ListChecks },
   { href: "/app/exams", label: "Exams", icon: Timer },
   { href: "/app/leaderboard", label: "Leaderboard", icon: Trophy },
