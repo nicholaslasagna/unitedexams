@@ -186,8 +186,9 @@ export function Tooltip({
   const trigger = cloneElement(child, {
     ref: (node: HTMLElement | null) => {
       triggerRef.current = node;
-      // Forward to any existing ref on the child.
-      const childRef = (children as { ref?: React.Ref<HTMLElement> }).ref;
+      // Forward any ref the caller put on the child. In React 19 `ref` is a
+      // regular prop; reading `element.ref` is removed and warns at runtime.
+      const childRef = (child.props as { ref?: React.Ref<HTMLElement> }).ref;
       if (typeof childRef === "function") childRef(node);
       else if (childRef && typeof childRef === "object") {
         (childRef as React.MutableRefObject<HTMLElement | null>).current = node;

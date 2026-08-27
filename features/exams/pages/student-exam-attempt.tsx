@@ -92,6 +92,14 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
     `exam-session-${Math.random().toString(16).slice(2)}-${Date.now().toString(36)}`
   );
   const lastDevtoolsEventRef = useRef(0);
+  /*
+   * The countdown effect below runs with deps [stage, expiresAtIso], so any
+   * function it closes over is frozen at the moment the exam starts — when
+   * `answers` is still {} (onStartExam resets it in the same batch). Reading
+   * the submit handler through a ref keeps the auto-submit on current state.
+   * Same ref-bag pattern as quizKeyHandlersRef in quiz-experience-page.tsx.
+   */
+  const autoSubmitRef = useRef<() => void>(() => {});
 
   const currentQuestionId = order[currentIndex];
   const currentQuestion = useMemo(
@@ -274,7 +282,7 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
       const remaining = Math.max(0, Math.floor((new Date(expiresAtIso).getTime() - Date.now()) / 1000));
       setTimeRemaining(remaining);
       if (remaining <= 0) {
-        void onSubmitExam();
+        autoSubmitRef.current();
       }
     }, 1000);
     return () => window.clearInterval(timer);
@@ -311,6 +319,12 @@ export function StudentExamAttemptPage({ examId }: { examId: string }) {
     } finally {
       setStarting(false);
     }
+  };
+
+  // Refreshed on every render so the countdown always submits the answers
+  // the student actually has, and sees the live `submitting` guard.
+  autoSubmitRef.current = () => {
+    void onSubmitExam();
   };
 
   const onToggleOption = (optionIndex: number) => {

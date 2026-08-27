@@ -34,7 +34,7 @@ function formatClock(totalSeconds: number) {
 
 export function InterviewRunnerContent({ interviewId }: { interviewId: string }) {
   const interview = getCompanyInterview(interviewId);
-  const { ready, isAuthenticated, saveAttempt } = useAppData();
+  const { ready, isAuthenticated, saveAttempt, user } = useAppData();
   const access = useAccess();
   // Premium, institution-covered, professor and admin accounts all sit the
   // complete loop. lib/access.ts already folds those into one decision.
@@ -72,7 +72,9 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
   const [saveError, setSaveError] = useState<string | null>(null);
   const startedAt = useRef<number | null>(null);
   const questionStartedAt = useRef<number | null>(null);
-  const draftKey = `ue.interview.draft.${interviewId}`;
+  // Keyed by user: these run on shared school machines, and an id-only key
+  // let the next person resume — and post — someone else's attempt.
+  const draftKey = `ue.interview.draft.${user?.id ?? "anon"}.${interviewId}`;
   const restored = useRef(false);
 
   // A loop can run 90+ minutes. Losing an accidental refresh used to throw
@@ -95,6 +97,7 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
         checked?: CheckedSignals;
         runs?: Record<string, RunResult>;
         startedAt?: number;
+        elapsed?: number;
       };
       if (!draft.phase || draft.phase === "brief") return;
       setAnswers(draft.answers ?? {});
@@ -104,6 +107,11 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
       setIndex(Math.min(draft.index ?? 0, Math.max(questions.length - 1, 0)));
       startedAt.current = draft.startedAt ?? Date.now();
       questionStartedAt.current = Date.now();
+      // The clock only ticks during answer/review, so a reload on the report
+      // screen would otherwise show 0:00 and save timeSpent: 0.
+      setElapsed(
+        draft.startedAt ? Math.floor((Date.now() - draft.startedAt) / 1000) : (draft.elapsed ?? 0)
+      );
       setPhase(draft.phase);
     } catch {
       // A corrupt draft must never block starting a fresh interview.
@@ -115,12 +123,21 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
     try {
       window.localStorage.setItem(
         draftKey,
-        JSON.stringify({ phase, index, answers, code, checked, runs, startedAt: startedAt.current })
+        JSON.stringify({
+          phase,
+          index,
+          answers,
+          code,
+          checked,
+          runs,
+          startedAt: startedAt.current,
+          elapsed
+        })
       );
     } catch {
       // Private mode / quota — the interview still works, just not resumable.
     }
-  }, [draftKey, phase, index, answers, code, checked, runs]);
+  }, [draftKey, phase, index, answers, code, checked, runs, elapsed]);
 
   // Elapsed clock, running only while the interview is in progress.
   useEffect(() => {
@@ -285,6 +302,11 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
     try {
       await saveAttempt(attempt);
       setSaveState("saved");
+      try {
+        window.localStorage.removeItem(draftKey);
+      } catch {
+        // Draft is only read while phase !== "brief"; a leftover is harmless.
+      }
     } catch (error) {
       setSaveState("error");
       setSaveError((error as Error).message || "Could not save your score.");
@@ -785,6 +807,7 @@ function CodingWorkspacePanel({
       <textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        aria-label={`Your ${workspace.language} solution for ${workspace.functionName}`}
         spellCheck={false}
         rows={16}
         className="w-full rounded-xl border border-borderc bg-[hsl(var(--bg-inset))] p-3 font-mono text-[12.5px] leading-relaxed text-text outline-none focus:border-accent/50"
