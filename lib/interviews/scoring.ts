@@ -43,11 +43,20 @@ function band(percent: number): InterviewScore["band"] {
 export function scoreInterview(
   interview: CompanyInterview,
   checked: CheckedSignals,
-  testOutcomes: TestOutcomes = {}
+  testOutcomes: TestOutcomes = {},
+  /**
+   * Round ids the candidate actually had access to. Free users only sit the
+   * unlocked rounds, so scoring the whole loop would score them against
+   * questions they were never shown. Omit to score everything.
+   */
+  includeRoundIds?: string[]
 ): InterviewScore {
   const perQuestion: QuestionScore[] = [];
+  const scoped = includeRoundIds
+    ? interview.rounds.filter((round) => includeRoundIds.includes(round.id))
+    : interview.rounds;
 
-  for (const round of interview.rounds) {
+  for (const round of scoped) {
     for (const question of round.questions) {
       const marked = new Set(checked[question.id] ?? []);
       let possible = question.signals.reduce((sum, s) => sum + s.weight, 0);
@@ -100,7 +109,7 @@ export function scoreInterview(
   const possible = perQuestion.reduce((sum, q) => sum + q.possible, 0);
   const percent = possible === 0 ? 0 : Math.round((earned / possible) * 100);
 
-  const perRound = interview.rounds.map((round) => {
+  const perRound = scoped.map((round) => {
     const rows = perQuestion.filter((q) => q.round === round.name);
     const e = rows.reduce((sum, q) => sum + q.earned, 0);
     const p = rows.reduce((sum, q) => sum + q.possible, 0);
