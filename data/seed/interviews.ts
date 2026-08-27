@@ -55,7 +55,20 @@ export interface InterviewRound {
   name: string;
   format: string;
   minutes: number;
+  /**
+   * Premium rounds complete the real loop. Free accounts always get a full,
+   * ungated first round — same editor, same tests, same rubric, same score —
+   * so the free experience is a real interview, not a teaser.
+   */
+  premium?: boolean;
   questions: InterviewQuestion[];
+}
+
+/** A non-question stage of the real loop: recruiter screen, debrief, offer. */
+export interface LoopStage {
+  name: string;
+  whatHappens: string;
+  howToPrepare: string[];
 }
 
 export interface CompanyInterview {
@@ -72,6 +85,8 @@ export interface CompanyInterview {
   /** Common ways strong engineers fail this specific loop. */
   pitfalls: string[];
   rounds: InterviewRound[];
+  /** Premium: the stages around the technical rounds that decide offers. */
+  loopStages: LoopStage[];
 }
 
 export const companyInterviews: CompanyInterview[] = [
@@ -215,6 +230,7 @@ function usersOverRateLimit(logs, limit = 20, windowSeconds = 60) {
       },
       {
         id: "goog-r2",
+        premium: true,
         name: "System design — scale & tradeoffs",
         format: "45 min, whiteboard",
         minutes: 45,
@@ -277,6 +293,7 @@ function usersOverRateLimit(logs, limit = 20, windowSeconds = 60) {
       },
       {
         id: "goog-r3",
+        premium: true,
         name: "Googleyness & Leadership",
         format: "30–45 min, behavioral",
         minutes: 40,
@@ -446,6 +463,7 @@ function minMeetingRooms(intervals) {
       },
       {
         id: "meta-r2",
+        premium: true,
         name: "Product architecture",
         format: "45 min, design with a product lens",
         minutes: 45,
@@ -508,6 +526,7 @@ function minMeetingRooms(intervals) {
       },
       {
         id: "meta-r3",
+        premium: true,
         name: "Behavioral ('Jedi')",
         format: "45 min, conflict, ambiguity, speed",
         minutes: 45,
@@ -689,6 +708,7 @@ function runLru(capacity, ops) {
       },
       {
         id: "aapl-r2",
+        premium: true,
         name: "Project deep dive",
         format: "45–60 min, your past work",
         minutes: 60,
@@ -841,6 +861,7 @@ function runLru(capacity, ops) {
       },
       {
         id: "oai-r2",
+        premium: true,
         name: "Debugging unfamiliar code",
         format: "45–60 min, live",
         minutes: 60,
@@ -903,6 +924,7 @@ function runLru(capacity, ops) {
       },
       {
         id: "oai-r3",
+        premium: true,
         name: "Mission & judgment",
         format: "45 min, conversational",
         minutes: 45,
@@ -1108,6 +1130,7 @@ function fitToBudget(turns, budget) {
       },
       {
         id: "ant-r2",
+        premium: true,
         name: "Systems & ML infrastructure",
         format: "45–60 min, design discussion",
         minutes: 60,
@@ -1170,6 +1193,7 @@ function fitToBudget(turns, budget) {
       },
       {
         id: "ant-r3",
+        premium: true,
         name: "Values & judgment",
         format: "45 min, conversational",
         minutes: 45,
