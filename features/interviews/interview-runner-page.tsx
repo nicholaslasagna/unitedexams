@@ -7,7 +7,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getCompanyInterview, interviewTotalMinutes } from "@/data/seed/interviews";
+import { getCompanyInterview } from "@/data/seed/interviews";
 import { scoreInterview, type CheckedSignals, type TestOutcomes } from "@/lib/interviews/scoring";
 import { runCode, type RunResult } from "@/lib/interviews/run-code";
 import { useAppData } from "@/lib/app-data-context";
@@ -52,6 +52,7 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
     () => openRounds.flatMap((round) => round.questions.map((q) => ({ round, question: q }))),
     [openRounds]
   );
+  const openMinutes = openRounds.reduce((sum, round) => sum + round.minutes, 0);
 
   const [phase, setPhase] = useState<Phase>("brief");
   const [index, setIndex] = useState(0);
@@ -62,15 +63,74 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
   const [running, setRunning] = useState(false);
   const [showFollowUps, setShowFollowUps] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  // Time on the CURRENT question. The header shows this against the
+  // question's budget; `elapsed` is the whole-interview total used for the
+  // saved attempt. Showing the total against a per-question budget made a
+  // candidate on question 3 look 25 minutes over when they were on time.
+  const [questionElapsed, setQuestionElapsed] = useState(0);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [saveError, setSaveError] = useState<string | null>(null);
   const startedAt = useRef<number | null>(null);
+  const questionStartedAt = useRef<number | null>(null);
+  const draftKey = `ue.interview.draft.${interviewId}`;
+  const restored = useRef(false);
+
+  // A loop can run 90+ minutes. Losing an accidental refresh used to throw
+  // away every answer and every line of code, so the in-progress attempt is
+  // mirrored to localStorage and restored on mount.
+  // ponytail: localStorage is per-device on purpose — a half-finished
+  // interview isn't worth a server round-trip. Move it server-side only if
+  // people ask to resume on another machine.
+  useEffect(() => {
+    if (restored.current) return;
+    restored.current = true;
+    try {
+      const raw = window.localStorage.getItem(draftKey);
+      if (!raw) return;
+      const draft = JSON.parse(raw) as {
+        phase?: Phase;
+        index?: number;
+        answers?: Record<string, string>;
+        code?: Record<string, string>;
+        checked?: CheckedSignals;
+        runs?: Record<string, RunResult>;
+        startedAt?: number;
+      };
+      if (!draft.phase || draft.phase === "brief") return;
+      setAnswers(draft.answers ?? {});
+      setCode(draft.code ?? {});
+      setChecked(draft.checked ?? {});
+      setRuns(draft.runs ?? {});
+      setIndex(Math.min(draft.index ?? 0, Math.max(questions.length - 1, 0)));
+      startedAt.current = draft.startedAt ?? Date.now();
+      questionStartedAt.current = Date.now();
+      setPhase(draft.phase);
+    } catch {
+      // A corrupt draft must never block starting a fresh interview.
+    }
+  }, [draftKey, questions.length]);
+
+  useEffect(() => {
+    if (phase === "brief") return;
+    try {
+      window.localStorage.setItem(
+        draftKey,
+        JSON.stringify({ phase, index, answers, code, checked, runs, startedAt: startedAt.current })
+      );
+    } catch {
+      // Private mode / quota — the interview still works, just not resumable.
+    }
+  }, [draftKey, phase, index, answers, code, checked, runs]);
 
   // Elapsed clock, running only while the interview is in progress.
   useEffect(() => {
     if (phase !== "answer" && phase !== "review") return;
     const id = window.setInterval(() => {
       if (startedAt.current) setElapsed(Math.floor((Date.now() - startedAt.current) / 1000));
+      // The per-question clock freezes once they hand the answer over.
+      if (phase === "answer" && questionStartedAt.current) {
+        setQuestionElapsed(Math.floor((Date.now() - questionStartedAt.current) / 1000));
+      }
     }, 1000);
     return () => window.clearInterval(id);
   }, [phase]);
@@ -126,6 +186,8 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
 
   const beginInterview = () => {
     startedAt.current = Date.now();
+    questionStartedAt.current = Date.now();
+    setQuestionElapsed(0);
     setPhase("answer");
   };
 
@@ -155,6 +217,8 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
     setShowFollowUps(false);
     if (index + 1 < questions.length) {
       setIndex(index + 1);
+      questionStartedAt.current = Date.now();
+      setQuestionElapsed(0);
       setPhase("answer");
     } else {
       setPhase("report");
@@ -162,6 +226,11 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
   };
 
   const retake = () => {
+    try {
+      window.localStorage.removeItem(draftKey);
+    } catch {
+      // Nothing to do — a stale draft is only read when phase !== "brief".
+    }
     setPhase("brief");
     setIndex(0);
     setAnswers({});
@@ -170,6 +239,8 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
     setRuns({});
     setShowFollowUps(false);
     setElapsed(0);
+    setQuestionElapsed(0);
+    questionStartedAt.current = null;
     setSaveState("idle");
     setSaveError(null);
     startedAt.current = null;
@@ -250,7 +321,7 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
                 <span className="mx-2 text-text-secondary/50">·</span>
                 {questions.length} questions
                 <span className="mx-2 text-text-secondary/50">·</span>
-                about {interviewTotalMinutes(interview)} min
+                about {openMinutes} min
               </p>
               <Button size="lg" className="w-full sm:w-auto" onClick={beginInterview}>
                 Start interview <ArrowRight className="h-4 w-4" />
@@ -360,8 +431,12 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
               Question {index + 1} of {questions.length}
             </p>
             <p className="inline-flex items-center gap-1.5 font-mono text-[12px] text-text-secondary">
-              <Clock3 className="h-3.5 w-3.5" /> {formatClock(elapsed)}
+              <Clock3 className="h-3.5 w-3.5" />
+              <span className={questionElapsed > current.question.minutes * 60 ? "text-warn" : undefined}>
+                {formatClock(questionElapsed)}
+              </span>
               <span className="text-text-secondary/50">/ ~{current.question.minutes}m</span>
+              <span className="text-text-secondary/50">· {formatClock(elapsed)} total</span>
             </p>
           </div>
           <ProgressBar value={Math.round((index / questions.length) * 100)} />

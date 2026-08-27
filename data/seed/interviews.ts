@@ -943,6 +943,66 @@ function runLru(capacity, ops) {
               "What happens if the server sends a Retry-After header?",
               "How would you make this resumable if the process dies at item 7,000?"
             ],
+            coding: {
+              language: "javascript",
+              functionName: "nextRetryDelayMs",
+              weight: 6,
+              starterCode: `/**
+ * The retry policy, extracted so it's testable without a network.
+ *
+ *   - 429 and 5xx are retryable; other 4xx are fatal -> return -1
+ *   - an explicit Retry-After (seconds) always wins
+ *   - otherwise exponential backoff: baseMs * 2^attempt, capped at maxMs
+ *
+ * Return the ceiling here; apply your jitter where you sleep, so this
+ * stays deterministic and testable.
+ *
+ * @param {number} attempt  0 for the first retry
+ * @param {{baseMs:number,maxMs:number,status?:number,retryAfterSeconds?:number}} opts
+ * @returns {number} milliseconds to wait, or -1 if it must not be retried
+ */
+function nextRetryDelayMs(attempt, opts) {
+
+}
+`,
+              tests: [
+                {
+                  name: "first retry waits one base interval",
+                  args: [0, { baseMs: 100, maxMs: 8000, status: 429 }],
+                  expected: 100
+                },
+                {
+                  name: "backoff doubles per attempt",
+                  args: [1, { baseMs: 100, maxMs: 8000, status: 503 }],
+                  expected: 200
+                },
+                {
+                  name: "still doubling at attempt 3",
+                  args: [3, { baseMs: 100, maxMs: 8000, status: 500 }],
+                  expected: 800
+                },
+                {
+                  name: "capped at maxMs instead of growing forever",
+                  args: [10, { baseMs: 100, maxMs: 8000, status: 500 }],
+                  expected: 8000
+                },
+                {
+                  name: "404 is fatal, not retryable",
+                  args: [0, { baseMs: 100, maxMs: 8000, status: 404 }],
+                  expected: -1
+                },
+                {
+                  name: "400 is fatal too",
+                  args: [0, { baseMs: 100, maxMs: 8000, status: 400 }],
+                  expected: -1
+                },
+                {
+                  name: "Retry-After overrides the computed backoff",
+                  args: [2, { baseMs: 100, maxMs: 8000, status: 429, retryAfterSeconds: 7 }],
+                  expected: 7000
+                }
+              ]
+            },
             minutes: 75,
             signals: [
               {

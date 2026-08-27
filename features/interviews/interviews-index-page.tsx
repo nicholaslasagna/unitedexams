@@ -5,7 +5,7 @@ import { ArrowRight, Crown, Lock } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { companyInterviews, interviewTotalMinutes } from "@/data/seed/interviews";
+import { companyInterviews } from "@/data/seed/interviews";
 import { useAppData } from "@/lib/app-data-context";
 import { useAccess } from "@/lib/hooks/use-access";
 import { resolveLock } from "@/lib/access";
@@ -63,6 +63,11 @@ export function InterviewsIndexContent() {
               ? 0
               : interview.rounds.filter((round) => round.premium).length;
             const openRoundCount = interview.rounds.length - lockedRoundCount;
+            // Only count minutes for rounds this account actually sits, so a
+            // free candidate isn't promised a 130-minute loop they can't take.
+            const openMinutes = interview.rounds
+              .filter((round) => hasFullLoop || !round.premium)
+              .reduce((sum, round) => sum + round.minutes, 0);
             return (
               <Link
                 key={interview.id}
@@ -92,7 +97,7 @@ export function InterviewsIndexContent() {
                 <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.18em] text-text-secondary">
                   {openRoundCount} of {interview.rounds.length} rounds
                   <span className="mx-2 text-text-secondary/50">·</span>
-                  ~{interviewTotalMinutes(interview)} min
+                  ~{openMinutes} min
                 </p>
                 {lockedRoundCount > 0 ? (
                   <p className="mt-2 inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-accent">

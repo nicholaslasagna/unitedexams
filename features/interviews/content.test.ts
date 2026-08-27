@@ -78,6 +78,15 @@ const solutions: Record<string, (...args: never[]) => unknown> = {
     }
     return out;
   },
+  nextRetryDelayMs: (...args: never[]) => {
+    const [attempt, opts] = args as unknown as [
+      number,
+      { baseMs: number; maxMs: number; status?: number; retryAfterSeconds?: number }
+    ];
+    if (opts.status && opts.status < 500 && opts.status !== 429) return -1;
+    if (typeof opts.retryAfterSeconds === "number") return opts.retryAfterSeconds * 1000;
+    return Math.min(opts.maxMs, opts.baseMs * 2 ** attempt);
+  },
   fitToBudget: (...args: never[]) => {
     const [turns, budget] = args as unknown as [
       { id: string; role: string; text: string }[],
@@ -161,7 +170,7 @@ describe("interview content integrity", () => {
   });
 
   it("every shipped coding question is solvable and its fixtures are correct", () => {
-    expect(codingQuestions.length).toBeGreaterThanOrEqual(4);
+    expect(codingQuestions.length).toBeGreaterThanOrEqual(5);
     for (const q of codingQuestions) {
       const workspace = q.coding!;
       const solve = solutions[workspace.functionName];
@@ -214,6 +223,18 @@ describe("free vs premium split", () => {
         expect(stage.whatHappens.length).toBeGreaterThan(80);
         expect(stage.howToPrepare.length).toBeGreaterThanOrEqual(3);
       }
+    }
+  });
+});
+
+describe("free tier promise", () => {
+  it("gives every company a runnable coding round for free", () => {
+    for (const interview of companyInterviews) {
+      const freeCoding = interview.rounds
+        .filter((r) => !r.premium)
+        .flatMap((r) => r.questions)
+        .filter((q) => q.coding);
+      expect(freeCoding.length, `${interview.company} needs free runnable code`).toBeGreaterThanOrEqual(1);
     }
   });
 });
