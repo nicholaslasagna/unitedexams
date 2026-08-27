@@ -176,3 +176,44 @@ describe("interview content integrity", () => {
     }
   });
 });
+
+describe("free vs premium split", () => {
+  it("gives every company at least one fully-free round", () => {
+    for (const interview of companyInterviews) {
+      const free = interview.rounds.filter((r) => !r.premium);
+      expect(free.length, `${interview.company} free rounds`).toBeGreaterThanOrEqual(1);
+      // The free round must be a real interview, not a preview: questions,
+      // rubric, follow-ups and a model answer all present.
+      for (const round of free) {
+        expect(round.questions.length, `${interview.company} free questions`).toBeGreaterThanOrEqual(1);
+        for (const q of round.questions) {
+          expect(q.signals.length).toBeGreaterThanOrEqual(3);
+          expect(q.strongAnswer.length).toBeGreaterThan(120);
+        }
+      }
+    }
+  });
+
+  it("keeps the runnable coding round free for every company that has one", () => {
+    for (const interview of companyInterviews) {
+      const codingRounds = interview.rounds.filter((r) => r.questions.some((q) => q.coding));
+      for (const round of codingRounds) {
+        expect(round.premium, `${interview.company} coding round must be free`).toBeFalsy();
+      }
+    }
+  });
+
+  it("reserves the rest of the loop, and the loop stages, for premium", () => {
+    for (const interview of companyInterviews) {
+      expect(
+        interview.rounds.some((r) => r.premium),
+        `${interview.company} should have premium rounds`
+      ).toBe(true);
+      expect(interview.loopStages.length, `${interview.company} loop stages`).toBeGreaterThanOrEqual(3);
+      for (const stage of interview.loopStages) {
+        expect(stage.whatHappens.length).toBeGreaterThan(80);
+        expect(stage.howToPrepare.length).toBeGreaterThanOrEqual(3);
+      }
+    }
+  });
+});

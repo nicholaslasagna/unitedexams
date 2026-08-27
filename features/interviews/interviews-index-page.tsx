@@ -1,16 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Lock } from "lucide-react";
+import { ArrowRight, Crown, Lock } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { companyInterviews, interviewTotalMinutes } from "@/data/seed/interviews";
 import { useAppData } from "@/lib/app-data-context";
+import { useAccess } from "@/lib/hooks/use-access";
+import { resolveLock } from "@/lib/access";
 import { bestScoreForQuiz } from "@/features/progress/metrics";
 
 export function InterviewsIndexContent() {
   const { ready, isAuthenticated, attempts } = useAppData();
+  const access = useAccess();
+  const hasFullLoop = resolveLock(access, { premiumOrInstitution: true }) === "open";
 
   if (!ready) return <Skeleton className="h-96" />;
 
@@ -42,6 +46,9 @@ export function InterviewsIndexContent() {
         <p className="max-w-2xl text-[14px] leading-relaxed text-text-secondary">
           Real interview loops, run the way the company actually runs them — same rounds, same rubric,
           same follow-up questions. You get scored, told exactly what to fix, and can retake it.
+          {hasFullLoop
+            ? " You have the complete loop, including the recruiter screen, debrief and offer stages."
+            : " Every company includes a full coding round free — Premium opens the rest of the loop."}
         </p>
       </section>
 
@@ -52,6 +59,10 @@ export function InterviewsIndexContent() {
         <div className="grid gap-4 sm:grid-cols-2">
           {companyInterviews.map((interview) => {
             const best = bestScoreForQuiz(attempts, interview.id);
+            const lockedRoundCount = hasFullLoop
+              ? 0
+              : interview.rounds.filter((round) => round.premium).length;
+            const openRoundCount = interview.rounds.length - lockedRoundCount;
             return (
               <Link
                 key={interview.id}
@@ -79,10 +90,16 @@ export function InterviewsIndexContent() {
                 </p>
 
                 <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.18em] text-text-secondary">
-                  {interview.rounds.length} rounds
+                  {openRoundCount} of {interview.rounds.length} rounds
                   <span className="mx-2 text-text-secondary/50">·</span>
                   ~{interviewTotalMinutes(interview)} min
                 </p>
+                {lockedRoundCount > 0 ? (
+                  <p className="mt-2 inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-accent">
+                    <Crown className="h-3 w-3" />
+                    {lockedRoundCount} more {lockedRoundCount === 1 ? "round" : "rounds"} with Premium
+                  </p>
+                ) : null}
 
                 <span className="mt-4 flex items-center justify-between border-t border-borderc pt-3 text-[12.5px] font-semibold text-text-secondary transition-colors group-hover:text-text">
                   {best > 0 ? "Retake and beat it" : "Start interview"}

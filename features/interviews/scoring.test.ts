@@ -70,3 +70,30 @@ describe("coding rounds are graded objectively", () => {
     expect(result.improvements).toHaveLength(0);
   });
 });
+
+describe("free users are scored only on what they sat", () => {
+  const freeRoundIds = interview.rounds.filter((r) => !r.premium).map((r) => r.id);
+
+  it("ignores premium rounds when scoping to the free round", () => {
+    const scoped = scoreInterview(interview, {}, {}, freeRoundIds);
+    expect(scoped.perRound).toHaveLength(freeRoundIds.length);
+    expect(scoped.perRound.every((r) => freeRoundIds.length === 1)).toBe(true);
+  });
+
+  it("lets a free candidate reach 100% on the free round alone", () => {
+    const freeQuestions = interview.rounds
+      .filter((r) => !r.premium)
+      .flatMap((r) => r.questions);
+    const checked = Object.fromEntries(
+      freeQuestions.map((q) => [q.id, q.signals.map((s) => s.id)])
+    );
+    const outcomes = Object.fromEntries(
+      freeQuestions
+        .filter((q) => q.coding)
+        .map((q) => [q.id, { passed: q.coding!.tests.length, total: q.coding!.tests.length }])
+    );
+    const scoped = scoreInterview(interview, checked, outcomes, freeRoundIds);
+    expect(scoped.percent).toBe(100);
+    expect(scoped.band).toBe("strong-hire");
+  });
+});

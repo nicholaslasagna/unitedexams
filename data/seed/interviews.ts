@@ -115,6 +115,38 @@ export const companyInterviews: CompanyInterview[] = [
       "Silent thinking. An interviewer who can't hear your reasoning can't write it down.",
       "Ignoring edge cases until prompted, then patching instead of re-reasoning."
     ],
+    loopStages: [
+      {
+        name: "Recruiter screen",
+        whatHappens:
+          "A 30-minute call that decides which level you're slotted into before you write a line of code. Level is very hard to change later, so this call quietly sets your comp band.",
+        howToPrepare: [
+          "Have a 90-second story for your last two roles: scope, your specific decisions, measurable outcome.",
+          "Ask directly which level they're considering and what would move you up one — recruiters usually answer.",
+          "Don't give a number first. 'I'd like to see the full package once we know the level' is a complete answer."
+        ]
+      },
+      {
+        name: "The written packet",
+        whatHappens:
+          "Each interviewer writes detailed notes plus a hire/no-hire, then a hiring committee that never met you decides from those notes alone. You are hired by your transcript, not your presence.",
+        howToPrepare: [
+          "Narrate continuously — an unspoken thought does not exist in the packet.",
+          "Say your complexity out loud, so it can be quoted verbatim.",
+          "Close each problem with a one-line summary the interviewer can paste in: what you built, its complexity, and what you'd change with more time."
+        ]
+      },
+      {
+        name: "Hiring committee and team match",
+        whatHappens:
+          "The committee can approve you while no team has a headcount, so you sit in team matching. Passing the bar and getting an offer are two separate events.",
+        howToPrepare: [
+          "Ask your recruiter how many teams are actively matching in your area before you interview.",
+          "Keep a short list of teams whose work you can speak to — matching moves faster when you're specific.",
+          "Treat a slow match as a pipeline problem, not a verdict on you."
+        ]
+      }
+    ],
     rounds: [
       {
         id: "goog-r1",
@@ -375,6 +407,38 @@ function usersOverRateLimit(logs, limit = 20, windowSeconds = 60) {
       "Writing pseudocode instead of real, running code.",
       "Forgetting to test — Meta interviewers expect you to dry-run without being told."
     ],
+    loopStages: [
+      {
+        name: "Recruiter screen and level calibration",
+        whatHappens:
+          "Meta calibrates E4 vs E5 early, and down-leveling after the loop is common. The scope you describe here sets the expectation your rounds are graded against.",
+        howToPrepare: [
+          "Describe scope in terms of ambiguity you resolved, not headcount you influenced.",
+          "Ask what E5 evidence looks like in the design round specifically.",
+          "Be ready to say whether you'd accept E4 — the answer affects how they route you."
+        ]
+      },
+      {
+        name: "Debrief",
+        whatHappens:
+          "Interviewers submit independently, then meet. Two strong coding rounds rarely rescue a weak behavioral round — the 'Jedi' signal is treated as real evidence, not a formality.",
+        howToPrepare: [
+          "Prepare three conflict stories, not one, so you don't reuse a story across rounds.",
+          "Have a failure story where you name your own contribution to the failure.",
+          "Practise finishing two problems in 40 minutes with a timer running — the speed signal is scored."
+        ]
+      },
+      {
+        name: "Team matching and offer",
+        whatHappens:
+          "Team matching often happens after the offer, so you may accept before you know your team. Bootcamp-style placement means your first weeks decide a lot.",
+        howToPrepare: [
+          "Ask which orgs are hiring at your level and what their on-call load looks like.",
+          "Get the team's product surface in writing before you sign if it matters to you.",
+          "Negotiate on the offer, not the team — team changes are easier later than comp changes."
+        ]
+      }
+    ],
     rounds: [
       {
         id: "meta-r1",
@@ -608,6 +672,38 @@ function minMeetingRooms(intervals) {
       "Answering only at the abstraction you're comfortable in. Be ready to go one layer down.",
       "Treating it like a generic FAANG loop; research the specific team's domain."
     ],
+    loopStages: [
+      {
+        name: "Hiring-manager screen",
+        whatHappens:
+          "Apple hires into a specific team, so the manager call is the real gate. There is no company-wide committee normalizing you across orgs — this person's read carries the loop.",
+        howToPrepare: [
+          "Research that team's actual product surface and be able to name a technical constraint it lives with.",
+          "Bring one question that only someone who studied the team could ask.",
+          "Be explicit about which layer you want to work at — Apple respects specificity over flexibility."
+        ]
+      },
+      {
+        name: "The cross-functional round",
+        whatHappens:
+          "You'll meet a partner from outside your discipline — hardware, design, or QA. They're scoring whether you can be trusted with a shared deadline and bad news.",
+        howToPrepare: [
+          "Have a story about telling a partner team something they didn't want to hear, early.",
+          "Explain a technical constraint in plain language, without condescension.",
+          "Know the cost of your decisions in their currency: schedule, battery, thermals, returns."
+        ]
+      },
+      {
+        name: "Secrecy and the offer",
+        whatHappens:
+          "You may be interviewed for work nobody will describe to you until you sign. Compensation leans heavily on RSUs with a specific vesting shape.",
+        howToPrepare: [
+          "Accept that some questions get 'I can't discuss that' — don't read it as evasion.",
+          "Model the RSU vest schedule before comparing offers; the headline number hides the shape.",
+          "Ask what the team ships and how often, even if you can't be told what it is."
+        ]
+      }
+    ],
     rounds: [
       {
         id: "aapl-r1",
@@ -795,6 +891,38 @@ function runLru(capacity, ops) {
       "Optimizing prematurely instead of getting a correct version running first.",
       "Ignoring the tooling you're allowed to use — not using available tools reads as rigid.",
       "Treating the mission/safety conversation as a formality to breeze through."
+    ],
+    loopStages: [
+      {
+        name: "Hiring-manager conversation",
+        whatHappens:
+          "Less resume walkthrough, more 'what have you actually shipped and what broke'. They're calibrating whether you operate well when the spec is thin and the ground is moving.",
+        howToPrepare: [
+          "Pick two projects where requirements changed under you and describe how you re-planned.",
+          "Be concrete about what you personally built versus what your team built.",
+          "Have a real opinion about a tradeoff you'd make differently now."
+        ]
+      },
+      {
+        name: "Work-sample review",
+        whatHappens:
+          "Your practical exercise gets read like a pull request — naming, tests, error handling, and whether a colleague could maintain it. Cleverness is not the axis.",
+        howToPrepare: [
+          "Leave a short README explaining what you'd do with another day.",
+          "Write the tests you'd actually want on call, not tests that only prove the happy path.",
+          "Delete your dead code before submitting; unused abstractions read as noise."
+        ]
+      },
+      {
+        name: "Debrief and offer",
+        whatHappens:
+          "Judgment under uncertainty is weighted alongside raw engineering. A candidate who reasons carefully about deployment risk can outrank a faster coder.",
+        howToPrepare: [
+          "Have a position on a real deployment tradeoff you've faced, with the reasoning shown.",
+          "Ask what the team's rollback culture looks like — it signals you think past merge.",
+          "Know why this mission over a competitor's; a generic answer is noticed."
+        ]
+      }
     ],
     rounds: [
       {
@@ -1005,6 +1133,38 @@ function runLru(capacity, ops) {
       "Treating the safety conversation as a compliance box — shallow answers are obvious.",
       "Writing clever, dense code instead of readable code.",
       "Not asking questions; they want to see collaboration, not a solo performance."
+    ],
+    loopStages: [
+      {
+        name: "Recruiter and mission fit",
+        whatHappens:
+          "Why-Anthropic gets asked early and taken seriously. A rehearsed answer is transparent; they're checking for genuine engagement with the work, not enthusiasm.",
+        howToPrepare: [
+          "Be able to name specific work you've read and what you found unconvincing about it.",
+          "Have a reason for this lab over the others that isn't about prestige or comp.",
+          "It's fine to say you're uncertain about parts of the mission — calibrated is better than sold."
+        ]
+      },
+      {
+        name: "Take-home / extended exercise",
+        whatHappens:
+          "Some tracks include a longer practical exercise reviewed for maintainability and clear written reasoning. The write-up is graded, not just the code.",
+        howToPrepare: [
+          "Budget real time for the write-up: what you built, what you cut, and why.",
+          "Name the tradeoff you're least sure about — showing your uncertainty is scored well here.",
+          "Make the tests readable; they're read as documentation of what you thought mattered."
+        ]
+      },
+      {
+        name: "Debrief and offer",
+        whatHappens:
+          "Communication quality is weighted throughout — clear thinking in writing is treated as a core engineering skill, not a soft one.",
+        howToPrepare: [
+          "Practise explaining a hard technical decision in five sentences with no jargon.",
+          "Expect a values conversation to carry real weight in the final decision.",
+          "Bring a question about how disagreement actually gets resolved on the team."
+        ]
+      }
     ],
     rounds: [
       {

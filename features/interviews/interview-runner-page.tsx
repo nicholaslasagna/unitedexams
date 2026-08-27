@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Lock, Play, RotateCcw, Trophy, XCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Crown, Lock, Play, RotateCcw, Trophy, XCircle } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
@@ -11,6 +11,10 @@ import { getCompanyInterview, interviewTotalMinutes } from "@/data/seed/intervie
 import { scoreInterview, type CheckedSignals, type TestOutcomes } from "@/lib/interviews/scoring";
 import { runCode, type RunResult } from "@/lib/interviews/run-code";
 import { useAppData } from "@/lib/app-data-context";
+import { useAccess } from "@/lib/hooks/use-access";
+import { resolveLock } from "@/lib/access";
+import { PremiumUnlockNote } from "@/components/ui/premium-unlock-note";
+import { UpgradeButton } from "@/components/billing/upgrade-button";
 import type { Attempt, PerQuestionResult } from "@/lib/types";
 
 type Phase = "brief" | "answer" | "review" | "report";
@@ -31,13 +35,22 @@ function formatClock(totalSeconds: number) {
 export function InterviewRunnerContent({ interviewId }: { interviewId: string }) {
   const interview = getCompanyInterview(interviewId);
   const { ready, isAuthenticated, saveAttempt } = useAppData();
+  const access = useAccess();
+  // Premium, institution-covered, professor and admin accounts all sit the
+  // complete loop. lib/access.ts already folds those into one decision.
+  const hasFullLoop = resolveLock(access, { premiumOrInstitution: true }) === "open";
 
+  const openRounds = useMemo(
+    () => (interview ? interview.rounds.filter((round) => hasFullLoop || !round.premium) : []),
+    [interview, hasFullLoop]
+  );
+  const lockedRounds = useMemo(
+    () => (interview ? interview.rounds.filter((round) => !hasFullLoop && round.premium) : []),
+    [interview, hasFullLoop]
+  );
   const questions = useMemo(
-    () =>
-      interview
-        ? interview.rounds.flatMap((round) => round.questions.map((q) => ({ round, question: q })))
-        : [],
-    [interview]
+    () => openRounds.flatMap((round) => round.questions.map((q) => ({ round, question: q }))),
+    [openRounds]
   );
 
   const [phase, setPhase] = useState<Phase>("brief");
@@ -101,7 +114,14 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
   const testOutcomes: TestOutcomes = Object.fromEntries(
     Object.entries(runs).map(([id, run]) => [id, { passed: run.passed, total: run.total }])
   );
-  const result = scoreInterview(interview, checked, testOutcomes);
+  // Score only the rounds this account actually sat, so a free candidate is
+  // never marked down for questions they were never shown.
+  const result = scoreInterview(
+    interview,
+    checked,
+    testOutcomes,
+    openRounds.map((round) => round.id)
+  );
   const bandCopy = BAND_COPY[result.band];
 
   const beginInterview = () => {
@@ -226,7 +246,7 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
                 </p>
               </div>
               <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-text-secondary">
-                {interview.rounds.length} rounds
+                {openRounds.length} of {interview.rounds.length} rounds
                 <span className="mx-2 text-text-secondary/50">·</span>
                 {questions.length} questions
                 <span className="mx-2 text-text-secondary/50">·</span>
@@ -249,17 +269,82 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
               <h2 className="font-display text-lg font-semibold text-text">Rounds</h2>
             </CardHeader>
             <CardBody className="divide-y divide-borderc">
-              {interview.rounds.map((round) => (
-                <div key={round.id} className="flex items-baseline justify-between gap-4 py-3">
-                  <div>
-                    <p className="text-[14px] font-semibold text-text">{round.name}</p>
-                    <p className="text-[12.5px] text-text-secondary">{round.format}</p>
+              {interview.rounds.map((round) => {
+                const locked = !hasFullLoop && round.premium;
+                return (
+                  <div key={round.id} className="flex items-baseline justify-between gap-4 py-3">
+                    <div className="min-w-0">
+                      <p className="flex items-center gap-2 text-[14px] font-semibold text-text">
+                        {round.name}
+                        {locked ? (
+                          <span className="inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-accent">
+                            <Crown className="h-3 w-3" /> Premium
+                          </span>
+                        ) : null}
+                      </p>
+                      <p className="text-[12.5px] text-text-secondary">{round.format}</p>
+                    </div>
+                    <span className="shrink-0 font-mono text-[12px] text-text-secondary">
+                      {round.minutes} min
+                    </span>
                   </div>
-                  <span className="shrink-0 font-mono text-[12px] text-text-secondary">
-                    {round.minutes} min
-                  </span>
+                );
+              })}
+            </CardBody>
+          </Card>
+
+          {/* The stages around the technical rounds — recruiter screen,
+              debrief, offer. This is the part of the loop that actually
+              decides offers, so it's the core of the Premium value. */}
+          <Card>
+            <CardHeader>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h2 className="font-display text-lg font-semibold text-text">
+                    The rest of the process
+                  </h2>
+                  <p className="mt-1 text-[13.5px] text-text-secondary">
+                    Everything around the technical rounds — where a lot of offers are actually won
+                    and lost.
+                  </p>
                 </div>
-              ))}
+                {!hasFullLoop ? (
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-accent">
+                    <Crown className="h-3 w-3" /> Premium
+                  </span>
+                ) : null}
+              </div>
+            </CardHeader>
+            <CardBody className="space-y-3">
+              {hasFullLoop ? (
+                interview.loopStages.map((stage) => (
+                  <div key={stage.name} className="rounded-xl border border-borderc bg-soft/50 p-4">
+                    <p className="text-[14px] font-semibold text-text">{stage.name}</p>
+                    <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
+                      {stage.whatHappens}
+                    </p>
+                    <ul className="mt-2 space-y-1.5">
+                      {stage.howToPrepare.map((tip) => (
+                        <li key={tip} className="flex gap-2 text-[12.5px] leading-relaxed text-text-secondary">
+                          <span className="text-accent">—</span>
+                          {tip}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))
+              ) : (
+                <PremiumUnlockNote
+                  title="Included with Premium"
+                  description={`The ${interview.company} recruiter screen, how the debrief actually decides your level, and what to do at the offer stage.`}
+                  bullets={interview.loopStages.map((stage) => stage.name)}
+                  trailing={
+                    <UpgradeButton plan="monthly" returnUrl={`/app/interviews/${interviewId}`}>
+                      Get the full loop
+                    </UpgradeButton>
+                  }
+                />
+              )}
             </CardBody>
           </Card>
         </div>
@@ -457,8 +542,11 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
                   <p className={`mt-2 text-[15px] font-semibold ${bandCopy.tone}`}>{bandCopy.label}</p>
                   <p className="mt-1 max-w-md text-[13.5px] text-text-secondary">{bandCopy.note}</p>
                 </div>
-                <p className="font-mono text-[12px] text-text-secondary">
+                <p className="text-right font-mono text-[12px] text-text-secondary">
                   {formatClock(elapsed)} spent
+                  <span className="mt-1 block">
+                    {openRounds.length} of {interview.rounds.length} rounds
+                  </span>
                 </p>
               </div>
 
@@ -500,6 +588,23 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
               ) : null}
             </CardBody>
           </Card>
+
+          {lockedRounds.length ? (
+            <Card>
+              <CardBody className="p-5">
+                <PremiumUnlockNote
+                  title="You sat the free round — Premium is the full loop"
+                  description={`This score covers ${openRounds.length} of ${interview.rounds.length} rounds. The real ${interview.company} loop continues with the rounds below, plus the recruiter screen, debrief and offer stages.`}
+                  bullets={lockedRounds.map((round) => `${round.name} · ${round.minutes} min`)}
+                  trailing={
+                    <UpgradeButton plan="monthly" returnUrl={`/app/interviews/${interviewId}`}>
+                      Unlock the full loop
+                    </UpgradeButton>
+                  }
+                />
+              </CardBody>
+            </Card>
+          ) : null}
 
           {result.improvements.length ? (
             <Card>
