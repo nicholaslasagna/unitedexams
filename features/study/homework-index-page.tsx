@@ -131,7 +131,12 @@ export function HomeworkIndexContent({
                     "One problem at a time — no overwhelm.",
                     "Step-by-step hints before the full answer.",
                     "Mark questions to come back to later.",
-                    "Your progress saves across devices."
+                    // Cross-device sync needs an account. Told to a signed-out
+                    // visitor as a flat statement, the old wording was simply
+                    // untrue - their run lives in this browser only.
+                    access.isAuthenticated
+                      ? "Your progress saves across devices."
+                      : "Sign in and your progress follows you across devices."
                   ].map((line) => (
                     <li
                       key={line}
