@@ -4,6 +4,10 @@ import { validatePassword } from "@/lib/auth/password";
 export function PasswordStrength({ password }: { password: string }) {
   const result = validatePassword(password);
 
+  // Nothing typed yet: the form is quieter without a meter reading zero,
+  // and the requirements are already stated under the field itself.
+  if (password.length === 0) return null;
+
   return (
     <div className="rounded-xl border border-borderc bg-soft p-3">
       <div className="mb-2 flex items-center justify-between text-xs">

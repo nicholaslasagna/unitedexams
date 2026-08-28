@@ -26,6 +26,26 @@ export interface PasswordValidationResult {
 }
 
 export function validatePassword(password: string): PasswordValidationResult {
+  // An empty field is not a weak password, it is no password. Without this
+  // guard the `commonBlocked` check passes vacuously ("" is not in the
+  // common list) and an untouched box scored 15%, which both reads as
+  // nonsense and makes the meter look like blank input has some strength.
+  if (password.length === 0) {
+    return {
+      valid: false,
+      score: 0,
+      checks: {
+        minLength: false,
+        uppercase: false,
+        lowercase: false,
+        number: false,
+        symbol: false,
+        commonBlocked: false
+      },
+      message: "Password must be at least 10 characters."
+    };
+  }
+
   const checks = {
     minLength: password.length >= 10,
     uppercase: /[A-Z]/.test(password),
