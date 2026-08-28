@@ -23,7 +23,14 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Topbar />
           <main
             id="main"
-            className="mx-auto w-full max-w-[1360px] flex-1 px-4 py-5 pb-28 sm:px-5 md:px-8 md:py-8 lg:px-10 lg:pb-10"
+            /*
+             * tabIndex -1 makes the skip link actually work. Without it the
+             * browser scrolls to #main but leaves focus on the link itself,
+             * so the very next Tab drops the user back into the header nav -
+             * exactly what they used the skip link to avoid.
+             */
+            tabIndex={-1}
+            className="focus:outline-none mx-auto w-full max-w-[1360px] flex-1 px-4 py-5 pb-28 sm:px-5 md:px-8 md:py-8 lg:px-10 lg:pb-10"
           >
             <div className="animate-fade-in">{children}</div>
           </main>

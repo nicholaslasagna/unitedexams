@@ -248,7 +248,7 @@ function SignupPageContent() {
       if (codeError) {
         const normalized = (codeError.message || "").toLowerCase();
         if (normalized.includes("function") && normalized.includes("does not exist")) {
-          setError("Professor verification is not configured yet. Ask support to run the latest migration.");
+          setError("Instructor verification isn’t available right now. Contact support and we’ll get your account set up.");
         } else {
           setError(codeError.message);
         }

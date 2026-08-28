@@ -105,3 +105,86 @@ export function checkAccentContrast(
   const ratio = getContrastRatio({ h: hue, s: saturation, l: lightness }, surfaceBg);
   return { passes: ratio >= 3, ratio };
 }
+
+/**
+ * Pick a foreground that is actually readable on the accent fill.
+ *
+ * `--accent-fg` was hard-coded to pure white, and the accent is a
+ * user-adjustable hue/saturation/lightness whose lightness is clamped to
+ * 38-76. At the default amber (38, 92%, 50%) white on accent measures about
+ * 2:1, well under the 4.5:1 that WCAG AA asks of body text - and that pair
+ * is the app's primary button, so the worst contrast on the site was on the
+ * control people are most meant to press.
+ *
+ * Candidates are tried in order of preference: a very dark tone carrying the
+ * accent's own hue (warmer and more on-brand than flat black), then black,
+ * then white. The first that clears `minRatio` wins; if none do - only
+ * possible at extreme settings - the highest-contrast option is returned so
+ * the result degrades to "best available" rather than "whatever was first".
+ */
+export function accentForegroundHsl(
+  hue: number,
+  saturation: number,
+  lightness: number,
+  minRatio = 4.5
+): string {
+  const accent = { h: hue, s: saturation, l: lightness };
+  const candidates: { css: string; hsl: { h: number; s: number; l: number } }[] = [
+    { css: `${Math.round(hue)} 45% 10%`, hsl: { h: hue, s: 45, l: 10 } },
+    { css: "0 0% 0%", hsl: { h: 0, s: 0, l: 0 } },
+    { css: "0 0% 100%", hsl: { h: 0, s: 0, l: 100 } }
+  ];
+
+  let best = candidates[0];
+  let bestRatio = 0;
+  for (const candidate of candidates) {
+    const ratio = getContrastRatio(candidate.hsl, accent);
+    if (ratio >= minRatio) return candidate.css;
+    if (ratio > bestRatio) {
+      bestRatio = ratio;
+      best = candidate;
+    }
+  }
+  return best.css;
+}
+
+/**
+ * Foreground for text sitting on the three-stop brand gradient.
+ *
+ * The gradient runs brand-1 -> brand-2 -> brand-3, and brand-1 is both
+ * hue-shifted and darker than the accent, so text crosses fills with very
+ * different luminance. A foreground that is ideal on the accent is not
+ * automatically ideal here, which is why this is a separate token from
+ * `accentForegroundHsl` - one value cannot serve both, and pairing the two
+ * off a single `--accent-fg` is what left gradient text at roughly 1.9:1.
+ *
+ * Scored on the worst stop rather than the average, since the worst stop is
+ * where text becomes unreadable.
+ */
+export function brandGradientForegroundHsl(
+  hue: number,
+  saturation: number,
+  lightness: number
+): string {
+  const stops = [
+    { h: hue - 28, s: saturation - 4, l: lightness - 2 },
+    { h: hue, s: saturation - 6, l: lightness },
+    { h: hue - 18, s: saturation + 4, l: lightness + 6 }
+  ];
+  const candidates: { css: string; hsl: { h: number; s: number; l: number } }[] = [
+    { css: `${Math.round(hue)} 45% 10%`, hsl: { h: hue, s: 45, l: 10 } },
+    { css: "0 0% 0%", hsl: { h: 0, s: 0, l: 0 } },
+    { css: "0 0% 100%", hsl: { h: 0, s: 0, l: 100 } }
+  ];
+
+  let best = candidates[0];
+  let bestWorst = 0;
+  for (const candidate of candidates) {
+    const worst = Math.min(...stops.map((stop) => getContrastRatio(candidate.hsl, stop)));
+    if (worst > bestWorst) {
+      bestWorst = worst;
+      best = candidate;
+    }
+  }
+  return best.css;
+}

@@ -19,7 +19,7 @@ function AuthCallbackContent() {
   useEffect(() => {
     if (!supabase) {
       setStatus("error");
-      setMessage("Supabase is not configured.");
+      setMessage("We can’t reach the account service right now. Please try again in a moment.");
       return;
     }
 

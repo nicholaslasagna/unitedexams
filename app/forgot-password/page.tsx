@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isTurnstileClientEnabled } from "@/lib/security/turnstile-client";
+import { TurnstileNotConfiguredNotice } from "@/components/auth/turnstile-not-configured-notice";
 
 function mapAuthError(message: string, captchaEnabled: boolean) {
   if (!message) return "Unable to send reset link.";
@@ -45,7 +46,7 @@ export default function ForgotPasswordPage() {
     setError(null);
 
     if (!supabase) {
-      setError("Supabase is not configured. Add environment variables first.");
+      setError("We can’t reach the account service right now. Please try again in a moment.");
       return;
     }
 
@@ -196,9 +197,16 @@ export default function ForgotPasswordPage() {
               describedBy={error ? errorId : undefined}
             />
           ) : (
-            <p className="rounded-[1rem] border border-warn/35 bg-warn/10 px-4 py-3 text-xs text-warn">
-              Human verification is not configured. Set `NEXT_PUBLIC_TURNSTILE_SITE_KEY` in Vercel and redeploy.
-            </p>
+            /*
+             * Deliberately renders nothing. A missing human-verification key
+             * is a deployment problem, not something the person resetting
+             * their password can act on, and the form still works without
+             * it. The previous banner handed them an env var name plus
+             * instructions for a platform this project does not deploy to.
+             * The warning goes to the console, where whoever can fix it
+             * will actually see it.
+             */
+            <TurnstileNotConfiguredNotice />
           )}
 
           <Button

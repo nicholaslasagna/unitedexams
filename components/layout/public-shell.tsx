@@ -281,7 +281,13 @@ export function PublicShell({ children }: { children: ReactNode }) {
         ) : null}
       </header>
 
-      <main id="main" className="relative z-[1] mx-auto w-full max-w-[1200px] px-5 py-8 md:px-8 lg:px-10">
+      {/* tabIndex -1: see app-shell — without it the skip link scrolls but
+          does not move focus, so Tab returns to the header nav. */}
+      <main
+        id="main"
+        tabIndex={-1}
+        className="focus:outline-none relative z-[1] mx-auto w-full max-w-[1200px] px-5 py-8 md:px-8 lg:px-10"
+      >
         <div className="animate-fade-in">{children}</div>
       </main>
 

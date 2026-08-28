@@ -356,7 +356,11 @@ export default function SettingsPage() {
 
   const changePassword = async () => {
     if (!supabase || !user?.email) {
-      push({ title: "Supabase is not configured.", tone: "error" });
+      push({
+        title: "We couldn’t reach the account service",
+        description: "Nothing was changed. Please try again in a moment.",
+        tone: "error"
+      });
       return;
     }
 

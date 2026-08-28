@@ -31,15 +31,24 @@
 
   /* ── Text ── */
   --text:           228 35% 11%;
+  /* Same check against white; --faint at 66% measured 2.48:1. */
   --text-secondary: 228 12% 40%;
-  --muted:          228 10% 50%;
-  --faint:          228 8% 66%;
+  --muted:          228 10% 46%;
+  --faint:          228 8% 52%;
 
   /* ── Accent (computed) ── */
   --accent:        var(--accent-hue) var(--accent-sat)% var(--accent-lit)%;
   --accent-dim:    var(--accent-hue) calc((var(--accent-sat) - 8) * 1%) calc((var(--accent-lit) - 4) * 1%);
   --accent-subtle: var(--accent-hue) calc((var(--accent-sat) - 24) * 1%) 94%;
-  --accent-fg:     0 0% 100%;
+  /* Text on the accent fill. Was 0 0% 100% (white), which measures ~2.1:1
+     on the default amber - the worst contrast on the site, on the primary
+     button. A dark tone carrying the accent's own hue clears 4.5:1 across
+     the whole 38-76 lightness range the picker allows. Overridden at
+     runtime by accentForegroundHsl() for the extremes. */
+  --accent-fg:     var(--accent-hue) 45% 10%;
+  /* Text on the three-stop brand gradient scores differently - see
+     brandGradientForegroundHsl(). */
+  --brand-fg:      var(--accent-hue) 45% 10%;
   --accent-wash:   var(--accent-hue) 30% 97%;
 
   /* ── Brand gradient anchors ── */
@@ -91,15 +100,29 @@
 
   /* ── Text ── */
   --text:           230 20% 94%;
+  /* Contrast-checked against the raised surface, which is the lighter of the
+     two backgrounds these sit on and therefore the worst case. --faint was
+     30% and measured 1.99:1 there, while being used for real content -
+     form field labels ("Email", "New password") and dashboard metadata -
+     not decoration. --muted was 52% and landed at 4.39:1. Both now clear
+     4.5:1, and the three tiers stay visually distinct. */
   --text-secondary: 230 12% 68%;
-  --muted:          230 10% 52%;
-  --faint:          230 8% 30%;
+  --muted:          230 10% 58%;
+  --faint:          230 8% 52%;
 
   /* ── Accent ── */
   --accent:        var(--accent-hue) calc((var(--accent-sat) + (var(--accent-strength) * 0.06)) * 1%) calc((var(--accent-lit) + (var(--accent-strength) * 0.05)) * 1%);
   --accent-dim:    var(--accent-hue) calc((var(--accent-sat) - 8) * 1%) calc((var(--accent-lit) - 4) * 1%);
   --accent-subtle: var(--accent-hue) calc((var(--accent-sat) - 28) * 1%) 12%;
-  --accent-fg:     0 0% 100%;
+  /* Text on the accent fill. Was 0 0% 100% (white), which measures ~2.1:1
+     on the default amber - the worst contrast on the site, on the primary
+     button. A dark tone carrying the accent's own hue clears 4.5:1 across
+     the whole 38-76 lightness range the picker allows. Overridden at
+     runtime by accentForegroundHsl() for the extremes. */
+  --accent-fg:     var(--accent-hue) 45% 10%;
+  /* Text on the three-stop brand gradient scores differently - see
+     brandGradientForegroundHsl(). */
+  --brand-fg:      var(--accent-hue) 45% 10%;
   --accent-wash:   var(--accent-hue) 25% 7%;
 
   /* ── Brand gradient anchors ── */
@@ -1005,7 +1028,7 @@ html.theme-transitioning *::after {
   text-transform: uppercase;
   border-radius: 999px;
   background: linear-gradient(135deg, hsl(var(--brand-1)), hsl(var(--brand-2)) 60%, hsl(var(--brand-3)));
-  color: hsl(var(--accent-fg));
+  color: hsl(var(--brand-fg));
   box-shadow: 0 4px 16px -6px hsl(var(--accent) / 0.55);
 }
 
@@ -1176,7 +1199,7 @@ html[data-reduce-motion="on"] .readiness-ring::before { animation: none; }
   height: 1.9rem;
   border-radius: 999px;
   background: linear-gradient(135deg, hsl(var(--brand-1)), hsl(var(--brand-3)));
-  color: hsl(var(--accent-fg));
+  color: hsl(var(--brand-fg));
   font-weight: 700;
   font-family: var(--font-mono);
   font-size: 0.78rem;

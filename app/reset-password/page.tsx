@@ -151,7 +151,7 @@ function ResetPasswordContent() {
     setError(null);
 
     if (!supabase) {
-      setError("Supabase is not configured. Add environment variables first.");
+      setError("We can’t reach the account service right now. Please try again in a moment.");
       return;
     }
 

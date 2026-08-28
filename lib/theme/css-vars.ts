@@ -1,3 +1,4 @@
+import { accentForegroundHsl, brandGradientForegroundHsl } from "@/lib/theme/contrast";
 import { ACCENT_RANGE, THEME_DEFAULTS } from "@/lib/theme/defaults";
 
 function clamp(value: number, min: number, max: number) {
@@ -37,4 +38,11 @@ export function applyThemeCssVars(input: ThemeVarInput) {
   root.style.setProperty("--accent-sat", String(saturation));
   root.style.setProperty("--accent-lit", String(lightness));
   root.style.setProperty("--accent-strength", String(strength));
+  // Text drawn on the accent fill has to stay readable at every setting the
+  // picker allows, so this is derived rather than fixed.
+  root.style.setProperty("--accent-fg", accentForegroundHsl(hue, saturation, lightness));
+  root.style.setProperty(
+    "--brand-fg",
+    brandGradientForegroundHsl(hue, saturation, lightness)
+  );
 }

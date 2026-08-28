@@ -53,6 +53,7 @@ const config: Config = {
         "accent-dim": "hsl(var(--accent-dim))",
         "accent-subtle": "hsl(var(--accent-subtle))",
         "accent-fg": "hsl(var(--accent-fg))",
+        "brand-fg": "hsl(var(--brand-fg))",
         "accent-wash": "hsl(var(--accent-wash))",
         brand: {
           1: "hsl(var(--brand-1))",

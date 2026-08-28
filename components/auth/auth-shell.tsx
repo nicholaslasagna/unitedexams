@@ -68,7 +68,8 @@ export function AuthShell({
       {/* Centered card */}
       <main
         id="main"
-        className="relative z-[1] flex min-h-screen items-center justify-center px-4 py-20 sm:py-16"
+        tabIndex={-1}
+        className="focus:outline-none relative z-[1] flex min-h-screen items-center justify-center px-4 py-20 sm:py-16"
       >
         <div
           className={cn(
