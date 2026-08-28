@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { PublicShell } from "@/components/layout/public-shell";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "What United Exams collects, why, how long it is kept, and the choices you have over your data."
+};
 
 const VERSION = "2026-03-04";
 

@@ -306,7 +306,7 @@ export function CourseDetailContent({
         <Card>
           <CardBody className="flex flex-col gap-3 p-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="font-display text-xl font-semibold text-text">{activeTabMeta.title}</p>
+              <h2 className="font-display text-xl font-semibold text-text">{activeTabMeta.title}</h2>
               <p className="mt-1 max-w-3xl text-[13.5px] text-text-secondary">{activeTabMeta.description}</p>
             </div>
             {tab === "quizzes" || tab === "exams" || tab === "homework" ? (

@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { PublicShell } from "@/components/layout/public-shell";
+
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  description:
+    "The terms covering your use of United Exams, including accounts, coursework content and billing."
+};
 
 const VERSION = "2026-03-04";
 

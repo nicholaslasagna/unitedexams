@@ -353,9 +353,9 @@ export function CoursesIndexContent({
                 {/* Body */}
                 <div className="flex flex-1 flex-col gap-4 p-5">
                   <div>
-                    <h3 className="font-display text-[1.2rem] font-semibold leading-tight tracking-tight text-text">
+                    <h2 className="font-display text-[1.2rem] font-semibold leading-tight tracking-tight text-text">
                       {course.name}
-                    </h3>
+                    </h2>
                     <p className="mt-1.5 line-clamp-2 text-[13px] leading-relaxed text-text-secondary">
                       {course.description}
                     </p>
