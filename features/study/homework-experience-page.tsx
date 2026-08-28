@@ -780,7 +780,7 @@ export function HomeworkExperiencePageContent({
               <h2 className="font-display text-2xl font-semibold">Keep this homework run.</h2>
               <ul className="space-y-2 text-sm text-muted">
                 <li>• Save progress and resume across devices</li>
-                <li>• Track mastery and weak topics over time</li>
+                <li>• Track mastery and weak topics across attempts</li>
                 <li>• Keep streaks and leaderboard points</li>
               </ul>
               <div className="flex flex-wrap gap-2">

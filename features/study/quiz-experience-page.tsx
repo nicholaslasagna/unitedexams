@@ -1159,9 +1159,9 @@ export function QuizExperiencePageContent({
           <PremiumUnlockNote
             description="A few extras that make studying easier. If your school covers access, you get all of this automatically."
             bullets={[
-              "Remembers the questions you miss",
-              "Tells you what to study next",
-              "Shows your progress and an exam-ready score",
+              "Every quiz set and practice exam in the catalog",
+              "Review just the questions you missed",
+              "Per-topic scores that build up across attempts",
               "Extra hints and step-by-step answers"
             ]}
             ctaHref="/contact?intent=implementation"
@@ -1278,7 +1278,7 @@ export function QuizExperiencePageContent({
               </p>
               <ul className="space-y-2 text-sm text-muted">
                 <li>• Progress charts across every attempt</li>
-                <li>• Weak-topic recommendations</li>
+                <li>• Per-topic scores for each course</li>
                 <li>• Streak tracking and the leaderboard</li>
               </ul>
               <div className="flex flex-wrap gap-2">

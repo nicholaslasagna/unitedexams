@@ -12,10 +12,12 @@
  *                  don't bundle React types here)
  *   - category:    grouping shown on the upgrade page
  *
- * Keep tooltips honest. If a feature is partially implemented, use
- * "today" / "rolling out" language rather than implying it does more
- * than it does — students notice the gap immediately and the trust
- * cost outweighs any conversion lift.
+ * Every entry here must describe something a paying account can use
+ * TODAY. Nothing aspirational, and no "rolling out" hedges - that phrase
+ * was previously attached to walkthrough videos which had no code behind
+ * them at all, and to an "exam readiness score" that was never computed.
+ * If a feature is not built, it does not belong on the list someone is
+ * paying against. Ship it first, then sell it.
  */
 
 export type PremiumFeatureCategory = "study" | "exam" | "analytics" | "account";
@@ -32,7 +34,6 @@ export interface PremiumFeature {
     | "stopwatch"
     | "compass"
     | "graduation"
-    | "video"
     | "wallet"
     | "route"
     | "books";
@@ -65,14 +66,6 @@ export const PREMIUM_FEATURES: PremiumFeature[] = [
     iconName: "compass",
     category: "study"
   },
-  {
-    id: "video-walkthroughs",
-    title: "Walkthrough videos (rolling out)",
-    tooltip:
-      "Short narrated walkthroughs for the trickiest exam questions. We publish new ones each week per course.",
-    iconName: "video",
-    category: "study"
-  },
 
   // ── Exam ──
   {
@@ -81,14 +74,6 @@ export const PREMIUM_FEATURES: PremiumFeature[] = [
     tooltip:
       "Strict timer, randomized order, no skipping back, end-of-exam review. Closest thing to sitting the real paper, and it scores you against the rubric the course actually uses.",
     iconName: "stopwatch",
-    category: "exam"
-  },
-  {
-    id: "readiness-signal",
-    title: "Exam readiness signal",
-    tooltip:
-      "A single confidence score from 0–100 that combines mastery, recent accuracy, and pacing — so you know whether you're ready or what to fix next.",
-    iconName: "target",
     category: "exam"
   },
 
@@ -105,15 +90,15 @@ export const PREMIUM_FEATURES: PremiumFeature[] = [
     id: "mistake-history",
     title: "Mistake history & smart review",
     tooltip:
-      "Every question you got wrong is queued for spaced re-test, with the original walkthrough one tap away. Beats re-doing the same set hoping the wrong ones come back.",
+      "Every attempt keeps the questions you missed, so you can jump straight back into just those with the walkthrough one tap away, instead of re-running the whole set.",
     iconName: "history",
     category: "analytics"
   },
   {
     id: "weak-topic-recs",
-    title: "Weak-topic recommendations",
+    title: "Weak topics, per course",
     tooltip:
-      "We surface the next set, walkthrough, or chapter you'd benefit most from — based on your actual performance, not a generic study plan.",
+      "Your weakest topics in a course are listed by name and score, from your own attempts, so you can see where to push next rather than guessing.",
     iconName: "route",
     category: "analytics"
   },

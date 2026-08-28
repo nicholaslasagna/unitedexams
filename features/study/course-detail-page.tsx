@@ -660,7 +660,7 @@ export function CourseDetailContent({
             ) : !access.messaging.hidePremiumPrompts && !access.isGuest ? (
               <PremiumUnlockNote
                 title="Available with Premium"
-                description="Premium remembers the questions you miss and suggests what to study next."
+                description="Premium keeps the questions you miss so you can review just those, and builds per-topic scores across your attempts."
               />
             ) : null}
           </CardBody>

@@ -8,7 +8,6 @@ import {
   History,
   Infinity as InfinityIcon,
   Library,
-  PlayCircle,
   Route,
   Target,
   Timer,
@@ -52,7 +51,6 @@ const ICONS: Record<PremiumFeature["iconName"], LucideIcon> = {
   stopwatch: Timer,
   compass: Compass,
   graduation: GraduationCap,
-  video: PlayCircle,
   wallet: Wallet,
   route: Route,
   books: BookMarked

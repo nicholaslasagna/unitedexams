@@ -17,12 +17,12 @@ const premiumFeatureExplanations: Record<string, string> = {
     "Every quiz you take and every topic score saves to your account and stays — across devices, all term long.",
   "Full quiz banks across courses":
     "Free shows a sample. Premium opens every quiz set and practice exam in the catalog.",
-  "Step-by-step video solutions":
-    "Step-by-step hints plus short videos that walk through the trickiest exam questions, added course by course.",
-  "Timed practice exams + exam-ready score":
-    "A real timer, shuffled questions, an end-of-exam review, and a single 0–100 score so you know if you're ready for the test.",
-  "Remembers your mistakes & shows what to review":
-    "Every question you miss comes back later for review, with the explanation one tap away.",
+  "Step-by-step walkthroughs":
+    "Hints you reveal one at a time, then a worked solution for the question — why the right answer is right and why the others are not.",
+  "Timed practice exams":
+    "A real timer, shuffled questions, no skipping back, and a full review at the end.",
+  "Review the questions you missed":
+    "Jump straight back into just the ones you got wrong, with the explanation one tap away.",
   "Sections you can join":
     "Join your teacher's or a friend's class by code. You'll see the same materials and shared assignments.",
   "Pay with wallets or PayPal":
@@ -88,9 +88,9 @@ export function PricingSection() {
             {[
               "Saved progress & progress tracking",
               "Full quiz banks across courses",
-              "Step-by-step video solutions",
-              "Timed practice exams + exam-ready score",
-              "Remembers your mistakes & shows what to review",
+              "Step-by-step walkthroughs",
+              "Timed practice exams",
+              "Review the questions you missed",
               "Sections you can join",
               "Pay with wallets or PayPal"
             ].map((label) => (

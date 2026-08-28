@@ -54,9 +54,10 @@ export default function LandingPage() {
   const totalQuestions = quizSets.reduce((sum, set) => sum + set.questions.length, 0);
 
   // Build the course atlas the homepage needs for the index, the rail,
-  // and the courses grid. Mastery is a coarse heuristic based on the
-  // number of seeded sets so the bar shows something believable on the
-  // public landing page (the real per-user mastery shows after sign-in).
+  // and the courses grid. Everything here is counted from the seed data;
+  // nothing is estimated. The cards used to show a "Mastery XX%" bar
+  // derived from the number of sets in the course, which a visitor reads
+  // as their own progress - it was invented, so it is gone.
   const courseAtlas = courses
     .map((course) => {
       const sets = quizSets.filter((set) => set.courseId === course.id);
@@ -65,10 +66,6 @@ export default function LandingPage() {
       const homeworkCount = sets.filter((set) => resolveQuizSetMode(set) === "homework").length;
       const estimatedMinutes = sets.reduce((sum, set) => sum + set.estMinutes, 0);
       const questionCount = sets.reduce((sum, set) => sum + set.questions.length, 0);
-      // Heuristic: more sets ≈ richer course ≈ a slightly higher
-      // mastery bar in the public preview. Caps at 75 so it never
-      // looks "complete" on a logged-out view.
-      const mastery = Math.min(75, 14 + sets.length * 7);
       return {
         ...course,
         glyph: courseGlyph[course.id] ?? "·",
@@ -76,8 +73,7 @@ export default function LandingPage() {
         examCount,
         homeworkCount,
         estimatedMinutes,
-        questionCount,
-        mastery
+        questionCount
       };
     })
     .sort(
@@ -216,19 +212,16 @@ export default function LandingPage() {
                 <h3 className="course-title-ed">{course.name}</h3>
                 <p className="course-desc-ed">{course.description}</p>
 
-                <div className="mastery">
-                  <div className="mastery-row">
-                    <span>Mastery</span>
-                    <span>
-                      <b>{course.mastery}%</b>
-                    </span>
-                  </div>
-                  <div className="mastery-track">
-                    <div
-                      className="mastery-fill"
-                      style={{ width: `${course.mastery}%` }}
-                    />
-                  </div>
+                <div className="course-facts">
+                  <span>
+                    <b>{course.questionCount.toLocaleString()}</b> questions
+                  </span>
+                  <span>
+                    <b>{course.quizCount + course.examCount + course.homeworkCount}</b> sets
+                  </span>
+                  <span>
+                    <b>{Math.round(course.estimatedMinutes / 60)}</b> hrs of practice
+                  </span>
                 </div>
 
                 <span className="course-open">Open hub</span>
