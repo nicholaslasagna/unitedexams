@@ -55,6 +55,7 @@ export function QuizSettingsModal({
           <div className="mt-3">
             <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-muted">Timer (minutes)</label>
             <input
+              aria-label="Timer (minutes)"
               type="number"
               min={5}
               max={120}
@@ -99,6 +100,7 @@ export function QuizSettingsModal({
               Questions in this attempt
             </label>
             <select
+              aria-label="Questions in this attempt"
               value={settings.questionCount === "all" ? "all" : String(settings.questionCount)}
               onChange={(event) =>
                 setSettings((prev) => ({

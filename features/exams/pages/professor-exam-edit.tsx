@@ -148,6 +148,7 @@ export function ProfessorExamEditPage({ examId }: { examId: string }) {
           <div className="grid gap-3 md:grid-cols-2">
             <Input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Exam title" />
             <select
+              aria-label="Exam mode"
               className="h-11 w-full rounded-[10px] border border-borderc bg-soft px-3 text-sm text-text"
               value={mode}
               onChange={(event) => setMode(event.target.value as ExamMode)}
@@ -157,6 +158,7 @@ export function ProfessorExamEditPage({ examId }: { examId: string }) {
             </select>
           </div>
           <textarea
+            aria-label="Description"
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             className="min-h-24 w-full rounded-[10px] border border-borderc bg-soft px-3 py-2 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
@@ -193,6 +195,7 @@ export function ProfessorExamEditPage({ examId }: { examId: string }) {
 
           <div className="grid gap-3 md:grid-cols-2">
             <select
+              aria-label="Show results after"
               className="h-11 w-full rounded-[10px] border border-borderc bg-soft px-3 text-sm text-text"
               value={showResultsAfter}
               onChange={(event) => setShowResultsAfter(event.target.value as ShowResultsAfter)}

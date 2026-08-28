@@ -62,7 +62,18 @@ interface SectionAssignmentPolicy {
   allowLate: boolean;
 }
 
-const keyMap = ["a", "b", "c", "d", "e", "f"];
+/**
+ * Map a single letter key to the option it selects: "a" → 0, "b" → 1 …
+ * Derived rather than a fixed list, because option counts vary per
+ * question (the seed data goes up to 8) and a hard-coded a–f silently
+ * dead-keys G and H. Returns -1 for anything that is not one letter.
+ * Mirrors `choiceMarkerForIndex`, which renders the same letters.
+ */
+function optionIndexForKey(key: string) {
+  if (key.length !== 1) return -1;
+  const index = key.charCodeAt(0) - 97; // "a"
+  return index >= 0 && index < 26 ? index : -1;
+}
 
 function withPrefix(routePrefix: string, path: string) {
   return `${routePrefix}${path}`;
@@ -734,7 +745,7 @@ export function QuizExperiencePageContent({
 
       const key = event.key.toLowerCase();
       if (!isOpenResponseQuestion(cq)) {
-        const optionIndex = keyMap.indexOf(key);
+        const optionIndex = optionIndexForKey(key);
         const optionsLength = cq.options?.length ?? 0;
         if (optionIndex >= 0 && optionIndex < optionsLength) {
           event.preventDefault();
@@ -858,8 +869,14 @@ export function QuizExperiencePageContent({
   const signUpPath = `/signup?next=${encodeURIComponent(quizPath)}`;
 
   if (stage === "overview") {
+    // Mirror the clamp the engine applies when it builds the run, so a
+    // "20 questions" setting on a 6-question set doesn't advertise 20.
+    const runQuestionCount =
+      settings.questionCount === "all"
+        ? quiz.questions.length
+        : Math.min(quiz.questions.length, Math.max(1, Number(settings.questionCount) || quiz.questions.length));
     const lengthLabel =
-      settings.questionCount === "all" ? `All ${quiz.questions.length}` : settings.questionCount;
+      settings.questionCount === "all" ? `All ${quiz.questions.length}` : runQuestionCount;
 
     return (
       <div className="space-y-7">
@@ -937,7 +954,9 @@ export function QuizExperiencePageContent({
                   />
                   <FeatureStat
                     label="Best score"
-                    value={`${bestScore}%`}
+                    // No attempts means no score — "0%" would read as
+                    // "you scored zero", which is a different claim.
+                    value={latestAttempt ? `${bestScore}%` : "—"}
                     icon={<TrendingUp className="h-3.5 w-3.5" />}
                     tone={bestScore >= 80 ? "success" : bestScore > 0 ? "warn" : "default"}
                   />
@@ -977,7 +996,7 @@ export function QuizExperiencePageContent({
                     Keyboard shortcuts
                   </p>
                   <p className="mt-2">
-                    <span className="font-mono font-bold text-text">A/B/C/D</span> select •{" "}
+                    <span className="font-mono font-bold text-text">A–Z</span> select •{" "}
                     <span className="font-mono font-bold text-text">Enter</span> submit/next •{" "}
                     <span className="font-mono font-bold text-text">←/→</span> navigate
                   </p>
@@ -1115,8 +1134,9 @@ export function QuizExperiencePageContent({
             )}
 
             <p className="text-[12px] text-text-secondary">
-              This quiz has <span className="font-mono font-bold text-text">{lengthLabel}</span>{" "}
-              question{settings.questionCount === 1 ? "" : "s"}.
+              This quiz has{" "}
+              <span className="font-mono font-bold text-text">{runQuestionCount}</span>{" "}
+              question{runQuestionCount === 1 ? "" : "s"}.
             </p>
           </section>
         )}

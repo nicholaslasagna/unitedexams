@@ -151,6 +151,7 @@ export function ProfessorSectionMaterialsPage({ sectionId }: { sectionId?: strin
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Body (markdown)</label>
               <textarea
+                aria-label="Body (markdown)"
                 value={body}
                 onChange={(event) => setBody(event.target.value)}
                 className="min-h-36 w-full rounded-[10px] border border-borderc bg-soft px-3 py-2 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"

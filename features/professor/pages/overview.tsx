@@ -103,6 +103,7 @@ export function ProfessorOverviewPage() {
             <Input placeholder="Section name (e.g., Diff Eq - Mon/Wed 9AM)" value={newSectionName} onChange={(e) => setNewSectionName(e.target.value)} />
             <Input placeholder="Term (e.g., Spring 2026)" value={newTerm} onChange={(e) => setNewTerm(e.target.value)} />
             <select
+              aria-label="Course"
               className="h-11 rounded-[10px] border border-borderc bg-soft px-3 text-sm text-text"
               value={newCourseId}
               onChange={(event) => setNewCourseId(event.target.value)}

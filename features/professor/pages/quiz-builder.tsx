@@ -501,6 +501,7 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
           <div className="space-y-1.5">
             <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Mode</label>
             <select
+              aria-label="Mode"
               className="h-11 w-full rounded-[10px] border border-borderc bg-soft px-3 text-sm text-text"
               value={mode}
               onChange={(event) => {
@@ -526,6 +527,7 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
           <div className="space-y-1.5">
             <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Difficulty</label>
             <select
+              aria-label="Difficulty"
               className="h-11 w-full rounded-[10px] border border-borderc bg-soft px-3 text-sm text-text"
               value={difficulty}
               onChange={(event) => setDifficulty(event.target.value as typeof difficulty)}
@@ -559,6 +561,7 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
             Use <code>--</code> for the prompt and prefix correct options with <code>[x]</code>, <code>*</code>, or <code>+</code>.
           </p>
           <textarea
+            aria-label="Paste questions to import"
             value={bulkInput}
             onChange={(event) => setBulkInput(event.target.value)}
             className="min-h-48 w-full rounded-[10px] border border-borderc bg-soft px-3 py-2 font-mono text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
@@ -719,6 +722,7 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Question type</label>
                     <select
+                      aria-label="Question type"
                       className="h-11 w-full rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
                       value={question.type}
                       onChange={(event) =>
@@ -759,6 +763,7 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Prompt</label>
                   <textarea
+                    aria-label="Question prompt"
                     value={question.prompt}
                     onChange={(event) =>
                       setQuestions((prev) =>
@@ -779,6 +784,7 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
                         <div key={`${question.id}-option-${optionIndex}`} className="flex items-center gap-2">
                           <input
                             type={isSingle ? "radio" : "checkbox"}
+                            aria-label={`Mark option ${optionIndex + 1} as correct`}
                             checked={selected}
                             onChange={(event) =>
                               setQuestions((prev) =>
@@ -911,6 +917,7 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Explanation (optional)</label>
                   <textarea
+                    aria-label="Explanation (optional)"
                     value={question.explanation}
                     onChange={(event) =>
                       setQuestions((prev) =>
@@ -955,6 +962,8 @@ export function ProfessorQuizBuilderPage({ sectionId }: { sectionId?: string } =
                 ) : (
                   <textarea
                     readOnly
+                    aria-hidden
+                    tabIndex={-1}
                     value=""
                     placeholder="Student enters a full free-response solution…"
                     className="min-h-24 w-full rounded-[10px] border border-borderc bg-surface px-3 py-2 text-sm text-text"

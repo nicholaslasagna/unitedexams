@@ -228,6 +228,7 @@ export function AnnouncementsPageContent() {
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Section</label>
                 <select
+                  aria-label="Section"
                   value={selectedSectionId}
                   onChange={(event) => setSelectedSectionId(event.target.value)}
                   className="h-11 w-full rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
@@ -261,6 +262,7 @@ export function AnnouncementsPageContent() {
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Message</label>
                 <textarea
+                  aria-label="Message"
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
                   className="min-h-40 w-full rounded-[14px] border border-borderc bg-surface px-3 py-3 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
@@ -297,6 +299,7 @@ export function AnnouncementsPageContent() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Section filter</label>
                   <select
+                    aria-label="Section filter"
                     value={feedSectionId}
                     onChange={(event) => setFeedSectionId(event.target.value)}
                     className="h-10 min-w-64 rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"

@@ -188,6 +188,7 @@ export function SectionsOverviewPageContent() {
             </CardHeader>
             <CardBody className="space-y-4">
               <select
+                aria-label="Focused class section"
                 value={selectedSection?.sectionId ?? ""}
                 onChange={(event) => setSelectedSectionId(event.target.value)}
                 className="h-11 w-full rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"

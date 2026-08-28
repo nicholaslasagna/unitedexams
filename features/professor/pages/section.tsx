@@ -271,6 +271,7 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Quiz set</label>
                   <select
+                    aria-label="Quiz set"
                     className="h-11 w-full rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
                     value={quizSetId}
                     onChange={(event) => setQuizSetId(event.target.value)}
@@ -290,6 +291,7 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Instructions (markdown)</label>
                 <textarea
+                  aria-label="Instructions (markdown)"
                   value={instructions}
                   onChange={(event) => setInstructions(event.target.value)}
                   className="min-h-24 w-full rounded-[10px] border border-borderc bg-surface px-3 py-2 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
@@ -313,6 +315,7 @@ export function ProfessorSectionPage({ sectionId }: { sectionId?: string } = {})
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Grading mode</label>
                   <select
+                    aria-label="Grading mode"
                     className="h-11 w-full rounded-[10px] border border-borderc bg-surface px-3 text-sm text-text"
                     value={gradingMode}
                     onChange={(event) => setGradingMode(event.target.value as typeof gradingMode)}

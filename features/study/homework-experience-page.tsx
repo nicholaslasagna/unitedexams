@@ -934,6 +934,7 @@ export function HomeworkExperiencePageContent({
                         />
                       ) : (
                         <textarea
+                          aria-label="Your response"
                           value={responseByQuestion[currentQuestion.id] ?? ""}
                           onChange={(event) =>
                             setResponseByQuestion((prev) => ({
@@ -993,6 +994,7 @@ export function HomeworkExperiencePageContent({
                       </div>
                       <div className="space-y-2">
                         <textarea
+                          aria-label="Your next solution step"
                           value={studentStepDraft}
                           onChange={(event) =>
                             setStepDraftByQuestion((prev) => ({

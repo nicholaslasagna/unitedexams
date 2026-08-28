@@ -515,6 +515,7 @@ function SignupPageContent() {
                   placeholder="Search your university"
                 />
                 <select
+                  aria-label="University"
                   className="h-11 w-full rounded-lg border border-borderc bg-surface px-3 text-[13.5px] text-text focus:border-accent/50 focus:outline-none"
                   value={selectedUniversityId}
                   onChange={(event) => setSelectedUniversityId(event.target.value)}

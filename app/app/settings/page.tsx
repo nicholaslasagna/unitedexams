@@ -1256,6 +1256,7 @@ export default function SettingsPage() {
                     You can submit a new request below.
                   </p>
                   <textarea
+                    aria-label="Reason for your account deletion request (optional)"
                     value={deletionReason}
                     onChange={(event) => setDeletionReason(event.target.value)}
                     rows={3}
@@ -1280,6 +1281,7 @@ export default function SettingsPage() {
                     erased mid-term. Submit a request and we&apos;ll forward it.
                   </p>
                   <textarea
+                    aria-label="Reason for your account deletion request (optional)"
                     value={deletionReason}
                     onChange={(event) => setDeletionReason(event.target.value)}
                     rows={3}

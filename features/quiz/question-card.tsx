@@ -274,7 +274,11 @@ export function QuestionCard({
                 ? interactionNotice
                 : isTextResponse
                 ? "Work through the problem step by step, then submit. Use hints if stuck."
-                : "Keyboard: A/B/C/D choose • Enter submit • Arrow keys navigate"}
+                : `Keyboard: ${
+                    options.length > 1
+                      ? `${choiceMarkerForIndex(0)}–${choiceMarkerForIndex(options.length - 1)}`
+                      : choiceMarkerForIndex(0)
+                  } choose • Enter submit • Arrow keys navigate`}
             </p>
             {lockInteraction ? null : (
               <Button onClick={onSubmitQuestion} disabled={!canSubmit || lockInteraction}>

@@ -189,6 +189,7 @@ export default function ContactPage() {
                       Category
                     </label>
                     <select
+                      aria-label="Category"
                       value={category}
                       onChange={(event) => setCategory(event.target.value as ContactCategory)}
                       className="h-11 w-full rounded-[10px] border border-borderc bg-soft px-3.5 text-sm text-text outline-none transition-all duration-200 ease-out-expo focus-visible:ring-2 focus-visible:ring-accent/55"
@@ -205,6 +206,7 @@ export default function ContactPage() {
                     Message
                   </label>
                   <textarea
+                    aria-label="Message"
                     required
                     minLength={20}
                     value={message}

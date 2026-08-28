@@ -181,6 +181,7 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Quiz set</label>
               <select
+                aria-label="Quiz set"
                 className="h-11 w-full rounded-[10px] border border-borderc bg-soft px-3 text-sm text-text"
                 value={quizSetId}
                 onChange={(event) => setQuizSetId(event.target.value)}
@@ -197,6 +198,7 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
           <div className="space-y-1.5">
             <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Description</label>
             <textarea
+              aria-label="Description"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               className="min-h-24 w-full rounded-[10px] border border-borderc bg-soft px-3 py-2 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
@@ -238,6 +240,7 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Mode</label>
               <select
+                aria-label="Mode"
                 className="h-11 w-full rounded-[10px] border border-borderc bg-soft px-3 text-sm text-text"
                 value={mode}
                 onChange={(event) => setMode(event.target.value as ExamMode)}
@@ -249,6 +252,7 @@ export function ProfessorSectionExamsPage({ sectionId }: { sectionId?: string } 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Results release</label>
               <select
+                aria-label="Results release"
                 className="h-11 w-full rounded-[10px] border border-borderc bg-soft px-3 text-sm text-text"
                 value={showResultsAfter}
                 onChange={(event) => setShowResultsAfter(event.target.value as ShowResultsAfter)}

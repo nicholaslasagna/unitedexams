@@ -403,7 +403,9 @@ export function CourseDetailContent({
                           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary">
                             Best score
                           </p>
-                          <p className="mt-1 font-mono text-xl font-bold text-text">{best}%</p>
+                          <p className="mt-1 font-mono text-xl font-bold text-text">
+                            {latest ? `${best}%` : "—"}
+                          </p>
                         </div>
                         <div className="rounded-[0.95rem] border border-borderc bg-soft px-3.5 py-2.5">
                           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary">

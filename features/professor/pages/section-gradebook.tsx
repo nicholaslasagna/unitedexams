@@ -502,6 +502,7 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
                           <div className="space-y-1">
                             <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Status</label>
                             <select
+                              aria-label="Status"
                               className="h-10 w-full rounded-[10px] border border-borderc bg-soft px-3 text-sm text-text"
                               value={editStatus}
                               onChange={(event) => setEditStatus(event.target.value as "submitted" | "graded" | "needs_review")}
@@ -557,6 +558,7 @@ export function ProfessorSectionGradebookPage({ sectionId }: { sectionId?: strin
                         <div className="space-y-1">
                           <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Feedback</label>
                           <textarea
+                            aria-label="Feedback"
                             value={editFeedback}
                             onChange={(event) => setEditFeedback(event.target.value)}
                             className="min-h-20 w-full rounded-[10px] border border-borderc bg-soft px-3 py-2 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-accent/55"

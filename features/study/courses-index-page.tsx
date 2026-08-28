@@ -49,7 +49,7 @@ function withPrefix(routePrefix: string, path: string) {
 
 export function CoursesIndexContent({
   routePrefix,
-  title = "Your courses",
+  title,
   subtitle = "Quizzes, practice exams, notes, and extra help, filed under the class they belong to.",
   showHeader = true
 }: {
@@ -60,6 +60,14 @@ export function CoursesIndexContent({
 }) {
   const router = useRouter();
   const { attempts, isAuthenticated, supabase, user, profile } = useAppData();
+  // "Your courses" is only true once someone is signed in; a visitor
+  // browsing the public catalog owns none of it yet.
+  const heading = title ?? (isAuthenticated ? "Your courses" : "Courses");
+  // Sorting by mastery is meaningless without a signed-in history, and
+  // the mastery bars are hidden in that case anyway.
+  const availableSortOptions = isAuthenticated
+    ? sortOptions
+    : sortOptions.filter((opt) => opt.value !== "mastery");
   // Centralized access — drives the AccessBadge variant per card.
   const access = useAccess();
   const [search, setSearch] = useState("");
@@ -185,7 +193,7 @@ export function CoursesIndexContent({
         <header className="flex flex-col gap-3 border-b border-borderc/70 pb-5 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl space-y-2">
             <h1 className="font-display text-[2rem] font-semibold leading-tight tracking-tight text-text sm:text-[2.4rem]">
-              {title}
+              {heading}
             </h1>
             <p className="text-[14px] leading-relaxed text-text-secondary">{subtitle}</p>
           </div>
@@ -238,7 +246,7 @@ export function CoursesIndexContent({
               className="bg-transparent text-[13.5px] text-text outline-none"
               aria-label="Sort courses"
             >
-              {sortOptions.map((opt) => (
+              {availableSortOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
@@ -354,7 +362,10 @@ export function CoursesIndexContent({
                   </div>
 
                   {/* Mastery — moved up so the progress signal lands
-                      before the metadata. */}
+                      before the metadata. Signed-out visitors have no
+                      progress to show, so the bar would just read 0%
+                      everywhere and look broken; hide it for them. */}
+                  {isAuthenticated ? (
                   <div>
                     <div className="mb-1.5 flex items-baseline justify-between text-[11px]">
                       <span className="font-bold uppercase tracking-[0.18em] text-text-secondary">
@@ -364,6 +375,7 @@ export function CoursesIndexContent({
                     </div>
                     <ProgressBar value={course.mastery} glow />
                   </div>
+                  ) : null}
 
                   {/* Mode counts as a single mono context line —
                       replaces the previous 3-column sub-card grid. */}
