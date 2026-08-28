@@ -12,6 +12,19 @@ interface InternalToast extends ToastMessage {
 
 const TOAST_DURATION = 4000;
 
+/**
+ * Errors stay until they are dismissed.
+ *
+ * Everything used to disappear after 4 seconds, errors included - so
+ * "Couldn't save your changes" could come and go while someone was looking
+ * at their keyboard, and the failure was then invisible. Confirmations are
+ * fine to auto-clear; failures are the one thing a person has to actually
+ * see, and they are also the ones worth re-reading.
+ */
+function autoDismissMs(tone: ToastMessage["tone"]) {
+  return tone === "error" ? null : TOAST_DURATION;
+}
+
 const toneAccent = {
   default: "bg-accent",
   success: "bg-success",
@@ -48,7 +61,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     const id = Math.random().toString(36).slice(2, 10);
     const toast: InternalToast = { id, tone: "default", ...message };
     setToasts((prev) => [toast, ...prev].slice(0, 4));
-    window.setTimeout(() => dismiss(id), TOAST_DURATION);
+    const ms = autoDismissMs(toast.tone);
+    if (ms !== null) window.setTimeout(() => dismiss(id), ms);
   }, [dismiss]);
 
   const value = useMemo(() => ({ push }), [push]);
@@ -81,7 +95,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               className={`pointer-events-auto relative overflow-hidden rounded-xl border border-borderc bg-surface shadow-elevated ${
                 toast.dismissing ? "animate-slide-out-right" : "animate-slide-in-right"
               }`}
-              role="status"
+              role={tone === "error" ? "alert" : "status"}
             >
               {/* Left accent stripe */}
               <div className={`absolute left-0 top-0 bottom-0 w-1 ${toneAccent[tone]}`} />
@@ -104,17 +118,19 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 </button>
               </div>
 
-              {/* Progress bar timer */}
-              <div className="h-[2px] w-full bg-borderc/30">
-                <div
-                  className={`h-full ${toneAccent[tone]} opacity-60`}
-                  style={{
-                    animation: toast.dismissing
-                      ? "none"
-                      : `toastProgress ${TOAST_DURATION}ms linear forwards`
-                  }}
-                />
-              </div>
+              {/* Countdown bar — only when something is actually counting down. */}
+              {autoDismissMs(tone) !== null ? (
+                <div className="h-[2px] w-full bg-borderc/30">
+                  <div
+                    className={`h-full ${toneAccent[tone]} opacity-60`}
+                    style={{
+                      animation: toast.dismissing
+                        ? "none"
+                        : `toastProgress ${TOAST_DURATION}ms linear forwards`
+                    }}
+                  />
+                </div>
+              ) : null}
 
               <style jsx>{`
                 @keyframes toastProgress {
