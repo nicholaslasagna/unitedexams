@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   accentForegroundHsl,
+  accentTextHsl,
   brandGradientForegroundHsl,
   getContrastRatio
 } from "@/lib/theme/contrast";
@@ -59,6 +60,47 @@ describe("brandGradientForegroundHsl", () => {
         );
         expect(worst).toBeGreaterThanOrEqual(white);
       }
+    }
+  });
+});
+
+describe("accentTextHsl", () => {
+  it("reaches AA against the page in both themes, for every allowed accent", () => {
+    const pages = [
+      { isDark: true, bg: { h: 235, s: 32, l: 7 } },
+      { isDark: false, bg: { h: 0, s: 0, l: 100 } }
+    ];
+    for (const { isDark, bg } of pages) {
+      for (const h of HUES) {
+        for (const s of SATURATIONS) {
+          for (const l of LIGHTNESSES) {
+            const text = parseHsl(accentTextHsl(h, s, l, isDark));
+            const ratio = getContrastRatio(text, bg);
+            expect(
+              ratio,
+              `${isDark ? "dark" : "light"} hue ${h} sat ${s} lit ${l} -> ${ratio.toFixed(2)}:1`
+            ).toBeGreaterThanOrEqual(4.5);
+          }
+        }
+      }
+    }
+  });
+
+  it("leaves the accent alone in dark mode, where it already passes", () => {
+    // Amber on the near-black page is about 9:1 as text; darkening it there
+    // would only make the brand colour muddier for no benefit.
+    expect(accentTextHsl(38, 92, 50, true)).toBe("38 92% 50%");
+  });
+
+  it("darkens the accent for the light theme's white page", () => {
+    const text = parseHsl(accentTextHsl(38, 92, 50, false));
+    expect(text.l).toBeLessThan(50);
+    expect(getContrastRatio(text, { h: 0, s: 0, l: 100 })).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("keeps the hue, so the brand colour is still recognisable", () => {
+    for (const h of HUES) {
+      expect(parseHsl(accentTextHsl(h, 92, 50, false)).h).toBe(h);
     }
   });
 });

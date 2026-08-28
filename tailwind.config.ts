@@ -35,6 +35,12 @@ const config: Config = {
         "body-sm":    ["0.8125rem", { lineHeight: "1.5", letterSpacing: "0.005em", fontWeight: "400" }],
         "caption":    ["0.6875rem", { lineHeight: "1.4", letterSpacing: "0.04em", fontWeight: "500" }],
       },
+      // `text-accent` must not use the fill colour: on the light theme's
+      // white page the accent fill measures about 2:1 as text. bg-accent and
+      // border-accent keep --accent; only the text utility is remapped.
+      textColor: {
+        accent: "hsl(var(--accent-text))"
+      },
       colors: {
         bg: "hsl(var(--bg))",
         "bg-inset": "hsl(var(--bg-inset))",

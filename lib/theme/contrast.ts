@@ -188,3 +188,40 @@ export function brandGradientForegroundHsl(
   }
   return best.css;
 }
+
+/**
+ * The accent, adjusted until it is readable *as text* on the page.
+ *
+ * `--accent` is tuned to be a fill: dark text sits on it, and at 50%
+ * lightness that works well. Used as a text colour it is a different
+ * problem, and on the light theme's white page an amber at 50% measures
+ * 1.98:1 - so every accent word, pill label and eyebrow in light mode was
+ * failing badly, which only became visible once the light accent stopped
+ * computing to transparent.
+ *
+ * Dark mode needs no adjustment (the same amber is 9:1 on the near-black
+ * page), so this walks lightness only in the direction that helps and
+ * returns the first value that clears `minRatio`. Yellows need the most
+ * movement, blues almost none, which is why this is computed per hue
+ * rather than set as one hand-picked number.
+ */
+export function accentTextHsl(
+  hue: number,
+  saturation: number,
+  lightness: number,
+  isDark: boolean,
+  minRatio = 4.5
+): string {
+  const pageBg = isDark ? { h: 235, s: 32, l: 7 } : { h: 0, s: 0, l: 100 };
+  const step = isDark ? 2 : -2;
+  const limit = isDark ? 92 : 8;
+
+  let l = lightness;
+  for (let i = 0; i < 45; i += 1) {
+    if (getContrastRatio({ h: hue, s: saturation, l }, pageBg) >= minRatio) break;
+    const next = l + step;
+    if (isDark ? next > limit : next < limit) break;
+    l = next;
+  }
+  return `${Math.round(hue)} ${Math.round(saturation)}% ${Math.round(l)}%`;
+}

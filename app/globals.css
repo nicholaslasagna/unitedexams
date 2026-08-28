@@ -54,6 +54,12 @@
      the whole 38-76 lightness range the picker allows. Overridden at
      runtime by accentForegroundHsl() for the extremes. */
   --accent-fg:     var(--accent-hue) 45% 10%;
+  /* The accent used AS TEXT, not as a fill. --accent is tuned so dark text
+     reads on top of it; on this theme's white page the same colour is about
+     2:1 as text, so accent words, pills and eyebrows all failed. Darkened
+     here, and refined per hue at runtime by accentTextHsl() - yellows need
+     far more adjustment than blues. */
+  --accent-text:   var(--accent-hue) calc(var(--accent-sat) * 1%) calc(var(--accent-lit) * 1% - 18%);
   /* Text on the three-stop brand gradient scores differently - see
      brandGradientForegroundHsl(). */
   --brand-fg:      var(--accent-hue) 45% 10%;
@@ -122,6 +128,9 @@
   --accent:        var(--accent-hue) calc((var(--accent-sat) + (var(--accent-strength) * 0.06)) * 1%) calc((var(--accent-lit) + (var(--accent-strength) * 0.05)) * 1%);
   --accent-dim:    var(--accent-hue) calc((var(--accent-sat) - 8) * 1%) calc((var(--accent-lit) - 4) * 1%);
   --accent-subtle: var(--accent-hue) calc((var(--accent-sat) - 28) * 1%) 12%;
+  /* No adjustment needed here: the accent is already ~9:1 against this
+     theme's near-black page. */
+  --accent-text:   var(--accent-hue) calc(var(--accent-sat) * 1%) calc(var(--accent-lit) * 1%);
   /* Text on the accent fill. Was 0 0% 100% (white), which measures ~2.1:1
      on the default amber - the worst contrast on the site, on the primary
      button. A dark tone carrying the accent's own hue clears 4.5:1 across
@@ -1114,7 +1123,7 @@ html[data-reduce-motion="on"] .tape-track { animation: none; }
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: hsl(var(--accent));
+  color: hsl(var(--accent-text));
   border: 1px solid hsl(var(--accent) / 0.25);
   background: hsl(var(--accent-subtle) / 0.7);
   border-radius: 999px;
@@ -1454,13 +1463,13 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
   font-family: var(--font-fraunces), ui-serif, Georgia, serif;
   font-style: italic;
   font-weight: 500;
-  color: hsl(var(--accent));
+  color: hsl(var(--accent-text));
   letter-spacing: -0.02em;
   font-variation-settings: "opsz" 144;
   margin-left: 0.06em;
 }
 .wordmark .period {
-  color: hsl(var(--accent));
+  color: hsl(var(--accent-text));
   font-style: normal;
   margin-left: 0.02em;
 }
@@ -1589,7 +1598,7 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
 }
 .ghost-btn:hover {
   color: hsl(var(--text));
-  border-color: hsl(var(--accent));
+  border-color: hsl(var(--accent-text));
 }
 .ghost-btn::after {
   content: "→";
@@ -1667,7 +1676,7 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
 }
 .ci-row:last-child { border-bottom: 0; }
 .ci-row:hover { background: hsl(var(--soft) / 0.5); }
-.ci-row:hover .ci-name { color: hsl(var(--accent)); }
+.ci-row:hover .ci-name { color: hsl(var(--accent-text)); }
 
 .ci-num {
   font-family: var(--font-mono);
@@ -1745,7 +1754,7 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
 }
 .ed-section-head h2 em {
   font-family: var(--font-fraunces);
-  color: hsl(var(--accent));
+  color: hsl(var(--accent-text));
   font-style: italic;
   font-weight: 500;
   font-variation-settings: "opsz" 144;
@@ -1791,7 +1800,7 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
   font-family: var(--font-fraunces);
   font-style: italic;
   font-weight: 500;
-  color: hsl(var(--accent));
+  color: hsl(var(--accent-text));
   font-size: 0.7em;
 }
 .stats-strip .label {
@@ -1836,7 +1845,7 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
 }
 .course-card-ed:hover { background: hsl(var(--surface)); }
 .course-card-ed:hover .course-art-ed { transform: translateY(-4px); }
-.course-card-ed:hover .course-open { color: hsl(var(--accent)); }
+.course-card-ed:hover .course-open { color: hsl(var(--accent-text)); }
 .course-card-ed:hover .course-open::after { transform: translateX(4px); }
 
 .course-art-ed {
@@ -1886,7 +1895,7 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
   font-size: 10.5px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: hsl(var(--accent));
+  color: hsl(var(--accent-text));
   border: 1px solid hsl(var(--border-bright));
   border-radius: 999px;
   padding: 4px 10px;
@@ -2083,7 +2092,7 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.22em;
-  color: hsl(var(--accent));
+  color: hsl(var(--accent-text));
   font-variant-numeric: tabular-nums;
 }
 .wf-step-title {
@@ -2134,7 +2143,7 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
 .inst-title-ed em {
   font-family: var(--font-fraunces);
   font-style: italic;
-  color: hsl(var(--accent));
+  color: hsl(var(--accent-text));
   font-weight: 500;
   font-variation-settings: "opsz" 144;
 }
@@ -2171,7 +2180,7 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
 .inst-pact .pact-num {
   font-family: var(--font-fraunces);
   font-style: italic;
-  color: hsl(var(--accent));
+  color: hsl(var(--accent-text));
   font-size: 22px;
   font-weight: 500;
   font-variation-settings: "opsz" 60;
@@ -2221,7 +2230,7 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
   font-size: 10px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: hsl(var(--accent));
+  color: hsl(var(--accent-text));
   display: flex;
   align-items: center;
   gap: 8px;
@@ -2258,7 +2267,7 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
 .tier-amount em {
   font-family: var(--font-fraunces);
   font-style: italic;
-  color: hsl(var(--accent));
+  color: hsl(var(--accent-text));
   font-weight: 500;
   font-variation-settings: "opsz" 144;
 }
@@ -2296,7 +2305,7 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
 }
 .tier-features-ed li::before {
   content: "·";
-  color: hsl(var(--accent));
+  color: hsl(var(--accent-text));
   font-size: 22px;
   line-height: 0;
   transform: translateY(-2px);
@@ -2336,7 +2345,7 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
   font-size: 10.5px;
   letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: hsl(var(--accent));
+  color: hsl(var(--accent-text));
 }
 .cc-title-ed {
   font-family: var(--font-fraunces);
@@ -2364,7 +2373,7 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
   align-items: center;
   gap: 8px;
 }
-.closer-card-ed:hover .cc-cta { color: hsl(var(--accent)); }
+.closer-card-ed:hover .cc-cta { color: hsl(var(--accent-text)); }
 
 /* Print page-fold detail at end of hero */
 .fold-rule {
@@ -2493,7 +2502,7 @@ html[data-reduce-motion="on"] .auth-aurora::before { animation: none; }
   font-family: var(--font-fraunces), ui-serif, Georgia, serif;
   font-style: italic;
   font-weight: 500;
-  color: hsl(var(--accent));
+  color: hsl(var(--accent-text));
   margin-left: 0.05em;
 }
 .auth-wordmark:hover { opacity: 0.78; }

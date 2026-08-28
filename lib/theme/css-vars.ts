@@ -1,4 +1,8 @@
-import { accentForegroundHsl, brandGradientForegroundHsl } from "@/lib/theme/contrast";
+import {
+  accentForegroundHsl,
+  accentTextHsl,
+  brandGradientForegroundHsl
+} from "@/lib/theme/contrast";
 import { ACCENT_RANGE, THEME_DEFAULTS } from "@/lib/theme/defaults";
 
 function clamp(value: number, min: number, max: number) {
@@ -44,5 +48,12 @@ export function applyThemeCssVars(input: ThemeVarInput) {
   root.style.setProperty(
     "--brand-fg",
     brandGradientForegroundHsl(hue, saturation, lightness)
+  );
+  // The accent used as text rather than as a fill; readable on the page
+  // background of whichever theme is active.
+  const isDark = root.classList.contains("dark");
+  root.style.setProperty(
+    "--accent-text",
+    accentTextHsl(hue, saturation, lightness, isDark)
   );
 }
