@@ -30,7 +30,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DonutChart } from "@/components/charts/donut-chart";
 import { BarChart } from "@/components/charts/bar-chart";
-import { Modal } from "@/components/ui/modal";
 import { QuestionNavigator } from "@/features/quiz/question-navigator";
 import { QuestionCard } from "@/features/quiz/question-card";
 import { StatsPanel } from "@/features/quiz/stats-panel";
@@ -127,7 +126,6 @@ export function QuizExperiencePageContent({
     message: ""
   });
   const [reviewIndex, setReviewIndex] = useState(0);
-  const [guestSaveModalOpen, setGuestSaveModalOpen] = useState(false);
   const finalizingRef = useRef(false);
 
   /*
@@ -823,23 +821,6 @@ export function QuizExperiencePageContent({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage]);
 
-  useEffect(() => {
-    if (stage !== "results" || !result || isAuthenticated) {
-      setGuestSaveModalOpen(false);
-      return;
-    }
-    if (result.score >= 85) {
-      const key = "ue.guest.high-score-modal.last-shown-at";
-      const now = Date.now();
-      const lastShown = Number(window.localStorage.getItem(key) ?? "0");
-      const oneDayMs = 24 * 60 * 60 * 1000;
-      if (!lastShown || now - lastShown >= oneDayMs) {
-        setGuestSaveModalOpen(true);
-        window.localStorage.setItem(key, String(now));
-      }
-    }
-  }, [isAuthenticated, result, stage]);
-
   if (quizLoading && !quiz) {
     return (
       <Card>
@@ -927,26 +908,36 @@ export function QuizExperiencePageContent({
                 {access.messaging.showInstitutionNote ? (
                   <InstitutionAccessNote variant="block" schoolName={profile?.school ?? null} />
                 ) : access.messaging.showGuestSavePrompt ? (
-                  <div className="rounded-[1.1rem] border border-accent/35 bg-accent/10 px-4 py-3 text-[13.5px] text-text">
-                    <span className="inline-flex items-center gap-1.5 font-semibold">
-                      <UserPlus className="h-3.5 w-3.5 text-accent" />
-                      Create an account to save your progress
-                    </span>
-                    <p className="mt-1 text-[12.5px] text-text-secondary">
-                      Attempts, mastery, and streaks sync to your account once you sign in.
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <Button asChild variant="secondary" size="sm">
-                        <Link href={signUpPath}>Create free account</Link>
-                      </Button>
-                      <Button asChild variant="ghost" size="sm">
-                        <Link href={signInPath}>Sign in</Link>
-                      </Button>
-                    </div>
-                  </div>
+                  /*
+                   * One quiet line, not a bordered card with two buttons.
+                   * A guest already gets this message twice more - the banner
+                   * across the top of the quiz itself, and the full save card
+                   * on the results screen, which is where it actually matters
+                   * because there is finally something to save. Shown here at
+                   * card weight it pushed the primary "Start" action nearly
+                   * two screens down the page on a phone, so the pitch was
+                   * literally in the way of the thing being pitched.
+                   */
+                  <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[12.5px] text-text-secondary">
+                    <UserPlus className="h-3.5 w-3.5 shrink-0 text-accent" aria-hidden />
+                    Playing as a guest — this run saves on this device.
+                    <Link
+                      href={signUpPath}
+                      className="font-semibold text-accent underline-offset-4 hover:underline"
+                    >
+                      Create a free account
+                    </Link>
+                    <span aria-hidden>·</span>
+                    <Link
+                      href={signInPath}
+                      className="font-semibold text-text underline-offset-4 hover:underline"
+                    >
+                      Sign in
+                    </Link>
+                  </p>
                 ) : null}
 
-                <div className="grid gap-2.5 sm:grid-cols-3">
+                <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
                   <FeatureStat
                     label="Estimated time"
                     value={`${quiz.estMinutes}m`}
@@ -991,7 +982,7 @@ export function QuizExperiencePageContent({
                   </Button>
                 </div>
 
-                <div className="rounded-[1.25rem] border border-borderc bg-soft px-4 py-3 text-[12.5px] text-text-secondary">
+                <div className="hidden rounded-[1.25rem] border border-borderc bg-soft px-4 py-3 text-[12.5px] text-text-secondary lg:block">
                   <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-text-secondary">
                     Keyboard shortcuts
                   </p>
@@ -1296,22 +1287,6 @@ export function QuizExperiencePageContent({
           </Card>
         ) : null}
 
-        <Modal open={guestSaveModalOpen && !isAuthenticated} onClose={() => setGuestSaveModalOpen(false)} title="That was great — want to save it?">
-          <div className="space-y-4 text-sm text-muted">
-            <p>You scored {result.score}%. Create an account to lock this attempt into your long-term progress history.</p>
-            <div className="flex flex-wrap gap-2">
-              <Button asChild>
-                <Link href={signUpPath}>Create account</Link>
-              </Button>
-              <Button variant="secondary" asChild>
-                <Link href={signInPath}>Sign in</Link>
-              </Button>
-              <Button variant="ghost" onClick={() => setGuestSaveModalOpen(false)}>
-                Continue as guest
-              </Button>
-            </div>
-          </div>
-        </Modal>
       </div>
     );
   }
