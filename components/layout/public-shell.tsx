@@ -4,34 +4,44 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { Menu, X } from "lucide-react";
+import {
+  ClipboardList,
+  GraduationCap,
+  Megaphone,
+  Menu,
+  Settings,
+  UserRound,
+  X
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppData } from "@/lib/app-data-context";
 import { isUniversityAdmin, isVerifiedProfessor } from "@/lib/auth/roles";
 import { resolveProfileInternalName } from "@/lib/profile-name";
+import {
+  navGroup,
+  resolveNavItems,
+  type ResolvedNavItem
+} from "@/lib/navigation/nav-model";
 import { cn } from "@/lib/utils";
 
-const guestNavItems = [
-  { href: "/courses", label: "Courses" },
-  { href: "/homework", label: "Homework" },
-  { href: "/leaderboard", label: "Leaderboard" },
-  { href: "/contact", label: "Contact" }
-];
-
-const accountNavItems = [
-  { href: "/app/dashboard", label: "Dashboard" },
-  { href: "/app/courses", label: "Courses" },
-  { href: "/app/notes", label: "Notes" },
-  { href: "/app/homework", label: "Homework" },
-  { href: "/app/leaderboard", label: "Leaderboard" },
-  { href: "/app/account", label: "Account" },
-  { href: "/app/settings", label: "Settings" }
-];
-
-const schoolAdminNavItems = [
-  { href: "/app/admin/professors", label: "Professor Staff" },
-  { href: "/app/account", label: "Account" },
-  { href: "/app/settings", label: "Settings" }
+/*
+ * Nav items come from the same model the in-app sidebar uses, so the top bar
+ * and the sidebar agree on labels, icons and order. They were previously
+ * declared here by hand and had drifted from the sidebar — "Courses" against
+ * "My classes", "Dashboard" against "Home", no icons at all, a different
+ * order, and no Interviews entry — which made signing in feel like moving to
+ * a different site.
+ */
+const schoolAdminNavItems: ResolvedNavItem[] = [
+  {
+    key: "professor-staff",
+    href: "/app/admin/professors",
+    label: "Professor Staff",
+    icon: GraduationCap,
+    group: "primary"
+  },
+  { key: "account", href: "/app/account", label: "Account", icon: UserRound, group: "you" },
+  { key: "settings", href: "/app/settings", label: "Settings", icon: Settings, group: "you" }
 ];
 
 export function PublicShell({ children }: { children: ReactNode }) {
@@ -98,36 +108,55 @@ export function PublicShell({ children }: { children: ReactNode }) {
   const showSections = isProfessor || hasJoinedSection;
   const showGrades = !isProfessor && !isSchoolAdmin && profile.role === "student";
 
-  const navItems = useMemo(() => {
-    if (!isAuthenticated) return guestNavItems;
+  const navItems = useMemo<ResolvedNavItem[]>(() => {
+    if (!isAuthenticated) return resolveNavItems("guest");
     if (isSchoolAdmin) return schoolAdminNavItems;
-    let next = [...accountNavItems];
+
+    const next = [...resolveNavItems("member")];
+    const insertAfter = (key: string, item: ResolvedNavItem) => {
+      const at = next.findIndex((entry) => entry.key === key);
+      next.splice(at >= 0 ? at + 1 : next.length, 0, item);
+    };
+    // Same conditional entries the sidebar adds, in the same places.
     if (showSections) {
-      next = [...next.slice(0, 2), { href: "/app/sections", label: "Sections" }, ...next.slice(2)];
-    }
-    if (showAnnouncements) {
-      const homeworkIndex = next.findIndex((item) => item.href === "/app/homework");
-      if (homeworkIndex >= 0) {
-        next = [
-          ...next.slice(0, homeworkIndex + 1),
-          { href: "/app/announcements", label: "Announcements" },
-          ...next.slice(homeworkIndex + 1)
-        ];
-      } else {
-        next = [...next, { href: "/app/announcements", label: "Announcements" }];
-      }
+      insertAfter("classes", {
+        key: "sections",
+        href: "/app/sections",
+        label: "Sections",
+        icon: GraduationCap,
+        group: "primary"
+      });
     }
     if (showGrades) {
-      const sectionsIndex = next.findIndex((item) => item.href === "/app/sections");
-      const insertAt = sectionsIndex >= 0 ? sectionsIndex + 1 : 3;
-      next = [
-        ...next.slice(0, insertAt),
-        { href: "/app/grades", label: "Grades" },
-        ...next.slice(insertAt)
-      ];
+      insertAfter(showSections ? "sections" : "classes", {
+        key: "grades",
+        href: "/app/grades",
+        label: "Grades",
+        icon: ClipboardList,
+        group: "primary"
+      });
+    }
+    if (showAnnouncements) {
+      insertAfter("homework", {
+        key: "announcements",
+        href: "/app/announcements",
+        label: "Announcements",
+        icon: Megaphone,
+        group: "study"
+      });
     }
     return next;
   }, [isAuthenticated, isSchoolAdmin, showAnnouncements, showGrades, showSections]);
+
+  const primaryNavItems = useMemo(() => navGroup(navItems, "primary"), [navItems]);
+  const studyNavItems = useMemo(() => navGroup(navItems, "study"), [navItems]);
+  /*
+   * The sidebar only splits into groups because a signed-in nav is long
+   * enough to become a wall of equal items; a signed-out visitor has five
+   * entries and reads them faster as one row. Same rule applied here, so the
+   * two shells group for the same reason rather than by coincidence.
+   */
+  const groupTopNav = studyNavItems.length > 1 && primaryNavItems.length > 3;
 
   return (
     <div className="relative min-h-screen bg-bg text-text">
@@ -152,24 +181,32 @@ export function PublicShell({ children }: { children: ReactNode }) {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
-            {navItems.map((item) => {
-              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "relative rounded-lg px-3 py-2 text-sm font-semibold transition-colors duration-150",
-                    active
-                      ? "bg-accent-subtle text-text"
-                      : "text-muted hover:bg-soft hover:text-text"
-                  )}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
+          {/*
+            Icons and labels match the sidebar exactly. The study-tools group
+            is separated by a hairline the way the sidebar separates it with a
+            heading — the same information architecture, laid out
+            horizontally. It is hidden below lg, where the bar would overflow,
+            and the drawer carries it there instead with the sidebar's own
+            group headings.
+          */}
+          <nav className="hidden items-center gap-0.5 md:flex" aria-label="Main">
+            {groupTopNav ? (
+              <>
+                {primaryNavItems.map((item) => (
+                  <TopNavLink key={item.key} item={item} pathname={pathname} />
+                ))}
+                <span className="mx-1.5 hidden h-5 w-px shrink-0 bg-borderc lg:block" aria-hidden />
+                <span className="hidden items-center gap-0.5 lg:flex">
+                  {studyNavItems.map((item) => (
+                    <TopNavLink key={item.key} item={item} pathname={pathname} />
+                  ))}
+                </span>
+              </>
+            ) : (
+              navItems.map((item) => (
+                <TopNavLink key={item.key} item={item} pathname={pathname} />
+              ))
+            )}
           </nav>
 
           <div className="flex items-center gap-2">
@@ -229,21 +266,71 @@ export function PublicShell({ children }: { children: ReactNode }) {
               className="mx-auto flex w-full max-w-[1200px] flex-col gap-1 px-5 py-3"
               aria-label="Mobile"
             >
-              {navItems.map((item) => {
-                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              {/*
+                Grouped exactly like the sidebar, same headings — but only
+                when the desktop bar groups too. Otherwise a guest would see
+                Homework third in the bar and last under a heading in the
+                drawer, which is the same inconsistency this change set out
+                to remove.
+              */}
+              {!groupTopNav
+                ? navItems.map((item) => {
+                    const active =
+                      pathname === item.href || pathname.startsWith(`${item.href}/`);
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.key}
+                        href={item.href}
+                        aria-current={active ? "page" : undefined}
+                        className={cn(
+                          "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition-colors duration-150",
+                          active
+                            ? "bg-accent-subtle text-text"
+                            : "text-text-secondary hover:bg-soft hover:text-text"
+                        )}
+                      >
+                        <Icon className="h-4 w-4 shrink-0" aria-hidden />
+                        {item.label}
+                      </Link>
+                    );
+                  })
+                : ([
+                { group: "primary" as const, heading: null },
+                { group: "study" as const, heading: "Study tools" },
+                { group: "you" as const, heading: "You" }
+              ]).map(({ group, heading }) => {
+                const groupItems = navGroup(navItems, group);
+                if (groupItems.length === 0) return null;
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "rounded-xl px-3 py-3 text-sm font-semibold transition-colors duration-150",
-                      active
-                        ? "bg-accent-subtle text-text"
-                        : "text-text-secondary hover:bg-soft hover:text-text"
-                    )}
-                  >
-                    {item.label}
-                  </Link>
+                  <div key={group} className="flex flex-col gap-1">
+                    {heading ? (
+                      <p className="mt-2 px-3 text-[10px] font-bold uppercase tracking-[0.22em] text-faint">
+                        {heading}
+                      </p>
+                    ) : null}
+                    {groupItems.map((item) => {
+                      const active =
+                        pathname === item.href || pathname.startsWith(`${item.href}/`);
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.key}
+                          href={item.href}
+                          aria-current={active ? "page" : undefined}
+                          className={cn(
+                            "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition-colors duration-150",
+                            active
+                              ? "bg-accent-subtle text-text"
+                              : "text-text-secondary hover:bg-soft hover:text-text"
+                          )}
+                        >
+                          <Icon className="h-4 w-4 shrink-0" aria-hidden />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 );
               })}
 
@@ -303,5 +390,27 @@ export function PublicShell({ children }: { children: ReactNode }) {
         </a>
       </footer>
     </div>
+  );
+}
+
+/**
+ * One top-bar link. Icon plus label, matching the sidebar's rows so the same
+ * destination looks the same in both places.
+ */
+function TopNavLink({ item, pathname }: { item: ResolvedNavItem; pathname: string }) {
+  const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+  const Icon = item.icon;
+  return (
+    <Link
+      href={item.href}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "relative inline-flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-semibold transition-colors duration-150",
+        active ? "bg-accent-subtle text-text" : "text-muted hover:bg-soft hover:text-text"
+      )}
+    >
+      <Icon className="h-4 w-4 shrink-0" aria-hidden />
+      {item.label}
+    </Link>
   );
 }

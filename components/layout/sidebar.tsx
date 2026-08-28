@@ -4,13 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
-  LayoutDashboard,
-  LibraryBig,
-  Briefcase,
   ListChecks,
   Timer,
-  Trophy,
-  NotebookTabs,
   Settings,
   UserRound,
   GraduationCap,
@@ -22,6 +17,7 @@ import {
   Menu,
   X
 } from "lucide-react";
+import { resolveNavItems, STUDY_TOOL_HREFS } from "@/lib/navigation/nav-model";
 import { cn } from "@/lib/utils";
 import { useAppData } from "@/lib/app-data-context";
 import { resolveProfileInternalName } from "@/lib/profile-name";
@@ -36,22 +32,18 @@ interface NavItem {
   children?: NavItem[];
 }
 
-const baseItems: NavItem[] = [
-  { href: "/app/dashboard", label: "Home", icon: LayoutDashboard },
-  { href: "/app/courses", label: "My classes", icon: LibraryBig },
-  { href: "/app/interviews", label: "Interviews", icon: Briefcase },
-  { href: "/app/homework", label: "Homework", icon: ListChecks },
-  { href: "/app/exams", label: "Exams", icon: Timer },
-  { href: "/app/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/app/notes", label: "Notes", icon: NotebookTabs },
-  { href: "/app/account", label: "Account", icon: UserRound },
-  { href: "/app/settings", label: "Settings", icon: Settings }
-];
-
-// Hrefs that are "study tools" reachable inside any class hub. Grouped
-// separately in the sidebar so the top of the nav stays short (Home,
-// My classes, Leaderboard) instead of a wall of equal items.
-const STUDY_TOOL_HREFS = new Set(["/app/homework", "/app/exams", "/app/notes"]);
+/*
+ * Labels, icons and order come from lib/navigation/nav-model.ts, which the
+ * public top bar reads too. They used to be declared separately in each
+ * file and had drifted — the same destination was "My classes" here and
+ * "Courses" up there — so signing in looked like arriving in a different
+ * product.
+ */
+const baseItems: NavItem[] = resolveNavItems("member").map((item) => ({
+  href: item.href,
+  label: item.label,
+  icon: item.icon
+}));
 
 function buildItems(params: {
   showProfessor: boolean;
