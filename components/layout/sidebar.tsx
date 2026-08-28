@@ -18,6 +18,7 @@ import {
   X
 } from "lucide-react";
 import { resolveNavItems, STUDY_TOOL_HREFS } from "@/lib/navigation/nav-model";
+import { NavRow } from "@/components/layout/nav-row";
 import { cn } from "@/lib/utils";
 import { useAppData } from "@/lib/app-data-context";
 import { resolveProfileInternalName } from "@/lib/profile-name";
@@ -325,31 +326,17 @@ function NavigationList({
           );
         }
 
+        // Shared with the public sidebar so the two render identically.
         return (
-          <Link
+          <NavRow
             key={item.href}
             href={item.href}
-            aria-current={active ? "page" : undefined}
-            onClick={onNavigate}
-            className={cn(
-              itemClass,
-              active ? "bg-accent-subtle text-text" : "text-faint hover:bg-soft hover:text-muted"
-            )}
-          >
-            {active ? (
-              <span
-                className="absolute left-0 top-1/2 h-1.5 w-1.5 -translate-x-0.5 -translate-y-1/2 rounded-full bg-accent shadow-[0_0_8px_hsl(var(--accent)/0.4)]"
-                aria-hidden
-              />
-            ) : null}
-            <Icon
-              className={cn(
-                mobile ? "h-[18px] w-[18px]" : "h-[17px] w-[17px]",
-                active ? "text-accent" : "text-faint group-hover:text-muted"
-              )}
-            />
-            <span>{item.label}</span>
-          </Link>
+            label={item.label}
+            icon={Icon}
+            active={active}
+            onNavigate={onNavigate}
+            mobile={mobile}
+          />
         );
       })}
     </nav>
