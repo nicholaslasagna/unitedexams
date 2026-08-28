@@ -2,12 +2,18 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, KeyRound, Lock, Play, RotateCcw, Trophy, XCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, KeyRound, ListChecks, Lock, Play, RotateCcw, Trophy, XCircle } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCompanyInterview } from "@/data/seed/interviews";
+import {
+  distinctAttemptsBeforeRepeat,
+  selectAllQuestions,
+  selectQuestionsForAttempt
+} from "@/lib/interviews/select-questions";
+import { attemptsForQuiz } from "@/features/progress/metrics";
 import { scoreInterview, type CheckedSignals, type TestOutcomes } from "@/lib/interviews/scoring";
 import { runCode, type RunResult } from "@/lib/interviews/run-code";
 import { useAppData } from "@/lib/app-data-context";
@@ -18,6 +24,18 @@ import { UpgradeButton } from "@/components/billing/upgrade-button";
 import type { Attempt, PerQuestionResult } from "@/lib/types";
 
 type Phase = "brief" | "answer" | "review" | "report";
+
+/**
+ * "interview" is the realistic simulation: a rotating slice of each round's
+ * bank, so a retake asks new questions instead of testing whether you have
+ * memorised the last sitting.
+ *
+ * "practice" is the other half — every question in every open round, so no
+ * part of the bank is ever unreachable. It is untimed and is not posted to
+ * the leaderboard, because a run where you saw every question is not
+ * comparable to one that sat the real slice.
+ */
+type Mode = "interview" | "practice";
 
 const BAND_COPY = {
   "strong-hire": { label: "Strong hire", tone: "text-success", note: "Above the bar on almost every signal." },
@@ -34,7 +52,7 @@ function formatClock(totalSeconds: number) {
 
 export function InterviewRunnerContent({ interviewId }: { interviewId: string }) {
   const interview = getCompanyInterview(interviewId);
-  const { ready, isAuthenticated, saveAttempt, user } = useAppData();
+  const { ready, isAuthenticated, saveAttempt, user, attempts } = useAppData();
   const access = useAccess();
   // Premium, institution-covered, professor and admin accounts all sit the
   // complete loop. lib/access.ts already folds those into one decision.
@@ -48,9 +66,39 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
     () => (interview ? interview.rounds.filter((round) => !hasFullLoop && round.premium) : []),
     [interview, hasFullLoop]
   );
+  // Which sitting this is. Rotating on prior attempts is what makes a
+  // retake a different interview rather than the same one again.
+  const priorAttempts = useMemo(
+    () => (interview ? attemptsForQuiz(attempts, interview.id).length : 0),
+    [attempts, interview]
+  );
+  const [mode, setMode] = useState<Mode>("interview");
+  // Pinned when the sitting starts. Without this, finishing an attempt (which
+  // increments the count) would rotate the questions out from under the
+  // report screen that is still scoring them.
+  const [attemptIndex, setAttemptIndex] = useState(priorAttempts);
+
   const questions = useMemo(
-    () => openRounds.flatMap((round) => round.questions.map((q) => ({ round, question: q }))),
+    () =>
+      mode === "practice"
+        ? selectAllQuestions(openRounds)
+        : selectQuestionsForAttempt(openRounds, attemptIndex),
+    [openRounds, mode, attemptIndex]
+  );
+  const servedQuestionIds = useMemo(
+    () => questions.map((entry) => entry.question.id),
+    [questions]
+  );
+  const bankSize = useMemo(
+    () => openRounds.reduce((sum, round) => sum + round.questions.length, 0),
     [openRounds]
+  );
+  const freshSittings = interview ? distinctAttemptsBeforeRepeat(interview) : 0;
+  // What a timed sitting serves, independent of whichever mode is active —
+  // the brief describes the interview, even while standing in practice mode.
+  const sittingQuestionCount = useMemo(
+    () => selectQuestionsForAttempt(openRounds, attemptIndex).length,
+    [openRounds, attemptIndex]
   );
   const openMinutes = openRounds.reduce((sum, round) => sum + round.minutes, 0);
 
@@ -98,8 +146,15 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
         runs?: Record<string, RunResult>;
         startedAt?: number;
         elapsed?: number;
+        mode?: Mode;
+        attemptIndex?: number;
       };
       if (!draft.phase || draft.phase === "brief") return;
+      // Restore which sitting this was before anything reads `questions`,
+      // otherwise a resumed draft would be scored against a different slice
+      // of the bank than the one the answers were written for.
+      if (draft.mode) setMode(draft.mode);
+      if (typeof draft.attemptIndex === "number") setAttemptIndex(draft.attemptIndex);
       setAnswers(draft.answers ?? {});
       setCode(draft.code ?? {});
       setChecked(draft.checked ?? {});
@@ -131,13 +186,15 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
           checked,
           runs,
           startedAt: startedAt.current,
-          elapsed
+          elapsed,
+          mode,
+          attemptIndex
         })
       );
     } catch {
       // Private mode / quota — the interview still works, just not resumable.
     }
-  }, [draftKey, phase, index, answers, code, checked, runs, elapsed]);
+  }, [draftKey, phase, index, answers, code, checked, runs, elapsed, mode, attemptIndex]);
 
   // Elapsed clock, running only while the interview is in progress.
   useEffect(() => {
@@ -193,18 +250,18 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
   );
   // Score only the rounds this account actually sat, so a free candidate is
   // never marked down for questions they were never shown.
-  const result = scoreInterview(
-    interview,
-    checked,
-    testOutcomes,
-    openRounds.map((round) => round.id)
-  );
+  const result = scoreInterview(interview, checked, testOutcomes, servedQuestionIds);
   const bandCopy = BAND_COPY[result.band];
 
-  const beginInterview = () => {
+  const beginInterview = (nextMode: Mode = "interview") => {
+    setMode(nextMode);
+    // Pin the rotation for this sitting so finishing it (which increments the
+    // attempt count) cannot swap the questions under the report screen.
+    setAttemptIndex(priorAttempts);
     startedAt.current = Date.now();
     questionStartedAt.current = Date.now();
     setQuestionElapsed(0);
+    setIndex(0);
     setPhase("answer");
   };
 
@@ -249,6 +306,7 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
       // Nothing to do — a stale draft is only read when phase !== "brief".
     }
     setPhase("brief");
+    setMode("interview");
     setIndex(0);
     setAnswers({});
     setChecked({});
@@ -341,13 +399,54 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
               <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-text-secondary">
                 {openRounds.length} of {interview.rounds.length} rounds
                 <span className="mx-2 text-text-secondary/50">·</span>
-                {questions.length} questions
+                {sittingQuestionCount} question{sittingQuestionCount === 1 ? "" : "s"}
                 <span className="mx-2 text-text-secondary/50">·</span>
                 about {openMinutes} min
               </p>
-              <Button size="lg" className="w-full sm:w-auto" onClick={beginInterview}>
-                Start interview <ArrowRight className="h-4 w-4" />
-              </Button>
+
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Button
+                  size="lg"
+                  className="w-full sm:w-auto"
+                  onClick={() => beginInterview("interview")}
+                >
+                  {priorAttempts > 0 ? "Retake with new questions" : "Start interview"}{" "}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+                {bankSize > sittingQuestionCount ? (
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    className="w-full sm:w-auto"
+                    onClick={() => beginInterview("practice")}
+                  >
+                    <ListChecks className="h-4 w-4" />
+                    Practice all {bankSize} questions
+                  </Button>
+                ) : null}
+              </div>
+
+              {/*
+                Say plainly how the question pool works. A candidate who
+                thinks a retake replays the same prompts will treat this as a
+                memory test, which is the opposite of what it is for.
+              */}
+              <p className="text-[12.5px] leading-relaxed text-text-secondary">
+                {freshSittings > 1 ? (
+                  <>
+                    Each sitting draws different questions from a bank of{" "}
+                    <span className="font-semibold text-text">{bankSize}</span>, the way a real
+                    loop does — you can take this{" "}
+                    <span className="font-semibold text-text">{freshSittings}</span> times before
+                    any question comes back around.{" "}
+                    {priorAttempts > 0
+                      ? `You've sat it ${priorAttempts} ${priorAttempts === 1 ? "time" : "times"}, so these will be new.`
+                      : "Practice mode walks the whole bank whenever you want it."}
+                  </>
+                ) : (
+                  <>Practice mode walks every question in the bank, untimed.</>
+                )}
+              </p>
             </CardBody>
           </Card>
 
@@ -660,7 +759,7 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row">
-                {saveState === "saved" ? (
+                {mode === "practice" ? null : saveState === "saved" ? (
                   <p className="inline-flex items-center gap-2 text-[13.5px] font-semibold text-success">
                     <CheckCircle2 className="h-4 w-4" /> Saved — your score is on the leaderboard.
                   </p>
@@ -669,11 +768,24 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
                     <Trophy className="h-4 w-4" /> Save score &amp; post to leaderboard
                   </Button>
                 )}
-                <Button variant="secondary" onClick={retake}>
-                  <RotateCcw className="h-4 w-4" /> Retake for a higher score
+                <Button variant={mode === "practice" ? "primary" : "secondary"} onClick={retake}>
+                  <RotateCcw className="h-4 w-4" />
+                  {mode === "practice" ? "Sit the timed interview" : "Retake with new questions"}
                 </Button>
               </div>
-              {saveState !== "saved" ? (
+              {mode === "practice" ? (
+                /*
+                 * A practice run walks the entire bank, so its score is not
+                 * comparable with a real sitting - posting it would put a
+                 * different exercise on the same board. Say why rather than
+                 * just hiding the button.
+                 */
+                <p className="text-[12px] text-text-secondary">
+                  Practice runs aren&apos;t posted to the leaderboard — you saw every question in
+                  the bank, so the score isn&apos;t comparable with a real sitting. Sit the timed
+                  interview when you want a score that counts.
+                </p>
+              ) : saveState !== "saved" ? (
                 <p className="text-[12px] text-text-secondary">
                   Nothing is posted unless you choose to save it.
                 </p>

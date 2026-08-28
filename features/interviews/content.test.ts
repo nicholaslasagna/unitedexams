@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { companyInterviews, interviewQuestions } from "../../data/seed/interviews";
+import {
+  distinctAttemptsBeforeRepeat,
+  questionsPerAttempt,
+  selectAllQuestions,
+  selectRoundQuestions
+} from "../../lib/interviews/select-questions";
 
 /**
  * Guards the interview content itself. These catch the failures that would
@@ -116,6 +122,143 @@ const solutions: Record<string, (...args: never[]) => unknown> = {
       }
     }
     return { kept: keep.map((i) => turns[i].id), dropped };
+  },
+  topPathsByBytes: (...args: never[]) => {
+    const [records, k] = args as unknown as [[string, number][], number];
+    const totals = new Map<string, number>();
+    for (const [path, bytes] of records) totals.set(path, (totals.get(path) ?? 0) + bytes);
+    return [...totals.entries()]
+      .sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
+      .slice(0, Math.max(0, k))
+      .map(([path]) => path);
+  },
+  longestUniqueRun: (...args: never[]) => {
+    const [ids] = args as unknown as [string[]];
+    const lastSeen = new Map<string, number>();
+    let left = 0;
+    let best = 0;
+    for (let right = 0; right < ids.length; right += 1) {
+      const id = ids[right];
+      if (lastSeen.has(id)) left = Math.max(left, lastSeen.get(id)! + 1);
+      lastSeen.set(id, right);
+      best = Math.max(best, right - left + 1);
+    }
+    return best;
+  },
+  repairParens: (...args: never[]) => {
+    const [text] = args as unknown as [string];
+    const drop = new Set<number>();
+    const open: number[] = [];
+    for (let i = 0; i < text.length; i += 1) {
+      const c = text[i];
+      if (c === "(") open.push(i);
+      else if (c === ")") {
+        if (open.length) open.pop();
+        else drop.add(i);
+      }
+    }
+    for (const i of open) drop.add(i);
+    return [...text].filter((_, i) => !drop.has(i)).join("");
+  },
+  kClosestPoints: (...args: never[]) => {
+    const [points, k] = args as unknown as [[number, number][], number];
+    const n = Math.max(0, Math.min(k, points.length));
+    return [...points]
+      .sort(
+        (a, b) =>
+          a[0] * a[0] + a[1] * a[1] - (b[0] * b[0] + b[1] * b[1]) || a[0] - b[0] || a[1] - b[1]
+      )
+      .slice(0, n);
+  },
+  mergeBookings: (...args: never[]) => {
+    const [ranges] = args as unknown as [[number, number][]];
+    if (ranges.length === 0) return [];
+    const sorted = [...ranges].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    const out: [number, number][] = [[sorted[0][0], sorted[0][1]]];
+    for (let i = 1; i < sorted.length; i += 1) {
+      const cur = out[out.length - 1];
+      const next = sorted[i];
+      if (next[0] <= cur[1]) cur[1] = Math.max(cur[1], next[1]);
+      else out.push([next[0], next[1]]);
+    }
+    return out;
+  },
+  compareVersions: (...args: never[]) => {
+    const [a, b] = args as unknown as [string, string];
+    const pa = a.split(".");
+    const pb = b.split(".");
+    for (let i = 0; i < Math.max(pa.length, pb.length); i += 1) {
+      const x = Number(pa[i] ?? 0);
+      const y = Number(pb[i] ?? 0);
+      if (x < y) return -1;
+      if (x > y) return 1;
+    }
+    return 0;
+  },
+  ringBufferContents: (...args: never[]) => {
+    const [capacity, pushes] = args as unknown as [number, unknown[]];
+    if (capacity <= 0) return [];
+    const buf = new Array<unknown>(capacity);
+    let write = 0;
+    let count = 0;
+    for (const v of pushes) {
+      buf[write % capacity] = v;
+      write += 1;
+      count = Math.min(count + 1, capacity);
+    }
+    const start = count < capacity ? 0 : write % capacity;
+    return Array.from({ length: count }, (_, i) => buf[(start + i) % capacity]);
+  },
+  packIntoBatches: (...args: never[]) => {
+    const [segments, budget] = args as unknown as [[string, number][], number];
+    const out: string[][] = [];
+    let cur: string[] = [];
+    let total = 0;
+    for (const [text, tokens] of segments) {
+      if (cur.length > 0 && total + tokens > budget) {
+        out.push(cur);
+        cur = [];
+        total = 0;
+      }
+      cur.push(text);
+      total += tokens;
+    }
+    if (cur.length) out.push(cur);
+    return out;
+  },
+  assembleStream: (...args: never[]) => {
+    const [chunks] = args as unknown as [[number, string][]];
+    const byIndex = new Map<number, string>();
+    for (const [i, text] of chunks) if (!byIndex.has(i)) byIndex.set(i, text);
+    return [...byIndex.keys()]
+      .sort((x, y) => x - y)
+      .map((i) => byIndex.get(i))
+      .join("");
+  },
+  collapseRepeatedCalls: (...args: never[]) => {
+    const [calls] = args as unknown as [[string, string][]];
+    const out: [string, string][] = [];
+    for (const c of calls) {
+      const last = out[out.length - 1];
+      if (last && last[0] === c[0] && last[1] === c[1]) continue;
+      out.push([c[0], c[1]]);
+    }
+    return out;
+  },
+  chooseWithinBudget: (...args: never[]) => {
+    const [docs, budget] = args as unknown as [[string, number, number][], number];
+    const sorted = [...docs].sort(
+      (a, b) => b[2] - a[2] || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)
+    );
+    const chosen: string[] = [];
+    let used = 0;
+    for (const [id, tokens] of sorted) {
+      if (used + tokens <= budget) {
+        chosen.push(id);
+        used += tokens;
+      }
+    }
+    return chosen;
   }
 };
 
@@ -235,6 +378,105 @@ describe("free tier promise", () => {
         .flatMap((r) => r.questions)
         .filter((q) => q.coding);
       expect(freeCoding.length, `${interview.company} needs free runnable code`).toBeGreaterThanOrEqual(1);
+    }
+  });
+});
+
+describe("a retake is a different interview, and nothing is unreachable", () => {
+  /*
+   * The three properties this section exists to hold:
+   *   1. every round has a bank deep enough to rotate;
+   *   2. consecutive sittings do not repeat questions;
+   *   3. practice mode can reach every question in the bank.
+   *
+   * Before this, each round held exactly one question, so a retake replayed
+   * the identical prompts and the whole exercise degraded into memorising
+   * this site rather than preparing for the interview.
+   */
+  it("gives every round a bank bigger than one sitting", () => {
+    for (const interview of companyInterviews) {
+      for (const round of interview.rounds) {
+        expect(
+          round.questions.length,
+          `${interview.company} / ${round.name} has only ${round.questions.length} question(s)`
+        ).toBeGreaterThan(questionsPerAttempt(round));
+      }
+    }
+  });
+
+  it("serves different questions on consecutive sittings, in every round", () => {
+    for (const interview of companyInterviews) {
+      for (const round of interview.rounds) {
+        const first = selectRoundQuestions(round, 0).map((q) => q.id);
+        const second = selectRoundQuestions(round, 1).map((q) => q.id);
+        expect(first.length).toBe(questionsPerAttempt(round));
+        expect(
+          first.filter((id) => second.includes(id)),
+          `${interview.company} / ${round.name} repeats a question on the very next attempt`
+        ).toEqual([]);
+      }
+    }
+  });
+
+  it("lets every company be sat at least twice before anything repeats", () => {
+    for (const interview of companyInterviews) {
+      expect(
+        distinctAttemptsBeforeRepeat(interview),
+        `${interview.company} repeats questions on the second sitting`
+      ).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it("reaches every question in a round by rotating through the sittings", () => {
+    for (const interview of companyInterviews) {
+      for (const round of interview.rounds) {
+        const seen = new Set<string>();
+        const sittings = Math.ceil(round.questions.length / questionsPerAttempt(round));
+        for (let attempt = 0; attempt < sittings; attempt += 1) {
+          for (const q of selectRoundQuestions(round, attempt)) seen.add(q.id);
+        }
+        expect(
+          seen.size,
+          `${interview.company} / ${round.name}: rotation reaches ${seen.size} of ${round.questions.length}`
+        ).toBe(round.questions.length);
+      }
+    }
+  });
+
+  it("practice mode reaches every question in every open round", () => {
+    for (const interview of companyInterviews) {
+      const served = selectAllQuestions(interview.rounds).map((s) => s.question.id);
+      const everything = interviewQuestions(interview).map((q) => q.id);
+      expect(served.sort()).toEqual(everything.sort());
+    }
+  });
+
+  it("keeps a free candidate's bank rotating too, not just the premium rounds", () => {
+    for (const interview of companyInterviews) {
+      const freeRounds = interview.rounds.filter((r) => !r.premium);
+      expect(freeRounds.length).toBeGreaterThan(0);
+      for (const round of freeRounds) {
+        const first = selectRoundQuestions(round, 0).map((q) => q.id);
+        const second = selectRoundQuestions(round, 1).map((q) => q.id);
+        expect(
+          first.filter((id) => second.includes(id)),
+          `${interview.company}: the free round repeats on a retake`
+        ).toEqual([]);
+      }
+    }
+  });
+
+  it("holds every bank question to the same rubric standard as the originals", () => {
+    // A shallow bank entry would make a retake technically different but
+    // materially worse, which defeats the point.
+    for (const question of allQuestions) {
+      expect(question.signals.length, `${question.id} has too few signals`).toBeGreaterThanOrEqual(4);
+      expect(question.strongAnswer.length, `${question.id} strongAnswer too thin`).toBeGreaterThan(300);
+      expect(question.prompt.length, `${question.id} prompt too thin`).toBeGreaterThan(60);
+      for (const signal of question.signals) {
+        expect(signal.hint.length, `${question.id}/${signal.id} hint too thin`).toBeGreaterThan(40);
+        expect(signal.weight).toBeGreaterThan(0);
+      }
     }
   });
 });

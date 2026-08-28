@@ -71,19 +71,18 @@ describe("coding rounds are graded objectively", () => {
   });
 });
 
-describe("free users are scored only on what they sat", () => {
-  const freeRoundIds = interview.rounds.filter((r) => !r.premium).map((r) => r.id);
+describe("candidates are scored only on what they sat", () => {
+  const freeRounds = interview.rounds.filter((r) => !r.premium);
+  const freeQuestionIds = freeRounds.flatMap((r) => r.questions.map((q) => q.id));
 
-  it("ignores premium rounds when scoping to the free round", () => {
-    const scoped = scoreInterview(interview, {}, {}, freeRoundIds);
-    expect(scoped.perRound).toHaveLength(freeRoundIds.length);
-    expect(scoped.perRound.every((r) => freeRoundIds.length === 1)).toBe(true);
+  it("ignores premium rounds when scoped to the free round's questions", () => {
+    const scoped = scoreInterview(interview, {}, {}, freeQuestionIds);
+    expect(scoped.perRound).toHaveLength(freeRounds.length);
+    expect(scoped.perQuestion.every((q) => freeQuestionIds.includes(q.questionId))).toBe(true);
   });
 
   it("lets a free candidate reach 100% on the free round alone", () => {
-    const freeQuestions = interview.rounds
-      .filter((r) => !r.premium)
-      .flatMap((r) => r.questions);
+    const freeQuestions = freeRounds.flatMap((r) => r.questions);
     const checked = Object.fromEntries(
       freeQuestions.map((q) => [q.id, q.signals.map((s) => s.id)])
     );
@@ -92,8 +91,29 @@ describe("free users are scored only on what they sat", () => {
         .filter((q) => q.coding)
         .map((q) => [q.id, { passed: q.coding!.tests.length, total: q.coding!.tests.length }])
     );
-    const scoped = scoreInterview(interview, checked, outcomes, freeRoundIds);
+    const scoped = scoreInterview(interview, checked, outcomes, freeQuestionIds);
     expect(scoped.percent).toBe(100);
     expect(scoped.band).toBe("strong-hire");
+  });
+
+  it("scores a rotating slice, not the whole bank", () => {
+    // The heart of the retake fix: a sitting serves part of a round's bank,
+    // so a candidate must never be marked down for the questions the
+    // rotation did not hand them.
+    const round = interview.rounds[0];
+    const [first] = round.questions;
+    const scoped = scoreInterview(interview, {}, {}, [first.id]);
+    expect(scoped.perQuestion).toHaveLength(1);
+    expect(scoped.perQuestion[0].questionId).toBe(first.id);
+
+    const perfect = scoreInterview(
+      interview,
+      { [first.id]: first.signals.map((s) => s.id) },
+      first.coding
+        ? { [first.id]: { passed: first.coding.tests.length, total: first.coding.tests.length } }
+        : {},
+      [first.id]
+    );
+    expect(perfect.percent).toBe(100);
   });
 });

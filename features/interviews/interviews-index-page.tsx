@@ -10,6 +10,7 @@ import { useAppData } from "@/lib/app-data-context";
 import { useAccess } from "@/lib/hooks/use-access";
 import { resolveLock } from "@/lib/access";
 import { bestScoreForQuiz } from "@/features/progress/metrics";
+import { distinctAttemptsBeforeRepeat } from "@/lib/interviews/select-questions";
 
 export function InterviewsIndexContent() {
   const { ready, isAuthenticated, attempts } = useAppData();
@@ -68,6 +69,13 @@ export function InterviewsIndexContent() {
             const openMinutes = interview.rounds
               .filter((round) => hasFullLoop || !round.premium)
               .reduce((sum, round) => sum + round.minutes, 0);
+            // Rounds draw from a bank, so the card should say how much
+            // material is actually behind the loop rather than implying the
+            // same questions every time.
+            const openBankSize = interview.rounds
+              .filter((round) => hasFullLoop || !round.premium)
+              .reduce((sum, round) => sum + round.questions.length, 0);
+            const freshSittings = distinctAttemptsBeforeRepeat(interview);
             return (
               <Link
                 key={interview.id}
@@ -98,6 +106,8 @@ export function InterviewsIndexContent() {
                   {openRoundCount} of {interview.rounds.length} rounds
                   <span className="mx-2 text-text-secondary/50">·</span>
                   ~{openMinutes} min
+                  <span className="mx-2 text-text-secondary/50">·</span>
+                  {openBankSize} q bank
                 </p>
                 {lockedRoundCount > 0 ? (
                   <p className="mt-2 inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-accent">
@@ -106,8 +116,14 @@ export function InterviewsIndexContent() {
                   </p>
                 ) : null}
 
+                {freshSittings > 1 ? (
+                  <p className="mt-2 text-[11.5px] text-text-secondary">
+                    Different questions each sitting — {freshSittings} before any repeat.
+                  </p>
+                ) : null}
+
                 <span className="mt-4 flex items-center justify-between border-t border-borderc pt-3 text-[12.5px] font-semibold text-text-secondary transition-colors group-hover:text-text">
-                  {best > 0 ? "Retake and beat it" : "Start interview"}
+                  {best > 0 ? "Retake with new questions" : "Start interview"}
                   <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out-expo group-hover:translate-x-1" />
                 </span>
               </Link>

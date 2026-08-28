@@ -45,19 +45,30 @@ export function scoreInterview(
   checked: CheckedSignals,
   testOutcomes: TestOutcomes = {},
   /**
-   * Round ids the candidate actually had access to. Free users only sit the
-   * unlocked rounds, so scoring the whole loop would score them against
-   * questions they were never shown. Omit to score everything.
+   * Ids of the questions this sitting actually served. Omit to score
+   * everything.
+   *
+   * This is per-question, not per-round, for two reasons that both amount
+   * to the same rule - never score someone on a question they were not
+   * shown. Free accounts sit only the unlocked rounds; and every round now
+   * serves a rotating slice of its bank rather than the whole thing, so
+   * even within an unlocked round most of the bank was not asked.
    */
-  includeRoundIds?: string[]
+  includeQuestionIds?: string[]
 ): InterviewScore {
   const perQuestion: QuestionScore[] = [];
-  const scoped = includeRoundIds
-    ? interview.rounds.filter((round) => includeRoundIds.includes(round.id))
-    : interview.rounds;
+  const served = includeQuestionIds ? new Set(includeQuestionIds) : null;
+  const scoped = interview.rounds
+    .map((round) => ({
+      round,
+      questions: served
+        ? round.questions.filter((question) => served.has(question.id))
+        : round.questions
+    }))
+    .filter((entry) => entry.questions.length > 0);
 
-  for (const round of scoped) {
-    for (const question of round.questions) {
+  for (const { round, questions } of scoped) {
+    for (const question of questions) {
       const marked = new Set(checked[question.id] ?? []);
       let possible = question.signals.reduce((sum, s) => sum + s.weight, 0);
       let earned = question.signals
@@ -109,7 +120,7 @@ export function scoreInterview(
   const possible = perQuestion.reduce((sum, q) => sum + q.possible, 0);
   const percent = possible === 0 ? 0 : Math.round((earned / possible) * 100);
 
-  const perRound = scoped.map((round) => {
+  const perRound = scoped.map(({ round }) => {
     const rows = perQuestion.filter((q) => q.round === round.name);
     const e = rows.reduce((sum, q) => sum + q.earned, 0);
     const p = rows.reduce((sum, q) => sum + q.possible, 0);

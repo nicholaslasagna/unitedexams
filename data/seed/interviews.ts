@@ -61,6 +61,18 @@ export interface InterviewRound {
    * so the free experience is a real interview, not a teaser.
    */
   premium?: boolean;
+  /**
+   * How many questions from `questions` a single sitting serves. Omit to
+   * serve the whole bank.
+   *
+   * Real loops draw from a pool: two candidates on the same day get
+   * different problems, and nobody re-asks a question of a returning
+   * candidate. lib/interviews/select-questions.ts rotates the bank by
+   * attempt so a retake is a fresh interview, and so every question is
+   * reached before any repeats.
+   */
+  questionsPerAttempt?: number;
+  /** The BANK this round draws from — not a fixed script. */
   questions: InterviewQuestion[];
 }
 
@@ -89,7 +101,9 @@ export interface CompanyInterview {
   loopStages: LoopStage[];
 }
 
-export const companyInterviews: CompanyInterview[] = [
+import { ROUND_BANKS } from "@/data/seed/interview-bank";
+
+const baseInterviews: CompanyInterview[] = [
   {
     id: "6f1c0a20-4d1e-4a5b-9c31-0a1b2c3d4e01",
     company: "Google",
@@ -1477,6 +1491,29 @@ function fitToBudget(turns, budget) {
     ]
   }
 ];
+
+/**
+ * Each round's question bank, assembled from the base definition plus
+ * data/seed/interview-bank.ts.
+ *
+ * Rounds are declared with a single question inline and the rest of the pool
+ * kept in the bank file, purely so this file stays readable — a round's
+ * `questions` array is the pool it draws from, and
+ * lib/interviews/select-questions.ts rotates through it by attempt so a
+ * retake is a different interview rather than the same one again.
+ */
+export const companyInterviews: CompanyInterview[] = baseInterviews.map((interview) => ({
+  ...interview,
+  rounds: interview.rounds.map((round) => {
+    const bank = ROUND_BANKS[round.id];
+    if (!bank) return round;
+    return {
+      ...round,
+      questionsPerAttempt: bank.questionsPerAttempt,
+      questions: [...round.questions, ...bank.extra]
+    };
+  })
+}));
 
 export function getCompanyInterview(id: string) {
   return companyInterviews.find((interview) => interview.id === id) ?? null;
