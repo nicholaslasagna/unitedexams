@@ -31,10 +31,16 @@
 
   /* ── Text ── */
   --text:           228 35% 11%;
-  /* Same check against white; --faint at 66% measured 2.48:1. */
-  --text-secondary: 228 12% 40%;
-  --muted:          228 10% 46%;
-  --faint:          228 8% 52%;
+  /* Checked against every surface these are drawn on - white, raised, soft
+     and overlay - not just the page. The overlay chip background is the
+     worst case and is what these are tuned to; all three clear 4.5:1 there.
+     --faint was 66% (2.48:1 on white) while being used for form field
+     labels and dashboard metadata, so it was the weakest text on the site
+     and not decorative. Requiring all three tiers to pass compresses the
+     scale, which is inherent to the requirement, not an oversight. */
+  --text-secondary: 228 12% 32%;
+  --muted:          228 10% 36%;
+  --faint:          228 8% 40%;
 
   /* ── Accent (computed) ──
      Writing this as `var(--accent-sat)%` does NOT work. Substituting a
@@ -120,9 +126,9 @@
      form field labels ("Email", "New password") and dashboard metadata -
      not decoration. --muted was 52% and landed at 4.39:1. Both now clear
      4.5:1, and the three tiers stay visually distinct. */
-  --text-secondary: 230 12% 68%;
-  --muted:          230 10% 58%;
-  --faint:          230 8% 52%;
+  --text-secondary: 230 12% 72%;
+  --muted:          230 10% 64%;
+  --faint:          230 8% 58%;
 
   /* ── Accent ── */
   --accent:        var(--accent-hue) calc((var(--accent-sat) + (var(--accent-strength) * 0.06)) * 1%) calc((var(--accent-lit) + (var(--accent-strength) * 0.05)) * 1%);
