@@ -23,7 +23,7 @@ import {
 import { useAppData } from "@/lib/app-data-context";
 import { useToast } from "@/lib/hooks/use-toast";
 import { resolveQuizSetMode } from "@/lib/study/set-mode";
-import { cn, isUuidLike, percentile } from "@/lib/utils";
+import { cn, isUuidLike, scoreBandLabel } from "@/lib/utils";
 import type { Attempt, QuizSet } from "@/lib/types";
 
 interface HomeworkProgressSnapshot {
@@ -725,7 +725,7 @@ export function HomeworkExperiencePageContent({
             <h1 className="font-display text-4xl font-semibold">{result.score}%</h1>
             <p className="text-sm text-muted">
               {result.correctCount} of {result.totalCount} marked correct • {Math.round(result.timeSpent / 60)} min •{" "}
-              {percentile(result.score)}
+              {scoreBandLabel(result.score)}
             </p>
             <div className="flex flex-wrap gap-2">
               <Button onClick={() => {
@@ -777,7 +777,7 @@ export function HomeworkExperiencePageContent({
         {!isAuthenticated ? (
           <Card>
             <CardBody className="space-y-4 p-6">
-              <h2 className="font-display text-2xl font-semibold">Don&apos;t lose this homework run.</h2>
+              <h2 className="font-display text-2xl font-semibold">Keep this homework run.</h2>
               <ul className="space-y-2 text-sm text-muted">
                 <li>• Save progress and resume across devices</li>
                 <li>• Track mastery and weak topics over time</li>

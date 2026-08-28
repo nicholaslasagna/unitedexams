@@ -121,3 +121,30 @@ export function streakSparkline(attempts: Attempt[], days = 14) {
 export function leaderboardPoints(attempts: Attempt[]) {
   return attempts.reduce((sum, attempt) => sum + Math.round(attempt.score * 1.5), 0);
 }
+
+/**
+ * Rows for the post-attempt "Topic breakdown" chart.
+ *
+ * Question tags mix genuine topics ("multiplicity") with set-level labels
+ * ("software-engineering", "exam-2") that sit on every question. A tag
+ * covering the whole run always scores exactly the overall score, so those
+ * rows just restate the headline number several times over. Keep only tags
+ * that distinguish part of the run - unless that leaves nothing, in which
+ * case the full list is more useful than an empty chart.
+ */
+export function topicBreakdownRows(
+  topicBreakdown: Attempt["topicBreakdown"],
+  totalCount: number,
+  limit = 8
+) {
+  const rows = Object.entries(topicBreakdown).map(([label, stats]) => ({
+    label,
+    value: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0,
+    total: stats.total
+  }));
+  const distinguishing = rows.filter((row) => row.total < totalCount);
+  return (distinguishing.length > 0 ? distinguishing : rows)
+    .map(({ label, value }) => ({ label, value }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, limit);
+}

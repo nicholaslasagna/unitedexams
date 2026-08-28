@@ -44,11 +44,11 @@ import {
   summarizeAttempt
 } from "@/features/quiz/engine";
 import { fireConfetti } from "@/features/quiz/confetti";
-import { bestScoreForQuiz, latestAttemptForQuiz } from "@/features/progress/metrics";
+import { bestScoreForQuiz, latestAttemptForQuiz, topicBreakdownRows } from "@/features/progress/metrics";
 import { useAppData } from "@/lib/app-data-context";
 import { useToast } from "@/lib/hooks/use-toast";
 import { resolveQuestionCountTarget, resolveQuizSetMode } from "@/lib/study/set-mode";
-import { minutesSeconds, percentile, shuffle } from "@/lib/utils";
+import { minutesSeconds, scoreBandLabel, shuffle } from "@/lib/utils";
 import type { Attempt, QuizSet, QuizSettings } from "@/lib/types";
 
 type Stage = "overview" | "quiz" | "submitted" | "results" | "review";
@@ -1227,13 +1227,7 @@ export function QuizExperiencePageContent({
   }
 
   if (stage === "results" && result) {
-    const topicBreakdown = Object.entries(result.topicBreakdown)
-      .map(([label, stats]) => ({
-        label,
-        value: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0
-      }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 8);
+    const topicBreakdown = topicBreakdownRows(result.topicBreakdown, result.totalCount);
 
     return (
       <div className="space-y-6">
@@ -1243,7 +1237,7 @@ export function QuizExperiencePageContent({
               <p className="text-xs uppercase tracking-[0.14em] text-text-secondary">Results</p>
               <h1 className="text-display-lg font-semibold tracking-tight"><span className="font-mono">{result.score}%</span></h1>
               <p className="text-sm text-text-secondary">
-                {result.correctCount} of {result.totalCount} correct • {Math.round(result.timeSpent / 60)} min • {percentile(result.score)}
+                {result.correctCount} of {result.totalCount} correct • {Math.round(result.timeSpent / 60)} min • {scoreBandLabel(result.score)}
               </p>
               <div className="flex flex-wrap gap-2">
                 <Button onClick={() => setStage("review")} disabled={countMissed(result) === 0}>
@@ -1277,11 +1271,15 @@ export function QuizExperiencePageContent({
         {!isAuthenticated ? (
           <Card>
             <CardBody className="space-y-4 p-6">
-              <h2 className="text-heading font-semibold">Don&apos;t lose this score.</h2>
+              <h2 className="text-heading font-semibold">Keep this attempt.</h2>
+              <p className="text-sm text-muted">
+                This run is saved on this device. An account carries it across
+                your devices and adds:
+              </p>
               <ul className="space-y-2 text-sm text-muted">
-                <li>• Save attempts + progress charts</li>
+                <li>• Progress charts across every attempt</li>
                 <li>• Weak-topic recommendations</li>
-                <li>• Streak tracking + leaderboard</li>
+                <li>• Streak tracking and the leaderboard</li>
               </ul>
               <div className="flex flex-wrap gap-2">
                 <Button asChild>

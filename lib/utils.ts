@@ -44,12 +44,20 @@ export function isUuidLike(value: string) {
   );
 }
 
-export function percentile(score: number) {
-  if (score >= 95) return "Top 5% pace";
-  if (score >= 85) return "Excellent momentum";
-  if (score >= 70) return "Strong baseline";
-  if (score >= 50) return "Building consistency";
-  return "Early build phase";
+/**
+ * A plain-language band for a single score.
+ *
+ * This was called `percentile` and led with "Top 5% pace", which claims a
+ * ranking against other students. No such comparison is computed anywhere
+ * - the input is one score from one attempt - so the label invented social
+ * proof. These bands describe only the score in front of the user.
+ */
+export function scoreBandLabel(score: number) {
+  if (score >= 95) return "Nearly everything correct";
+  if (score >= 85) return "Solid grasp";
+  if (score >= 70) return "Mostly there";
+  if (score >= 50) return "About half correct";
+  return "Early days on this set";
 }
 
 export function shuffle<T>(arr: T[]): T[] {
