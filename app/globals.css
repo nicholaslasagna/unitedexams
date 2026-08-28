@@ -36,8 +36,16 @@
   --muted:          228 10% 46%;
   --faint:          228 8% 52%;
 
-  /* ── Accent (computed) ── */
-  --accent:        var(--accent-hue) var(--accent-sat)% var(--accent-lit)%;
+  /* ── Accent (computed) ──
+     Writing this as `var(--accent-sat)%` does NOT work. Substituting a
+     custom property inserts an empty-comment token separator between the
+     number and the percent sign, so the result is not a valid percentage,
+     the whole hsl() is invalid, and the accent silently computes to
+     transparent. That broke every accent fill in the light theme, primary
+     buttons included; dark mode looked fine only because it already used
+     the calc() form. Multiplying by 1% inside calc() keeps the number and
+     its unit in a single token. */
+  --accent:        var(--accent-hue) calc(var(--accent-sat) * 1%) calc(var(--accent-lit) * 1%);
   --accent-dim:    var(--accent-hue) calc((var(--accent-sat) - 8) * 1%) calc((var(--accent-lit) - 4) * 1%);
   --accent-subtle: var(--accent-hue) calc((var(--accent-sat) - 24) * 1%) 94%;
   /* Text on the accent fill. Was 0 0% 100% (white), which measures ~2.1:1
