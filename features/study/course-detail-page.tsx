@@ -42,6 +42,7 @@ import {
 } from "@/features/progress/metrics";
 import type { QuizSet } from "@/lib/types";
 import { getCourseVisual } from "@/features/study/course-branding";
+import { displayTags } from "@/lib/study/display-tags";
 
 const tabDefs = [
   { id: "quizzes", label: "Quizzes" },
@@ -428,7 +429,7 @@ export function CourseDetailContent({
                             Target {targetCount}
                           </span>
                         ) : null}
-                        {set.tags.map((tag) => (
+                        {displayTags(set.tags, set.title).map((tag) => (
                           <span
                             key={tag}
                             className="rounded-full border border-borderc bg-soft px-2 py-1 text-text-secondary"

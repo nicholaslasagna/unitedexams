@@ -23,6 +23,7 @@ import { InstitutionAccessNote } from "@/components/ui/institution-access-note";
 import { useAccess } from "@/lib/hooks/use-access";
 import { resolveQuizSetMode } from "@/lib/study/set-mode";
 import type { QuizSet } from "@/lib/types";
+import { displayTags } from "@/lib/study/display-tags";
 
 function withPrefix(routePrefix: string, path: string) {
   return `${routePrefix}${path}`;
@@ -303,7 +304,7 @@ export function HomeworkIndexContent({
                         <Clock3 className="h-3 w-3" />
                         ~{set.estMinutes} min
                       </span>
-                      {set.tags.map((tag) => (
+                      {displayTags(set.tags, set.title).map((tag) => (
                         <span
                           key={tag}
                           className="rounded-full border border-borderc bg-soft px-2 py-1"
