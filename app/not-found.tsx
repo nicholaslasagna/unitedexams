@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "Page not found",
+  description: "That link doesn't point anywhere on United Exams."
+};
 
 export default function NotFoundPage() {
   return (
