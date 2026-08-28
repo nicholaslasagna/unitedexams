@@ -96,7 +96,10 @@ export default function LandingPage() {
         <div
           className="page-logo"
           style={{
-            ["--page-logo-image" as string]: "url(/images/logo.png)"
+            // 640px WebP, not the 1920x1080 2MB source: this element is
+            // blurred 6px at 0.05 opacity behind a radial mask, so every
+            // pixel of that detail was thrown away before anyone saw it.
+            ["--page-logo-image" as string]: "url(/images/logo-watermark.webp)"
           }}
         />
         <div className="page-haze" />
