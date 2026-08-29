@@ -316,7 +316,7 @@ export function StudentGradesPage() {
                     </Button>
                     <Button variant="secondary" asChild>
                       <Link href={`/app/courses/${course.courseId}`}>
-                        Open course hub
+                        Open class
                         <FolderOpen className="h-4 w-4" />
                       </Link>
                     </Button>

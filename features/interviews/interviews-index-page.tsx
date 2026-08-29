@@ -19,27 +19,34 @@ export function InterviewsIndexContent() {
 
   if (!ready) return <Skeleton className="h-96" />;
 
-  if (!isAuthenticated) {
-    return (
-      <Card>
-        <CardBody className="space-y-3 p-6">
-          <p className="inline-flex items-center gap-2 font-display text-xl font-semibold text-text">
-            <Lock className="h-5 w-5 text-accent" /> Sign in to practice interviews
-          </p>
-          <p className="max-w-lg text-[14px] leading-relaxed text-text-secondary">
-            Every interview is scored and saved, so you can see what to improve, retake it, and beat your
-            own score.
-          </p>
-          <Button asChild>
-            <Link href="/login?next=/app/interviews">Sign in</Link>
-          </Button>
-        </CardBody>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-5">
+      {/*
+        A signed-out visitor used to get a lock icon and one sentence, with
+        no way to see what was behind it — they had to make an account to
+        find out whether it was worth making an account. The catalogue is
+        public information, so it is shown; only starting one needs sign-in.
+      */}
+      {!isAuthenticated ? (
+        <Card>
+          <CardBody className="flex flex-wrap items-center justify-between gap-3 p-5">
+            <div className="min-w-0">
+              <p className="inline-flex items-center gap-2 text-[14px] font-semibold text-text">
+                <Lock className="h-4 w-4 shrink-0 text-accent" />
+                Sign in to sit one of these
+              </p>
+              <p className="mt-1 max-w-xl text-[13px] leading-relaxed text-text-secondary">
+                Interviews are scored and saved so you can see what to improve and retake with new
+                questions — which needs an account. Look around first; everything below is real.
+              </p>
+            </div>
+            <Button asChild>
+              <Link href="/login?next=/app/interviews">Sign in</Link>
+            </Button>
+          </CardBody>
+        </Card>
+      ) : null}
+
       <section className="space-y-1.5">
         <h1 className="font-display text-[2rem] font-semibold leading-tight tracking-tight text-text sm:text-[2.4rem]">
           Interview practice
@@ -79,7 +86,11 @@ export function InterviewsIndexContent() {
             return (
               <Link
                 key={interview.id}
-                href={`/app/interviews/${interview.id}`}
+                href={
+                  isAuthenticated
+                    ? `/app/interviews/${interview.id}`
+                    : `/login?next=${encodeURIComponent(`/app/interviews/${interview.id}`)}`
+                }
                 className="group flex flex-col overflow-hidden rounded-2xl border border-borderc bg-surface p-5 shadow-[0_1px_0_hsl(var(--surface-raised)/0.06)_inset,0_18px_44px_-24px_hsl(var(--text)/0.28)] transition-all duration-200 ease-out-expo hover:-translate-y-px hover:border-border-accent dark:bg-surface-raised"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -123,7 +134,11 @@ export function InterviewsIndexContent() {
                 ) : null}
 
                 <span className="mt-4 flex items-center justify-between border-t border-borderc pt-3 text-[12.5px] font-semibold text-text-secondary transition-colors group-hover:text-text">
-                  {best > 0 ? "Retake with new questions" : "Start interview"}
+                  {!isAuthenticated
+                    ? "Sign in to start"
+                    : best > 0
+                      ? "Retake with new questions"
+                      : "Start interview"}
                   <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out-expo group-hover:translate-x-1" />
                 </span>
               </Link>

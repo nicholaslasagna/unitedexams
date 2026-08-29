@@ -77,10 +77,10 @@ export const NAV_DESTINATIONS: NavDestination[] = [
   {
     key: "interviews",
     appHref: "/app/interviews",
-    // Interviews live under /app, but the page explains itself and offers a
-    // sign-in rather than bouncing, so a visitor can at least find out the
-    // section exists — it was invisible from the public site before.
-    publicHref: "/app/interviews",
+    // A public route of its own, so following this link signed-out does not
+    // drop someone into the app shell with a nav full of links that bounce
+    // to sign-in.
+    publicHref: "/interviews",
     label: "Interviews",
     icon: Briefcase,
     group: "primary",

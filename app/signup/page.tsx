@@ -357,18 +357,29 @@ function SignupPageContent() {
     <AuthShell
       wide
       title="Create your account"
-      subtitle="Take 30 seconds. We'll set up the workspace for the courses you're actually taking."
+      subtitle="Takes about 30 seconds, and it keeps your scores and progress across devices."
       footer={
-        <p>
-          Already have an account?{" "}
-          <Link href="/login" className="font-semibold text-accent hover:text-text">
-            Sign in
-          </Link>
-          <span className="mx-2 text-text-secondary/50">·</span>
-          <Link href={guestReturnPath} className="text-text-secondary hover:text-text">
-            Continue as guest
-          </Link>
-        </p>
+        <div className="space-y-2">
+          <p>
+            Already have an account?{" "}
+            <Link href="/login" className="font-semibold text-accent hover:text-text">
+              Sign in
+            </Link>
+          </p>
+          {/*
+            An account is not required to study here, and someone who is not
+            ready to make one should not have to hunt for that. This used to
+            be a third link at the end of a run-on line, which read as an
+            afterthought next to a form.
+          */}
+          <p className="text-text-secondary">
+            Not ready yet? You can{" "}
+            <Link href={guestReturnPath} className="font-semibold text-text hover:text-accent">
+              try a quiz without an account
+            </Link>{" "}
+            — your progress just stays on this device.
+          </p>
+        </div>
       }
     >
       {activeEmail ? (

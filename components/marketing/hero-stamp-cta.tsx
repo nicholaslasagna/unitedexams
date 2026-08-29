@@ -4,33 +4,36 @@ import Link from "next/link";
 import { useAppData } from "@/lib/app-data-context";
 
 /**
- * The single confident hero CTA — a passport-stamp-style outlined
- * accent button with a long arrow that grows on hover. Adapts to the
- * visitor's auth state:
+ * The single confident hero CTA.
  *
- *   loading        → Browse courses (safe default while session resolves)
- *   guest          → Start studying  →  /signup
- *   authenticated  → Open dashboard  →  /app/dashboard
+ * A first-time visitor used to press "Start studying" and land on a signup
+ * form. The label promised the product and delivered a registration wall —
+ * on a site whose own quizzes work perfectly well without an account, and
+ * whose hero line underneath says there is nothing to pay. That is the least
+ * welcoming thing the homepage did, so the primary action now opens a real
+ * quiz and signing up is offered later, once there is a score worth keeping.
  *
- * Pairs with the ghost "Browse the library" button next to it. The
- * single confident CTA + one secondary link is the design's whole
- * point — replacing the previous stack of three different action
- * buttons with one decisive next step.
+ *   loading        → Browse classes (safe default while the session resolves)
+ *   guest          → Try a quiz, free, straight into a short set
+ *   authenticated  → Open dashboard
  */
-export function HeroStampCta() {
+export function HeroStampCta({ sampleQuizHref }: { sampleQuizHref: string }) {
   const { authReady, isAuthenticated } = useAppData();
 
   let label: string;
   let href: string;
+  let secondaryLabel = "Browse all classes";
   if (!authReady) {
-    label = "Start studying";
+    label = "Browse classes";
     href = "/courses";
+    secondaryLabel = "Browse all classes";
   } else if (isAuthenticated) {
     label = "Open dashboard";
     href = "/app/dashboard";
+    secondaryLabel = "Browse all classes";
   } else {
-    label = "Start studying";
-    href = "/signup";
+    label = "Try a quiz, free";
+    href = sampleQuizHref;
   }
 
   return (
@@ -42,7 +45,7 @@ export function HeroStampCta() {
         </span>
       </Link>
       <Link href="/courses" className="ghost-btn">
-        Browse the library
+        {secondaryLabel}
       </Link>
     </div>
   );

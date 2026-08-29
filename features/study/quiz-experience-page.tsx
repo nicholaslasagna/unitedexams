@@ -894,7 +894,7 @@ export function QuizExperiencePageContent({
                   ) : access.isPremium ? (
                     <AccessBadge variant="premium" label="Premium active" />
                   ) : (
-                    <AccessBadge variant="free" label="Public bank" />
+                    <AccessBadge variant="free" label="Free to try" />
                   )}
                 </div>
 

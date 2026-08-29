@@ -231,7 +231,7 @@ export function HomeworkIndexContent({
               <>
                 <Button asChild>
                   <Link href={withPrefix(routePrefix, "/courses")}>
-                    Browse course hubs
+                    Browse classes
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>

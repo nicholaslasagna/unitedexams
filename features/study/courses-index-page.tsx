@@ -454,7 +454,7 @@ export function CoursesIndexContent({
                   ) : null}
 
                   {/* Actions — one primary button. When the student is in a
-                      class section, the public hub is still reachable via a
+                      class section, the public version is still reachable via a
                       small text link so the card has just one obvious button. */}
                   <div className="mt-auto flex flex-col gap-2">
                     <Button asChild size="lg" className="w-full justify-between">
@@ -483,7 +483,7 @@ export function CoursesIndexContent({
       <div className="rounded-[1.25rem] border border-borderc bg-surface/85 px-5 py-4 text-[13px] text-text-secondary">
         <p className="font-display text-[15px] font-semibold text-text">Don&apos;t see your class?</p>
         <p className="mt-1">
-          Ask us to spin up a hub for it.{" "}
+          Ask us to set it up for you.{" "}
           <Link
             href="/contact?intent=implementation"
             className="font-semibold text-accent transition-colors hover:text-text"

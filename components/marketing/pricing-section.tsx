@@ -64,7 +64,7 @@ export function PricingSection() {
           </div>
           <p className="tier-tag">For trying it on a real syllabus.</p>
           <ul className="tier-features-ed">
-            <li>Browse all public course hubs</li>
+            <li>Browse every public class</li>
             <li>Try guided quizzes</li>
             <li>Sample homework walkthroughs</li>
             <li>Save basic progress with a free account</li>

@@ -13,7 +13,7 @@ const modes = [
     n: "01",
     title: "Quiz",
     desc: "Short timed sets pulled from the course's question bank. Quickly find what you don't know yet.",
-    meta: ["10–15 min", "Adaptive"],
+    meta: ["10–15 min", "Instant feedback"],
     color: "hsl(38 92% 50%)"
   },
   {
@@ -34,7 +34,7 @@ const modes = [
     n: "04",
     title: "Exam",
     desc: "A full mock built from past finals — the closest thing to sitting the real paper.",
-    meta: ["120 min", "Proctor mode"],
+    meta: ["120 min", "Full mock"],
     color: "hsl(8 70% 58%)"
   }
 ];

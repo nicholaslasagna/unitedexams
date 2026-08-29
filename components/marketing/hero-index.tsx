@@ -50,7 +50,7 @@ export function HeroIndex({
       </ol>
 
       <p className="ci-colophon">
-        Each entry is a complete course hub — quizzes, exam simulations,
+        Each entry is a complete class — quizzes, exam simulations,
         homework, notes, and reference material — kept inside the class
         it belongs to.
       </p>

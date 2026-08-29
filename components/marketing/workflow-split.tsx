@@ -10,8 +10,8 @@
  */
 const studentSteps = [
   {
-    t: "Open the course hub",
-    d: "Find your class in the index. Everything for it lives in one workspace — quiz banks, walkthroughs, mock exams, notes."
+    t: "Open your class",
+    d: "Find it in the index. Everything for that class sits in one place — practice quizzes, walkthroughs, mock exams and notes."
   },
   {
     t: "Pick a study mode",
@@ -30,7 +30,7 @@ const studentSteps = [
 const profSteps = [
   {
     t: "Claim a course shell",
-    d: "We seed the public hub. You take it over for your section, with the institution badge."
+    d: "We set the class up publicly. You take it over for your section, with the institution badge."
   },
   {
     t: "Curate or author",

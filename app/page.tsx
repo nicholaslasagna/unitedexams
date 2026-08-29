@@ -84,6 +84,21 @@ export default function LandingPage() {
 
   const railEntries = courseAtlas.map((c) => ({ id: c.id, code: c.code }));
 
+  /*
+   * The set a newcomer is dropped into by the hero CTA: the shortest real
+   * quiz in the library, opened in study mode — untimed, with the
+   * walkthrough after each answer — because someone's first contact with
+   * the product should not be a clock.
+   *
+   * Chosen from the seed data rather than hard-coded, so removing or
+   * renaming a set can never leave the homepage's main button pointing at
+   * a 404.
+   */
+  const sampleQuiz = [...quizSets]
+    .filter((set) => resolveQuizSetMode(set) === "quiz" && set.questions.length > 0)
+    .sort((a, b) => a.estMinutes - b.estMinutes || a.questions.length - b.questions.length)[0];
+  const sampleQuizHref = sampleQuiz ? `/quiz/${sampleQuiz.id}?mode=study` : "/courses";
+
   return (
     <PublicShell>
       {/* ── Atmospheric background: haze + noise + drifting embers ──
@@ -134,11 +149,11 @@ export default function LandingPage() {
             </p>
 
             <div className="reveal-up reveal-d-4">
-              <HeroStampCta />
+              <HeroStampCta sampleQuizHref={sampleQuizHref} />
             </div>
 
             <p className="reveal-up reveal-d-5 trust-line">
-              No credit card to try.
+              No account needed to try.
               <span className="dot" />
               Free is generous.
               <span className="dot" />
@@ -191,7 +206,7 @@ export default function LandingPage() {
             <h2>
               Open a class. <em>Start studying.</em>
             </h2>
-            <p className="section-meta">Four hubs · Spring 26</p>
+            <p className="section-meta">Four classes · Spring 26</p>
           </div>
 
           <div className="courses-grid">
@@ -227,7 +242,7 @@ export default function LandingPage() {
                   </span>
                 </div>
 
-                <span className="course-open">Open hub</span>
+                <span className="course-open">Open class</span>
               </Link>
             ))}
           </div>
@@ -269,8 +284,8 @@ export default function LandingPage() {
               <span className="cc-eyebrow">Already studying?</span>
               <h3 className="cc-title-ed">Bring your class with you.</h3>
               <p className="cc-text-ed">
-                Ask us to spin up a hub for your course — we&apos;ll work with the
-                instructor or department directly.
+                Ask us to set your course up — we&apos;ll work with the instructor
+                or department directly.
               </p>
               <span className="cc-cta">
                 Request a class

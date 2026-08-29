@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     template: "%s | United Exams"
   },
   description:
-    "Course hubs for the classes you are actually taking: quiz banks, step-by-step walkthroughs, timed exam simulations, and notes, all kept inside the course they belong to.",
+    "Everything for the classes you are actually taking: practice quizzes, step-by-step walkthroughs, timed exam simulations and notes, all kept inside the class they belong to.",
   openGraph: {
     title: "United Exams",
     description: "Quiz banks, walkthroughs, and timed exam simulations, kept inside the class they belong to.",
