@@ -26,14 +26,34 @@ export const courses: Course[] = [
     icon: "integral"
   },
   {
+    /*
+     * Keeps the original `computer-architecture` id after the undergraduate
+     * CSE-240 material and the graduate CS-5375 course were merged into one
+     * class. The id is referenced by eight existing quiz sets, the notes,
+     * the artwork map and the branding table, and every saved attempt and
+     * bookmarked URL points at it — so renaming it would strand all of that
+     * to no benefit.
+     */
     id: "computer-architecture",
-    code: "CSE-240",
-    name: "Computer Architecture",
+    code: "CS-5375",
+    name: "Computer Systems Organization and Architecture",
+    shortName: "Computer Systems Architecture",
     description:
-      "Understand instruction sets, pipelines, memory hierarchies, and performance tradeoffs.",
-    difficulty: "Intermediate",
-    tags: ["Hardware", "Assembly", "Performance"],
-    topics: ["isa", "pipeline", "cache", "hazards", "memory"],
+      "Instruction sets and pipelines through to instruction-level parallelism, cache coherence, memory consistency and multicore scaling.",
+    difficulty: "Advanced",
+    tags: ["Hardware", "Pipelining", "Parallelism"],
+    topics: [
+      "isa",
+      "pipeline",
+      "cache",
+      "hazards",
+      "memory",
+      "ilp",
+      "branch-prediction",
+      "cache-coherence",
+      "memory-consistency",
+      "multicore"
+    ],
     accent: "from-violet-500 to-fuchsia-500",
     icon: "chip"
   },
@@ -70,26 +90,6 @@ export const courses: Course[] = [
     ],
     accent: "from-amber-500 to-orange-600",
     icon: "complexity"
-  },
-  {
-    id: "computer-systems-architecture",
-    code: "CS-5375",
-    name: "Computer Systems Organization and Architecture",
-    shortName: "Computer Systems Architecture",
-    description:
-      "Graduate-level architecture: pipelining and ILP, cache coherence, memory consistency, and parallel systems.",
-    difficulty: "Advanced",
-    tags: ["Pipelining", "Caches", "Parallelism"],
-    topics: [
-      "ilp",
-      "branch-prediction",
-      "cache-coherence",
-      "memory-consistency",
-      "multicore",
-      "performance-models"
-    ],
-    accent: "from-rose-500 to-red-600",
-    icon: "chip"
   },
   {
     id: "database-systems",
@@ -129,27 +129,6 @@ export const courses: Course[] = [
     ],
     accent: "from-teal-500 to-emerald-600",
     icon: "kernel"
-  },
-  {
-    id: "us-history-since-1877",
-    code: "HIST-2301",
-    name: "History of the United States Since 1877",
-    shortName: "U.S. History Since 1877",
-    description:
-      "Reconstruction to the present — industrialization, reform, two world wars, civil rights, and the modern era.",
-    difficulty: "Intermediate",
-    tags: ["Reconstruction", "Reform", "Civil Rights"],
-    topics: [
-      "reconstruction",
-      "gilded-age",
-      "progressive-era",
-      "world-wars",
-      "new-deal",
-      "cold-war",
-      "civil-rights"
-    ],
-    accent: "from-stone-500 to-amber-700",
-    icon: "archive"
   }
 ];
 

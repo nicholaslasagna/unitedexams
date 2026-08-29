@@ -68,3 +68,32 @@ describe("seeded library", () => {
     expect(CURRENT_TERM.short.startsWith(CURRENT_TERM.label.split(" ")[0])).toBe(true);
   });
 });
+
+describe("course notes", () => {
+  it("gives every listed course notes and a cheat sheet", async () => {
+    const { notesByCourse } = await import("@/data/seed/notes");
+    for (const course of courses) {
+      const content = notesByCourse[course.id];
+      expect(content, `${course.code} (${course.name}) has no notes entry`).toBeDefined();
+      expect(content.notes.trim().length, `${course.code} notes are empty`).toBeGreaterThan(400);
+      expect(
+        content.cheatSheet.trim().length,
+        `${course.code} cheat sheet is empty`
+      ).toBeGreaterThan(200);
+      expect(content.resources.length, `${course.code} has no resources`).toBeGreaterThan(0);
+      for (const resource of content.resources) {
+        expect(resource.href).toMatch(/^https?:\/\//);
+        expect(resource.label.trim()).not.toBe("");
+      }
+    }
+  });
+
+  it("keeps the merged architecture notes covering both halves", async () => {
+    const { notesByCourse } = await import("@/data/seed/notes");
+    const arch = notesByCourse["computer-architecture"];
+    // CSE-240 and CS-5375 were merged; neither half may be dropped.
+    expect(arch.notes).toMatch(/RISC-V/);
+    expect(arch.notes).toMatch(/Amdahl/);
+    expect(arch.cheatSheet).toMatch(/MESI/);
+  });
+});

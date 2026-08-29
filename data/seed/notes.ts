@@ -1,3 +1,14 @@
+import {
+  algorithmsCheatSheet,
+  algorithmsNotes,
+  architectureGradCheatSheet,
+  architectureGradNotes,
+  databaseCheatSheet,
+  databaseNotes,
+  osCheatSheet,
+  osNotes
+} from "@/data/seed/notes-fall-2026";
+
 export interface CourseContent {
   notes: string;
   cheatSheet: string;
@@ -1005,8 +1016,14 @@ export const notesByCourse: Record<string, CourseContent> = {
     ]
   },
   "computer-architecture": {
-    "notes": computerArchitectureMidtermNotes,
-    "cheatSheet": computerArchitectureMidtermCheatSheet,
+    /*
+     * CSE-240 and CS-5375 were merged into one class, so the notes are the
+     * union: the original RISC-V, encoding and 5-stage pipeline material
+     * followed by the graduate performance, ILP and multicore half. Neither
+     * replaces the other.
+     */
+    "notes": `${computerArchitectureMidtermNotes}\n\n---\n\n${architectureGradNotes}`,
+    "cheatSheet": `${computerArchitectureMidtermCheatSheet}\n\n---\n\n${architectureGradCheatSheet}`,
     "resources": [
       {
         "label": "RISC-V ISA Manual",
@@ -1043,6 +1060,76 @@ export const notesByCourse: Record<string, CourseContent> = {
         "label": "Stanford CS103 Archive",
         "href": "https://web.stanford.edu/class/archive/cs/cs103/cs103.1164/",
         "type": "article"
+      }
+    ]
+  },
+
+  // ── Fall 2026 ──────────────────────────────────────────────────
+  "analysis-of-algorithms": {
+    "notes": algorithmsNotes,
+    "cheatSheet": algorithmsCheatSheet,
+    "resources": [
+      {
+        "label": "Introduction to Algorithms (CLRS)",
+        "href": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/",
+        "type": "book"
+      },
+      {
+        "label": "MIT 6.006 Introduction to Algorithms",
+        "href": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/",
+        "type": "video"
+      },
+      {
+        "label": "Big-O Cheat Sheet",
+        "href": "https://www.bigocheatsheet.com/",
+        "type": "tool"
+      }
+    ]
+  },
+  "database-systems": {
+    "notes": databaseNotes,
+    "cheatSheet": databaseCheatSheet,
+    "resources": [
+      {
+        "label": "Database System Concepts (Silberschatz)",
+        "href": "https://www.db-book.com/",
+        "type": "book"
+      },
+      {
+        "label": "CMU 15-445 Database Systems",
+        "href": "https://15445.courses.cs.cmu.edu/",
+        "type": "video"
+      },
+      {
+        "label": "PostgreSQL Documentation",
+        "href": "https://www.postgresql.org/docs/current/",
+        "type": "article"
+      },
+      {
+        "label": "DB Fiddle",
+        "href": "https://www.db-fiddle.com/",
+        "type": "tool"
+      }
+    ]
+  },
+  "operating-systems": {
+    "notes": osNotes,
+    "cheatSheet": osCheatSheet,
+    "resources": [
+      {
+        "label": "Operating Systems: Three Easy Pieces",
+        "href": "https://pages.cs.wisc.edu/~remzi/OSTEP/",
+        "type": "book"
+      },
+      {
+        "label": "MIT 6.1810 Operating System Engineering",
+        "href": "https://pdos.csail.mit.edu/6.828/",
+        "type": "video"
+      },
+      {
+        "label": "The Little Book of Semaphores",
+        "href": "https://greenteapress.com/wp/semaphores/",
+        "type": "book"
       }
     ]
   }

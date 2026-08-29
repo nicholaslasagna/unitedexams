@@ -49,10 +49,8 @@ const courseGlyph: Record<string, string> = {
   "computer-architecture": "0x7F",
   "theory-of-automata": "δ(q,a)",
   "analysis-of-algorithms": "Θ(n lg n)",
-  "computer-systems-architecture": "IPC",
   "database-systems": "⋈",
-  "operating-systems": "fork()",
-  "us-history-since-1877": "1877"
+  "operating-systems": "fork()"
 };
 
 export default function LandingPage() {

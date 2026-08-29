@@ -8,7 +8,6 @@ import { algorithmsQuizSets } from "./quiz-algorithms";
 import { architectureSystemsQuizSets } from "./quiz-arch-systems";
 import { databaseSystemsQuizSets } from "./quiz-databases";
 import { operatingSystemsQuizSets } from "./quiz-os";
-import { usHistoryQuizSets } from "./quiz-us-history";
 
 const legacyQuizSets: QuizSet[] = [
   {
@@ -2160,8 +2159,7 @@ export const quizSets: QuizSet[] = [
   ...algorithmsQuizSets,
   ...architectureSystemsQuizSets,
   ...databaseSystemsQuizSets,
-  ...operatingSystemsQuizSets,
-  ...usHistoryQuizSets
+  ...operatingSystemsQuizSets
 ];
 
 export function getQuizSetById(quizId: string) {

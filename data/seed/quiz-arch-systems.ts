@@ -3,15 +3,16 @@ import type { QuizSet } from "@/lib/types";
 /**
  * Computer Systems Organization and Architecture (CS-5375) — Fall 2026.
  *
- * The graduate treatment: quantitative performance models and
- * instruction-level parallelism, then the multiprocessor material —
- * coherence, consistency and scaling — that the undergraduate course does
- * not reach.
+ * The graduate half of the merged architecture class: quantitative
+ * performance models and instruction-level parallelism, then the
+ * multiprocessor material — coherence, consistency and scaling. The
+ * RISC-V, encoding and 5-stage pipeline sets in quiz-ca.ts cover the
+ * organisation half of the same course.
  */
 export const architectureSystemsQuizSets: QuizSet[] = [
   {
     id: "arch-performance-ilp",
-    courseId: "computer-systems-architecture",
+    courseId: "computer-architecture",
     title: "Performance Models & Instruction-Level Parallelism",
     description:
       "Amdahl's law, the CPU performance equation, pipeline hazards, branch prediction and out-of-order execution.",
@@ -192,7 +193,7 @@ export const architectureSystemsQuizSets: QuizSet[] = [
   },
   {
     id: "arch-parallel-coherence",
-    courseId: "computer-systems-architecture",
+    courseId: "computer-architecture",
     title: "Multicore, Cache Coherence & Consistency",
     description:
       "Coherence protocols, the difference between coherence and consistency, false sharing, and how parallel speedup actually scales.",
