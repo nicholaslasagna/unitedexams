@@ -1716,6 +1716,20 @@ html[data-reduce-motion="on"] .page-embers { animation: none; }
   text-transform: none;
   letter-spacing: 0;
 }
+.ci-more {
+  display: inline-block;
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(var(--accent-text));
+  transition: color 150ms ease;
+}
+.ci-more:hover {
+  color: hsl(var(--text));
+}
+
 .ci-colophon {
   margin-top: 16px;
   padding-top: 16px;

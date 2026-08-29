@@ -5,6 +5,13 @@ export interface Course {
   id: string;
   code: string;
   name: string;
+  /**
+   * Shorter label for tight layouts. Some official course names run to
+   * several words ("Computer Systems Organization and Architecture") and
+   * wrap to four lines in the homepage index; the full name still appears
+   * on the class page itself.
+   */
+  shortName?: string;
   description: string;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
   tags: string[];

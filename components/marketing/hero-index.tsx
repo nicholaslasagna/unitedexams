@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CURRENT_TERM } from "@/data/seed/term";
 
 /**
  * Editorial-magazine "Course Index" — the front-of-book sidebar that
@@ -18,27 +19,37 @@ export function HeroIndex({
     id: string;
     code: string;
     name: string;
+    shortName?: string;
     estimatedMinutes: number;
   }>;
 }) {
+  /*
+   * The index is editorial furniture beside the wordmark, not the catalogue.
+   * It was built when there were four classes; at nine it grew taller than
+   * the hero itself and pushed the page out of proportion. Show a handful
+   * and send the rest to the real listing.
+   */
+  const MAX_ROWS = 5;
+  const shown = courses.slice(0, MAX_ROWS);
+  const remaining = courses.length - shown.length;
   return (
     <aside className="course-index" aria-label="Course index">
       <div className="ci-masthead">
         <p className="vol">
           Vol. <b>I</b> · Issue <b>01</b>
         </p>
-        <p className="term">Spring 2026</p>
+        <p className="term">{CURRENT_TERM.label}</p>
       </div>
 
       <p className="ci-label">Course Index</p>
 
       <ol className="ci-list">
-        {courses.map((course, idx) => (
+        {shown.map((course, idx) => (
           <li key={course.id}>
             <Link href={`/courses/${course.id}`} className="ci-row">
               <span className="ci-num">{String(idx + 1).padStart(2, "0")}</span>
               <span>
-                <span className="ci-name">{course.name}</span>
+                <span className="ci-name">{course.shortName ?? course.name}</span>
               </span>
               <span className="ci-meta">
                 <span>{course.code}</span>
@@ -48,6 +59,12 @@ export function HeroIndex({
           </li>
         ))}
       </ol>
+
+      {remaining > 0 ? (
+        <Link href="/courses" className="ci-more">
+          + {remaining} more {remaining === 1 ? "class" : "classes"}
+        </Link>
+      ) : null}
 
       <p className="ci-colophon">
         Each entry is a complete class — quizzes, exam simulations,

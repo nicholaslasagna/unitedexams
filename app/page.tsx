@@ -10,6 +10,7 @@ import { WorkflowSplit } from "@/components/marketing/workflow-split";
 import { InstitutionSection } from "@/components/marketing/institution-section";
 import { PricingSection } from "@/components/marketing/pricing-section";
 import { courses, quizSets } from "@/data/seed";
+import { CURRENT_TERM } from "@/data/seed/term";
 import { resolveQuizSetMode } from "@/lib/study/set-mode";
 
 /**
@@ -46,7 +47,12 @@ const courseGlyph: Record<string, string> = {
   "software-engineering": "{ }",
   "differential-equations": "∂y / ∂x",
   "computer-architecture": "0x7F",
-  "theory-of-automata": "δ(q,a)"
+  "theory-of-automata": "δ(q,a)",
+  "analysis-of-algorithms": "Θ(n lg n)",
+  "computer-systems-architecture": "IPC",
+  "database-systems": "⋈",
+  "operating-systems": "fork()",
+  "us-history-since-1877": "1877"
 };
 
 export default function LandingPage() {
@@ -69,6 +75,7 @@ export default function LandingPage() {
       return {
         ...course,
         glyph: courseGlyph[course.id] ?? "·",
+        shortName: course.shortName,
         quizCount,
         examCount,
         homeworkCount,
@@ -206,7 +213,9 @@ export default function LandingPage() {
             <h2>
               Open a class. <em>Start studying.</em>
             </h2>
-            <p className="section-meta">Four classes · Spring 26</p>
+            <p className="section-meta">
+              {courseAtlas.length} classes · {CURRENT_TERM.short}
+            </p>
           </div>
 
           <div className="courses-grid">

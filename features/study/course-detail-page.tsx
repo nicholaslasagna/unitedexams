@@ -185,7 +185,13 @@ export function CourseDetailContent({
 
   const activeTabMeta = tabMeta[tab] ?? tabMeta.quizzes;
 
-  if (!course || !content) {
+  /*
+   * Only the course itself is required. Notes used to be part of this
+   * condition, so a class whose written notes had not been added yet
+   * reported "Course not found" and hid its quizzes, exams and homework
+   * along with them.
+   */
+  if (!course) {
     return (
       <EmptyState
         icon={<Search className="h-6 w-6" />}
@@ -498,8 +504,26 @@ export function CourseDetailContent({
               </div>
             </CardHeader>
             <CardBody>
-              <Markdown content={content.notes} />
-              {routePrefix === "/app" ? (
+              {/*
+                A class can have a full quiz bank before anyone has written
+                its notes. Saying so is better than rendering an empty panel
+                that looks like a loading failure.
+              */}
+              {content?.notes ? (
+                <Markdown content={content.notes} />
+              ) : (
+                <EmptyState
+                  icon={<BookOpenText className="h-6 w-6" />}
+                  title="Notes aren't written for this class yet"
+                  description="The quizzes and practice exams above are complete — written notes for this class are still being put together."
+                  action={
+                    <Button asChild variant="secondary">
+                      <Link href="/contact?intent=implementation">Ask us to prioritise it</Link>
+                    </Button>
+                  }
+                />
+              )}
+              {content?.notes && routePrefix === "/app" ? (
                 <Button asChild variant="ghost" className="mt-4">
                   <Link href={withPrefix(routePrefix, `/notes/${course.id}`)}>
                     Open full notes
@@ -530,7 +554,20 @@ export function CourseDetailContent({
               </div>
             </CardHeader>
             <CardBody>
-              <Markdown content={content.cheatSheet} />
+              {content?.cheatSheet ? (
+                <Markdown content={content.cheatSheet} />
+              ) : (
+                <EmptyState
+                  icon={<NotebookText className="h-6 w-6" />}
+                  title="No cheat sheet for this class yet"
+                  description="Practice with the quizzes and exams above in the meantime — a cheat sheet gets written once the topic list settles."
+                  action={
+                    <Button asChild variant="secondary">
+                      <Link href="/contact?intent=implementation">Ask us to prioritise it</Link>
+                    </Button>
+                  }
+                />
+              )}
             </CardBody>
           </Card>
         </section>
@@ -539,7 +576,7 @@ export function CourseDetailContent({
       {/* ─── RESOURCES TAB ───────────────────────────────── */}
       {tab === "resources" ? (
         <section id="panel-resources" className="grid gap-3 md:grid-cols-2">
-          {content.resources.map((item, idx) => (
+          {(content?.resources ?? []).map((item, idx) => (
             <Card
               key={item.href}
               className={`overflow-hidden transition-all duration-200 ease-out-expo hover:-translate-y-0.5 hover:shadow-card-hover hover:border-border-accent stagger-${(idx % 6) + 1}`}

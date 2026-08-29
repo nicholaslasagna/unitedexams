@@ -3,6 +3,12 @@ import { computerArchitectureQuizSets } from "./quiz-ca";
 import { automataQuizSets } from "./quiz-automata";
 import { softwareEngineeringQuizSets } from "./quiz-se";
 import { testReviewQuizSetReplacements } from "./quiz-test-reviews";
+// ── Fall 2026 ──
+import { algorithmsQuizSets } from "./quiz-algorithms";
+import { architectureSystemsQuizSets } from "./quiz-arch-systems";
+import { databaseSystemsQuizSets } from "./quiz-databases";
+import { operatingSystemsQuizSets } from "./quiz-os";
+import { usHistoryQuizSets } from "./quiz-us-history";
 
 const legacyQuizSets: QuizSet[] = [
   {
@@ -2150,6 +2156,12 @@ export const quizSets: QuizSet[] = [
   ...computerArchitectureQuizSets,
   ...automataQuizSets,
   ...softwareEngineeringQuizSets,
+  // ── Fall 2026 additions ──
+  ...algorithmsQuizSets,
+  ...architectureSystemsQuizSets,
+  ...databaseSystemsQuizSets,
+  ...operatingSystemsQuizSets,
+  ...usHistoryQuizSets
 ];
 
 export function getQuizSetById(quizId: string) {
