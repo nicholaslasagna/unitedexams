@@ -36,7 +36,7 @@
     "clsx": "^2.1.1",
     "katex": "^0.17.0",
     "lucide-react": "^1.25.0",
-    "next": "^16.2.10",
+    "next": "^16.3.3",
     "react": "^19.2.7",
     "react-dom": "^19.0.0",
     "react-markdown": "^9.0.3",
@@ -60,7 +60,7 @@
     "tailwindcss": "^3.4.17",
     "typescript": "^6.0.3",
     "vitest": "^4.1.10",
-    "wrangler": "^4.112.0"
+    "wrangler": "^4.127.1"
   },
   "overrides": {
     "flatted": "^3.4.2",
