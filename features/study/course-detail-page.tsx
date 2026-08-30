@@ -111,6 +111,7 @@ export function CourseDetailContent({
   const { attempts, profile } = useAppData();
   const access = useAccess();
   const [tab, setTab] = useState("quizzes");
+  const [tabPinned, setTabPinned] = useState(false);
   const [query, setQuery] = useState("");
   const [difficulty, setDifficulty] = useState("all");
   const [sets, setSets] = useState<QuizSet[]>(() => (course ? getCourseQuizSets(course.id) : []));
@@ -144,6 +145,32 @@ export function CourseDetailContent({
   const attemptCount = courseAttempts.length;
   const mastery = course ? topicMasteryForCourse(attempts, course.id).slice(0, 8) : [];
   const weakTopics = useMemo(() => [...mastery].sort((a, b) => a.score - b.score).slice(0, 3), [mastery]);
+
+  /*
+   * Land on a tab that actually has sets in it.
+   *
+   * The default was always "Quizzes", but a class's material can be entirely
+   * homework and exam mode — Differential Equations is — and that class then
+   * opened on an empty panel reading "Nothing matches yet", which looks like
+   * the class has no content at all. Only applies until the reader picks a
+   * tab themselves.
+   */
+  useEffect(() => {
+    if (tabPinned || sets.length === 0) return;
+    const countFor = (mode: "quiz" | "exam" | "homework") =>
+      sets.filter((set) => resolveQuizSetMode(set) === mode).length;
+    if (countFor("quiz") > 0) return;
+    const fallback = countFor("homework") > 0 ? "homework" : countFor("exam") > 0 ? "exams" : null;
+    if (fallback) setTab(fallback);
+  }, [sets, tabPinned]);
+
+  const selectTab = (next: string) => {
+    setTabPinned(true);
+    setTab(next);
+  };
+
+  const activeTabNoun =
+    tab === "exams" ? "practice exams" : tab === "homework" ? "homework sets" : "quizzes";
 
   const filteredSets = useMemo(() => {
     const activeMode =
@@ -307,7 +334,7 @@ export function CourseDetailContent({
           <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">
             Everything for this class
           </span>
-          <Tabs tabs={tabDefs} value={tab} onChange={setTab} />
+          <Tabs tabs={tabDefs} value={tab} onChange={selectTab} />
         </div>
 
         <Card>
@@ -361,8 +388,16 @@ export function CourseDetailContent({
           {filteredSets.length === 0 ? (
             <EmptyState
               icon={<Search className="h-6 w-6" />}
-              title="Nothing matches yet"
-              description="Try resetting the search or switching lanes — there&apos;s usually a quiet entry point hidden in another lane."
+              title={
+                query || difficulty !== "all"
+                  ? "Nothing matches your filters"
+                  : `No ${activeTabNoun} for this class yet`
+              }
+              description={
+                query || difficulty !== "all"
+                  ? "Clear the search or difficulty filter to see everything in this class."
+                  : "The other tabs above have this class's material — quizzes, exams and homework are filed separately."
+              }
               action={
                 <Button
                   variant="secondary"
