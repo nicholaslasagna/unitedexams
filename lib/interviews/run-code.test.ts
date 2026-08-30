@@ -101,4 +101,35 @@ describe("code sandbox", () => {
   it("caps captured console output so a print loop cannot exhaust memory", () => {
     expect(source).toMatch(/LOG_LIMIT/);
   });
+
+  it("refuses the network in the frame's own CSP, which the worker inherits", () => {
+    /*
+     * Layer 3. Layers 1 and 2 stop the code from reaching this app and from
+     * holding a network function; this stops the browser from opening a
+     * connection at all, so a bypass of either one still has nowhere to send
+     * anything. Asserted on the frame HTML rather than the file so the
+     * comment explaining the policy cannot satisfy the test.
+     */
+    expect(frameHtml).toMatch(/http-equiv="Content-Security-Policy"/);
+    expect(frameHtml).toMatch(/connect-src 'none'/);
+    expect(frameHtml).toMatch(/default-src 'none'/);
+  });
+
+  it("puts the policy ahead of the script it governs", () => {
+    // A meta CSP that appears after a script does not apply to that script.
+    const policy = frameHtml.indexOf("Content-Security-Policy");
+    const script = frameHtml.indexOf("<script>");
+    expect(policy).toBeGreaterThan(-1);
+    expect(script).toBeGreaterThan(-1);
+    expect(policy).toBeLessThan(script);
+  });
+
+  it("still allows the pieces the runner actually needs", () => {
+    // The policy has to leave the worker and the compile step working, or
+    // the sandbox is secure and useless. blob: for the worker, unsafe-eval
+    // for new Function — both confined to the opaque origin.
+    expect(frameHtml).toMatch(/worker-src blob:/);
+    expect(frameHtml).toMatch(/script-src [^"]*'unsafe-eval'/);
+    expect(frameHtml).toMatch(/script-src [^"]*blob:/);
+  });
 });

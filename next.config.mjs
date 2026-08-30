@@ -11,11 +11,23 @@ if (process.env.NODE_ENV === "development") {
  * public/_headers - despite handling sign-in, student coursework and
  * Stripe billing.
  *
- * Deliberately not included: a Content-Security-Policy. A correct one here
- * has to account for Turnstile, Stripe, Supabase and Google Fonts, and
- * Next's inline bootstrap script needs a nonce; shipping a guessed policy
- * would break the site in ways that are invisible until a real user hits
- * them. That belongs in its own change, rolled out report-only first.
+ * Deliberately not included: a site-wide Content-Security-Policy. A correct
+ * one here has to account for Turnstile, Stripe, Supabase and Google Fonts,
+ * and Next's inline bootstrap script needs a nonce; shipping a guessed
+ * policy would break the site in ways that are invisible until a real user
+ * hits them. That belongs in its own change, rolled out report-only first.
+ *
+ * The code runner does not wait on that. It ships its own CSP on the
+ * sandboxed frame (lib/interviews/run-code.ts), which is strictly tighter
+ * than anything possible here: `connect-src 'none'` rather than a site
+ * policy that necessarily allows Supabase and Stripe.
+ *
+ * When a site-wide policy is added, one constraint: the runner's frame is a
+ * srcdoc document, so it inherits this page's policy on top of its own and
+ * the stricter of the two wins. script-src must keep 'unsafe-inline'
+ * 'unsafe-eval' blob: or the runner stops compiling code. A nonce-based
+ * script-src satisfies that only if the nonce reaches the frame, which it
+ * does not — serve the frame from its own route with its own headers first.
  */
 const securityHeaders = [
   // Never let a browser second-guess a declared Content-Type.

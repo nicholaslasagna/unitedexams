@@ -48,6 +48,15 @@
  *    This is what holds if a browser ever hands the sandboxed frame a real
  *    origin, or if someone edits the iframe attributes later.
  *
+ * 3. **Content-Security-Policy.** The frame carries its own policy, and a
+ *    worker built from a blob URL inherits the policy of the document that
+ *    created it. `connect-src 'none'` means the network is refused by the
+ *    browser itself, before any JavaScript runs — so even if layers 1 and 2
+ *    were both defeated (a browser bug, a way back to a pristine realm, an
+ *    edit that drops a name from BLOCKED_GLOBALS), there is nowhere for data
+ *    to go. `default-src 'none'` covers the rest: no images, no styles, no
+ *    remote scripts, no beacons.
+ *
  * Results are authenticated with a nonce held in a closure the candidate's
  * code cannot read, so overriding `postMessage` to report a passing run does
  * not work — that is score integrity rather than safety, but it is the same
@@ -246,8 +255,24 @@ self.onmessage = function (event) {
  * The sandboxed frame. It only relays: it builds the worker from the source
  * the parent hands it and passes messages through. Nothing about the
  * candidate's code is interpreted here.
+ *
+ * The inline CSP is layer 3, and the blob worker inherits it:
+ *
+ *   connect-src 'none'  no fetch, XHR, WebSocket, EventSource or sendBeacon,
+ *                       refused by the browser rather than by our shims
+ *   default-src 'none'  nothing else loads or leaves either
+ *   script-src          'unsafe-inline' for this relay, 'unsafe-eval' because
+ *                       compiling the candidate's code is the entire job, and
+ *                       blob: for the worker. All three are confined to this
+ *                       opaque origin, which holds nothing worth reaching.
+ *   worker-src blob:    the worker itself (child-src for older browsers)
+ *
+ * Keep the meta tag ahead of the script: a policy that arrives after the
+ * script it is meant to govern does not apply to it.
  */
-const FRAME_HTML = `<!doctype html><meta charset="utf-8"><script>
+const FRAME_HTML = `<!doctype html><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' blob:; child-src blob:; worker-src blob:; connect-src 'none'">
+<script>
 (function () {
   var worker = null;
   window.addEventListener("message", function (event) {
@@ -355,6 +380,11 @@ export function runCode(
       frame = document.createElement("iframe");
       // No allow-same-origin: that is what makes the origin opaque, and it
       // is the whole mitigation. Do not add it.
+      //
+      // srcdoc means the frame also inherits this page's CSP, and the
+      // stricter of the two policies wins. If a site-wide CSP is ever added,
+      // its script-src must keep 'unsafe-inline' 'unsafe-eval' blob: or this
+      // runner stops working — see the note in next.config.mjs.
       frame.setAttribute("sandbox", "allow-scripts");
       frame.setAttribute("aria-hidden", "true");
       frame.setAttribute("title", "Code runner sandbox");
