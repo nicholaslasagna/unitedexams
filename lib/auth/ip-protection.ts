@@ -11,17 +11,77 @@ const IP_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24; // 24 hours
 const TRUST_DEVICE_COOKIE_NAME = "ue_trust_device";
 const APPROVED_IP_COOKIE_NAME = "ue_ip_ok";
 
+/**
+ * Resolve the caller's IP address for the IP-based security controls:
+ * login IP approval, the exam network allowlist, Turnstile's remoteip and
+ * the audit log.
+ *
+ * The trust model matters more than the parsing. `x-forwarded-for` and
+ * `x-real-ip` are just request headers — anyone can send them, and they are
+ * only meaningful if a proxy you control overwrote them. Reading them
+ * unconditionally would let a caller pick their own IP and, with it, walk
+ * into an exam whose network allowlist they are not on.
+ *
+ * So:
+ *
+ *   - `cf-connecting-ip` is always trusted. Cloudflare sets it at the edge
+ *     and overwrites whatever the client sent, and this app is served from
+ *     a Cloudflare Worker, so every real request carries it.
+ *   - Everything else is honoured only when the deployment says a proxy
+ *     owns those headers (`TRUST_PROXY_IP_HEADERS`), or outside production
+ *     where there is no proxy and the headers can only be local. Of the
+ *     two, `x-forwarded-for` is read from the END: the last entry is the
+ *     one the nearest proxy appended, while the first is whatever the
+ *     client typed.
+ *
+ * Returns null when no trustworthy source exists. Callers treat null as
+ * "cannot evaluate" and skip IP gating, so this is deliberately the answer
+ * for an untrusted header rather than the header's value.
+ */
+function trustsForwardedHeaders() {
+  if (process.env.TRUST_PROXY_IP_HEADERS === "true") return true;
+  return process.env.NODE_ENV !== "production";
+}
+
+/**
+ * Reject anything that is not an IP literal. These values are hashed into
+ * allowlists and written to the audit log; a header full of arbitrary text
+ * should not become a stored identity.
+ */
+function normalizeIpCandidate(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  let value = raw.trim();
+  if (!value) return null;
+
+  // "[2001:db8::1]:443" -> "2001:db8::1"
+  const bracketed = value.match(/^\[([^\]]+)\](?::\d+)?$/);
+  if (bracketed) value = bracketed[1];
+  // "203.0.113.7:41234" -> "203.0.113.7" (IPv6 has colons of its own, so
+  // only strip a port when there is exactly one).
+  else if ((value.match(/:/g) ?? []).length === 1) value = value.split(":")[0];
+
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(value)) {
+    return value.split(".").every((part) => Number(part) <= 255) ? value : null;
+  }
+  // IPv6, including the IPv4-mapped ::ffff:203.0.113.7 form.
+  if (value.includes(":") && /^[0-9a-f:.]{2,45}$/i.test(value)) return value;
+
+  return null;
+}
+
 export function getClientIp(headers: Headers): string | null {
-  const cloudflareIp = headers.get("cf-connecting-ip")?.trim();
+  const cloudflareIp = normalizeIpCandidate(headers.get("cf-connecting-ip"));
   if (cloudflareIp) return cloudflareIp;
 
-  const realIp = headers.get("x-real-ip")?.trim();
+  if (!trustsForwardedHeaders()) return null;
+
+  const realIp = normalizeIpCandidate(headers.get("x-real-ip"));
   if (realIp) return realIp;
 
-  const forwardedFor = headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    const first = forwardedFor.split(",")[0]?.trim();
-    if (first) return first;
+  const chain = headers.get("x-forwarded-for")?.split(",") ?? [];
+  for (let i = chain.length - 1; i >= 0; i -= 1) {
+    const candidate = normalizeIpCandidate(chain[i]);
+    if (candidate) return candidate;
   }
 
   return null;

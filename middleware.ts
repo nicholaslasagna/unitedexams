@@ -171,7 +171,13 @@ export async function middleware(request: NextRequest) {
 
       const ipAddress = getClientIp(request.headers);
       if (!ipAddress) {
-        // If IP cannot be determined, skip IP gating entirely.
+        // Deliberately fails open. getClientIp returns null when no
+        // trustworthy source exists — on Cloudflare that means the edge
+        // header is missing, which should not happen — and locking every
+        // professor and admin out of the app is the worse failure. The
+        // trade: a request that arrives without cf-connecting-ip skips IP
+        // approval. Nothing a caller can arrange from the outside, since
+        // the edge sets that header itself.
         return response;
       }
 
