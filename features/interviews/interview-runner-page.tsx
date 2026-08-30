@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, KeyRound, ListChecks, Lock, Play, RotateCcw, Trophy, XCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, KeyRound, ListChecks, Lock, RotateCcw, Trophy } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
@@ -20,6 +20,7 @@ import { useAppData } from "@/lib/app-data-context";
 import { useAccess } from "@/lib/hooks/use-access";
 import { resolveLock } from "@/lib/access";
 import { PremiumUnlockNote } from "@/components/ui/premium-unlock-note";
+import { CodingWorkspace } from "@/features/interviews/coding-workspace";
 import { UpgradeButton } from "@/components/billing/upgrade-button";
 import type { Attempt, PerQuestionResult } from "@/lib/types";
 
@@ -579,7 +580,7 @@ export function InterviewRunnerContent({ interviewId }: { interviewId: string })
               ) : null}
 
               {current.question.coding ? (
-                <CodingWorkspacePanel
+                <CodingWorkspace
                   workspace={current.question.coding}
                   value={code[current.question.id] ?? current.question.coding.starterCode}
                   onChange={(next) =>
@@ -889,84 +890,3 @@ function BriefList({
   );
 }
 
-function CodingWorkspacePanel({
-  workspace,
-  value,
-  onChange,
-  run,
-  running,
-  onRun
-}: {
-  workspace: NonNullable<import("@/data/seed/interviews").InterviewQuestion["coding"]>;
-  value: string;
-  onChange: (next: string) => void;
-  run?: RunResult;
-  running: boolean;
-  onRun: () => void;
-}) {
-  return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[13px] font-semibold text-text">
-          Write your solution — keep the function named{" "}
-          <code className="font-mono text-accent">{workspace.functionName}()</code>
-        </p>
-        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-text-secondary">
-          JavaScript
-        </span>
-      </div>
-
-      <textarea
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        aria-label={`Your ${workspace.language} solution for ${workspace.functionName}`}
-        spellCheck={false}
-        rows={16}
-        className="w-full rounded-xl border border-borderc bg-[hsl(var(--bg-inset))] p-3 font-mono text-[12.5px] leading-relaxed text-text outline-none focus:border-accent/50"
-      />
-
-      <div className="flex flex-wrap items-center gap-3">
-        <Button variant="secondary" onClick={onRun} loading={running} loadingLabel="Running…">
-          <Play className="h-4 w-4" /> Run tests
-        </Button>
-        {run && !run.error ? (
-          <span
-            className={`font-mono text-[12.5px] font-semibold ${
-              run.passed === run.total ? "text-success" : "text-warn"
-            }`}
-          >
-            {run.passed} / {run.total} passing
-          </span>
-        ) : null}
-      </div>
-
-      {run?.error ? (
-        <p className="rounded-xl border border-danger/40 bg-danger/10 p-3 font-mono text-[12.5px] text-danger">
-          {run.error}
-        </p>
-      ) : null}
-
-      {run && !run.error ? (
-        <ul className="divide-y divide-borderc overflow-hidden rounded-xl border border-borderc">
-          {run.results.map((r) => (
-            <li key={r.name} className="flex items-start gap-2.5 bg-soft/40 p-3">
-              {r.passed ? (
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-              ) : (
-                <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-danger" />
-              )}
-              <div className="min-w-0">
-                <p className="text-[13px] text-text">{r.name}</p>
-                {!r.passed ? (
-                  <p className="mt-1 break-words font-mono text-[11.5px] text-text-secondary">
-                    {r.error ? `threw: ${r.error}` : `got ${r.actual} · expected ${r.expected}`}
-                  </p>
-                ) : null}
-              </div>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </div>
-  );
-}

@@ -22,6 +22,14 @@
     "billing:setup": "node scripts/setup-stripe-billing.mjs"
   },
   "dependencies": {
+    "@codemirror/autocomplete": "^6.20.3",
+    "@codemirror/commands": "^6.11.0",
+    "@codemirror/lang-javascript": "^6.2.5",
+    "@codemirror/language": "^6.12.4",
+    "@codemirror/search": "^6.7.1",
+    "@codemirror/state": "^6.7.1",
+    "@codemirror/view": "^6.43.9",
+    "@lezer/highlight": "^1.2.3",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.110.7",
     "canvas-confetti": "^1.9.3",
