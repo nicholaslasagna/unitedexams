@@ -93,8 +93,17 @@ export function labQuizId(mode: LabMode): string {
   return `${LAB_QUIZ_PREFIX}${mode}`;
 }
 
+/**
+ * Registered quiz sets that also count toward Exam 1 readiness.
+ *
+ * The Exams-tab simulation is a real sitting on the same topics, tagged the
+ * same way, so excluding it would mean a learner could sit the paper and
+ * watch their readiness not move.
+ */
+export const EXAM1_QUIZ_IDS = new Set(["db-exam1-simulation"]);
+
 export function isLabAttempt(attempt: Attempt): boolean {
-  return attempt.quizId.startsWith(LAB_QUIZ_PREFIX);
+  return attempt.quizId.startsWith(LAB_QUIZ_PREFIX) || EXAM1_QUIZ_IDS.has(attempt.quizId);
 }
 
 const MODE_TITLES: Record<LabMode, string> = {

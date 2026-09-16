@@ -343,6 +343,17 @@ export function ExamOnePage({ routePrefix }: { routePrefix: string }) {
                     the same paper. You get a score, a topic breakdown and the misconceptions to
                     fix at the end.
                   </p>
+                  <p className="mt-2 text-body-sm leading-relaxed text-text-secondary">
+                    Want the same questions every time instead, so one sitting can be compared
+                    with the next?{" "}
+                    <Link
+                      href={`${routePrefix}/quiz/db-exam1-simulation?mode=exam`}
+                      className="font-semibold text-accent underline underline-offset-2 hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-2/60"
+                    >
+                      Sit the fixed Exam 1 Simulation
+                    </Link>{" "}
+                    in this class&rsquo;s Exams tab.
+                  </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button
