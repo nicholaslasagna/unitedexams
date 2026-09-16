@@ -17,9 +17,9 @@ export function getStripeClient(): Stripe | null {
   cached = new Stripe(env.secretKey, {
     // Pin the API version so silent server-side upgrades can't change
     // event payload shapes. Bump deliberately when needed.
-    // Currently aligned to stripe-node v22.x, which expects the
-    // 2026-05-27 "dahlia" wire format.
-    apiVersion: "2026-05-27.dahlia",
+    // Currently aligned to stripe-node 22.6.x, which expects the
+    // 2026-08-26 "dahlia" wire format.
+    apiVersion: "2026-08-26.dahlia",
     typescript: true,
     appInfo: { name: "United Exams", url: "https://www.unitedexams.com" }
   });
