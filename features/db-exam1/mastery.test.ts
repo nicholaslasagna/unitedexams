@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Attempt } from "@/lib/types";
 import {
   buildLabAttempt,
+  completeUnanswered,
   formatExamDate,
   labAttemptTitle,
   masteryByTopic,
@@ -112,6 +113,30 @@ describe("mastery derives from real attempts only", () => {
     ];
     expect(masteryByTopic(attempts).semijoin.level).toBe("weak");
     expect(weakestTopics(attempts)[0].topic).toBe("semijoin");
+  });
+
+  it("never labels a 0% topic as learning", () => {
+    // "Learning - 0%" puts the label in direct contradiction with the number
+    // printed next to it, and reads as reassurance where none is warranted.
+    const oneWrong = [session([answer("multi-table", false, 1)])];
+    const mastery = masteryByTopic(oneWrong)["multi-table"];
+    expect(mastery.score).toBe(0);
+    expect(mastery.level).toBe("weak");
+
+    // And the level always agrees with the score it is shown beside.
+    const cases: Array<[number, number]> = [
+      [1, 0],
+      [2, 50],
+      [5, 20]
+    ];
+    cases.forEach(([total, percentCorrect]) => {
+      const correctCount = Math.round((percentCorrect / 100) * total);
+      const answers = Array.from({ length: total }, (_, i) =>
+        answer("division", i < correctCount, i)
+      );
+      const entry = masteryByTopic([session(answers)]).division;
+      if (entry.score < 60) expect(entry.level, `${entry.score}%`).toBe("weak");
+    });
   });
 
   it("lets recent improvement move a topic out of weak", () => {
@@ -275,6 +300,57 @@ describe("what to do next", () => {
         expect(question.explanation.length).toBeGreaterThan(20);
       });
     });
+  });
+});
+
+describe("running out of time on a timed exam", () => {
+  const paper = [
+    { id: "q1", topic: "equijoin" as const },
+    { id: "q2", topic: "semijoin" as const },
+    { id: "q3", topic: "division" as const },
+    { id: "q4", topic: "keys" as const }
+  ];
+
+  it("scores the whole paper, not just the part that was reached", () => {
+    // Two answered, then the clock runs out on question 3.
+    const answered: RecordedAnswer[] = [
+      { questionId: "q1", topic: "equijoin", correct: true, mistakes: [] },
+      { questionId: "q2", topic: "semijoin", correct: false, mistakes: ["semijoin-direction"] }
+    ];
+    const { answers, missed } = completeUnanswered(paper, answered, 2);
+
+    expect(answers).toHaveLength(4);
+    expect(missed.map((question) => question.id)).toEqual(["q3", "q4"]);
+    // Unreached questions count as wrong — otherwise running out of time
+    // would raise the score.
+    expect(answers.filter((answer) => answer.correct)).toHaveLength(1);
+    expect(answers[2]).toMatchObject({ questionId: "q3", correct: false });
+  });
+
+  it("never double-counts a question that was already answered", () => {
+    const answered: RecordedAnswer[] = paper.map((question) => ({
+      questionId: question.id,
+      topic: question.topic,
+      correct: true,
+      mistakes: []
+    }));
+    const { answers, missed } = completeUnanswered(paper, answered, 0);
+    expect(answers).toHaveLength(4);
+    expect(missed).toHaveLength(0);
+  });
+
+  it("handles the clock expiring before anything is answered", () => {
+    const { answers, missed } = completeUnanswered(paper, [], 0);
+    expect(answers).toHaveLength(4);
+    expect(missed).toHaveLength(4);
+    expect(answers.every((answer) => !answer.correct)).toBe(true);
+  });
+
+  it("produces an attempt scoring 0 when the whole paper is missed", () => {
+    const { answers } = completeUnanswered(paper, [], 0);
+    const attempt = buildLabAttempt({ mode: "mock-exam", answers, timeSpentSeconds: 3000 });
+    expect(attempt.score).toBe(0);
+    expect(attempt.totalCount).toBe(4);
   });
 });
 

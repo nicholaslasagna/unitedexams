@@ -8,7 +8,12 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress";
 import { MasteryRing } from "@/components/ui/mastery-ring";
 import { useAppData } from "@/lib/app-data-context";
-import { buildLabAttempt, type LabMode, type RecordedAnswer } from "./mastery";
+import {
+  buildLabAttempt,
+  completeUnanswered,
+  type LabMode,
+  type RecordedAnswer
+} from "./mastery";
 import { getMistake, rankMistakes, type MistakeTag } from "./mistakes";
 import { followUpQuestion } from "./practice";
 import type { LabQuestion } from "./question-model";
@@ -201,19 +206,12 @@ export function PracticeSession({
 
   useEffect(() => {
     if (!timed || remaining !== 0 || finished) return;
-    const collected = [...answersRef.current];
-    const missed = [...missedRef.current];
-    for (let i = indexRef.current; i < questions.length; i += 1) {
-      const question = questions[i];
-      if (collected.some((answer) => answer.questionId === question.id)) continue;
-      collected.push({
-        questionId: question.id,
-        topic: question.topic,
-        correct: false,
-        mistakes: []
-      });
-      missed.push(question);
-    }
+    const { answers: collected, missed: newlyMissed } = completeUnanswered(
+      questions,
+      answersRef.current,
+      indexRef.current
+    );
+    const missed = [...missedRef.current, ...newlyMissed];
     answersRef.current = collected;
     missedRef.current = missed;
     void finish(collected, missed);

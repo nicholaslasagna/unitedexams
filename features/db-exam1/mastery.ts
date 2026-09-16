@@ -191,7 +191,11 @@ const CONFIDENCE_THRESHOLD = 4;
 
 function levelFor(attempted: number, score: number): MasteryLevel {
   if (attempted === 0) return "not-started";
-  if (attempted >= 2 && score < 60) return "weak";
+  // Below 60% is weak from the first answer onward. Requiring two before
+  // saying so produced "Learning - 0%", a label arguing with the number
+  // printed beside it; and the day before an exam, softening a gap into
+  // "learning" is exactly the wrong error to make.
+  if (score < 60) return "weak";
   if (attempted >= CONFIDENCE_THRESHOLD && score >= 85) return "mastered";
   return "learning";
 }
@@ -358,6 +362,42 @@ export interface RecordedAnswer {
   topic: TopicId;
   correct: boolean;
   mistakes: MistakeTag[];
+}
+
+/**
+ * Fill in the questions a learner never reached when the clock runs out.
+ *
+ * A timed exam has to score the whole paper, not just the part that was
+ * attempted — otherwise running out of time *raises* your percentage, which
+ * would teach exactly the wrong lesson about pacing. Unreached questions are
+ * recorded as wrong and returned as missed so the review covers them.
+ *
+ * Pure and exported so it can be tested directly; waiting fifty minutes for
+ * the effect that calls it is not a test anyone runs twice.
+ */
+export function completeUnanswered<Q extends { id: string; topic: TopicId }>(
+  questions: Q[],
+  answered: RecordedAnswer[],
+  fromIndex: number
+): { answers: RecordedAnswer[]; missed: Q[] } {
+  const answers = [...answered];
+  const missed: Q[] = [];
+  const seen = new Set(answered.map((answer) => answer.questionId));
+
+  for (let i = Math.max(0, fromIndex); i < questions.length; i += 1) {
+    const question = questions[i];
+    if (seen.has(question.id)) continue;
+    seen.add(question.id);
+    answers.push({
+      questionId: question.id,
+      topic: question.topic,
+      correct: false,
+      mistakes: []
+    });
+    missed.push(question);
+  }
+
+  return { answers, missed };
 }
 
 /**
