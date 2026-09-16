@@ -425,10 +425,70 @@ const practiceReading: LabQuestion[] = [
     explanation:
       "No subscript is given, so this is a natural outer join over the attribute the two relations " +
       "share: guestNo. The left operand is preserved, so every guest appears at least once; a guest " +
-      "with no qualifying booking gets NULLs across all of Booking's attributes.",
+      "with no qualifying booking gets NULLs across all of Booking's attributes.\n\n" +
+      "Decode the glyph rather than memorising the answer: the bar sits on the side that is " +
+      "preserved. ⟕ keeps the left relation, ⟖ keeps the right, ⟗ keeps both. If the version you " +
+      "meet writes ⟖ here, the answer flips to \u201Cevery qualifying booking, with guest details " +
+      "where they exist\u201D — the next question drills exactly that.",
     hints: [
       "Which side of the bowtie carries the bar? That is the side that is preserved.",
       "With no subscript, the join matches on the attribute name both relations share."
+    ]
+  },
+  {
+    // The photographed glyph is small, and ⟕ / ⟖ differ by which side the bar
+    // sits on. Rather than rely on one reading of the photo, the mirrored
+    // form is drilled too — a learner who can decode the glyph answers either.
+    id: "sg-cpa-2d-mirror",
+    topic: "outer-join-right",
+    source: "study-guide",
+    sourceNote: "Class Practice Activity — Question 2(d), mirrored form",
+    difficulty: "core",
+    kind: "choice",
+    prompt:
+      "Same expression with the bar on the other side. Describe the relation this produces.",
+    context: {
+      ...HOTEL_SCHEMA,
+      expression: "Guest ⟖ (σ_{dateTo ≥ '2007-01-01'}(Booking))"
+    },
+    options: [
+      {
+        text:
+          "Every booking ending on or after 1 Jan 2007, with the guest's details attached — and any such booking whose guest is missing still appears, padded with NULLs.",
+        correct: true
+      },
+      {
+        text:
+          "Every guest, with their qualifying bookings, and guests with no such booking padded with NULLs.",
+        correct: false,
+        mistake: "outer-join-side",
+        note:
+          "That is the LEFT outer join. The bar has moved to the right side of the bowtie, so it is the bookings that are now preserved and guests with no qualifying booking drop out."
+      },
+      {
+        text: "Only the bookings whose guest exists in Guest.",
+        correct: false,
+        mistake: "outer-join-drops-unmatched",
+        note:
+          "That is an ordinary join. Preserving unmatched tuples on the named side is what makes this an outer join."
+      },
+      {
+        text: "Every guest paired with every qualifying booking.",
+        correct: false,
+        mistake: "outer-join-as-product",
+        note:
+          "Still only matching tuples are paired. Pairing everything with everything is the Cartesian product."
+      }
+    ],
+    explanation:
+      "The side named is the side preserved — that is the whole rule, and it is the only thing that " +
+      "changes between this question and the previous one. ⟖ preserves the right operand, so every " +
+      "qualifying booking survives and a guest with no qualifying booking does not appear at all. " +
+      "Referential integrity means a booking's guest always exists in practice, so the NULL padding " +
+      "is theoretical here; the point being tested is which side survives.",
+    hints: [
+      "Compare this with the previous question. Only the bar has moved.",
+      "Ask which relation is guaranteed to appear in full."
     ]
   },
   {
@@ -558,10 +618,14 @@ const practiceWriting: LabQuestion[] = [
     referenceText: "Π_{guestName, guestAddress}(Guest)",
     available: ["Guest"],
     explanation:
-      "Guest holds guestNo, guestName and guestAddress — there is no separate city attribute. The " +
-      "city is part of the address, so the closest the schema allows is to project guestName and " +
-      "guestAddress. Reaching for a `city` attribute here is the same mistake as reaching for city " +
-      "in Staff: check the schema before you write.",
+      "Guest holds guestNo, guestName and guestAddress — there is no separate city attribute. " +
+      "Relational algebra can only project attributes that exist, so the closest the schema allows " +
+      "is Π guestName, guestAddress (Guest); the city is inside the address and there is no operator " +
+      "here that can pull it out.\n\n" +
+      "That is the point of the question. Reaching for a `city` attribute is the same mistake as " +
+      "reaching for city in Staff — check the schema before you write. If your version of this sheet " +
+      "gives Guest a city attribute, the answer is simply Π guestName, city (Guest); the reasoning " +
+      "does not change.",
     hints: [
       "Look at the Guest schema and find the attribute that holds a city.",
       "There is not one. The address is stored whole."

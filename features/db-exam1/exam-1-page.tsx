@@ -25,7 +25,6 @@ import type { LabQuestion } from "./question-model";
 import { SourceMaterials } from "./source-materials";
 import { TableLab } from "./table-lab";
 import type { TopicId } from "./topics";
-import { useExamGamepad } from "./use-gamepad";
 
 /**
  * The Exam 1 experience.
@@ -83,12 +82,6 @@ export function ExamOnePage({ routePrefix }: { routePrefix: string }) {
     }
     return seedRef.current;
   }, []);
-
-  useExamGamepad({
-    onCancel: () => {
-      if (run) setRun(null);
-    }
-  });
 
   useEffect(() => {
     if (run) return;

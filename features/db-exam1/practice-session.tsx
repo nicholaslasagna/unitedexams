@@ -14,7 +14,6 @@ import { followUpQuestion } from "./practice";
 import type { LabQuestion } from "./question-model";
 import { QuestionRunner, type QuestionResult } from "./question-runner";
 import { topicLabel, type TopicId } from "./topics";
-import { useExamGamepad } from "./use-gamepad";
 
 /**
  * A run of questions, from start to summary.
@@ -84,11 +83,6 @@ export function PracticeSession({
   const active = detour ?? questions[index];
   const progress = questions.length > 0 ? (index / questions.length) * 100 : 0;
   const deferFeedback = timed;
-
-  useExamGamepad({
-    onCancel: onExit,
-    enabled: !finished
-  });
 
   useEffect(() => {
     const now = Date.now();

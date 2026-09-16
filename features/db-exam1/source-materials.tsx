@@ -163,13 +163,20 @@ const GROUPS: SourceGroup[] = [
     title: "Class Practice Activity — Questions 1 and 2",
     origin: "Class Practice Activity",
     summary:
-      "Foreign keys and the two integrity rules over the hotel schema, then four expressions to read back into English — including the division that asks who has booked at every London hotel.",
+      "Foreign keys and the two integrity rules over the hotel schema, then the expressions to read back into English — both outer-join directions, and the division that asks who has booked at every London hotel.",
     topics: [
       { id: "integrity", label: "Integrity" },
       { id: "reading-expressions", label: "Read the expressions" },
       { id: "division", label: "Division" }
     ],
-    questionIds: ["sg-cpa-1a", "sg-cpa-2a", "sg-cpa-2c", "sg-cpa-2d", "sg-cpa-2f"]
+    questionIds: [
+      "sg-cpa-1a",
+      "sg-cpa-2a",
+      "sg-cpa-2c",
+      "sg-cpa-2d",
+      "sg-cpa-2d-mirror",
+      "sg-cpa-2f"
+    ]
   },
   {
     id: "sg-cpa-write",
