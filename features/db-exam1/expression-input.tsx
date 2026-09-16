@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { RAExpression } from "@/components/ra/ra-expression";
+import { SymbolPalette, useCaretInsert } from "@/components/ra/symbol-palette";
 import { RelationTable } from "@/components/ra/relation-table";
 import { courseDatabase } from "@/data/seed/db-exam1/relations";
 import { evaluate } from "@/lib/relational-algebra/ast";
-import { BUILDER_PALETTE } from "@/lib/relational-algebra/notation";
 import { tryParseExpression } from "@/lib/relational-algebra/parser";
 import type { Relation } from "@/lib/relational-algebra/relation";
 import { cn } from "@/lib/utils";
@@ -68,48 +68,18 @@ export function ExpressionInput({
     }
   }, [parsed]);
 
-  /** Insert at the caret, leaving it inside the braces when there are any. */
-  const insert = (snippet: string) => {
-    const textarea = textareaRef.current;
-    if (!textarea) {
-      onChange(value + snippet);
-      return;
-    }
-    const start = textarea.selectionStart ?? value.length;
-    const end = textarea.selectionEnd ?? value.length;
-    const next = value.slice(0, start) + snippet + value.slice(end);
-    onChange(next);
-
-    const brace = snippet.indexOf("{");
-    const caret = brace >= 0 ? start + brace + 1 : start + snippet.length;
-    requestAnimationFrame(() => {
-      textarea.focus();
-      textarea.setSelectionRange(caret, caret);
-    });
-  };
+  // Relation names carry no braces, so the caret lands just after the name.
+  const insertRelation = useCaretInsert(textareaRef, value, onChange);
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-1.5">
-        {BUILDER_PALETTE.map((entry) => (
-          <button
-            key={`${entry.glyph}-${entry.label}`}
-            type="button"
-            disabled={disabled}
-            onClick={() => insert(entry.insert)}
-            title={entry.label}
-            aria-label={`Insert ${entry.label}`}
-            className={cn(
-              "h-9 min-w-9 rounded-lg border border-borderc bg-soft px-2 font-serif text-[1.05rem] font-semibold text-accent transition",
-              "hover:border-border-accent hover:bg-accent/10",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-2/60",
-              "disabled:opacity-40"
-            )}
-          >
-            {entry.glyph}
-          </button>
-        ))}
-      </div>
+      <SymbolPalette
+        targetRef={textareaRef}
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        label=""
+      />
 
       {available.length > 0 ? (
         <div className="flex flex-wrap items-center gap-1.5">
@@ -119,7 +89,7 @@ export function ExpressionInput({
               key={name}
               type="button"
               disabled={disabled}
-              onClick={() => insert(name)}
+              onClick={() => insertRelation(name)}
               className={cn(
                 "rounded-lg border border-borderc bg-soft px-2 py-1 font-mono text-[0.75rem] font-semibold text-text transition",
                 "hover:border-border-accent hover:bg-accent/10",

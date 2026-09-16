@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronRight, Lightbulb, BookCheck, GraduationCap, AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Markdown } from "@/components/ui/markdown";
 import { AssessmentChoiceRow } from "@/components/ui/assessment-choice-row";
+import { SymbolPalette, needsAlgebraSymbols } from "@/components/ra/symbol-palette";
 import { choiceMarkerForIndex, cn } from "@/lib/utils";
 import type { Question } from "@/lib/types";
 
@@ -66,6 +67,9 @@ export function QuestionCard({
     setRevealedHints(0);
   }, [question.id]);
 
+  const responseFieldRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
+  const showSymbolPalette = needsAlgebraSymbols(question.tags);
+
   const isLongResponse = question.type === "free";
   const isShortResponse = question.type === "fill";
   const isTextResponse = isLongResponse || isShortResponse;
@@ -119,8 +123,19 @@ export function QuestionCard({
             <label htmlFor={`free-response-${question.id}`} className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
               {isShortResponse ? "Your Answer" : "Your Solution"}
             </label>
+            {showSymbolPalette ? (
+              <SymbolPalette
+                targetRef={responseFieldRef}
+                value={responseText}
+                onChange={onResponseChange}
+                disabled={lockInteraction}
+                label="Insert a symbol"
+              />
+            ) : null}
+
             {isShortResponse ? (
               <Input
+                ref={responseFieldRef as React.RefObject<HTMLInputElement>}
                 id={`free-response-${question.id}`}
                 value={responseText}
                 onChange={(event) => onResponseChange(event.target.value)}
@@ -132,6 +147,7 @@ export function QuestionCard({
               />
             ) : (
               <textarea
+                ref={responseFieldRef as React.RefObject<HTMLTextAreaElement>}
                 id={`free-response-${question.id}`}
                 value={responseText}
                 onChange={(event) => onResponseChange(event.target.value)}
