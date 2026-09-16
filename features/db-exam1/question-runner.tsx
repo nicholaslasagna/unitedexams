@@ -486,13 +486,14 @@ export function QuestionRunner({
             {!result.correct ? (
               <Button
                 variant="ghost"
+                title="Work it through again. Your first answer is the one that counts."
                 onClick={() => {
                   setAnswer(emptyAnswer(question));
                   setResult(null);
                 }}
               >
                 <RotateCcw className="h-4 w-4" aria-hidden />
-                Retry this one
+                Try it again
               </Button>
             ) : null}
           </>

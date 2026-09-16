@@ -23,7 +23,7 @@ import {
   union,
   OperationError
 } from "./operations";
-import { cardinality, degree, type Relation } from "./relation";
+import { cardinality, degree, relationsEqual, type Relation } from "./relation";
 
 /**
  * The homework is the specification.
@@ -300,6 +300,57 @@ describe("division edge cases", () => {
   it("rejects a divisor whose attributes are not a subset of the dividend's", () => {
     const divisor: Relation = { name: "V", attributes: ["zzz"], tuples: [["1"]] };
     expect(() => divide(dividend, divisor)).toThrow(OperationError);
+  });
+});
+
+describe("comparing two relations", () => {
+  it("pairs columns by exact name before falling back to the base name", () => {
+    // A join over a shared attribute leaves two columns called j. Treating
+    // them as interchangeable made these two relations — which differ — look
+    // equal, so a wrong answer could grade as correct.
+    const left: Relation = {
+      name: "X",
+      attributes: ["r_id", "R.j", "s_id", "S.j"],
+      tuples: [["R1", "J1", "S1", "J2"]]
+    };
+    const swapped: Relation = {
+      name: "Y",
+      attributes: ["r_id", "S.j", "s_id", "R.j"],
+      tuples: [["R1", "J1", "S1", "J2"]]
+    };
+    expect(relationsEqual(left, swapped)).toBe(false);
+  });
+
+  it("still ignores column order when the columns are unambiguous", () => {
+    const a: Relation = { name: "X", attributes: ["a", "b"], tuples: [[1, 2]] };
+    const b: Relation = { name: "Y", attributes: ["b", "a"], tuples: [[2, 1]] };
+    expect(relationsEqual(a, b)).toBe(true);
+  });
+
+  it("still accepts a qualified name against an unqualified one", () => {
+    // A learner writing Π city should match a reference writing Π Branch.city.
+    const a: Relation = { name: "X", attributes: ["city"], tuples: [["London"]] };
+    const b: Relation = { name: "Y", attributes: ["Branch.city"], tuples: [["London"]] };
+    expect(relationsEqual(a, b)).toBe(true);
+  });
+
+  it("does not let values drift onto the wrong attribute", () => {
+    const a: Relation = { name: "X", attributes: ["a", "b"], tuples: [[1, 2]] };
+    const b: Relation = { name: "Y", attributes: ["a", "b"], tuples: [[2, 1]] };
+    expect(relationsEqual(a, b)).toBe(false);
+  });
+
+  it("separates a theta join from the same join with its j columns swapped", () => {
+    // R.j < S.j is a predicate where the two columns genuinely differ.
+    const lessThan = thetaJoin(relationR, relationS, compare(attr("R.j"), "<", attr("S.j"))).relation;
+    const swapped: Relation = {
+      ...lessThan,
+      attributes: lessThan.attributes.map((name) =>
+        name === "R.j" ? "S.j" : name === "S.j" ? "R.j" : name
+      )
+    };
+    expect(lessThan.tuples.length).toBeGreaterThan(0);
+    expect(relationsEqual(lessThan, swapped)).toBe(false);
   });
 });
 

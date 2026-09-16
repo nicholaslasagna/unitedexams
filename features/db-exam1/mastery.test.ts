@@ -303,6 +303,32 @@ describe("what to do next", () => {
   });
 });
 
+describe("one record per question", () => {
+  it("does not let a repeated answer inflate the total", () => {
+    // The session used to append on every submit, so "Retry this one" turned
+    // an eight-question set into nine records: the denominator grew and the
+    // discarded attempt stayed in mastery for good.
+    const answers: RecordedAnswer[] = [
+      { questionId: "q1", topic: "equijoin", correct: false, mistakes: ["wrong-join-attributes"] },
+      { questionId: "q2", topic: "semijoin", correct: true, mistakes: [] }
+    ];
+    const attempt = buildLabAttempt({ mode: "drill", answers, timeSpentSeconds: 60 });
+    expect(attempt.totalCount).toBe(2);
+
+    const ids = attempt.perQuestionResults.map((result) => result.questionId);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("counts a question once in topic mastery even across sessions", () => {
+    // The same question answered in two different sittings is two pieces of
+    // evidence, which is correct — this guards the within-session case only.
+    const first = session([answer("division", false, 1, ["division-any-not-all"])]);
+    const second = session([answer("division", true, 1)]);
+    const mastery = masteryByTopic([first, second]).division;
+    expect(mastery.attempted).toBe(2);
+  });
+});
+
 describe("running out of time on a timed exam", () => {
   const paper = [
     { id: "q1", topic: "equijoin" as const },

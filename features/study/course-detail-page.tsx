@@ -43,6 +43,7 @@ import {
 import type { QuizSet } from "@/lib/types";
 import { getCourseVisual } from "@/features/study/course-branding";
 import { displayTags } from "@/lib/study/display-tags";
+import { chooseRecommendedSet, recommendationCaption } from "@/features/study/recommendation";
 import { ExamPrepCallout } from "@/features/db-exam1/exam-prep-callout";
 
 const tabDefs = [
@@ -190,19 +191,11 @@ export function CourseDetailContent({
     });
   }, [sets, query, difficulty, tab]);
 
-  const recommendedSet = useMemo(() => {
-    if (sets.length === 0) return null;
-    if (courseAttempts.length === 0) {
-      // Pick the easiest quiz as the entry point
-      return (
-        sets
-          .filter((s) => resolveQuizSetMode(s) === "quiz")
-          .sort((a, b) => a.estMinutes - b.estMinutes)[0] ?? sets[0]
-      );
-    }
-    // Recommend the set with the lowest best score (most room to improve)
-    return [...sets].sort((a, b) => bestScoreForQuiz(attempts, a.id) - bestScoreForQuiz(attempts, b.id))[0];
-  }, [sets, courseAttempts.length, attempts]);
+  const recommendation = useMemo(
+    () => chooseRecommendedSet(sets, courseAttempts, attempts),
+    [sets, courseAttempts, attempts]
+  );
+  const recommendedSet = recommendation?.set ?? null;
 
   const recommendedMode = recommendedSet ? resolveQuizSetMode(recommendedSet) : "quiz";
   const recommendedHref = recommendedSet
@@ -275,9 +268,7 @@ export function CourseDetailContent({
                     {recommendedSet.title}
                   </p>
                   <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
-                    {courseAttempts.length === 0
-                      ? "New here? This is the easiest way into this class."
-                      : "This is your lowest score so far — the best place to improve."}
+                    {recommendation ? recommendationCaption(recommendation.reason) : null}
                     {" · "}about {recommendedSet.estMinutes} min
                   </p>
 

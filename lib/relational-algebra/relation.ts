@@ -211,21 +211,49 @@ export function relationsEqual(a: Relation, b: Relation): boolean {
   if (a.attributes.length !== b.attributes.length) return false;
   if (a.tuples.length !== b.tuples.length) return false;
 
-  // Map each of b's attributes onto a's positions.
-  const order: number[] = [];
+  /*
+   * Pair up the two attribute lists before comparing tuples.
+   *
+   * Matching on the unqualified name alone is not enough. A join over a
+   * shared attribute produces two columns with the same base name — `R.j` and
+   * `S.j` — and treating those as interchangeable made two relations with
+   * those columns swapped compare as equal. That is harmless for an equijoin,
+   * where both columns hold the same value by construction, and wrong for
+   * any other predicate, where they do not.
+   *
+   * So exact display names are paired first, and only what is left over is
+   * matched on the base name. That still lets a learner's `Π city` match a
+   * reference's `Π Branch.city`, which is the leniency worth keeping.
+   */
+  const order: Array<number | null> = a.attributes.map(() => null);
   const used = new Set<number>();
-  for (const attribute of a.attributes) {
-    const base = unqualify(attribute).toLowerCase();
+
+  const claim = (position: number, index: number) => {
+    order[position] = index;
+    used.add(index);
+  };
+
+  a.attributes.forEach((attribute, position) => {
+    const index = b.attributes.findIndex(
+      (candidate, i) => !used.has(i) && candidate.toLowerCase() === attribute.toLowerCase()
+    );
+    if (index !== -1) claim(position, index);
+  });
+
+  for (let position = 0; position < a.attributes.length; position += 1) {
+    if (order[position] !== null) continue;
+    const base = unqualify(a.attributes[position]).toLowerCase();
     const index = b.attributes.findIndex(
       (candidate, i) => !used.has(i) && unqualify(candidate).toLowerCase() === base
     );
     if (index === -1) return false;
-    used.add(index);
-    order.push(index);
+    claim(position, index);
   }
 
   const aKeys = new Set(a.tuples.map(tupleKey));
-  const bKeys = new Set(b.tuples.map((tuple) => tupleKey(order.map((i) => tuple[i]))));
+  const bKeys = new Set(
+    b.tuples.map((tuple) => tupleKey((order as number[]).map((i) => tuple[i])))
+  );
   if (aKeys.size !== bKeys.size) return false;
   for (const key of aKeys) if (!bKeys.has(key)) return false;
   return true;

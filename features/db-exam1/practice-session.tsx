@@ -154,6 +154,20 @@ export function PracticeSession({
     (result: QuestionResult) => {
       if (!detour) bumpTopicTime(result.question.topic);
       setAnswers((current) => {
+        /*
+         * One record per question. "Retry this one" clears the verdict so the
+         * question can be answered again, and appending each time meant an
+         * eight-question set could record nine answers — the retry inflating
+         * the denominator, and the discarded attempt lingering in mastery.
+         *
+         * The first answer is the one kept. A retry after reading the
+         * correction is practice, and letting it overwrite a wrong answer
+         * would make readiness measure what you can do once told, which is
+         * not what the exam asks.
+         */
+        if (current.some((answer) => answer.questionId === result.question.id)) {
+          return current;
+        }
         const next = [
           ...current,
           {
@@ -166,7 +180,7 @@ export function PracticeSession({
         answersRef.current = next;
         return next;
       });
-      if (!result.correct) {
+      if (!result.correct && !missedRef.current.some((q) => q.id === result.question.id)) {
         missedRef.current = [...missedRef.current, result.question];
       }
     },
