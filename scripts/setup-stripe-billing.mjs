@@ -40,8 +40,13 @@ if (!secretKey) {
   process.exit(1);
 }
 
+// No apiVersion pin here on purpose. lib/billing/stripe.ts pins one so
+// that webhook payload shapes cannot shift underneath the app; this
+// script only creates products and prices from an operator's terminal
+// and has nothing to freeze. Left to the SDK's own default it tracks
+// whatever stripe-node ships, which is how it stayed on a 2025 version
+// eighteen months behind the app until now.
 const stripe = new Stripe(secretKey, {
-  apiVersion: "2025-02-24.acacia",
   appInfo: { name: "United Exams billing setup" }
 });
 
