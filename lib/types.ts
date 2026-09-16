@@ -65,6 +65,14 @@ export interface PerQuestionResult {
   responseText?: string;
   selfMarked?: boolean;
   tags: string[];
+  /**
+   * Misconception tags a wrong answer revealed, e.g. "outer-join-side".
+   *
+   * Kept separate from `tags` so topic mastery is not polluted by diagnostic
+   * labels. Stored inside the attempt's JSON settings column, so this needs
+   * no migration.
+   */
+  mistakes?: string[];
 }
 
 export interface Attempt {

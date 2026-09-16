@@ -129,7 +129,8 @@ function asPerQuestionResults(value: unknown): PerQuestionResult[] {
           : [],
         responseText: item.responseText,
         selfMarked: item.selfMarked,
-        tags: Array.isArray(item.tags) ? item.tags.map((x) => String(x)) : []
+        tags: Array.isArray(item.tags) ? item.tags.map((x) => String(x)) : [],
+        mistakes: Array.isArray(item.mistakes) ? item.mistakes.map((x) => String(x)) : undefined
       };
     })
     .filter((entry) => entry.questionId.length > 0);

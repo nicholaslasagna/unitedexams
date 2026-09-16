@@ -43,6 +43,7 @@ import {
 import type { QuizSet } from "@/lib/types";
 import { getCourseVisual } from "@/features/study/course-branding";
 import { displayTags } from "@/lib/study/display-tags";
+import { ExamPrepCallout } from "@/features/db-exam1/exam-prep-callout";
 
 const tabDefs = [
   { id: "quizzes", label: "Quizzes" },
@@ -260,6 +261,8 @@ export function CourseDetailContent({
                   {course.description}
                 </p>
               </div>
+
+              <ExamPrepCallout courseId={course.id} routePrefix={routePrefix} />
 
               {/* Best place to start — the one obvious entry point */}
               {recommendedSet ? (

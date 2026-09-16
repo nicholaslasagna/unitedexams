@@ -1,4 +1,5 @@
 import { getQuizSet, quizSets } from "@/data/seed";
+import { labAttemptTitle } from "@/features/db-exam1/mastery";
 import type { Attempt } from "@/lib/types";
 
 export function attemptsForQuiz(attempts: Attempt[], quizId: string) {
@@ -79,7 +80,9 @@ export function recentAttempts(attempts: Attempt[], limit = 8) {
     .slice(0, limit)
     .map((attempt) => ({
       ...attempt,
-      quizTitle: getQuizSet(attempt.quizId)?.title ?? "Quiz"
+      // Exam 1 sessions have synthetic quiz ids that `getQuizSet` cannot
+      // resolve; without this every one of them reads "Quiz" in the feed.
+      quizTitle: getQuizSet(attempt.quizId)?.title ?? labAttemptTitle(attempt.quizId) ?? "Quiz"
     }));
 }
 
