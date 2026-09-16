@@ -348,7 +348,10 @@ function gradeExpression(
     // Unparseable submissions were already handled above.
   }
 
-  if (mistakes.length === 0) mistakes.push("missing-condition");
+  // Nothing recognisable: say so. Defaulting to a specific tag here used to
+  // tell a student who had missed a pure projection that they had "dropped a
+  // condition", on a question with no conditions in it at all.
+  if (mistakes.length === 0) mistakes.push("unclassified");
 
   return {
     correct: false,
