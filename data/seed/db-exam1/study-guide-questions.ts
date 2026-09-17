@@ -73,9 +73,11 @@ const musicTasks: LabQuestion[] = [
       source: "study-guide",
       sourceNote: "Class study guide — Task 1, Equijoin",
       difficulty: "core",
-      prompt:
-        "Perform an equijoin between Album and RecordLabel on Album.labelCode = RecordLabel.labelCode. Select every tuple in the result.",
-      context: MUSIC_CONTEXT,
+      prompt: "Select every tuple in this equijoin.",
+      context: {
+        ...MUSIC_CONTEXT,
+        expression: "Album ⋈_{Album.labelCode = RecordLabel.labelCode} RecordLabel"
+      },
       explanation:
         "L1 and L2 appear in both relations. L1 carries two albums (A1 and A2) and one label, giving " +
         "two rows; L2 carries one of each, giving one — three rows in total. A4 has labelCode L9, " +
@@ -112,8 +114,11 @@ const musicTasks: LabQuestion[] = [
       source: "study-guide",
       sourceNote: "Class study guide — Task 2, Natural join",
       difficulty: "core",
-      prompt: "Perform a natural join between Album and RecordLabel. Select every tuple in the result.",
-      context: MUSIC_CONTEXT,
+      prompt: "Select every tuple in this natural join.",
+      context: {
+        ...MUSIC_CONTEXT,
+        expression: "Album ⋈ RecordLabel"
+      },
       explanation:
         "labelCode is the only attribute name the two relations share, so it is the attribute the " +
         "natural join matches on — there is no predicate to write. The same three tuples as the " +
@@ -133,9 +138,11 @@ const musicTasks: LabQuestion[] = [
       source: "study-guide",
       sourceNote: "Class study guide — Task 3, Left outer join",
       difficulty: "core",
-      prompt:
-        "Perform Album LEFT OUTER JOIN RecordLabel on Album.labelCode = RecordLabel.labelCode. Select every tuple in the result.",
-      context: MUSIC_CONTEXT,
+      prompt: "Select every tuple in this left outer join.",
+      context: {
+        ...MUSIC_CONTEXT,
+        expression: "Album ⟕_{Album.labelCode = RecordLabel.labelCode} RecordLabel"
+      },
       explanation:
         "A left outer join preserves every tuple of Album. The three matching rows come through as " +
         "before, and A4 — whose label L9 does not exist — is kept with NULLs across all four of " +
@@ -165,9 +172,11 @@ const musicTasks: LabQuestion[] = [
       source: "study-guide",
       sourceNote: "Class study guide — Task 4, Right outer join",
       difficulty: "core",
-      prompt:
-        "Perform Album RIGHT OUTER JOIN RecordLabel on Album.labelCode = RecordLabel.labelCode. Select every tuple in the result.",
-      context: MUSIC_CONTEXT,
+      prompt: "Select every tuple in this right outer join.",
+      context: {
+        ...MUSIC_CONTEXT,
+        expression: "Album ⟖_{Album.labelCode = RecordLabel.labelCode} RecordLabel"
+      },
       explanation:
         "A right outer join preserves every tuple of RecordLabel. The three matching rows, plus " +
         "RedStone (L3) and Moonlight (L4) — labels with no albums — padded with NULLs across " +
@@ -198,8 +207,11 @@ const musicTasks: LabQuestion[] = [
       sourceNote: "Class study guide — Task 5, Full outer join",
       difficulty: "core",
       prompt:
-        "Perform a full outer join between Album and RecordLabel on labelCode. Select every tuple in the result.",
-      context: MUSIC_CONTEXT,
+        "Select every tuple in this full outer join.",
+      context: {
+        ...MUSIC_CONTEXT,
+        expression: "Album ⟗_{Album.labelCode = RecordLabel.labelCode} RecordLabel"
+      },
       explanation:
         "Three matching rows, plus the unmatched tuples from both sides: A4 padded on the right, " +
         "RedStone and Moonlight padded on the left. Six rows. Note that a Cartesian product of these " +
@@ -221,8 +233,11 @@ const musicTasks: LabQuestion[] = [
       sourceNote: "Class study guide — Task 6, Semijoin",
       difficulty: "core",
       prompt:
-        "Perform Album SEMIJOIN RecordLabel using Album.labelCode = RecordLabel.labelCode. Select every tuple in the result.",
-      context: MUSIC_CONTEXT,
+        "Select every tuple in this semijoin.",
+      context: {
+        ...MUSIC_CONTEXT,
+        expression: "Album ▷_{Album.labelCode = RecordLabel.labelCode} RecordLabel"
+      },
       explanation:
         "The semijoin returns the tuples of Album that have at least one matching label, and only " +
         "Album's attributes — degree 4, not 8. A1, A2 and A3 qualify; A4 does not, because L9 is not " +
