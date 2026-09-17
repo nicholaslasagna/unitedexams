@@ -602,6 +602,16 @@ const practiceWriting: LabQuestion[] = [
       { ask: "Put it together.", answer: "σ_{type = 'Single' ∧ price < 20}(Room)" }
     ]
   },
+  /*
+   * The photographed sheet was read as "names and cities". Guest has no city
+   * attribute, so that reading turned a plain projection into a trick about
+   * the schema — and the stated answer, Π guestName, guestAddress, answers
+   * "addresses" rather than "cities" anyway. Treating it as a transcription
+   * slip is the reading that makes the question and its own answer agree.
+   * If the sheet really does say cities, change `prompt` back and set
+   * referenceText to Π_{guestName, city}(Guest) — but then Guest needs a city
+   * attribute in relations.ts, because today it has none.
+   */
   {
     id: "sg-cpa-3c",
     topic: "projection",
@@ -609,40 +619,32 @@ const practiceWriting: LabQuestion[] = [
     sourceNote: "Class Practice Activity — Question 3(c)",
     difficulty: "intro",
     kind: "expression",
-    prompt: "List the names and cities of all guests.",
-    context: {
-      ...HOTEL_SCHEMA,
-      note:
-        "Read the Guest schema carefully before you answer — this question is partly about what the schema does and does not store."
-    },
+    prompt: "List the names and addresses of all guests.",
+    context: HOTEL_SCHEMA,
     referenceText: "Π_{guestName, guestAddress}(Guest)",
     available: ["Guest"],
     explanation:
-      "Guest holds guestNo, guestName and guestAddress — there is no separate city attribute. " +
-      "Relational algebra can only project attributes that exist, so the closest the schema allows " +
-      "is Π guestName, guestAddress (Guest); the city is inside the address and there is no operator " +
-      "here that can pull it out.\n\n" +
-      "That is the point of the question. Reaching for a `city` attribute is the same mistake as " +
-      "reaching for city in Staff — check the schema before you write. If your version of this sheet " +
-      "gives Guest a city attribute, the answer is simply Π guestName, city (Guest); the reasoning " +
-      "does not change.",
+      "Both attributes are in Guest, and nothing is being filtered out, so this is projection " +
+      "on its own: Π guestName, guestAddress (Guest).\n\n" +
+      "Π chooses columns, never rows. Every guest appears in the result — the only thing that " +
+      "changes is how many attributes come back, so the degree drops from 3 to 2 while the " +
+      "cardinality stays the same.",
     hints: [
-      "Look at the Guest schema and find the attribute that holds a city.",
-      "There is not one. The address is stored whole."
+      "Which relation holds a guest's name and address?",
+      "Only one, and nothing in the sentence filters the rows — so no σ and no join."
     ],
     walkthrough: [
-      { ask: "What attributes must be output?", answer: "The guest's name, and their city." },
+      { ask: "What attributes must be output?", answer: "guestName and guestAddress" },
       {
         ask: "Which relation holds them?",
-        answer: "Guest holds guestName — but it has no city attribute at all.",
-        why: "This is the moment to check the schema rather than assume. Guest is (guestNo, guestName, guestAddress)."
+        answer: "Guest, which is (guestNo, guestName, guestAddress).",
+        why: "Both are in the same relation, so nothing has to be joined."
       },
       {
-        ask: "So what stands in for city?",
-        answer: "guestAddress, which contains it.",
-        why: "You cannot project an attribute a relation does not have."
+        ask: "Does anything filter the rows?",
+        answer: "No — 'all guests' means every tuple stays.",
+        why: "No condition in the English means no σ in the algebra."
       },
-      { ask: "Do we need a join?", answer: "No — no other relation holds guest addresses." },
       { ask: "Put it together.", answer: "Π_{guestName, guestAddress}(Guest)" }
     ]
   },
