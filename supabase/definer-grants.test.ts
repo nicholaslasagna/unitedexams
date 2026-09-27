@@ -95,7 +95,6 @@ describe("SECURITY DEFINER grant surface", () => {
   it("parses the migrations it is meant to be checking", () => {
     // A regex that silently stops matching would make every assertion below
     // vacuously pass, which is the failure mode that matters here.
-    // grant test
     expect(files.length).toBeGreaterThan(20);
     expect(definitions.size).toBeGreaterThan(50);
     expect(grants.size).toBeGreaterThan(20);
