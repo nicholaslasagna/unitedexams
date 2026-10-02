@@ -1,4 +1,5 @@
 import type { QuizSet } from "@/lib/types";
+import { operatingSystemsExam1QuizSets } from "./os-exam1";
 
 /**
  * Operating Systems (CS-4352) — Fall 2026.
@@ -8,6 +9,7 @@ import type { QuizSet } from "@/lib/types";
  * systems.
  */
 export const operatingSystemsQuizSets: QuizSet[] = [
+  ...operatingSystemsExam1QuizSets,
   {
     id: "os-processes-scheduling",
     courseId: "operating-systems",
