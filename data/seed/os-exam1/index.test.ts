@@ -35,9 +35,9 @@ const pageRanges = (reference: string) => {
 };
 
 describe("Operating Systems chapter 1–6 study sets", () => {
-  it("registers the mock, six chapter quizzes, and written practice", () => {
+  it("registers complete exam review, the mock, six chapter quizzes, and written practice", () => {
     const registered = getCourseQuizSets("operating-systems");
-    expect(new Set(operatingSystemsExam1QuizSets.map((item) => item.id)).size).toBe(8);
+    expect(new Set(operatingSystemsExam1QuizSets.map((item) => item.id)).size).toBe(9);
     for (const item of operatingSystemsExam1QuizSets) {
       expect(registered.find((candidate) => candidate.id === item.id)).toEqual(item);
       expect(item.courseId).toBe("operating-systems");
@@ -50,6 +50,17 @@ describe("Operating Systems chapter 1–6 study sets", () => {
       expect(chapterSet.questions).toEqual(questions);
       expect(questions.some((q) => q.tags.includes("slide-exercise"))).toBe(true);
     }
+  });
+
+  it("includes every slide exercise and additional problem in complete exam review", () => {
+    const review = set("os-exam1-complete-review");
+    expect(resolveQuizSetMode(review)).toBe("exam");
+    expect(review.isExamSimulation).toBe(true);
+    expect(review.questions).toEqual(bank);
+    expect(review.questions).toHaveLength(193);
+    expect(review.questions.filter((q) => q.tags.includes("slide-exercise"))).toHaveLength(78);
+    expect(review.questions.filter((q) => q.type === "free")).toHaveLength(18);
+    expect(resolveQuestionCountTarget(review)).toBe(bank.length);
   });
 
   it("sits a fixed 48-question objective mock with balanced chapters and hidden answers", () => {

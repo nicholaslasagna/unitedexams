@@ -27,8 +27,23 @@ const chapterPractice: QuizSet[] = chapters.map((chapter, index) => ({
 
 // Fixed chapter selection keeps every full mock balanced even when its order is shuffled.
 const mockQuestions = chapters.flatMap((chapter) => chapter.questions.slice(0, 8));
+const fullBank = chapters.flatMap((chapter) => chapter.questions);
 
 export const operatingSystemsExam1QuizSets: QuizSet[] = [
+  {
+    id: "os-exam1-complete-review",
+    courseId: "operating-systems",
+    title: "Exam 1 Complete Review - All 193 Questions",
+    description: "Every slide exercise from all six decks, plus additional exam-style problems: 193 questions including 18 self-marked written responses. Choose 'Practice first - no timer' to work through the whole bank at your own pace. The guided exam option provides explanations and self-marking as you go, with a 120-minute practice clock. Use the separate 48-question mock for a timed run with answers hidden.",
+    difficulty: "Advanced",
+    estMinutes: 240,
+    timerDefaultMinutes: 120,
+    mode: "exam",
+    questionCountTarget: fullBank.length,
+    isExamSimulation: true,
+    tags: ["exam-1", "chapters-1-6", "slide-practice", "full-bank", "guided-review"],
+    questions: fullBank
+  },
   {
     id: "os-exam1-simulation",
     courseId: "operating-systems",
@@ -55,6 +70,6 @@ export const operatingSystemsExam1QuizSets: QuizSet[] = [
     timerDefaultMinutes: 120,
     mode: "homework",
     tags: ["exam-1", "chapters-1-6", "homework", "walkthrough"],
-    questions: chapters.flatMap((chapter) => chapter.questions.filter((question) => question.type === "free"))
+    questions: fullBank.filter((question) => question.type === "free")
   }
 ];
