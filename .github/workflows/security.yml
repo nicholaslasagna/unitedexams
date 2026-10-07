@@ -37,5 +37,7 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Fails on any high or critical advisory, except the ones recorded in
+      # scripts/audit-gate.mjs with a reason and a review date.
       - name: Audit dependencies
-        run: npm audit --audit-level=high
+        run: npm run audit:gate

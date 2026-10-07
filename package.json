@@ -19,7 +19,8 @@
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
     "public:audit": "node scripts/public-release-audit.mjs",
     "billing:check": "node scripts/setup-stripe-billing.mjs --check",
-    "billing:setup": "node scripts/setup-stripe-billing.mjs"
+    "billing:setup": "node scripts/setup-stripe-billing.mjs",
+    "audit:gate": "node scripts/audit-gate.mjs"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.3",
@@ -36,7 +37,7 @@
     "clsx": "^2.1.1",
     "katex": "^0.18.7",
     "lucide-react": "^1.46.0",
-    "next": "~16.3.5",
+    "next": "~16.3.8",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-markdown": "^9.0.3",
@@ -55,7 +56,7 @@
     "@types/react-dom": "^19.0.2",
     "autoprefixer": "^10.6.1",
     "eslint": "^9.39.5",
-    "eslint-config-next": "^16.3.5",
+    "eslint-config-next": "~16.3.8",
     "postcss": "^8.5.19",
     "tailwindcss": "^3.4.17",
     "typescript": "^6.0.3",
@@ -65,10 +66,10 @@
   "overrides": {
     "flatted": "^3.4.2",
     "minimatch@3.1.5": {
-      "brace-expansion": "^1.1.13"
+      "brace-expansion": "^1.1.21"
     },
     "minimatch@10.2.4": {
-      "brace-expansion": "^5.0.6"
+      "brace-expansion": "^5.0.12"
     },
     "picomatch": "^4.0.4",
     "vite": "^8.0.5",
@@ -77,6 +78,10 @@
     "next": {
       "postcss": "^8.5.10"
     },
-    "sharp": "^0.35.0"
+    "sharp": "^0.35.5",
+    "undici": "^7.29.1",
+    "source-map-js": "^1.2.2",
+    "postcss-selector-parser": "^7.1.6",
+    "katex": "$katex"
   }
 }
