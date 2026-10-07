@@ -629,10 +629,10 @@ export const operatingSystemsExam1Mock: QuizSet = {
   courseId: "operating-systems",
   title: "Exam 1 Mock — Real Format",
   description:
-    "The midterm's format: 10 multiple-choice questions, then 3 long answers, weighted 50% / 50%. Covers all twelve topics on the topic list, with the emphasis on multithreading models, Amdahl's Law, the process state transition graph and semaphore pseudocode. Answers stay hidden until you submit; you then grade your long answers against a marking scheme for partial credit. The 75-minute timer is an estimate — set it to your exam's length on the start screen.",
+    "The midterm's format: 10 multiple-choice questions, then 3 long answers, weighted 50% / 50%. Covers all twelve topics on the topic list, with the emphasis on multithreading models, Amdahl's Law, the process state transition graph and semaphore pseudocode. Answers stay hidden until you submit; you then grade your long answers against a marking scheme for partial credit. Timed at 50 minutes, the length of the real exam.",
   difficulty: "Advanced",
-  estMinutes: 75,
-  timerDefaultMinutes: 75,
+  estMinutes: 50,
+  timerDefaultMinutes: 50,
   mode: "exam",
   // Hidden answers during the sitting; graded after submission.
   isExamSimulation: false,

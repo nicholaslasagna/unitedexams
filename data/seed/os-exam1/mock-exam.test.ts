@@ -31,6 +31,11 @@ describe("the paper's format", () => {
     expect(mock.questionCountTarget).toBe(13);
   });
 
+  it("runs for the real exam's 50 minutes", () => {
+    expect(mock.timerDefaultMinutes).toBe(50);
+    expect(mock.estMinutes).toBe(50);
+  });
+
   it("hides answers during the sitting", () => {
     expect(mock.mode).toBe("exam");
     expect(mock.isExamSimulation).toBe(false);
