@@ -2,13 +2,18 @@ import type { Question, QuizSet } from "@/lib/types";
 
 /**
  * The Exam 1 mock, in the format the exam actually uses: ten multiple-choice
- * questions and three long answers, weighted half and half.
+ * questions and three long answers, weighted half and half, in 50 minutes.
  *
- * Built from the topic list for the midterm, the chapter 1–6 slides and the
- * three assignments, leaning where the course has said the exam leans:
- * multithreading models, Amdahl's Law, the process state transition graph
- * and semaphore pseudocode. Between them the thirteen questions touch all
- * twelve topics on the list, one tag each (see TOPIC_LIST below).
+ * Every question is modelled on a specific in-class question slide or
+ * assignment item, in that item's own format — the short fill-in-the-blank
+ * stems, the course's own fork() code, the do { … } while (TRUE) semaphore
+ * structure, and the assignments' long-answer wording — because that is what
+ * the exam is drawn from. The first version read like a textbook instead.
+ *
+ * The long answers follow the stated emphasis: the process state transition
+ * graph, semaphore pseudocode, and Amdahl's Law. Multithreading models, also
+ * emphasised, get two multiple-choice questions. Between them the thirteen
+ * questions touch all twelve topics on the topic list (see TOPIC_LIST).
  */
 
 const md = (...lines: string[]) => lines.join("\n");
@@ -38,359 +43,315 @@ export const TOPIC_LIST: Record<string, number> = {
 
 const partA: Question[] = [
   {
-    id: "os-mock-a1",
+    id: "os-mock-mc1",
     type: "single",
     difficulty: "easy",
     points: MC_POINTS,
-    prompt: "Which of the following is **not** a goal of an operating system?",
+    prompt: "Which of the following best describes the role of the operating system in a computer system?",
     options: [
-      "Provide an environment in which users can execute programs conveniently and efficiently",
-      "Allocate the computer's resources to tasks as fairly and efficiently as possible",
-      "Supervise the execution of user programs to prevent errors and improper use of the computer",
-      "Solve the user's computing problems directly, the way a word processor or web browser does"
+      "Provides the basic computing resources, such as the CPU, memory, and I/O devices",
+      "Solves the users' computing problems through programs such as word processors, browsers, or games",
+      "Controls and coordinates the use of the hardware among the various applications and users",
+      "None of the above"
     ],
-    correct: [3],
+    correct: [2],
     explanation: md(
-      "The first three are operating-system goals from Chapter 1. Solving the user's computing problems is the job of **application programs** — the layer *above* the operating system.",
+      "A computer system has three layers, and the OS is the middle one:",
       "",
-      "The OS sits between applications and hardware: it controls and coordinates the hardware's use among applications and users, rather than doing the user's task itself."
+      "- **Hardware** provides the basic computing resources: CPU, memory, I/O devices. That is option A.",
+      "- **The operating system** controls and coordinates the use of that hardware among applications and users.",
+      "- **Application programs** solve the users' computing problems. That is option B.",
+      "",
+      "The OS is defined as the program that acts as an intermediary between the user and the hardware."
     ),
     walkthroughSteps: [
-      "A computer system has three layers: hardware (CPU, memory, I/O), the operating system, and application programs.",
-      "The OS goals are about the environment, resource allocation, supervision and I/O management — all in service of running programs.",
-      "Word processors and browsers are applications. They solve the user's problem; the OS makes it possible for them to run."
+      "Name the three layers: hardware, operating system, application programs.",
+      "Options A and B describe the layers either side of the OS.",
+      "The OS's own job is controlling and coordinating the hardware's use among applications and users."
     ],
-    references: ["Ch. 1 Introduction — Computer System Structure; Operating System Goals", "Assignment 1, Part A Q1–Q2"],
+    references: ["Ch. 1 Introduction — slides 21–22, Computer System Structure", "Assignment 1, Part A Q1"],
     tags: ["os-roles"]
   },
   {
-    id: "os-mock-a2",
-    type: "single",
-    difficulty: "med",
-    points: MC_POINTS,
-    prompt:
-      "An operating system keeps only a few essential services in the kernel and moves the rest into separate user-level programs that communicate by message passing. Which structure is this, and what is its main disadvantage?",
-    options: [
-      "Layered — it is difficult to define what each layer should contain",
-      "Microkernel — the performance overhead of communication between user space and kernel space",
-      "Monolithic — too many functions are packed into one level",
-      "Loadable kernel modules — a module cannot be added while the system is running"
-    ],
-    correct: [1],
-    explanation: md(
-      "This is a **microkernel**. Its benefits are that it is easier to extend and more reliable, because less code runs in kernel mode. Its disadvantage is the overhead of every user-space ↔ kernel-space message. Mach is the example; the macOS kernel is partly based on it.",
-      "",
-      "- **Monolithic**: fast communication with the kernel, but too many functions in one layer.",
-      "- **Layered**: easy to debug layer by layer, but low efficiency — and defining the layers is the hard part, which is why option A is a true statement about the *wrong* structure.",
-      "- **Modules**: the whole point is that services load dynamically, so option D has it backwards."
-    ),
-    walkthroughSteps: [
-      "'Few essential services in the kernel, the rest as user-level programs' is the definition of a microkernel.",
-      "Those user-level services talk to each other by message passing, through the kernel.",
-      "Every message crosses between user space and kernel space — that crossing is the performance cost."
-    ],
-    references: ["Ch. 2 OS Structure — Microkernels; Monolithic; Layered; Modules", "Assignment 1, Part B Q5"],
-    tags: ["os-structures"]
-  },
-  {
-    id: "os-mock-a3",
-    type: "single",
-    difficulty: "med",
-    points: MC_POINTS,
-    prompt: "Which of the following instructions should be allowed to execute **only in kernel mode**?",
-    options: [
-      "Read the clock",
-      "Turn off interrupts",
-      "Issue a trap instruction to request a system call",
-      "Add two values held in registers"
-    ],
-    correct: [1],
-    explanation: md(
-      "**Turning off interrupts** must be privileged. The OS sets a timer before handing the CPU to a user program; if that program could disable interrupts, the timer interrupt would never arrive and the OS could never regain control.",
-      "",
-      "- Reading the clock changes nothing.",
-      "- A **trap** is *how* a user program enters the kernel, so it has to be executable in user mode — the switch to kernel mode is the result of the trap, not a precondition for it.",
-      "- Register arithmetic is ordinary user-mode computation."
-    ),
-    walkthroughSteps: [
-      "Ask of each instruction: could a user program use it to escape the OS's control or interfere with other programs?",
-      "Disabling interrupts would defeat the timer, so a program could keep the CPU forever.",
-      "The trap is the doorway into kernel mode — if it required kernel mode, no system call could ever be made."
-    ],
-    references: ["Ch. 1 Introduction — Dual-mode Operation; Timer; User Mode or Kernel Mode"],
-    tags: ["operation-modes"]
-  },
-  {
-    id: "os-mock-a4",
-    type: "single",
-    difficulty: "med",
-    points: MC_POINTS,
-    prompt:
-      "A program needs to pass more parameters to a system call than will fit in the CPU's registers. Which approach does Linux use?",
-    options: [
-      "The system call fails, because parameters can only be passed in registers",
-      "The parameters are stored in a block in memory, and the address of the block is passed in a register",
-      "The parameters are copied into cache memory, where the kernel reads them",
-      "The call is split into several system calls, each passing one parameter"
-    ],
-    correct: [1],
-    explanation: md(
-      "There are three general methods for passing parameters to the OS:",
-      "",
-      "1. **Registers** — simplest, but limited by how many registers there are.",
-      "2. **A block (table) in memory**, with the block's address passed in a register — the approach Linux takes.",
-      "3. **The stack** — the program pushes the parameters and the OS pops them.",
-      "",
-      "Block and stack do not limit the number or length of parameters. Cache memory is not a parameter-passing technique at all."
-    ),
-    walkthroughSteps: [
-      "Registers run out, so a second mechanism is needed for the overflow.",
-      "Put the parameters somewhere in memory and pass only their location — one register, any number of parameters.",
-      "That is the block method, and it is the one the slides name as Linux's."
-    ],
-    references: ["Ch. 2 OS Structure — System Call Parameter Passing", "Assignment 1, Part B Q4"],
-    tags: ["system-calls"]
-  },
-  {
-    id: "os-mock-a5",
-    type: "single",
-    difficulty: "med",
-    points: MC_POINTS,
-    prompt: md(
-      "Consider this C program while it is running:",
-      "",
-      "```c",
-      "int total = 0;                               // declared outside every function",
-      "",
-      "int main(void) {",
-      "    int count = 5;",
-      "    int *buf = malloc(100 * sizeof(int));",
-      "    /* ... */",
-      "}",
-      "```",
-      "",
-      "In the process's memory layout, where do `total`, `count`, and the 100 integers that `malloc` allocates live?"
-    ),
-    options: [
-      "total: data section · count: stack · the malloc'd integers: heap",
-      "total: stack · count: data section · the malloc'd integers: heap",
-      "total: data section · count: heap · the malloc'd integers: stack",
-      "total: text section · count: stack · the malloc'd integers: data section"
-    ],
-    correct: [0],
-    explanation: md(
-      "A process has four parts:",
-      "",
-      "- **Text** — the compiled program code.",
-      "- **Data** — global variables, so `total`.",
-      "- **Heap** — memory allocated dynamically at run time with `malloc`/`new` and released with `free`/`delete`, so the 100 integers.",
-      "- **Stack** — temporary data: function parameters, return addresses and local variables, so `count`.",
-      "",
-      "One trap: `buf` itself is a local variable, so the *pointer* is on the stack. Only what it points to is on the heap."
-    ),
-    walkthroughSteps: [
-      "`total` is global, so it belongs to the data section for the life of the process.",
-      "`count` is local to `main`, so it lives in `main`'s stack frame.",
-      "`malloc` allocates at run time from the heap; the pointer `buf` holding its address is still a stack local."
-    ],
-    references: ["Ch. 3 Process — Process Concept; Memory Layout of a C Program"],
-    tags: ["process-concept"]
-  },
-  {
-    id: "os-mock-a6",
+    id: "os-mock-mc2",
     type: "single",
     difficulty: "easy",
     points: MC_POINTS,
-    prompt: "The CPU switches from process P0 to process P1. Which sequence describes the context switch?",
+    prompt: "A microkernel is a kernel ____.",
     options: [
-      "Save P0's state into P0's PCB, then load P1's saved state from P1's PCB",
-      "Save P0's state into P1's PCB, then start P1 from its first instruction",
-      "Copy P0's entire address space to disk, then load P1's address space from disk",
-      "Terminate P0, then create P1 with fork()"
+      "containing many components that are optimized to reduce resident memory size",
+      "that is compressed before loading in order to reduce its resident memory size",
+      "that is compiled to produce the smallest size possible when stored to disk",
+      "that is stripped of all nonessential components"
     ],
-    correct: [0],
+    correct: [3],
     explanation: md(
-      "A process's context is represented in its **process control block** — program counter, CPU registers, process state, scheduling and memory-management information.",
+      "A microkernel **moves as much as possible out of the kernel into user space**, keeping only a few essential services. The rest of the OS runs as separate user-level programs that communicate by message passing.",
       "",
-      "On a switch the OS saves the outgoing process's state into *its own* PCB and loads the incoming process's saved state from *its* PCB, so P1 resumes exactly where it left off — not from its first instruction. Nothing is terminated and no address space is copied to disk. The system does no useful work while switching, which is why context-switch time is overhead."
+      "- Benefits: easier to extend, and more reliable because less code runs in kernel mode.",
+      "- Disadvantage: the performance overhead of user-space to kernel-space communication.",
+      "- Example: Mach; the macOS kernel is partly based on it.",
+      "",
+      "The other three options are about making the kernel *smaller to store*, which is not what \"micro\" means here."
     ),
     walkthroughSteps: [
-      "Each process owns one PCB, and its saved CPU state goes back into that same PCB.",
-      "P1 has run before, so its PCB already holds the point it should resume from.",
-      "Save P0 into PCB0, then load P1 from PCB1."
+      "Recall the definition: few essential services in the kernel, everything else in user space.",
+      "Options A–C are about memory or disk size, not about what the kernel contains.",
+      "Stripped of all nonessential components is the definition."
     ],
-    references: ["Ch. 3 Process — Process Control Block; CPU Switch From Process to Process; Context Switch"],
+    references: ["Ch. 2 OS Structure — slides 42–43, Microkernels; in-class question, slide 48"],
+    tags: ["os-structures"]
+  },
+  {
+    id: "os-mock-mc3",
+    type: "single",
+    difficulty: "easy",
+    points: MC_POINTS,
+    prompt: "A ____ can be used to prevent a user program from never returning control to the operating system.",
+    options: ["portal", "program counter", "firewall", "timer"],
+    correct: [3],
+    explanation: md(
+      "The OS sets a **timer** before turning control over to a user program. The counter is set to a predefined number and decremented; when it reaches 0 it generates an interrupt, and control transfers automatically back to the OS — even if the program is in an infinite loop.",
+      "",
+      "This is also why turning off interrupts must be a kernel-mode instruction: a user program that could disable them could stop the timer from ever firing."
+    ),
+    walkthroughSteps: [
+      "The problem is a program that hogs the CPU or loops forever and never gives control back.",
+      "The OS needs something that interrupts it regardless of what the program does.",
+      "That is the timer: when its counter reaches 0 it interrupts, and control goes back to the OS."
+    ],
+    references: ["Ch. 1 Introduction — slide 44, Timer; in-class question, slide 45"],
+    tags: ["operation-modes"]
+  },
+  {
+    id: "os-mock-mc4",
+    type: "single",
+    difficulty: "easy",
+    points: MC_POINTS,
+    prompt: "_____ is/are not a technique for passing parameters from an application to a system call.",
+    options: ["Cache memory", "Registers", "Stack", "Special block in memory"],
+    correct: [0],
+    explanation: md(
+      "The three general methods for passing parameters to the OS are:",
+      "",
+      "1. **Registers** — the simplest, but there may be more parameters than registers.",
+      "2. **A block (table) in memory**, with the address of the block passed in a register — the approach Linux takes.",
+      "3. **The stack** — the program pushes the parameters and the OS pops them.",
+      "",
+      "Block and stack do not limit the number or length of the parameters. **Cache memory** is not one of the methods."
+    ),
+    walkthroughSteps: [
+      "List the three methods: registers, a block in memory, the stack.",
+      "Registers, Stack and Special block in memory are all on that list.",
+      "Cache memory is the one that is not."
+    ],
+    references: ["Ch. 2 OS Structure — slide 30, System Call Parameter Passing; in-class question, slide 31", "Assignment 1, Part B Q4"],
+    tags: ["system-calls"]
+  },
+  {
+    id: "os-mock-mc5",
+    type: "single",
+    difficulty: "easy",
+    points: MC_POINTS,
+    prompt: "A ________ saves the state of the currently running process and restores the state of the next process to run.",
+    options: ["save-and-restore", "state switch", "context switch", "none of the above"],
+    correct: [2],
+    explanation: md(
+      "A **context switch** happens when the CPU switches from one process to another. The context of a process is represented in its **PCB**, so the system saves the state of the old process into its PCB and loads the saved state of the new process from its PCB.",
+      "",
+      "\"Save-and-restore\" and \"state switch\" describe what happens, but neither is the term."
+    ),
+    walkthroughSteps: [
+      "Where is a process's state kept? In its process control block.",
+      "Switching the CPU between processes means saving one PCB's state and loading another's.",
+      "The name for that is a context switch."
+    ],
+    references: ["Ch. 3 Process — slides 16–17, Context Switch; in-class question, slide 18"],
     tags: ["context-switching"]
   },
   {
-    id: "os-mock-a7",
+    id: "os-mock-mc6",
     type: "single",
     difficulty: "hard",
     points: MC_POINTS,
     prompt: md(
-      "Including the original process, how many processes are there in total once this program has run? Assume every `fork()` succeeds.",
+      "Consider the following code segment:",
       "",
       "```c",
-      "int main(void) {",
-      "    for (int i = 0; i < 2; i++)",
-      "        fork();",
-      "",
-      "    if (fork() == 0)",
-      "        fork();",
-      "",
-      "    return 0;",
+      "pid_t pid;",
+      "pid = fork();",
+      "if (pid == 0) { /* child process */",
+      "    fork();",
+      "    thread_create( . . .);",
       "}",
-      "```"
+      "fork();",
+      "```",
+      "",
+      "Including the initial parent process, how many processes are there, and how many threads are created by `thread_create()`?"
     ),
-    options: ["6", "8", "12", "16"],
-    correct: [2],
+    options: [
+      "5 processes; 2 threads",
+      "6 processes; 2 threads",
+      "6 processes; 3 threads",
+      "8 processes; 4 threads"
+    ],
+    correct: [1],
     explanation: md(
-      "**12.** Count stage by stage, remembering that a child continues from the point of the `fork()` that created it:",
+      "**6 processes, 2 threads.** Name the processes as they appear:",
       "",
-      "| After | Processes |",
-      "|---|---|",
-      "| start | 1 |",
-      "| loop, i = 0 | 2 |",
-      "| loop, i = 1 | 4 |",
-      "| `fork()` in the `if` | 8 |",
-      "| inner `fork()` | 12 |",
+      "| Step | What happens | Processes |",
+      "|---|---|---|",
+      "| start | P0 | 1 |",
+      "| `pid = fork();` | P0 creates P1. In P1, `pid == 0` | 2 |",
+      "| `fork();` inside the `if` | only P1 is inside the `if`: it creates P2, which is a copy of P1, so P2's `pid` is also 0 | 3 |",
+      "| `thread_create()` | P1 and P2 are both inside the `if`, so each creates one thread | 3, plus **2 threads** |",
+      "| final `fork();` | P0, P1 and P2 each fork once more | **6** |",
       "",
-      "`fork()` returns `0` in the child and the child's PID (> 0) in the parent. So of the 8 processes after the `if`'s `fork()`, only the 4 new children see `0` and take the inner `fork()` — adding 4, not 8. Answering 16 means treating every process as if it took the inner branch."
+      "Why not the distractors:",
+      "",
+      "- **5 processes** forgets to count the initial parent.",
+      "- **3 threads** assumes P0 also runs `thread_create()` — but P0's `pid` is the child's PID, not 0, so it skips the `if`.",
+      "- **4 threads** assumes the final `fork()` copies the extra threads into the new children. It does not: `fork()` duplicates only the thread that calls it.",
+      "",
+      "Counting every thread in the system instead — each of the 6 processes has its own main thread, plus the 2 created — gives 8. Say which you are counting."
     ),
     hintSteps: [
-      "Each `fork()` that every process executes doubles the count.",
-      "The inner `fork()` is only reached where the condition's `fork()` returned 0. Which processes are those?"
+      "Track which processes have pid == 0. Remember a child created inside the if is a copy of a process that already has pid == 0.",
+      "Every process alive at the final fork() runs it."
     ],
     walkthroughSteps: [
-      "Two loop iterations, each executed by every process: 1 → 2 → 4.",
-      "All 4 execute the `fork()` in the condition: 4 → 8.",
-      "That `fork()` returned 0 only in the 4 newly created children, so only they enter the body.",
-      "Those 4 each fork once more: 8 + 4 = 12."
+      "pid = fork(): P0 and P1. Only P1 has pid == 0.",
+      "Inside the if, P1 forks P2. P2 copies P1's memory, so P2's pid is 0 too.",
+      "P1 and P2 each call thread_create(): 2 threads created.",
+      "P0, P1 and P2 each run the final fork(): 3 × 2 = 6 processes."
     ],
-    references: ["Ch. 3 Process — Process Creation; C Program Forking Separate Process", "Assignment 2, Part A Q4 and Q12"],
+    references: ["Ch. 4 Thread — in-class question, slide 46", "Ch. 3 Process — slides 22–23, Process Creation", "Assignment 2, Part B Q14"],
     tags: ["process-creation"]
   },
   {
-    id: "os-mock-a8",
+    id: "os-mock-mc7",
+    type: "single",
+    difficulty: "easy",
+    points: MC_POINTS,
+    prompt: "Which multithreading model maps many user-level threads to a single kernel thread?",
+    options: ["Many-to-One", "One-to-One", "Many-to-Many", "One-to-Many"],
+    correct: [0],
+    explanation: md(
+      "**Many-to-one**: many user-level threads mapped to a single kernel thread. Multiple threads may not run in parallel on a multicore system, because only one may be in the kernel at a time. Few systems use it; it suits lightweight tasks that don't need parallel execution.",
+      "",
+      "- **One-to-one**: each user-level thread maps to its own kernel thread. Threads run in parallel, but creating a user thread means creating a kernel thread, and a large number of kernel threads can burden the system. Used by high-performance applications such as web servers and databases.",
+      "- **Many-to-many**: many user-level threads multiplexed onto a smaller or equal number of kernel threads, with the OS creating as many kernel threads as it needs. Suits balanced workloads.",
+      "- **One-to-many** is not one of the models in the Chapter 4 slides — it appears only as a wrong option."
+    ),
+    walkthroughSteps: [
+      "Read the name as user-level threads → kernel threads.",
+      "Many user-level threads to one kernel thread: many-to-one.",
+      "Its consequence: no parallelism on a multicore system."
+    ],
+    references: ["Ch. 4 Thread — slide 16, Many-to-One; in-class question, slide 20", "Assignment 2, Part A Q9"],
+    tags: ["multithreading-models"]
+  },
+  {
+    id: "os-mock-mc8",
     type: "single",
     difficulty: "med",
     points: MC_POINTS,
     prompt:
-      "Which multithreading model lets the operating system create a sufficient number of kernel threads — so a process's threads can run in parallel on a multicore system — **without** requiring a separate kernel thread for every user thread?",
-    options: ["Many-to-one", "One-to-one", "Many-to-many", "One-to-many"],
+      "The ____ multithreading model multiplexes many user-level threads to a smaller or equal number of kernel threads.",
+    options: ["many-to-one model", "one-to-one model", "many-to-many model", "many-to-some model"],
     correct: [2],
     explanation: md(
-      "**Many-to-many** multiplexes many user-level threads onto a smaller or equal number of kernel threads, and lets the OS create as many kernel threads as it needs. Use case: balanced workloads.",
+      "**Many-to-many** lets many user-level threads be mapped to many kernel threads — a smaller or equal number of them — and lets the OS create a sufficient number of kernel threads. Unlike many-to-one, threads can run in parallel on a multicore system; unlike one-to-one, you don't need a kernel thread for every user thread.",
       "",
-      "- **Many-to-one** maps all of a process's user threads to one kernel thread. They cannot run in parallel on a multicore system, because only one may be in the kernel at a time. Few systems use it; it suits lightweight tasks.",
-      "- **One-to-one** maps each user thread to its own kernel thread, so threads do run in parallel — but creating a user thread means creating a kernel thread, and a large number of kernel threads burdens the system. Use case: high-performance applications such as web servers and databases.",
-      "- **One-to-many** is not one of the multithreading models in the Chapter 4 slides. It appears in the course only as a wrong option."
+      "\"Many-to-some\" is not a model; it is the trap for students who read \"smaller or equal number\" literally."
     ),
     walkthroughSteps: [
-      "Parallel on multicore rules out many-to-one — a single kernel thread runs on a single core.",
-      "'Without a kernel thread for every user thread' rules out one-to-one.",
-      "What is left multiplexes many user threads onto however many kernel threads the OS decides to create: many-to-many."
+      "\"Many user-level threads\" on the left side rules out one-to-one.",
+      "\"Smaller or equal number of kernel threads\" — more than one is allowed, which rules out many-to-one.",
+      "Many user threads on many kernel threads: many-to-many."
     ],
-    references: ["Ch. 4 Thread — Multithreading Models: Many-to-One, One-to-One, Many-to-Many", "Assignment 2, Part A Q9"],
+    references: ["Ch. 4 Thread — slide 18, Many-to-Many Model; in-class question, slide 19"],
     tags: ["multithreading-models"]
   },
   {
-    id: "os-mock-a9",
+    id: "os-mock-mc9",
     type: "single",
     difficulty: "hard",
     points: MC_POINTS,
     prompt: md(
-      "Four processes arrive at time 0 in the order P1, P2, P3, P4, with these CPU burst times:",
+      "Consider the following set of processes, with the length of the CPU burst time given in milliseconds. All arrive at time 0, in the order P1, P2, P3, P4, P5.",
       "",
-      "| Process | Burst (ms) |",
+      "| Process | Burst Time |",
       "|---|---|",
-      "| P1 | 5 |",
-      "| P2 | 3 |",
-      "| P3 | 1 |",
-      "| P4 | 4 |",
+      "| P1 | 6 |",
+      "| P2 | 2 |",
+      "| P3 | 8 |",
+      "| P4 | 3 |",
+      "| P5 | 4 |",
       "",
-      "Using **Round Robin with a time quantum of 2 ms**, what is the average waiting time?"
+      "What is the average waiting time using **Round Robin (RR) with a time quantum of 2**?"
     ),
-    options: ["3.25 ms", "5.50 ms", "6.75 ms", "8.00 ms"],
+    options: ["6.2 ms", "9.8 ms", "11.0 ms", "12.4 ms"],
     correct: [2],
     explanation: md(
-      "**6.75 ms.** The Gantt chart:",
+      "**11.0 ms.** The Gantt chart:",
       "",
       "```",
-      "| P1 | P2 | P3 | P4 | P1 | P2 | P4 | P1 |",
-      "0    2    4    5    7    9    10   12   13",
+      "| P1 | P2 | P3 | P4 | P5 | P1 | P3 | P4 | P5 | P1 | P3 | P3 |",
+      "0    2    4    6    8    10   12   14   15   17   19   21   23",
       "```",
       "",
       "Every process arrives at 0, so waiting time = completion time − burst time:",
       "",
       "| Process | Completes | Burst | Waits |",
       "|---|---|---|---|",
-      "| P1 | 13 | 5 | 8 |",
-      "| P2 | 10 | 3 | 7 |",
-      "| P3 | 5 | 1 | 4 |",
-      "| P4 | 12 | 4 | 8 |",
+      "| P1 | 19 | 6 | 13 |",
+      "| P2 | 4 | 2 | 2 |",
+      "| P3 | 23 | 8 | 15 |",
+      "| P4 | 15 | 3 | 12 |",
+      "| P5 | 17 | 4 | 13 |",
       "",
-      "(8 + 7 + 4 + 8) / 4 = 27 / 4 = **6.75 ms**.",
+      "(13 + 2 + 15 + 12 + 13) / 5 = 55 / 5 = **11.0 ms**.",
       "",
-      "The distractors are the other algorithms on the same processes: 3.25 ms is SJF and 5.50 ms is FCFS."
+      "The other answers are the same processes under other algorithms: **6.2 ms is SJF** and **9.8 ms is FCFS**. RR has the worst average here — a small quantum keeps sending the long jobs to the back of the queue."
     ),
     hintSteps: [
-      "Run each process for at most 2 ms, then send it to the back of the ready queue if it still has work left.",
-      "With every arrival at 0, waiting time is completion time minus burst time."
+      "Each process runs for at most 2 ms, then goes to the back of the ready queue if it has work left.",
+      "Write down the completion time of each process from your Gantt chart, then subtract its burst."
     ],
     walkthroughSteps: [
-      "First pass: P1 0–2 (3 left), P2 2–4 (1 left), P3 4–5 (done), P4 5–7 (2 left).",
-      "Second pass: P1 7–9 (1 left), P2 9–10 (done), P4 10–12 (done).",
-      "Last: P1 12–13 (done).",
-      "Waiting times 8, 7, 4 and 8 sum to 27; 27 / 4 = 6.75 ms."
+      "First pass: P1 0–2 (4 left), P2 2–4 (done), P3 4–6 (6 left), P4 6–8 (1 left), P5 8–10 (2 left).",
+      "Second pass: P1 10–12 (2 left), P3 12–14 (4 left), P4 14–15 (done), P5 15–17 (done).",
+      "Then P1 17–19 (done), P3 19–21 and 21–23 (done).",
+      "Waiting times 13, 2, 15, 12 and 13 sum to 55; 55 / 5 = 11.0 ms."
     ],
-    references: ["Ch. 5 CPU Scheduling — Round Robin; Example of RR with Time Quantum = 4", "Assignment 3, Part B Q11"],
+    references: ["Ch. 5 CPU Scheduling — slides 12–13, Round Robin; Example of RR with Time Quantum = 4", "Assignment 3, Part B Q11"],
     tags: ["cpu-scheduling"]
   },
   {
-    id: "os-mock-a10",
+    id: "os-mock-mc10",
     type: "single",
-    difficulty: "hard",
+    difficulty: "easy",
     points: MC_POINTS,
-    prompt: md(
-      "In Peterson's solution, process Pi runs:",
-      "",
-      "```c",
-      "flag[i] = true;",
-      "turn = j;",
-      "while (flag[j] && turn == j)",
-      "    ;   /* busy wait */",
-      "/* critical section */",
-      "flag[i] = false;",
-      "```",
-      "",
-      "P0 and P1 both want their critical sections. P0 executes `flag[0] = true; turn = 1;` and then P1 executes `flag[1] = true; turn = 0;` — all before either process reaches its `while` loop. Which process enters its critical section first?"
-    ),
-    options: [
-      "P0 — the last write left turn == 0, so P0's condition flag[1] && turn == 1 is false",
-      "P1 — P1 wrote turn last, so P1 has priority",
-      "Both enter at once, because both flags are true",
-      "Neither — each spins forever waiting for the other's flag to become false"
-    ],
-    correct: [0],
+    prompt: "In Peterson's solution, the ____ variable indicates if a process is ready to enter its critical section.",
+    options: ["turn", "lock", "flag[i]", "turn[i]"],
+    correct: [2],
     explanation: md(
-      "Each process sets `turn` to the **other** process — it offers to go second. So whichever process writes `turn` last is the one that ends up waiting.",
+      "Peterson's solution is a two-process, software-based solution with two shared variables:",
       "",
-      "P1 wrote last, leaving `turn == 0`:",
+      "- `boolean flag[2]` — **`flag[i] = true` means process Pi is ready** to enter its critical section.",
+      "- `int turn` — whose turn it is to enter the critical section.",
       "",
-      "- P0 checks `flag[1] && turn == 1` → `true && false` → false, so **P0 enters**.",
-      "- P1 checks `flag[0] && turn == 0` → `true && true` → true, so P1 busy-waits.",
+      "Process Pi sets `flag[i] = true; turn = j;` and then waits while `flag[j] && turn == j`. Peterson's solution has no `lock` variable, and `turn` is a single integer, not an array.",
       "",
-      "When P0 leaves, it sets `flag[0] = false`, P1's condition becomes false and P1 enters. That is mutual exclusion, progress and bounded waiting.",
-      "",
-      "Caveat from the slides: on modern architectures the processor or compiler may reorder these independent writes, so Peterson's solution needs a memory barrier to be guaranteed correct."
+      "On modern architectures the processor or compiler may reorder these writes, so Peterson's solution needs a memory barrier to be guaranteed correct."
     ),
     walkthroughSteps: [
-      "Both flags end up true, so the flags alone cannot decide — `turn` does.",
-      "The final value of `turn` is 0, because P1's write came last.",
-      "P0 waits only while turn == 1, which it is not, so P0 enters. P1 waits while turn == 0, which it is."
+      "Peterson's solution shares exactly two variables: turn and flag[2].",
+      "turn says whose turn it is; flag says who wants in.",
+      "\"Ready to enter\" is flag[i]."
     ],
-    references: ["Ch. 6 Synchronization — Peterson's Solution; Algorithm for Process Pi and Pj; Memory Barrier", "Assignment 3, Part B Q12"],
+    references: ["Ch. 6 Synchronization — slides 11–12, Peterson's Solution; in-class question, slide 19", "Assignment 3, Part B Q12"],
     tags: ["petersons-solution"]
   }
 ];
@@ -399,13 +360,13 @@ const partA: Question[] = [
 
 const partB: Question[] = [
   {
-    id: "os-mock-b1",
+    id: "os-mock-lq1",
     type: "free",
     difficulty: "med",
     homeworkFormat: "multi-step",
     points: LONG_POINTS,
     prompt: md(
-      "**Draw the process state transition graph.** Label every state and every transition, and for each transition give the event that causes it.",
+      "**Draw the process state transition graph.** Label every state and every transition.",
       "",
       "*On paper you would draw this. Here, write one line per arrow in the form* `from → to: cause`."
     ),
@@ -427,7 +388,7 @@ const partB: Question[] = [
       "- **ready → waiting.** Only a *running* process can request I/O or wait on an event."
     ),
     explanation:
-      "Five states and six transitions. Every arrow out of running is a reason the process stops running, and the only way back onto the CPU is through ready.",
+      "Five states and six transitions, exactly as drawn on the Process State slide. Every arrow out of running is a reason the process stops running, and the only way back onto the CPU is through ready.",
     rubric: [
       { criterion: "All five states are present: **new, ready, running, waiting, terminated**", marks: 2 },
       { criterion: "new → ready, labelled **admitted**", marks: 1 },
@@ -449,31 +410,29 @@ const partB: Question[] = [
       "A running process leaves the CPU in one of three ways: an interrupt sends it back to ready, an I/O or event wait sends it to waiting, and exit sends it to terminated.",
       "When the I/O or event completes, a waiting process returns to ready — not to running — and must be dispatched again."
     ],
-    references: ["Ch. 3 Process — Process State", "Assignment 1, Part B Q1"],
+    references: ["Ch. 3 Process — slide 6, Process State", "Assignment 1, Part B Q1"],
     tags: ["process-concept"]
   },
   {
-    id: "os-mock-b2",
+    id: "os-mock-lq2",
     type: "free",
     difficulty: "hard",
     homeworkFormat: "multi-step",
     points: LONG_POINTS,
     prompt: md(
-      "Answer all three parts.",
+      "**(a)** Give the definitions of the semaphore operations `wait()` and `signal()`.",
       "",
-      "**(a)** Write the definitions of the `wait(S)` and `signal(S)` operations on a semaphore `S` (the busy-waiting version).",
+      "**(b)** Use a binary semaphore to solve the critical-section problem. Show the structure of the process, and state what the semaphore is initialized to.",
       "",
-      "**(b)** Using a binary semaphore `mutex`, write the structure of a process that solves the critical-section problem. State the value `mutex` must be initialized to.",
-      "",
-      "**(c)** Explain why your solution guarantees mutual exclusion. Then identify the main problem with the busy-waiting definition from (a), and describe how a semaphore can be implemented to avoid it."
+      "**(c)** What is the big problem with this implementation of `wait()`, and how can a semaphore be implemented to avoid it?"
     ),
     sampleAnswer: md(
-      "**(a)**",
+      "**(a)** A semaphore S is an integer variable that can only be accessed through two indivisible (**atomic**) operations:",
       "",
       "```c",
       "wait(S) {",
       "    while (S <= 0)",
-      "        ;   // busy wait",
+      "        ; // busy wait",
       "    S--;",
       "}",
       "",
@@ -482,9 +441,7 @@ const partB: Question[] = [
       "}",
       "```",
       "",
-      "`wait()` and `signal()` must each execute **atomically** — no two processes may modify `S` at the same time.",
-      "",
-      "**(b)** `mutex` is initialized to **1**.",
+      "**(b)** Create a semaphore `mutex` **initialized to 1**:",
       "",
       "```c",
       "do {",
@@ -492,14 +449,14 @@ const partB: Question[] = [
       "        // critical section",
       "    signal(mutex);",
       "        // remainder section",
-      "} while (true);",
+      "} while (TRUE);",
       "```",
       "",
-      "**(c)** `mutex` starts at 1. The first process to call `wait(mutex)` finds 1, decrements it to 0 and enters. Any other process that calls `wait(mutex)` finds 0 and loops, and cannot get past until the process in its critical section calls `signal(mutex)`, setting it back to 1. Because `wait` is atomic, only one waiting process can then take it from 1 to 0. So at most one process is ever in its critical section.",
+      "The first process to call `wait(mutex)` finds 1, decrements it to 0 and enters. Any other process finds 0 and loops in `wait()` until the first one calls `signal(mutex)` on its way out, so only one process is in its critical section at a time.",
       "",
-      "The problem is **busy waiting**: a waiting process spins in the `while` loop, using CPU cycles without doing any useful work.",
+      "**(c)** The big problem is the **busy loop** in `wait()`: a waiting process spins, consuming CPU cycles without doing any useful work.",
       "",
-      "The fix is to give each semaphore a **waiting queue**:",
+      "It is avoided by giving each semaphore a **waiting queue**, with two operations: `block()` places the process on the waiting queue, and `wakeup()` removes one process from the waiting queue and places it in the ready queue.",
       "",
       "```c",
       "typedef struct {",
@@ -524,101 +481,91 @@ const partB: Question[] = [
       "}",
       "```",
       "",
-      "`block()` places the calling process on the semaphore's waiting queue, so it stops using the CPU; `wakeup(P)` removes a process from the waiting queue and places it in the ready queue.",
-      "",
-      "*The slide prints the binary-semaphore example as `waiting(mutex);`. The operation is `wait(mutex)`, as defined on the slide before it.*"
+      "*The binary-semaphore slide prints `waiting(mutex);`. The operation is `wait(mutex)`, as defined on the slide before it.*"
     ),
     explanation:
-      "The semaphore definitions, the binary-semaphore solution to the critical-section problem, and the waiting-queue implementation that removes busy waiting.",
+      "The semaphore definitions from the Semaphore slide, the binary-semaphore solution to the critical-section problem from Semaphore Usage Example 1, and the waiting-queue implementation that removes busy waiting.",
     rubric: [
-      { criterion: "`wait(S)` loops while `S <= 0`, then decrements `S`", marks: 2 },
+      { criterion: "`wait(S)` loops while `S <= 0` (busy wait), then decrements `S`", marks: 2 },
       { criterion: "`signal(S)` increments `S`", marks: 1 },
-      { criterion: "States that `wait()` and `signal()` must execute atomically", marks: 1 },
+      { criterion: "States that `wait()` and `signal()` are atomic (indivisible)", marks: 1 },
       { criterion: "`mutex` initialized to **1**", marks: 1 },
-      { criterion: "`wait(mutex)` before the critical section and `signal(mutex)` after it, with the remainder section outside both", marks: 2 },
-      { criterion: "Explains mutual exclusion: only one process can take `mutex` from 1 to 0; the rest wait until `signal(mutex)`", marks: 1 },
-      { criterion: "Identifies busy waiting as wasting CPU cycles", marks: 1 },
-      { criterion: "Describes the waiting-queue fix: `wait` blocks the process on S's list when the value goes negative; `signal` wakes one up and moves it to the ready queue", marks: 1 }
+      { criterion: "`wait(mutex)` before the critical section and `signal(mutex)` after it, with the remainder section outside, in a loop", marks: 2 },
+      { criterion: "Explains why only one process can be in its critical section at a time", marks: 1 },
+      { criterion: "Identifies the busy loop as wasting CPU cycles", marks: 1 },
+      { criterion: "Describes the fix: a waiting queue, with `block()` putting the process on it and `wakeup()` moving one to the ready queue", marks: 1 }
     ],
     hintSteps: [
-      "`wait` must not let a process through while the semaphore is 0, and must take one unit when it does let it through.",
-      "For a critical section, how many processes should be able to get past `wait(mutex)` before anyone calls `signal`? That number is the initial value.",
-      "What is a process doing, CPU-wise, while it sits in that `while` loop?"
+      "wait() must not let a process through while the semaphore is 0, and takes one unit when it does let it through.",
+      "For a critical section, how many processes should get past wait(mutex) before anyone calls signal? That is the initial value.",
+      "What is a process doing with the CPU while it sits in that while loop?"
     ],
     walkthroughSteps: [
-      "`wait(S)`: spin while `S <= 0`, then `S--`. `signal(S)`: `S++`. Both must be atomic.",
-      "Binary semaphore for mutual exclusion: initialize `mutex` to 1, so exactly one process can get through `wait(mutex)`.",
-      "Wrap the critical section: `wait(mutex)` on entry, `signal(mutex)` on exit, remainder section outside.",
-      "The spin loop burns CPU while waiting. Replace it with a waiting queue: `wait` blocks when the value goes negative, and `signal` wakes one blocked process into the ready queue."
+      "wait(S): spin while S <= 0, then S--. signal(S): S++. Both atomic.",
+      "Binary semaphore: mutex = 1, so exactly one process gets through wait(mutex).",
+      "Wrap the critical section: wait(mutex) on entry, signal(mutex) on exit, remainder outside, all inside do { … } while (TRUE).",
+      "The spin wastes CPU. Replace it with a waiting queue: wait blocks the process when the value goes negative, and signal wakes one blocked process into the ready queue."
     ],
     references: [
-      "Ch. 6 Synchronization — Semaphore; Semaphore Usage Example 1; Semaphore Implementation with no Busy Waiting",
-      "Assignment 3, Part B Q13–Q14"
+      "Ch. 6 Synchronization — slide 25, Semaphore; slide 26, Semaphore Usage Example 1; slides 29–32, Semaphore Implementation with no Busy Waiting"
     ],
     tags: ["semaphores"]
   },
   {
-    id: "os-mock-b3",
+    id: "os-mock-lq3",
     type: "free",
-    difficulty: "hard",
+    difficulty: "med",
     homeworkFormat: "calc",
     points: LONG_POINTS,
     prompt: md(
-      "Answer both parts.",
+      "Using **Amdahl's Law**, calculate the speedup gain of an application that has an **80 percent parallel component** for:",
       "",
-      "**(a)** Describe the **many-to-one**, **one-to-one**, and **many-to-many** multithreading models. For each, state whether a process's threads can run in parallel on a multicore system, and give one drawback or typical use case.",
+      "**(a)** two processing cores",
       "",
-      "**(b)** 70% of an application can be parallelized; the rest must run serially. Using **Amdahl's Law**, write the formula, then compute the speedup on **4 cores** and on **8 cores**, rounded to two decimal places. What does the speedup approach as the number of cores grows without limit, and what does that tell you?"
+      "**(b)** four processing cores",
+      "",
+      "**(c)** What does the speedup approach as the number of processing cores approaches infinity?",
+      "",
+      "Show your work."
     ),
     sampleAnswer: md(
-      "**(a)**",
+      "Amdahl's Law, where **S is the serial portion** and **N is the number of processing cores**:",
       "",
-      "| Model | Mapping | Parallel on multicore? | Drawback / use case |",
-      "|---|---|---|---|",
-      "| Many-to-one | many user threads → one kernel thread | **No** — only one thread can be in the kernel at a time | Few systems use it; suits lightweight tasks that don't need parallel execution |",
-      "| One-to-one | each user thread → its own kernel thread | **Yes** | Creating a user thread means creating a kernel thread, and many kernel threads burden the system. Used for high-performance applications such as web servers and databases |",
-      "| Many-to-many | many user threads → a smaller or equal number of kernel threads | **Yes** | The OS creates a sufficient number of kernel threads; suits balanced workloads |",
+      "$$\\text{speedup} \\le \\frac{1}{S + \\frac{(1 - S)}{N}}$$",
       "",
-      "**(b)** With serial fraction S and N cores:",
+      "The application is 80% parallel, so the serial portion is **S = 1 − 0.80 = 0.20**.",
       "",
-      "$$\\text{speedup} \\le \\frac{1}{S + \\frac{1 - S}{N}}$$",
+      "**(a)** N = 2:  1 / (0.20 + 0.80 / 2) = 1 / (0.20 + 0.40) = 1 / 0.60 ≈ **1.67**",
       "",
-      "70% parallel means **S = 0.30** — the *serial* fraction goes in the formula.",
+      "**(b)** N = 4:  1 / (0.20 + 0.80 / 4) = 1 / (0.20 + 0.20) = 1 / 0.40 = **2.5**",
       "",
-      "- **4 cores:** 1 / (0.30 + 0.70 / 4) = 1 / 0.475 ≈ **2.11**",
-      "- **8 cores:** 1 / (0.30 + 0.70 / 8) = 1 / 0.3875 ≈ **2.58**",
-      "- **N → ∞:** (1 − S) / N → 0, so the speedup approaches 1 / S = 1 / 0.30 ≈ **3.33**",
+      "**(c)** As N → ∞, (1 − S) / N → 0, so the speedup approaches 1 / S = 1 / 0.20 = **5**.",
       "",
-      "Doubling from 4 to 8 cores adds only about 0.47, and no number of cores can push the speedup past 3.33. The serial 30% runs at the same speed however many cores there are, so it bounds the whole program: more cores give diminishing returns."
+      "However many cores are added, the 20% that must run serially caps the speedup at 5."
     ),
     explanation:
-      "The three multithreading models from Chapter 4 and Amdahl's Law, including the step that most often goes wrong: using the parallel fraction where the formula needs the serial one.",
+      "The step that goes wrong most often is putting the parallel fraction in for S. The formula needs the serial portion: 80% parallel means S = 0.20.",
     rubric: [
-      { criterion: "Many-to-one: many user threads on one kernel thread, with **no** parallelism on a multicore system", marks: 1 },
-      { criterion: "One-to-one: each user thread has its own kernel thread, and every user thread therefore costs a kernel thread", marks: 1 },
-      { criterion: "Many-to-many: many user threads on a smaller or equal number of kernel threads, which the OS creates as needed", marks: 1 },
-      { criterion: "A drawback or use case given for each of the three models", marks: 1 },
-      { criterion: "Amdahl's Law written as speedup ≤ 1 / (S + (1 − S) / N)", marks: 1 },
-      { criterion: "Serial fraction taken as **S = 0.30**, not 0.70", marks: 1 },
-      { criterion: "4 cores: speedup ≈ **2.11**", marks: 1 },
-      { criterion: "8 cores: speedup ≈ **2.58**", marks: 1 },
-      { criterion: "Limit as N → ∞: 1 / S ≈ **3.33**", marks: 1 },
-      { criterion: "Explains that the serial portion bounds the speedup, so extra cores give diminishing returns", marks: 1 }
+      { criterion: "Writes Amdahl's Law: speedup ≤ 1 / (S + (1 − S) / N)", marks: 2 },
+      { criterion: "Uses the serial portion **S = 0.20**, not 0.80", marks: 2 },
+      { criterion: "(a) Two cores: 1 / 0.60 ≈ **1.67**, with the work shown", marks: 2 },
+      { criterion: "(b) Four cores: 1 / 0.40 = **2.5**, with the work shown", marks: 2 },
+      { criterion: "(c) As N → ∞ the speedup approaches 1 / S = **5**", marks: 1 },
+      { criterion: "Explains that the serial portion limits the speedup", marks: 1 }
     ],
     hintSteps: [
-      "For each model, ask: when two threads of one process want to run at once, is there a kernel thread for each of them?",
-      "Amdahl's S is the *serial* portion. If 70% is parallel, what is S?",
+      "S is the serial portion. If 80% is parallel, what is S?",
+      "Substitute S and N into 1 / (S + (1 − S) / N).",
       "As N grows, what happens to the (1 − S) / N term?"
     ],
     walkthroughSteps: [
-      "Many-to-one has a single kernel thread, so no parallelism. One-to-one gives every user thread a kernel thread: parallel, but costly. Many-to-many multiplexes onto as many kernel threads as the OS creates: parallel without that cost.",
-      "S = 1 − 0.70 = 0.30.",
-      "4 cores: 0.30 + 0.70 / 4 = 0.475, and 1 / 0.475 ≈ 2.11.",
-      "8 cores: 0.30 + 0.70 / 8 = 0.3875, and 1 / 0.3875 ≈ 2.58.",
-      "As N → ∞ the parallel term vanishes, leaving 1 / 0.30 ≈ 3.33 — the serial portion is the ceiling."
+      "S = 1 − 0.80 = 0.20.",
+      "Two cores: 0.20 + 0.80 / 2 = 0.60, and 1 / 0.60 ≈ 1.67.",
+      "Four cores: 0.20 + 0.80 / 4 = 0.40, and 1 / 0.40 = 2.5.",
+      "As N → ∞ the parallel term vanishes, leaving 1 / 0.20 = 5 — the ceiling set by the serial portion."
     ],
-    references: ["Ch. 4 Thread — Multithreading Models; Amdahl's Law", "Assignment 2, Part A Q9 and Part B Q13"],
-    tags: ["multithreading-models", "amdahls-law"]
+    references: ["Ch. 4 Thread — slide 10, Amdahl's Law; in-class exercise, slide 13", "Assignment 2, Part B Q13"],
+    tags: ["amdahls-law"]
   }
 ];
 
@@ -629,7 +576,7 @@ export const operatingSystemsExam1Mock: QuizSet = {
   courseId: "operating-systems",
   title: "Exam 1 Mock — Real Format",
   description:
-    "The midterm's format: 10 multiple-choice questions, then 3 long answers, weighted 50% / 50%. Covers all twelve topics on the topic list, with the emphasis on multithreading models, Amdahl's Law, the process state transition graph and semaphore pseudocode. Answers stay hidden until you submit; you then grade your long answers against a marking scheme for partial credit. Timed at 50 minutes, the length of the real exam.",
+    "The midterm's format: 10 multiple-choice questions, then 3 long answers, weighted 50% / 50%, in 50 minutes. Every question is modelled on an in-class question slide or an assignment item, in its own format — including the course's fork() code — and the long answers are the process state transition graph, semaphore pseudocode and Amdahl's Law. Answers stay hidden until you submit; you then grade your long answers against a marking scheme for partial credit.",
   difficulty: "Advanced",
   estMinutes: 50,
   timerDefaultMinutes: 50,

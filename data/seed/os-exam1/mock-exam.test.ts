@@ -88,11 +88,19 @@ describe("coverage", () => {
     });
   });
 
-  it("puts the emphasised topics in the long answers", () => {
+  it("puts the emphasised topics where the course said the exam leans", () => {
+    // Long answers: the state graph, semaphore pseudocode and Amdahl's Law.
     const longTags = new Set(written.flatMap((entry) => entry.tags));
-    ["process-concept", "semaphores", "multithreading-models", "amdahls-law"].forEach((tag) =>
-      expect(longTags.has(tag), tag).toBe(true)
-    );
+    ["process-concept", "semaphores", "amdahls-law"].forEach((tag) => expect(longTags.has(tag), tag).toBe(true));
+    // Multithreading models were emphasised too: more than one question.
+    expect(choices.filter((entry) => entry.tags.includes("multithreading-models")).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("models every question on a slide or assignment item, and says which", () => {
+    mock.questions.forEach((entry) => {
+      const cited = (entry.references ?? []).join(" ");
+      expect(cited, entry.id).toMatch(/slide|Assignment/);
+    });
   });
 });
 
@@ -120,7 +128,7 @@ describe("every question is answerable and markable", () => {
   });
 
   it("does not give the state graph away in the question", () => {
-    const graph = q("os-mock-b1");
+    const graph = q("os-mock-lq1");
     expect(graph.imageUrl).toBeUndefined();
     ["admitted", "dispatch", "interrupt", "completion"].forEach((word) =>
       expect(graph.prompt.toLowerCase()).not.toContain(word)
@@ -128,7 +136,7 @@ describe("every question is answerable and markable", () => {
   });
 
   it("points the state-graph model answer at a diagram that exists", () => {
-    const src = /!\[[^\]]*\]\(([^)]+)\)/.exec(q("os-mock-b1").sampleAnswer!)?.[1];
+    const src = /!\[[^\]]*\]\(([^)]+)\)/.exec(q("os-mock-lq1").sampleAnswer!)?.[1];
     expect(src).toBeDefined();
     expect(existsSync(join(process.cwd(), "public", src!))).toBe(true);
   });
@@ -142,21 +150,25 @@ describe("every question is answerable and markable", () => {
 
 /**
  * A tiny fork interpreter: every process runs the same statements.
- * `ifChild` is `if (fork() == 0) { body }` — parents skip the body.
+ * `ifChild` is `pid = fork(); if (pid == 0) { body }` — parents skip the
+ * body, and a process forked inside the body inherits pid == 0. `thread`
+ * is thread_create(), counted once per process that runs it.
  */
-type Stmt = { fork: true } | { repeat: number; body: Stmt[] } | { ifChild: Stmt[] };
-function processes(program: Stmt[]) {
-  const run = (statements: Stmt[], count: number): number =>
-    statements.reduce((n, stmt) => {
-      if ("fork" in stmt) return n * 2;
-      if ("repeat" in stmt) {
-        let current = n;
-        for (let i = 0; i < stmt.repeat; i++) current = run(stmt.body, current);
-        return current;
-      }
-      return n + run(stmt.ifChild, n);
-    }, count);
-  return run(program, 1);
+type Stmt = { fork: true } | { thread: true } | { repeat: number; body: Stmt[] } | { ifChild: Stmt[] };
+type Count = { processes: number; threads: number };
+function run(program: Stmt[], start: Count = { processes: 1, threads: 0 }): Count {
+  return program.reduce<Count>((state, stmt) => {
+    if ("fork" in stmt) return { ...state, processes: state.processes * 2 };
+    if ("thread" in stmt) return { ...state, threads: state.threads + state.processes };
+    if ("repeat" in stmt) {
+      let current = state;
+      for (let i = 0; i < stmt.repeat; i++) current = run(stmt.body, current);
+      return current;
+    }
+    // Every process forks; only the new children run the body.
+    const children: Count = run(stmt.ifChild, { processes: state.processes, threads: 0 });
+    return { processes: state.processes + children.processes, threads: state.threads + children.threads };
+  }, start);
 }
 
 /** Round Robin with every arrival at time 0; Infinity gives FCFS. */
@@ -179,51 +191,42 @@ function averageWaiting(bursts: number[], order: number[], quantum = Infinity) {
 const optionValue = (entry: Question) => entry.options![entry.correct![0] as number];
 
 describe("recomputed answers", () => {
-  it("trusts the fork interpreter because it reproduces the course's own answers", () => {
-    // Assignment 2, Q12: a four-iteration loop around fork() makes 16.
-    expect(processes([{ repeat: 4, body: [{ fork: true }] }])).toBe(16);
-    // Chapter 4's closing exercise: pid = fork(); if child, fork; then fork — 6.
-    expect(processes([{ ifChild: [{ fork: true }] }, { fork: true }])).toBe(6);
+  it("trusts the fork interpreter because it reproduces Assignment 2, Q12", () => {
+    // A four-iteration loop around fork() makes 16 processes.
+    expect(run([{ repeat: 4, body: [{ fork: true }] }]).processes).toBe(16);
   });
 
-  it("counts the fork question's processes", () => {
-    const answer = processes([{ repeat: 2, body: [{ fork: true }] }, { ifChild: [{ fork: true }] }]);
-    expect(optionValue(q("os-mock-a7"))).toBe(String(answer));
+  it("counts the slide's fork and thread_create code", () => {
+    // pid = fork(); if (pid == 0) { fork(); thread_create(); } fork();
+    const { processes, threads } = run([{ ifChild: [{ fork: true }, { thread: true }] }, { fork: true }]);
+    expect([processes, threads]).toEqual([6, 2]);
+    expect(optionValue(q("os-mock-mc6"))).toBe(`${processes} processes; ${threads} threads`);
   });
 
   it("schedules the Round Robin question, and its distractors are SJF and FCFS", () => {
-    const bursts = [5, 3, 1, 4];
-    const arrival = [0, 1, 2, 3];
+    const bursts = [6, 2, 8, 3, 4];
+    const arrival = [0, 1, 2, 3, 4];
     const rr = averageWaiting(bursts, arrival, 2);
     const fcfs = averageWaiting(bursts, arrival);
     const sjf = averageWaiting(bursts, [...arrival].sort((a, b) => bursts[a] - bursts[b]));
-    const entry = q("os-mock-a9");
-    expect(optionValue(entry)).toBe(`${rr.toFixed(2)} ms`);
-    expect(entry.options).toContain(`${fcfs.toFixed(2)} ms`);
-    expect(entry.options).toContain(`${sjf.toFixed(2)} ms`);
-  });
-
-  it("lets the process that did not write turn last into Peterson's critical section", () => {
-    const flag = [true, true];
-    let turn = 1; // P0: turn = j
-    turn = 0; // P1: turn = j, written last
-    const p0Waits = flag[1] && turn === 1;
-    const p1Waits = flag[0] && turn === 0;
-    expect([p0Waits, p1Waits]).toEqual([false, true]);
-    expect(optionValue(q("os-mock-a10"))).toMatch(/^P0/);
+    const entry = q("os-mock-mc9");
+    expect(optionValue(entry)).toBe(`${rr.toFixed(1)} ms`);
+    expect(entry.options).toContain(`${fcfs.toFixed(1)} ms`);
+    expect(entry.options).toContain(`${sjf.toFixed(1)} ms`);
   });
 
   it("applies Amdahl's Law with the serial fraction", () => {
-    const serial = 1 - 0.7;
+    const serial = 1 - 0.8;
     const speedup = (cores: number) => 1 / (serial + (1 - serial) / cores);
-    const entry = q("os-mock-b3");
+    const entry = q("os-mock-lq3");
     const answer = entry.sampleAnswer!;
     const marks = entry.rubric!.map((item) => item.criterion).join("\n");
-    for (const value of [speedup(4), speedup(8), 1 / serial]) {
-      expect(answer).toContain(`**${value.toFixed(2)}**`);
-      expect(marks).toContain(`**${value.toFixed(2)}**`);
+    for (const value of [speedup(2), speedup(4), 1 / serial]) {
+      const shown = `**${Number(value.toFixed(2))}**`;
+      expect(answer).toContain(shown);
+      expect(marks).toContain(shown);
     }
     // The classic slip, the parallel fraction used as S, gives a different number.
-    expect((1 / (0.7 + 0.3 / 4)).toFixed(2)).not.toBe(speedup(4).toFixed(2));
+    expect((1 / (0.8 + 0.2 / 2)).toFixed(2)).not.toBe(speedup(2).toFixed(2));
   });
 });
