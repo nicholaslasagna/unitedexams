@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 430" role="img" aria-labelledby="t d">
+  <!-- Served from /images/*, which is cached immutable for a year: change the filename, not this file. -->
+  <title id="t">Process state transition graph</title>
+  <desc id="d">Five states: new, ready, running, waiting, terminated. new to ready on admitted; ready to running on scheduler dispatch; running to ready on interrupt; running to waiting on I/O or event wait; waiting to ready on I/O or event completion; running to terminated on exit.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#0f766e"/>
+    </marker>
+    <style>
+      .state { fill: #ffffff; stroke: #1f2937; stroke-width: 2.25; }
+      .name { font: 600 19px Inter, system-ui, -apple-system, "Segoe UI", sans-serif; fill: #111827; text-anchor: middle; dominant-baseline: central; }
+      .edge { fill: none; stroke: #0f766e; stroke-width: 2.25; marker-end: url(#arrow); }
+      .label { font: italic 500 15px Inter, system-ui, -apple-system, "Segoe UI", sans-serif; fill: #374151; }
+      .title { font: 600 13px Inter, system-ui, -apple-system, "Segoe UI", sans-serif; fill: #6b7280; letter-spacing: 0.12em; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <!-- Paper, so the diagram reads the same in light and dark themes. -->
+  <rect x="1" y="1" width="758" height="428" rx="16" fill="#fbfaf6" stroke="#e5e2d8" stroke-width="2"/>
+  <text class="title" x="380" y="34">PROCESS STATE TRANSITION GRAPH</text>
+
+  <!-- Transitions -->
+  <path class="edge" d="M140 101 Q 158 152 202 181"/>
+  <text class="label" x="176" y="132">admitted</text>
+
+  <path class="edge" d="M296 234 Q 380 278 462 234"/>
+  <text class="label" x="380" y="286" text-anchor="middle">scheduler dispatch</text>
+
+  <path class="edge" d="M462 194 Q 380 150 298 194"/>
+  <text class="label" x="380" y="158" text-anchor="middle">interrupt</text>
+
+  <path class="edge" d="M576 186 Q 598 132 624 104"/>
+  <text class="label" x="606" y="152">exit</text>
+
+  <path class="edge" d="M562 246 Q 562 332 463 357"/>
+  <text class="label" x="574" y="316">I/O or event wait</text>
+
+  <path class="edge" d="M298 357 Q 206 336 214 250"/>
+  <text class="label" x="196" y="306" text-anchor="end">I/O or event</text>
+  <text class="label" x="196" y="326" text-anchor="end">completion</text>
+
+  <!-- States, drawn last so arrowheads sit against their outlines -->
+  <ellipse class="state" cx="110" cy="74" rx="66" ry="30"/>
+  <text class="name" x="110" y="74">new</text>
+
+  <ellipse class="state" cx="652" cy="74" rx="86" ry="30"/>
+  <text class="name" x="652" y="74">terminated</text>
+
+  <ellipse class="state" cx="230" cy="214" rx="82" ry="34"/>
+  <text class="name" x="230" y="214">ready</text>
+
+  <ellipse class="state" cx="530" cy="214" rx="82" ry="34"/>
+  <text class="name" x="530" y="214">running</text>
+
+  <ellipse class="state" cx="380" cy="360" rx="82" ry="32"/>
+  <text class="name" x="380" y="360">waiting</text>
+</svg>

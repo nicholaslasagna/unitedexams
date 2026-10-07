@@ -35,7 +35,7 @@ const pageRanges = (reference: string) => {
 };
 
 describe("Operating Systems chapter 1–6 study sets", () => {
-  it("registers complete exam review, the mock, six chapter quizzes, and written practice", () => {
+  it("registers complete exam review, the real-format mock, six chapter quizzes, and written practice", () => {
     const registered = getCourseQuizSets("operating-systems");
     expect(new Set(operatingSystemsExam1QuizSets.map((item) => item.id)).size).toBe(9);
     for (const item of operatingSystemsExam1QuizSets) {
@@ -63,20 +63,12 @@ describe("Operating Systems chapter 1–6 study sets", () => {
     expect(resolveQuestionCountTarget(review)).toBe(bank.length);
   });
 
-  it("sits a fixed 48-question objective mock with balanced chapters and hidden answers", () => {
-    const mock = set("os-exam1-simulation");
+  it("sits the mock in the exam's real format", () => {
+    // The format itself is pinned in mock-exam.test.ts; here, only that the
+    // course offers it in place of the earlier 48-question guess.
+    const mock = set("os-exam1-mock");
     expect(resolveQuizSetMode(mock)).toBe("exam");
-    expect(mock.isExamSimulation).toBe(false);
-    expect(mock.questions).toHaveLength(48);
-    expect(mock.questionCountTarget).toBe(mock.questions.length);
-    expect(resolveQuestionCountTarget(mock)).toBe(48);
-    expect(mock.timerDefaultMinutes).toBe(90);
-    for (const { chapter, questions } of chapters) {
-      const included = mock.questions.filter((q) => q.tags.includes(`chapter-${chapter}`));
-      expect(included).toEqual(questions.slice(0, 8));
-      expect(included.filter((q) => q.type !== "free")).toHaveLength(8);
-      expect(included.filter((q) => q.type === "free")).toHaveLength(0);
-    }
+    expect(operatingSystemsExam1QuizSets.some((item) => item.id === "os-exam1-simulation")).toBe(false);
   });
 
   it("offers all 18 written questions for guided practice", () => {
