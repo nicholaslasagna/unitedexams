@@ -146,8 +146,12 @@ export function topicBreakdownRows(
     total: stats.total
   }));
   const distinguishing = rows.filter((row) => row.total < totalCount);
+  // When the cap bites, keep the weakest topics: they are the ones worth
+  // studying. Sorting best-first before cutting used to drop exactly those.
+  // They are still displayed best-first.
   return (distinguishing.length > 0 ? distinguishing : rows)
     .map(({ label, value }) => ({ label, value }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, limit);
+    .sort((a, b) => a.value - b.value)
+    .slice(0, limit)
+    .sort((a, b) => b.value - a.value);
 }

@@ -34,6 +34,18 @@ describe("topicBreakdownRows", () => {
     expect(topicBreakdownRows(wide, 12)).toHaveLength(8);
   });
 
+  it("keeps the weakest topics when it has to cut", () => {
+    // Twelve topics, four of them missed: a cut that keeps the best eight
+    // shows a wall of 100% and hides every topic that needs work.
+    const breakdown = Object.fromEntries(
+      Array.from({ length: 12 }, (_, i) => [`topic-${i}`, { correct: i < 8 ? 1 : 0, total: 1 }])
+    );
+    const rows = topicBreakdownRows(breakdown, 13);
+    expect(rows.filter((row) => row.value === 0)).toHaveLength(4);
+    // Still drawn strongest first.
+    expect(rows.map((row) => row.value)).toEqual([...rows.map((row) => row.value)].sort((a, b) => b - a));
+  });
+
   it("treats a zero-total tag as 0% instead of dividing by zero", () => {
     const rows = topicBreakdownRows({ ghost: { correct: 0, total: 0 } }, 3);
     expect(rows).toEqual([{ label: "ghost", value: 0 }]);
