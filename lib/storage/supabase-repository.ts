@@ -129,6 +129,8 @@ function asPerQuestionResults(value: unknown): PerQuestionResult[] {
           : [],
         responseText: item.responseText,
         selfMarked: item.selfMarked,
+        pointsEarned: typeof item.pointsEarned === "number" ? item.pointsEarned : undefined,
+        pointsPossible: typeof item.pointsPossible === "number" ? item.pointsPossible : undefined,
         tags: Array.isArray(item.tags) ? item.tags.map((x) => String(x)) : [],
         mistakes: Array.isArray(item.mistakes) ? item.mistakes.map((x) => String(x)) : undefined
       };

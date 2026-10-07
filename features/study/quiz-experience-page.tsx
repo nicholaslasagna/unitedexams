@@ -39,9 +39,15 @@ import {
   countMissed,
   gradeQuestion,
   isOpenResponseQuestion,
+  questionPoints,
   requiresSelfMark,
-  summarizeAttempt
+  scoreByPart,
+  summarizeAttempt,
+  weightedScore,
+  writtenFraction
 } from "@/features/quiz/engine";
+import { RubricChecklist } from "@/features/quiz/rubric-checklist";
+import { Markdown } from "@/components/ui/markdown";
 import { fireConfetti } from "@/features/quiz/confetti";
 import { bestScoreForQuiz, latestAttemptForQuiz, topicBreakdownRows } from "@/features/progress/metrics";
 import { useAppData } from "@/lib/app-data-context";
@@ -50,8 +56,15 @@ import { resolveQuestionCountTarget, resolveQuizSetMode } from "@/lib/study/set-
 import { minutesSeconds, scoreBandLabel, shuffle } from "@/lib/utils";
 import type { Attempt, QuizSet, QuizSettings } from "@/lib/types";
 
-type Stage = "overview" | "quiz" | "submitted" | "results" | "review";
+type Stage = "overview" | "quiz" | "grading" | "submitted" | "results" | "review";
 type AttemptMode = "test" | "study" | "timed" | "exam";
+
+/** Points to one decimal, without a trailing ".0" on whole numbers. */
+function formatPoints(value: number) {
+  // Three answers of 50/3 sum to 50.000000000000007; round before deciding.
+  const rounded = Math.round(value * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+}
 
 interface SectionAssignmentPolicy {
   assignmentId: string;
@@ -111,6 +124,7 @@ export function QuizExperiencePageContent({
   const [selectedByQuestion, setSelectedByQuestion] = useState<Record<string, number[]>>({});
   const [responseByQuestion, setResponseByQuestion] = useState<Record<string, string>>({});
   const [selfMarkedByQuestion, setSelfMarkedByQuestion] = useState<Record<string, boolean | undefined>>({});
+  const [rubricByQuestion, setRubricByQuestion] = useState<Record<string, number[]>>({});
   const [submittedByQuestion, setSubmittedByQuestion] = useState<Record<string, boolean>>({});
   const [correctByQuestion, setCorrectByQuestion] = useState<Record<string, boolean>>({});
   const [showExplanation, setShowExplanation] = useState<Record<string, boolean>>({});
@@ -269,7 +283,7 @@ export function QuizExperiencePageContent({
   useEffect(() => {
     if (stage !== "quiz" || !settings.timed) return;
     if (timeLeft <= 0) {
-      finalizeAttempt();
+      submitExam();
       return;
     }
 
@@ -338,19 +352,18 @@ export function QuizExperiencePageContent({
     if (order.length === 0) return 0;
     const submittedIds = order.filter((id) => submittedByQuestion[id]);
     if (submittedIds.length === 0) return 0;
-    const correct = submittedIds.filter((id) => {
+    const entries = submittedIds.flatMap((id) => {
       const question = questionsById.get(id);
-      if (!question) return false;
-      if (isOpenResponseQuestion(question)) {
-        if (requiresSelfMark(question)) {
-          return Boolean(selfMarkedByQuestion[id]);
-        }
-        return Boolean(correctByQuestion[id]);
-      }
-      return Boolean(correctByQuestion[id]);
-    }).length;
-    return Math.round((correct / submittedIds.length) * 100);
-  }, [order, submittedByQuestion, correctByQuestion, questionsById, selfMarkedByQuestion]);
+      if (!question) return [];
+      const fraction = requiresSelfMark(question)
+        ? writtenFraction(question, selfMarkedByQuestion[id], rubricByQuestion[id])
+        : correctByQuestion[id]
+          ? 1
+          : 0;
+      return [{ points: questionPoints(question), fraction }];
+    });
+    return weightedScore(entries);
+  }, [order, submittedByQuestion, correctByQuestion, questionsById, selfMarkedByQuestion, rubricByQuestion]);
 
   const missedQuestionIds = useMemo(() => {
     if (!result) return [];
@@ -388,14 +401,16 @@ export function QuizExperiencePageContent({
 
       const uniquePriority = [...new Set(professorPriority)];
       const remainingPool = selectedQuestionIds.filter((id) => !uniquePriority.includes(id));
-      const sampledRest = shuffle(remainingPool).slice(0, Math.max(0, targetCount - uniquePriority.length));
+      const pool = quiz.fixedOrder ? remainingPool : shuffle(remainingPool);
+      const sampledRest = pool.slice(0, Math.max(0, targetCount - uniquePriority.length));
       selectedQuestionIds = [...uniquePriority, ...sampledRest].slice(0, targetCount);
 
-      if (effective.randomizeQuestions) {
+      if (effective.randomizeQuestions && !quiz.fixedOrder) {
         selectedQuestionIds = shuffle(selectedQuestionIds);
       }
     } else {
-      const orderedIds = effective.randomizeQuestions ? shuffle(selectedQuestionIds) : selectedQuestionIds;
+      const orderedIds =
+        effective.randomizeQuestions && !quiz.fixedOrder ? shuffle(selectedQuestionIds) : selectedQuestionIds;
       const maxQuestions = orderedIds.length;
       const requestedCount =
         effective.questionCount === "all"
@@ -409,6 +424,7 @@ export function QuizExperiencePageContent({
     setSelectedByQuestion({});
     setResponseByQuestion({});
     setSelfMarkedByQuestion({});
+    setRubricByQuestion({});
     setSubmittedByQuestion({});
     setCorrectByQuestion({});
     setShowExplanation({});
@@ -469,7 +485,10 @@ export function QuizExperiencePageContent({
     startQuiz(
       {
         timed: true,
-        timerMinutes: quiz?.timerDefaultMinutes ?? settings.timerMinutes,
+        // Seeded from the set's default when the quiz loads, so this is the
+        // default unless the student changed it in Quiz settings — in which
+        // case their exam length has to win.
+        timerMinutes: settings.timerMinutes,
         randomizeQuestions: true,
         explanationMode: quiz?.isExamSimulation ? "afterEach" : "end",
         questionCount: "all",
@@ -518,6 +537,25 @@ export function QuizExperiencePageContent({
     setResponseByQuestion((prev) => ({ ...prev, [currentQuestion.id]: value }));
   };
 
+  /**
+   * Tick or untick one marking-scheme criterion. Full marks count as a
+   * correct self-mark, so the navigator and review behave as they did for
+   * the old all-or-nothing check.
+   */
+  const toggleRubric = (questionId: string, index: number) => {
+    const question = questionsById.get(questionId);
+    if (!question?.rubric?.length) return;
+    // During the sitting only a submitted answer can be graded. Afterwards,
+    // grading covers every written answer, submitted or simply typed.
+    if (stage !== "grading" && !submittedByQuestion[questionId]) return;
+    const current = rubricByQuestion[questionId] ?? [];
+    const next = current.includes(index) ? current.filter((value) => value !== index) : [...current, index];
+    const full = writtenFraction(question, undefined, next) === 1;
+    setRubricByQuestion((prev) => ({ ...prev, [questionId]: next }));
+    setSelfMarkedByQuestion((prev) => ({ ...prev, [questionId]: full }));
+    setCorrectByQuestion((prev) => ({ ...prev, [questionId]: full }));
+  };
+
   const markCurrentFreeQuestion = (isCorrect: boolean) => {
     if (!currentQuestion || !requiresSelfMark(currentQuestion)) return;
     if (!submittedByQuestion[currentQuestion.id]) return;
@@ -544,6 +582,12 @@ export function QuizExperiencePageContent({
         return;
       }
       setSubmittedByQuestion((prev) => ({ ...prev, [currentQuestion.id]: true }));
+      if (currentQuestion.rubric?.length) {
+        // Graded at zero until criteria are ticked, so an honest zero is a
+        // grade rather than a missing self-check that blocks moving on.
+        setSelfMarkedByQuestion((prev) => ({ ...prev, [currentQuestion.id]: false }));
+        setCorrectByQuestion((prev) => ({ ...prev, [currentQuestion.id]: false }));
+      }
       if (!requiresSelfMark(currentQuestion)) {
         const correct = gradeQuestion(currentQuestion, [], response);
         setCorrectByQuestion((prev) => ({ ...prev, [currentQuestion.id]: correct }));
@@ -575,7 +619,7 @@ export function QuizExperiencePageContent({
       setCurrentIndex((prev) => prev + 1);
       return;
     }
-    finalizeAttempt();
+    submitExam();
   };
 
   const gotoPrev = () => {
@@ -605,7 +649,7 @@ export function QuizExperiencePageContent({
           finalSubmitted[id] = true;
           if (isOpenResponseQuestion(question)) {
             if (requiresSelfMark(question)) {
-              finalCorrect[id] = Boolean(selfMarkedByQuestion[id]);
+              finalCorrect[id] = writtenFraction(question, selfMarkedByQuestion[id], rubricByQuestion[id]) === 1;
             } else {
               const response = responseByQuestion[id]?.trim() ?? "";
               finalCorrect[id] = gradeQuestion(question, [], response);
@@ -625,6 +669,7 @@ export function QuizExperiencePageContent({
         selectedByQuestion,
         freeResponseByQuestion: responseByQuestion,
         selfMarkedByQuestion,
+        rubricByQuestion,
         order,
         timeSpentSeconds: timeSpent
       });
@@ -688,6 +733,31 @@ export function QuizExperiencePageContent({
     } finally {
       finalizingRef.current = false;
     }
+  };
+
+  /**
+   * End the sitting. A hidden-answer paper with written answers is graded
+   * before it is scored: on a real exam someone marks the long answers
+   * first, and here nobody has seen the model answers yet. Without this
+   * step every written answer was recorded as wrong. Section assignments
+   * keep their own grading flow.
+   */
+  const submitExam = () => {
+    const hasWritten = order.some((id) => {
+      const question = questionsById.get(id);
+      return question ? requiresSelfMark(question) : false;
+    });
+    if (hideLiveExamFeedback && hasWritten && !sectionAssignmentPolicy && !assignmentSubmissionLocked) {
+      setStage("grading");
+      return;
+    }
+    void finalizeAttempt();
+  };
+
+  /** All-or-nothing grade for a written answer that has no rubric. */
+  const markWritten = (questionId: string, isCorrect: boolean) => {
+    setSelfMarkedByQuestion((prev) => ({ ...prev, [questionId]: isCorrect }));
+    setCorrectByQuestion((prev) => ({ ...prev, [questionId]: isCorrect }));
   };
 
   /*
@@ -1172,6 +1242,87 @@ export function QuizExperiencePageContent({
     );
   }
 
+  if (stage === "grading" && quiz) {
+    const writtenIds = order.filter((id) => {
+      const question = questionsById.get(id);
+      return question ? requiresSelfMark(question) : false;
+    });
+    const objectiveCount = order.length - writtenIds.length;
+
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardBody className="space-y-2 p-6">
+            <p className="text-xs uppercase tracking-[0.14em] text-text-secondary">Exam submitted</p>
+            <h1 className="text-heading font-semibold">Grade your written answers</h1>
+            <p className="text-sm text-text-secondary">
+              Your {objectiveCount} multiple-choice {objectiveCount === 1 ? "answer is" : "answers are"} marked
+              automatically. For each written answer, compare what you wrote with the model answer and tick every
+              criterion you fully met. On the real exam this is the grader&apos;s job, so be the strict one.
+            </p>
+          </CardBody>
+        </Card>
+
+        {writtenIds.map((id, index) => {
+          const question = questionsById.get(id)!;
+          const response = responseByQuestion[id]?.trim() ?? "";
+          return (
+            <Card key={id}>
+              <CardBody className="space-y-4 p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+                  Written answer {index + 1} of {writtenIds.length}
+                </p>
+                <Markdown content={question.prompt} promoteMathInInlineCode />
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="min-w-0 rounded-xl border border-borderc bg-soft p-4">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Your answer</p>
+                    {response ? (
+                      <pre className="whitespace-pre-wrap break-words font-mono text-sm text-text">{response}</pre>
+                    ) : (
+                      <p className="text-sm text-muted">No answer written, so there is nothing to grade.</p>
+                    )}
+                  </div>
+                  <div className="min-w-0 rounded-xl border border-success/30 bg-success/[0.06] p-4">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-success">Model answer</p>
+                    <Markdown content={question.sampleAnswer ?? question.explanation} promoteMathInInlineCode />
+                  </div>
+                </div>
+                {question.rubric?.length ? (
+                  <RubricChecklist
+                    rubric={question.rubric}
+                    ticked={rubricByQuestion[id] ?? []}
+                    onToggle={(criterion) => toggleRubric(id, criterion)}
+                    disabled={!response}
+                  />
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant={selfMarkedByQuestion[id] === true ? "primary" : "secondary"}
+                      onClick={() => markWritten(id, true)}
+                      disabled={!response}
+                    >
+                      I got this
+                    </Button>
+                    <Button
+                      variant={selfMarkedByQuestion[id] === false ? "primary" : "ghost"}
+                      onClick={() => markWritten(id, false)}
+                    >
+                      Need review
+                    </Button>
+                  </div>
+                )}
+              </CardBody>
+            </Card>
+          );
+        })}
+
+        <div className="flex justify-end">
+          <Button onClick={() => void finalizeAttempt()}>Finish grading and see my score</Button>
+        </div>
+      </div>
+    );
+  }
+
   if (stage === "submitted" && result) {
     return (
       <div className="space-y-6">
@@ -1219,6 +1370,7 @@ export function QuizExperiencePageContent({
 
   if (stage === "results" && result) {
     const topicBreakdown = topicBreakdownRows(result.topicBreakdown, result.totalCount);
+    const parts = scoreByPart(result);
 
     return (
       <div className="space-y-6">
@@ -1230,6 +1382,18 @@ export function QuizExperiencePageContent({
               <p className="text-sm text-text-secondary">
                 {result.correctCount} of {result.totalCount} correct • {Math.round(result.timeSpent / 60)} min • {scoreBandLabel(result.score)}
               </p>
+              {parts ? (
+                <p className="text-sm text-text-secondary">
+                  Multiple choice{" "}
+                  <span className="font-mono text-text">
+                    {formatPoints(parts.objective.earned)}/{formatPoints(parts.objective.possible)}
+                  </span>{" "}
+                  • Written{" "}
+                  <span className="font-mono text-text">
+                    {formatPoints(parts.written.earned)}/{formatPoints(parts.written.possible)}
+                  </span>
+                </p>
+              ) : null}
               <div className="flex flex-wrap gap-2">
                 <Button onClick={() => setStage("review")} disabled={countMissed(result) === 0}>
                   Review Missed
@@ -1481,6 +1645,8 @@ export function QuizExperiencePageContent({
                 }
                 selfMarked={selfMarkedByQuestion[currentQuestion.id]}
                 onSelfMark={markCurrentFreeQuestion}
+                rubricTicks={rubricByQuestion[currentQuestion.id]}
+                onRubricToggle={(index) => toggleRubric(currentQuestion.id, index)}
                 lockInteraction={assignmentSubmissionLocked || Boolean(submittedByQuestion[currentQuestion.id])}
                 disableSelfMark={hideLiveExamFeedback}
                 studyMode={immediateReviewMode}
@@ -1515,7 +1681,7 @@ export function QuizExperiencePageContent({
               assignmentSubmissionLocked ? (
                 <Button onClick={() => setStage("overview")}>Back to assignment overview</Button>
               ) : (
-                <Button onClick={finalizeAttempt} disabled={!canMoveForward}>
+                <Button onClick={submitExam} disabled={!canMoveForward}>
                   Finish Quiz
                 </Button>
               )

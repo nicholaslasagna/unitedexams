@@ -10,6 +10,7 @@ import { Markdown } from "@/components/ui/markdown";
 import { AssessmentChoiceRow } from "@/components/ui/assessment-choice-row";
 import { SymbolPalette, needsAlgebraSymbols } from "@/components/ra/symbol-palette";
 import { choiceMarkerForIndex, cn } from "@/lib/utils";
+import { RubricChecklist } from "./rubric-checklist";
 import type { Question } from "@/lib/types";
 
 interface QuestionCardProps {
@@ -25,6 +26,9 @@ interface QuestionCardProps {
   isCorrect: boolean | null;
   selfMarked?: boolean;
   onSelfMark: (isCorrect: boolean) => void;
+  /** Ticked marking-scheme criteria, for a written answer that has a rubric. */
+  rubricTicks?: number[];
+  onRubricToggle?: (index: number) => void;
   lockInteraction?: boolean;
   disableSelfMark?: boolean;
   showExplanation: boolean;
@@ -48,6 +52,8 @@ export function QuestionCard({
   isCorrect,
   selfMarked,
   onSelfMark,
+  rubricTicks = [],
+  onRubricToggle,
   lockInteraction = false,
   disableSelfMark = false,
   showExplanation,
@@ -366,7 +372,11 @@ export function QuestionCard({
             ) : null}
 
             {/* Self-check for free response */}
-            {isLongResponse && !disableSelfMark ? (
+            {isLongResponse && !disableSelfMark && question.rubric?.length && onRubricToggle ? (
+              <div className="mt-3 rounded-lg border border-borderc bg-soft p-3">
+                <RubricChecklist rubric={question.rubric} ticked={rubricTicks} onToggle={onRubricToggle} />
+              </div>
+            ) : isLongResponse && !disableSelfMark ? (
               <div className="mt-3 rounded-lg border border-borderc bg-soft p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Self-check</p>
                 <p className="mt-1 text-sm text-text-secondary">

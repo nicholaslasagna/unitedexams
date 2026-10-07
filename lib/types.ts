@@ -38,6 +38,26 @@ export interface Question {
   fromProfessor?: boolean;
   tags: string[];
   imageUrl?: string;
+  /**
+   * Weight in the attempt score. Defaults to 1, so a set that never sets it
+   * scores exactly as before. A paper weighted "50% multiple choice, 50%
+   * written" needs this: ten choice questions and three long answers would
+   * otherwise score the choice half at 77%.
+   */
+  points?: number;
+  /**
+   * Partial credit for a written answer. Each criterion the student ticks
+   * when grading against the model answer earns its marks; the question's
+   * points are scaled by marks earned over marks available. Without one, a
+   * written answer is all-or-nothing.
+   */
+  rubric?: RubricItem[];
+}
+
+export interface RubricItem {
+  /** What a full-credit answer contains, phrased so it can be ticked honestly. */
+  criterion: string;
+  marks: number;
 }
 
 export interface QuizSet {
@@ -52,6 +72,12 @@ export interface QuizSet {
   mode?: StudySetMode;
   questionCountTarget?: number | null;
   isExamSimulation?: boolean;
+  /**
+   * Keep the authored order instead of shuffling. A paper with Part A then
+   * Part B is not that paper once its long answers are scattered among the
+   * multiple choice.
+   */
+  fixedOrder?: boolean;
   timerDefaultMinutes: number;
   questions: Question[];
 }
@@ -64,6 +90,9 @@ export interface PerQuestionResult {
   correct: Array<number | string>;
   responseText?: string;
   selfMarked?: boolean;
+  /** Weighted points earned and available; the score is their ratio. */
+  pointsEarned?: number;
+  pointsPossible?: number;
   tags: string[];
   /**
    * Misconception tags a wrong answer revealed, e.g. "outer-join-side".
