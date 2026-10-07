@@ -60,7 +60,8 @@
     "postcss": "^8.5.29",
     "tailwindcss": "^3.4.17",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.10",
+    "vite": "^8.0.5",
+    "vitest": "^5.0.3",
     "wrangler": "^4.112.0"
   },
   "overrides": {
@@ -72,7 +73,7 @@
       "brace-expansion": "^5.0.12"
     },
     "picomatch": "^4.0.4",
-    "vite": "^8.0.5",
+    "vite": "$vite",
     "fast-xml-builder": "^1.2.0",
     "ws": "^8.20.1",
     "next": {
