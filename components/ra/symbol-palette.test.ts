@@ -50,6 +50,11 @@ describe("where the symbol palette appears", () => {
   it("ignores questions with no tags at all", () => {
     expect(needsAlgebraSymbols([])).toBe(false);
   });
+
+  it("distinguishes order-statistic selection from relational selection", () => {
+    expect(needsAlgebraSymbols(["algorithms", "selection"])).toBe(false);
+    expect(needsAlgebraSymbols(["relational-algebra", "selection"])).toBe(true);
+  });
 });
 
 describe("the palette itself", () => {

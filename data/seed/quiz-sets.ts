@@ -5,6 +5,7 @@ import { softwareEngineeringQuizSets } from "./quiz-se";
 import { testReviewQuizSetReplacements } from "./quiz-test-reviews";
 // ── Fall 2026 ──
 import { algorithmsQuizSets } from "./quiz-algorithms";
+import { algorithmsExam1QuizSets } from "./alg-exam1";
 import { architectureSystemsQuizSets } from "./quiz-arch-systems";
 import { databaseSystemsQuizSets } from "./quiz-databases";
 import { databaseExam1QuizSets } from "./db-exam1/practice-exam";
@@ -2159,6 +2160,7 @@ export const quizSets: QuizSet[] = [
   ...softwareEngineeringQuizSets,
   // ── Fall 2026 additions ──
   ...algorithmsQuizSets,
+  ...algorithmsExam1QuizSets,
   ...architectureSystemsQuizSets,
   ...databaseSystemsQuizSets,
   ...databaseExam1QuizSets,

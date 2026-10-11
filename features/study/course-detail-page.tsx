@@ -46,6 +46,7 @@ import { displayTags } from "@/lib/study/display-tags";
 import { chooseRecommendedSet, recommendationCaption } from "@/features/study/recommendation";
 import { ExamPrepCallout } from "@/features/db-exam1/exam-prep-callout";
 import { ExamTwoPrepCallout } from "@/features/db-exam2/exam-prep-callout";
+import { AlgorithmsExamPrepCallout } from "@/features/alg-exam1/exam-prep-callout";
 
 const tabDefs = [
   { id: "quizzes", label: "Quizzes" },
@@ -257,6 +258,7 @@ export function CourseDetailContent({
               </div>
 
               <ExamTwoPrepCallout courseId={course.id} routePrefix={routePrefix} />
+              <AlgorithmsExamPrepCallout courseId={course.id} routePrefix={routePrefix} />
               <ExamPrepCallout courseId={course.id} routePrefix={routePrefix} />
 
               {/* Best place to start — the one obvious entry point */}

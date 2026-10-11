@@ -45,6 +45,8 @@ const ALGEBRA_TAGS = new Set([
 ]);
 
 export function needsAlgebraSymbols(tags: string[]): boolean {
+  // Selection also names the algorithms order-statistics problem.
+  if (tags.includes("algorithms")) return false;
   return tags.some((tag) => ALGEBRA_TAGS.has(tag));
 }
 
