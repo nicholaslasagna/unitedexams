@@ -79,6 +79,7 @@ export function QuestionCard({
   const isLongResponse = question.type === "free";
   const isShortResponse = question.type === "fill";
   const isTextResponse = isLongResponse || isShortResponse;
+  const promoteMathInInlineCode = !question.tags.some((tag) => tag === "mysql" || tag === "sql");
   const optionRole = question.type === "single" ? "radiogroup" : "group";
   const promptId = `prompt-${question.id}`;
   const canSubmit = isTextResponse ? responseText.trim().length > 0 : selected.length > 0;
@@ -117,7 +118,7 @@ export function QuestionCard({
 
         {/* Question prompt */}
         <div id={promptId} className="space-y-4">
-          <Markdown content={question.prompt} className="quiz-question-prompt" promoteMathInInlineCode />
+          <Markdown content={question.prompt} className="quiz-question-prompt" promoteMathInInlineCode={promoteMathInInlineCode} />
           {question.imageUrl ? (
             <img src={question.imageUrl} alt="Question visual" className="max-h-72 w-full rounded-xl border border-borderc object-cover" />
           ) : null}
@@ -229,7 +230,7 @@ export function QuestionCard({
                           {idx + 1}
                         </span>
                         <div className="flex-1">
-                          <Markdown content={hint} promoteMathInInlineCode />
+                          <Markdown content={hint} promoteMathInInlineCode={promoteMathInInlineCode} />
                         </div>
                       </li>
                     ))}
@@ -242,7 +243,7 @@ export function QuestionCard({
                   <div className="mt-4 rounded-lg border border-success/30 bg-success/10 p-3">
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-success">Guided Final Answer</p>
                     <div className="mt-2 text-sm text-text">
-                      <Markdown content={question.sampleAnswer} promoteMathInInlineCode />
+                      <Markdown content={question.sampleAnswer} promoteMathInInlineCode={promoteMathInInlineCode} />
                     </div>
                   </div>
                 ) : null}
@@ -409,13 +410,13 @@ export function QuestionCard({
             <div className="rounded-xl border border-borderc bg-soft p-5">
               <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted">Explanation</p>
               <div className="prose-sm">
-                <Markdown content={question.explanation} promoteMathInInlineCode />
+                <Markdown content={question.explanation} promoteMathInInlineCode={promoteMathInInlineCode} />
               </div>
               {question.sampleAnswer ? (
                 <div className="mt-4 rounded-lg border border-success/30 bg-success/10 p-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-success">Correct Answer</p>
                   <div className="mt-1 text-sm text-text">
-                    <Markdown content={question.sampleAnswer} promoteMathInInlineCode />
+                    <Markdown content={question.sampleAnswer} promoteMathInInlineCode={promoteMathInInlineCode} />
                   </div>
                 </div>
               ) : null}
@@ -472,7 +473,7 @@ export function QuestionCard({
                     {idx + 1}
                   </span>
                   <div className="flex-1 text-sm text-text">
-                    <Markdown content={step} promoteMathInInlineCode />
+                    <Markdown content={step} promoteMathInInlineCode={promoteMathInInlineCode} />
                   </div>
                 </div>
               ))}

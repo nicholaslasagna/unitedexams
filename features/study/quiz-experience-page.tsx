@@ -1272,7 +1272,7 @@ export function QuizExperiencePageContent({
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
                   Written answer {index + 1} of {writtenIds.length}
                 </p>
-                <Markdown content={question.prompt} promoteMathInInlineCode />
+                <Markdown content={question.prompt} promoteMathInInlineCode={!question.tags.includes("mysql") && !question.tags.includes("sql")} />
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="min-w-0 rounded-xl border border-borderc bg-soft p-4">
                     <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Your answer</p>
@@ -1284,7 +1284,7 @@ export function QuizExperiencePageContent({
                   </div>
                   <div className="min-w-0 rounded-xl border border-success/30 bg-success/[0.06] p-4">
                     <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-success">Model answer</p>
-                    <Markdown content={question.sampleAnswer ?? question.explanation} promoteMathInInlineCode />
+                    <Markdown content={question.sampleAnswer ?? question.explanation} promoteMathInInlineCode={!question.tags.includes("mysql") && !question.tags.includes("sql")} />
                   </div>
                 </div>
                 {question.rubric?.length ? (

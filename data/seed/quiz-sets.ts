@@ -8,6 +8,7 @@ import { algorithmsQuizSets } from "./quiz-algorithms";
 import { architectureSystemsQuizSets } from "./quiz-arch-systems";
 import { databaseSystemsQuizSets } from "./quiz-databases";
 import { databaseExam1QuizSets } from "./db-exam1/practice-exam";
+import { databaseExam2QuizSets } from "./db-exam2";
 import { operatingSystemsQuizSets } from "./quiz-os";
 
 const legacyQuizSets: QuizSet[] = [
@@ -2161,6 +2162,7 @@ export const quizSets: QuizSet[] = [
   ...architectureSystemsQuizSets,
   ...databaseSystemsQuizSets,
   ...databaseExam1QuizSets,
+  ...databaseExam2QuizSets,
   ...operatingSystemsQuizSets
 ];
 
