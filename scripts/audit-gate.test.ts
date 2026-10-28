@@ -22,12 +22,14 @@ const report = (entries: Record<string, Array<ReturnType<typeof advisory> | stri
 
 const braces = advisory("GHSA-vfj7-8cjw-p6xm", "high");
 const TODAY = "2026-10-07";
+// A fixed example, so the mechanism stays tested whatever the live list holds.
+const EXAMPLE = [{ id: "GHSA-vfj7-8cjw-p6xm", package: "braces", reason: "example", reviewBy: "2027-01-31" }];
 
 describe("the dependency audit gate", () => {
   it("passes when the only high advisory is the accepted one, and its dependents", () => {
     const result = evaluate(
       report({ braces: [braces], micromatch: ["braces"], tailwindcss: ["micromatch", "chokidar"] }),
-      ACCEPTED,
+      EXAMPLE,
       TODAY
     );
     expect(result.blocking).toEqual([]);
@@ -35,13 +37,13 @@ describe("the dependency audit gate", () => {
   });
 
   it("still fails on a new high advisory elsewhere", () => {
-    const result = evaluate(report({ braces: [braces], next: [advisory("GHSA-new-1", "critical")] }), ACCEPTED, TODAY);
+    const result = evaluate(report({ braces: [braces], next: [advisory("GHSA-new-1", "critical")] }), EXAMPLE, TODAY);
     expect(result.blocking.map((a: { id: string }) => a.id)).toEqual(["GHSA-new-1"]);
   });
 
   it("still fails on a new advisory against the same package", () => {
     // Accepted by id, not by package name.
-    const result = evaluate(report({ braces: [braces, advisory("GHSA-new-2", "high")] }), ACCEPTED, TODAY);
+    const result = evaluate(report({ braces: [braces, advisory("GHSA-new-2", "high")] }), EXAMPLE, TODAY);
     expect(result.blocking.map((a: { id: string }) => a.id)).toEqual(["GHSA-new-2"]);
   });
 
@@ -51,12 +53,12 @@ describe("the dependency audit gate", () => {
   });
 
   it("fails once an exception is past its review date", () => {
-    const result = evaluate(report({ braces: [braces] }), ACCEPTED, "2099-01-01");
+    const result = evaluate(report({ braces: [braces] }), EXAMPLE, "2099-01-01");
     expect(result.expired).toHaveLength(1);
   });
 
   it("flags an exception that is no longer needed", () => {
-    expect(evaluate(report({}), ACCEPTED, TODAY).stale).toHaveLength(1);
+    expect(evaluate(report({}), EXAMPLE, TODAY).stale).toHaveLength(1);
   });
 
   it("gives every exception a reason and a review date", () => {

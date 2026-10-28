@@ -15,18 +15,8 @@
 import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 
-export const ACCEPTED = [
-  {
-    id: "GHSA-vfj7-8cjw-p6xm",
-    package: "braces",
-    reason:
-      "No fixed release exists: 3.0.3 is the final version and the advisory covers <=3.0.3. " +
-      "Reached only through dev tooling (tailwindcss 3's watcher and globber, and " +
-      "eslint-plugin-next), which expands brace patterns from this repository's own config, " +
-      "never from user input. Not in the production dependency tree.",
-    reviewBy: "2027-01-31"
-  }
-];
+// Each entry: { id, package, reason, reviewBy: "YYYY-MM-DD" }. Empty is the goal.
+export const ACCEPTED = [];
 
 const BLOCKING = new Set(["high", "critical"]);
 
