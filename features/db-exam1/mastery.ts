@@ -24,10 +24,10 @@ import { TOPICS, TOPIC_IDS, type TopicId } from "./topics";
 
 export const DB_EXAM1_COURSE_ID = "database-systems";
 
-/** Exam 1 — Thursday 17 September 2026, Texas Tech (America/Chicago). */
+/** Exam 1 — Thursday 17 September 2026, America/Chicago. */
 export const EXAM_DATE = "2026-09-17";
 
-/** Lubbock civil calendar — the exam's timezone, not the server's. */
+/** The exam's own civil calendar — its timezone, not the server's. */
 const EXAM_TIMEZONE = "America/Chicago";
 
 function ymdInZone(date: Date, timeZone: string): { y: number; m: number; d: number } {
@@ -42,13 +42,17 @@ function ymdInZone(date: Date, timeZone: string): { y: number; m: number; d: num
   return { y: num("year"), m: num("month"), d: num("day") };
 }
 
-/** Whole calendar days from `today` until Exam 1, in America/Chicago. */
+/**
+ * Whole calendar days from `today` until Exam 1, in America/Chicago.
+ * Negative once the exam has passed; clamping at 0 left the page saying
+ * "Exam day" for every day after it.
+ */
 export function daysUntilExam(today = new Date()): number {
   const [year, month, day] = EXAM_DATE.split("-").map(Number);
   const examDay = Date.UTC(year, month - 1, day);
   const chicago = ymdInZone(today, EXAM_TIMEZONE);
   const todayDay = Date.UTC(chicago.y, chicago.m - 1, chicago.d);
-  return Math.max(0, Math.round((examDay - todayDay) / 86400000));
+  return Math.round((examDay - todayDay) / 86400000);
 }
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];

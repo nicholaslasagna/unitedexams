@@ -181,11 +181,13 @@ describe("mastery derives from real attempts only", () => {
     expect(state.topicsMastered).toBe(TOPICS.length);
   });
 
-  it("counts days until the exam on the Lubbock calendar", () => {
+  it("counts days until the exam on the exam's local calendar", () => {
     const before = readiness([], new Date("2026-09-10T09:00:00-05:00"));
     expect(before.daysUntilExam).toBe(7);
+    // After the exam the count goes negative, so the page can say it has
+    // passed instead of claiming every later day is exam day.
     const after = readiness([], new Date("2026-09-20T09:00:00-05:00"));
-    expect(after.daysUntilExam).toBe(0);
+    expect(after.daysUntilExam).toBe(-3);
     // 11:30pm CDT on the 15th is already the 16th in UTC — still two days out.
     expect(readiness([], new Date("2026-09-16T04:30:00.000Z")).daysUntilExam).toBe(2);
     expect(readiness([], new Date("2026-09-17T12:00:00-05:00")).daysUntilExam).toBe(0);

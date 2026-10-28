@@ -111,10 +111,15 @@ export function ExamDashboard({
                 <CalendarDays className="mr-1 inline h-3 w-3" aria-hidden />
                 Exam 1 · {formatExamDate()}
               </Badge>
-              <Badge tone={state.daysUntilExam <= 3 ? "danger" : "default"} size="sm">
-                {state.daysUntilExam === 0
-                  ? "Exam day"
-                  : `${state.daysUntilExam} day${state.daysUntilExam === 1 ? "" : "s"} to go`}
+              <Badge
+                tone={state.daysUntilExam >= 0 && state.daysUntilExam <= 3 ? "danger" : "default"}
+                size="sm"
+              >
+                {state.daysUntilExam < 0
+                  ? "Exam 1 has passed"
+                  : state.daysUntilExam === 0
+                    ? "Exam day"
+                    : `${state.daysUntilExam} day${state.daysUntilExam === 1 ? "" : "s"} to go`}
               </Badge>
               {streak.current > 0 ? (
                 <Badge tone="warn" size="sm">
@@ -135,7 +140,7 @@ export function ExamDashboard({
                 { label: "Answered", value: state.questionsAnswered },
                 { label: "Accuracy", value: `${state.accuracy}%` },
                 { label: "Mastered", value: `${state.topicsMastered}/${state.topicsTotal}` },
-                { label: "Days left", value: state.daysUntilExam }
+                { label: "Days left", value: state.daysUntilExam >= 0 ? state.daysUntilExam : "—" }
               ].map((stat) => (
                 <div key={stat.label} className="rounded-xl border border-borderc bg-soft px-3 py-2">
                   <p className="font-mono text-subheading font-bold text-text">{stat.value}</p>
