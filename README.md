@@ -266,9 +266,7 @@ Persisted entities include:
 ## Guest Mode
 - Guests can browse catalog + take quizzes from public routes.
 - Guest attempts are stored locally.
-- On account sign-in, guest attempts are migrated to Supabase automatically via:
-  - `lib/storage/guest-migration.ts`
-  - `migrateGuestAttemptsToAccount(userId, ...)`
+- On account sign-in, `lib/storage/guest-migration.ts` transfers eligible quiz attempts to Supabase. Attempts are removed from guest storage only after the cloud copy is confirmed. Failed attempts can retry, and local-only quiz attempts stay on the device.
 - Quiz start/results include account encouragement CTAs without intrusive modal spam.
 
 ## Onboarding + Recommendations
