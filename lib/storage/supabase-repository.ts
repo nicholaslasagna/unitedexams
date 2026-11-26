@@ -138,6 +138,19 @@ function asPerQuestionResults(value: unknown): PerQuestionResult[] {
     .filter((entry) => entry.questionId.length > 0);
 }
 
+// Stable IDs make a replay after a lost response or partial save insert only missing rows.
+async function guestRowId(...parts: string[]): Promise<string> {
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(JSON.stringify(["united-exams-guest-import-v1", ...parts]))
+  );
+  const bytes = new Uint8Array(digest).slice(0, 16);
+  bytes[6] = (bytes[6] & 0x0f) | 0x80; // UUID version 8, custom SHA-256 content
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 export class SupabaseRepository implements DataRepository {
   private ensured = false;
   private readonly localRepository = getLocalRepository();
@@ -299,6 +312,19 @@ export class SupabaseRepository implements DataRepository {
       return;
     }
 
+    await this.saveAccountAttempt(attempt);
+  }
+
+  async saveGuestAttempt(attempt: Attempt): Promise<"saved" | "local-only"> {
+    // Local/static quizzes are not handled by the normal cloud persistence path.
+    if (!isUuidLike(attempt.quizId)) return "local-only";
+    await this.ensureBaseRows();
+    const attemptId = await guestRowId("attempt", this.user.id, attempt.id);
+    await this.saveAccountAttempt(attempt, attemptId);
+    return "saved";
+  }
+
+  private async saveAccountAttempt(attempt: Attempt, guestAttemptId?: string): Promise<void> {
     const dayStart = new Date(attempt.date);
     dayStart.setUTCHours(0, 0, 0, 0);
     const dayEnd = new Date(dayStart);
@@ -336,28 +362,41 @@ export class SupabaseRepository implements DataRepository {
       streak_day_maintained: streakDayMaintained
     };
 
-    const { data: insertedAttempt, error } = await this.client
-      .from("attempts")
-      .insert({
-        user_id: this.user.id,
-        quiz_set_id: attempt.quizId,
-        started_at: attempt.date,
-        completed_at: attempt.date,
-        score: attempt.score,
-        correct_count: attempt.correctCount,
-        total_count: attempt.totalCount,
-        time_spent_seconds: attempt.timeSpent,
-        settings
-      })
-      .select("id")
-      .single();
-
-    if (error || !insertedAttempt) {
-      throw new Error(error?.message ?? "Failed to save attempt");
+    const row = {
+      user_id: this.user.id,
+      quiz_set_id: attempt.quizId,
+      started_at: attempt.date,
+      completed_at: attempt.date,
+      score: attempt.score,
+      correct_count: attempt.correctCount,
+      total_count: attempt.totalCount,
+      time_spent_seconds: attempt.timeSpent,
+      settings
+    };
+    const attempts = this.client.from("attempts");
+    let savedId: string;
+    if (guestAttemptId) {
+      const { error } = await attempts.upsert(
+        { ...row, id: guestAttemptId },
+        { onConflict: "id", ignoreDuplicates: true }
+      );
+      if (error) throw new Error(error.message);
+      const { data, error: lookupError } = await this.client
+        .from("attempts")
+        .select("id")
+        .eq("id", guestAttemptId)
+        .eq("user_id", this.user.id)
+        .single();
+      if (lookupError || !data) throw new Error(lookupError?.message ?? "Guest attempt not confirmed");
+      savedId = data.id;
+    } else {
+      const { data, error } = await attempts.insert(row).select("id").single();
+      if (error || !data) throw new Error(error?.message ?? "Failed to save attempt");
+      savedId = data.id;
     }
 
     const answerRows = attempt.perQuestionResults.map((entry) => ({
-      attempt_id: insertedAttempt.id,
+      attempt_id: savedId,
       question_id: entry.questionId,
       selected: entry.selected,
       is_correct: entry.isCorrect,
@@ -365,10 +404,18 @@ export class SupabaseRepository implements DataRepository {
     }));
 
     if (answerRows.length > 0) {
-      const { error: answersError } = await this.client.from("attempt_answers").insert(answerRows);
-      if (answersError) {
-        throw new Error(answersError.message);
-      }
+      const answers = this.client.from("attempt_answers");
+      // The ordinal preserves separate answers even if question IDs repeat.
+      const { error } = guestAttemptId
+        ? await answers.upsert(
+            await Promise.all(answerRows.map(async (answer, index) => ({
+              ...answer,
+              id: await guestRowId("answer", guestAttemptId, String(index))
+            }))),
+            { onConflict: "id", ignoreDuplicates: true }
+          )
+        : await answers.insert(answerRows);
+      if (error) throw new Error(error.message);
     }
   }
 

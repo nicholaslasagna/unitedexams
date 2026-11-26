@@ -76,6 +76,16 @@ export class LocalRepository implements DataRepository {
     store.setItem(STORAGE_KEYS.attempts, JSON.stringify([attempt, ...existing]));
   }
 
+  async removeAttempts(ids: ReadonlySet<string>): Promise<void> {
+    const store = storage();
+    if (!store) return;
+    const attempts = parse<Attempt[]>(store.getItem(STORAGE_KEYS.attempts), []);
+    const remaining = attempts.filter((attempt) => !ids.has(attempt.id));
+    if (remaining.length !== attempts.length) {
+      store.setItem(STORAGE_KEYS.attempts, JSON.stringify(remaining));
+    }
+  }
+
   async clearAttempts(): Promise<void> {
     const store = storage();
     if (!store) return;

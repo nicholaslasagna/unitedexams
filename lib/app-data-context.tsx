@@ -92,16 +92,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         }
 
         try {
-          const migration = await migrateGuestAttemptsToAccount(user.id, {
+          const migration = await migrateGuestAttemptsToAccount({
             guestRepository: localRepo,
             accountRepository: repo
           });
-          if (migration.failed && migration.migratedCount === 0 && typeof window !== "undefined") {
+          if (migration.failed && typeof window !== "undefined") {
             window.dispatchEvent(
               new CustomEvent("ue:toast", {
                 detail: {
                   title: "Guest attempts not fully saved",
-                  description: "We’ll try again next time.",
+                  description: "Any attempts not confirmed saved will stay on this device for the next retry.",
                   tone: "error"
                 }
               })
@@ -113,7 +113,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
               new CustomEvent("ue:toast", {
                 detail: {
                   title: "Guest attempt sync failed",
-                  description: "We’ll try again next time.",
+                  description: "Any attempts not confirmed saved will stay on this device for the next retry.",
                   tone: "error"
                 }
               })
